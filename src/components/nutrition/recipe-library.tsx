@@ -32,17 +32,23 @@ export function RecipeLibrary({ recipes }: { recipes: Tables<"recipes">[] }) {
 
   return (
     <div>
-      <div className="flex flex-wrap gap-2 mb-4">
-        <Chip selected={activeFilter === null} onClick={() => setActiveFilter(null)}>
+      <div className="flex gap-2 mb-4 overflow-x-auto -mx-5 px-5 lg:mx-0 lg:px-0 lg:flex-wrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <Chip
+          className="shrink-0"
+          selected={activeFilter === null}
+          onClick={() => setActiveFilter(null)}
+        >
           Alles
         </Chip>
         <Chip
+          className="shrink-0"
           selected={activeFilter === BUDGET_FILTER}
           onClick={() => setActiveFilter(BUDGET_FILTER)}
         >
           {BUDGET_FILTER}
         </Chip>
         <Chip
+          className="shrink-0"
           selected={activeFilter === LOW_CARB_FILTER}
           onClick={() => setActiveFilter(LOW_CARB_FILTER)}
         >
@@ -51,6 +57,7 @@ export function RecipeLibrary({ recipes }: { recipes: Tables<"recipes">[] }) {
         {RECIPE_CATEGORIES.map((category) => (
           <Chip
             key={category}
+            className="shrink-0"
             selected={activeFilter === category}
             onClick={() => setActiveFilter(category)}
           >
