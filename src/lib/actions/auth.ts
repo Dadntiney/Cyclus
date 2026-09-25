@@ -61,9 +61,15 @@ export async function register(_prev: ActionState, formData: FormData): Promise<
   }
 
   const supabase = await createClient()
+  const originHeader = (await headers()).get("origin")
+  const origin = originHeader ?? process.env.NEXT_PUBLIC_SITE_URL ?? ""
+
   const { error, data } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
+    },
   })
 
   if (error) {
