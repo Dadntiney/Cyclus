@@ -11,7 +11,7 @@ interface RecipeImageProps {
   priority?: boolean
 }
 
-/** AI-generated recipe photo when available, otherwise the illustrated placeholder. */
+/** Recipe photo when available, otherwise the illustrated placeholder. */
 export function RecipeImage({
   title,
   imageUrl,
@@ -31,7 +31,10 @@ export function RecipeImage({
         alt={title}
         fill
         sizes={sizes ?? "(min-width: 640px) 50vw, 100vw"}
-        className="object-cover"
+        // Photos come from different sources/photographers; a shared,
+        // subtle grade nudges them toward reading as one consistent set
+        // instead of a visibly mismatched collage.
+        className="object-cover [filter:saturate(0.94)_contrast(1.03)_brightness(1.01)]"
         priority={priority}
       />
     </div>

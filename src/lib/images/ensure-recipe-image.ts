@@ -1,21 +1,39 @@
 import "server-only"
 import { createServiceClient } from "@/lib/supabase/service"
 import { generateRecipeImage } from "@/lib/images/openai-provider"
+import { fetchRecipeStockPhoto } from "@/lib/images/pexels-provider"
 import type { Tables } from "@/types/database"
 
 const BUCKET = "recipe-images"
 
-function parseIngredients(ingredients: unknown): string[] {
-  return Array.isArray(ingredients)
-    ? ingredients.filter((i): i is string => typeof i === "string")
-    : []
+function parseStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((i): i is string => typeof i === "string") : []
+}
+
+function extensionFor(contentType: string): string {
+  if (contentType.includes("png")) return "png"
+  if (contentType.includes("webp")) return "webp"
+  return "jpg"
+}
+
+/** Prefers a real, paid AI-generated photo when configured; otherwise a free stock photo. */
+async function fetchImage(
+  recipe: Tables<"recipes">,
+): Promise<{ base64: string; contentType: string }> {
+  if (process.env.OPENAI_API_KEY) {
+    return generateRecipeImage(recipe.title, recipe.description, parseStringArray(recipe.ingredients))
+  }
+  if (process.env.PEXELS_API_KEY) {
+    return fetchRecipeStockPhoto(recipe.title, recipe.category)
+  }
+  throw new Error("No image provider configured (set OPENAI_API_KEY or PEXELS_API_KEY).")
 }
 
 /**
- * Returns the recipe's photo URL, generating and caching it via OpenAI +
- * Supabase Storage exactly once if it doesn't exist yet. Never throws —
- * on any failure it logs server-side and returns null so callers can fall
- * back to the illustrated placeholder instead of breaking the page.
+ * Returns the recipe's photo URL, fetching and caching it via an image
+ * provider + Supabase Storage exactly once if it doesn't exist yet. Never
+ * throws — on any failure it logs server-side and returns null so callers
+ * can fall back to the illustrated placeholder instead of breaking the page.
  */
 export async function ensureRecipeImage(recipe: Tables<"recipes">): Promise<string | null> {
   if (recipe.image_url) {
@@ -24,14 +42,9 @@ export async function ensureRecipeImage(recipe: Tables<"recipes">): Promise<stri
 
   try {
     const service = createServiceClient()
+    const { base64, contentType } = await fetchImage(recipe)
 
-    const { base64, contentType } = await generateRecipeImage(
-      recipe.title,
-      recipe.description,
-      parseIngredients(recipe.ingredients),
-    )
-
-    const path = `${recipe.id}.png`
+    const path = `${recipe.id}.${extensionFor(contentType)}`
     const { error: uploadError } = await service.storage
       .from(BUCKET)
       .upload(path, Buffer.from(base64, "base64"), {
@@ -60,7 +73,7 @@ export async function ensureRecipeImage(recipe: Tables<"recipes">): Promise<stri
 
     return updated?.image_url ?? imageUrl
   } catch (error) {
-    console.error(`[recipe-images] Failed to generate image for recipe ${recipe.id}:`, error)
+    console.error(`[recipe-images] Failed to fetch image for recipe ${recipe.id}:`, error)
     return null
   }
 }
