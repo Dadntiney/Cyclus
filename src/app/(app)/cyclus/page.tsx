@@ -1,7 +1,8 @@
 import Link from "next/link"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
+import { getProfile } from "@/lib/data/profile"
 import { estimateCycle } from "@/lib/cycle/estimate"
-import { computeCycleHistory, computeSymptomFrequency } from "@/lib/cycle/history"
+import { computeCycleHistory, computeSymptomFrequency, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
 import { computePhaseSymptomInsights, formatPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { phaseLabel } from "@/lib/cycle/estimate"
 import { Calendar } from "@/components/cycle/calendar"
@@ -20,8 +21,8 @@ export default async function CyclusPage() {
 
   const sixMonthsAgo = format(subDays(new Date(), 200), "yyyy-MM-dd")
 
-  const [{ data: profile }, { data: cycleProfile }, { data: logs }, { data: checkins }] = await Promise.all([
-    supabase.from("profiles").select("age, track_flow_intensity").eq("id", user.id).single(),
+  const [profile, { data: cycleProfile }, { data: logs }, { data: checkins }] = await Promise.all([
+    getProfile(user.id),
     supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
     supabase
       .from("cycle_logs")
@@ -39,14 +40,6 @@ export default async function CyclusPage() {
 
   const trackFlowEnabled = profile?.track_flow_intensity ?? false
 
-  const cycleEstimate = cycleProfile
-    ? estimateCycle(
-        cycleProfile.last_period_start,
-        cycleProfile.average_cycle_length,
-        cycleProfile.has_cycle,
-      )
-    : null
-
   const menstruationDates = new Set(
     (logs ?? []).filter((l) => l.menstruation).map((l) => l.date),
   )
@@ -61,6 +54,14 @@ export default async function CyclusPage() {
     })),
   )
   const recentHistory = [...history].reverse().slice(0, 6)
+
+  const cycleEstimate = cycleProfile
+    ? estimateCycle(
+        getEffectiveLastPeriodStart(cycleProfile.last_period_start, history),
+        cycleProfile.average_cycle_length,
+        cycleProfile.has_cycle,
+      )
+    : null
 
   const patterns = computeSymptomFrequency(checkins ?? [])
   const phaseInsights = computePhaseSymptomInsights(history, checkins ?? []).slice(0, 3)

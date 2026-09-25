@@ -57,7 +57,7 @@ export function MedicationList({ medications }: { medications: Medication[] }) {
             <div className="flex items-center gap-1 shrink-0">
               <Link
                 href={`/medicatie/${m.id}`}
-                className="h-9 w-9 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation"
+                className="h-9 w-9 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 aria-label="Bewerken"
               >
                 <Pencil className="h-4 w-4" strokeWidth={1.75} />
@@ -66,7 +66,7 @@ export function MedicationList({ medications }: { medications: Medication[] }) {
                 type="button"
                 onClick={() => setConfirmId(m.id)}
                 disabled={isPending}
-                className="h-9 w-9 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation"
+                className="h-9 w-9 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 aria-label="Verwijderen"
               >
                 <Trash2 className="h-4 w-4" strokeWidth={1.75} />

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Heart } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
+import { getProfile } from "@/lib/data/profile"
 import { getRecipeLibrary } from "@/lib/data/nutrition"
 import { pickTodaysRecipe } from "@/lib/recommendations/engine"
 import { RecipeLibrary } from "@/components/nutrition/recipe-library"
@@ -15,13 +16,9 @@ export default async function VoedingPage() {
 
   const today = new Date().toISOString().slice(0, 10)
 
-  const [recipes, { data: profile }, { data: checkin }] = await Promise.all([
+  const [recipes, profile, { data: checkin }] = await Promise.all([
     getRecipeLibrary(),
-    supabase
-      .from("profiles")
-      .select("nutrition_preferences, nutrition_style, nutrition_enabled")
-      .eq("id", user.id)
-      .single(),
+    getProfile(user.id),
     supabase.from("daily_checkins").select("need").eq("user_id", user.id).eq("date", today).maybeSingle(),
   ])
 

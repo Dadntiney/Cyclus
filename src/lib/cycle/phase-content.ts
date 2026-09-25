@@ -75,7 +75,7 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
     movement: {
       intensityLabel: "Rustig",
       focusText:
-        "Veel mensen hebben tijdens hun menstruatie minder energie. Zachtere vormen van bewegen zoals wandelen, mobiliteit of yoga passen dan vaak beter dan zware training — luister vooral naar je eigen lichaam.",
+        "Veel vrouwen hebben tijdens hun menstruatie minder energie. Zachtere vormen van bewegen zoals wandelen, mobiliteit of yoga passen dan vaak beter dan zware training — luister vooral naar je eigen lichaam.",
       preferredTypes: ["wandelen", "mobiliteit", "yoga", "pilates"],
       preferGentler: true,
     },
@@ -90,7 +90,7 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
   folliculair: {
     phase: "folliculair",
     label: "Folliculaire fase",
-    shortDescription: "Je energie bouwt zich voor veel mensen geleidelijk op in deze fase.",
+    shortDescription: "Je energie bouwt zich voor veel vrouwen geleidelijk op in deze fase.",
     colors: { bg: "bg-sage-soft", text: "text-sage-dark", dot: "bg-sage-dark" },
     nutrition: {
       focusLabel: "Verse, lichte voeding",
@@ -103,7 +103,7 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
     movement: {
       intensityLabel: "Gemiddeld tot actief",
       focusText:
-        "Veel mensen merken dat kracht en conditie in deze fase weer wat makkelijker gaan. Een goed moment om trainingsintensiteit rustig op te bouwen als je daar zin in hebt.",
+        "Veel vrouwen merken dat kracht en conditie in deze fase weer wat makkelijker gaan. Een goed moment om trainingsintensiteit rustig op te bouwen als je daar zin in hebt.",
       preferredTypes: ["krachttraining", "hardlopen", "fietsen"],
       preferGentler: false,
     },
@@ -118,7 +118,7 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
   ovulatie: {
     phase: "ovulatie",
     label: "Ovulatie",
-    shortDescription: "Voor veel mensen een piekmoment in energie rond het midden van de cyclus.",
+    shortDescription: "Voor veel vrouwen een piekmoment in energie rond het midden van de cyclus.",
     colors: { bg: "bg-info-soft", text: "text-info", dot: "bg-info" },
     nutrition: {
       focusLabel: "Kleurrijke, antioxidantrijke voeding",
@@ -131,7 +131,7 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
     movement: {
       intensityLabel: "Actief",
       focusText:
-        "Veel mensen voelen zich rond de ovulatie sterk en energiek. Een prima moment voor een pittigere training, als dat past bij hoe je je voelt.",
+        "Veel vrouwen voelen zich rond de ovulatie sterk en energiek. Een prima moment voor een pittigere training, als dat past bij hoe je je voelt.",
       preferredTypes: ["krachttraining", "hardlopen", "fietsen"],
       preferGentler: false,
     },
@@ -146,7 +146,7 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
   luteaal: {
     phase: "luteaal",
     label: "Luteale fase",
-    shortDescription: "Je lichaam bouwt voor veel mensen geleidelijk toe naar meer rust in deze fase.",
+    shortDescription: "Je lichaam bouwt voor veel vrouwen geleidelijk toe naar meer rust in deze fase.",
     colors: { bg: "bg-warning-soft", text: "text-warning", dot: "bg-warning" },
     nutrition: {
       focusLabel: "Magnesiumrijke, stabiliserende voeding",
@@ -159,7 +159,7 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
     movement: {
       intensityLabel: "Rustig tot gemiddeld",
       focusText:
-        "Richting het einde van deze fase ervaren veel mensen wat minder energie. Rustigere training met meer aandacht voor mobiliteit en herstel kan dan prettiger voelen.",
+        "Richting het einde van deze fase ervaren veel vrouwen wat minder energie. Rustigere training met meer aandacht voor mobiliteit en herstel kan dan prettiger voelen.",
       preferredTypes: ["mobiliteit", "yoga", "pilates", "wandelen"],
       preferGentler: true,
     },

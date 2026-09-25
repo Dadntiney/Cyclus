@@ -1,9 +1,11 @@
 import { subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
+import { computeCycleHistory, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
 import { buildRecommendation } from "@/lib/recommendations/engine"
 import { computeStreak } from "@/lib/data/streak"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
+import { getProfile } from "@/lib/data/profile"
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10)
@@ -13,18 +15,20 @@ export async function getVandaagData(userId: string) {
   const supabase = await createClient()
   const today = todayISO()
   const weekAgo = subDays(new Date(today), 6).toISOString().slice(0, 10)
+  const sixMonthsAgo = subDays(new Date(today), 200).toISOString().slice(0, 10)
 
   const [
-    { data: profile },
+    profile,
     { data: cycleProfile },
     { data: checkin },
     { data: workouts },
     { data: recipes },
     { data: recentCheckins },
     { data: weekSessions },
+    { data: cycleLogs },
     medicationItems,
   ] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", userId).single(),
+    getProfile(userId),
     supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
     supabase.from("daily_checkins").select("*").eq("user_id", userId).eq("date", today).maybeSingle(),
     supabase.from("workouts").select("id, title, type, duration, difficulty"),
@@ -42,15 +46,24 @@ export async function getVandaagData(userId: string) {
       .eq("completed", true)
       .gte("date", weekAgo)
       .lte("date", today),
+    supabase
+      .from("cycle_logs")
+      .select("date, menstruation, symptoms")
+      .eq("user_id", userId)
+      .gte("date", sixMonthsAgo)
+      .order("date", { ascending: true }),
     getMedicationDashboardItems(userId, today),
   ])
 
   const streak = computeStreak((recentCheckins ?? []).map((c) => c.date), today)
   const completedThisWeek = (weekSessions ?? []).length
 
+  const cycleHistory = computeCycleHistory(
+    (cycleLogs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+  )
   const cycleEstimate = cycleProfile
     ? estimateCycle(
-        cycleProfile.last_period_start,
+        getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory),
         cycleProfile.average_cycle_length,
         cycleProfile.has_cycle,
       )

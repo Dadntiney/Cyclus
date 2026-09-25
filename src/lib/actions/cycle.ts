@@ -31,6 +31,8 @@ export async function toggleMenstruationDay(date: string) {
   }
 
   revalidatePath("/cyclus")
+  revalidatePath("/cyclus/vandaag")
+  revalidatePath("/vandaag")
   return { success: true }
 }
 
@@ -74,29 +76,7 @@ export async function setCycleLogFlow(date: string, flow: (typeof FLOW_VALUES)[n
   }
 
   revalidatePath("/cyclus")
-  return { success: true }
-}
-
-export async function saveCycleProfileSettings(input: {
-  averageCycleLength: number | null
-  regularity: string | null
-}) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { error: "Je bent niet ingelogd." }
-
-  const { error } = await supabase
-    .from("cycle_profiles")
-    .update({
-      average_cycle_length: input.averageCycleLength,
-      regularity: input.regularity,
-    })
-    .eq("user_id", user.id)
-
-  if (error) return { error: "Opslaan is niet gelukt." }
-
-  revalidatePath("/cyclus")
+  revalidatePath("/cyclus/vandaag")
+  revalidatePath("/vandaag")
   return { success: true }
 }

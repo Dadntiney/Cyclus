@@ -32,9 +32,11 @@ function toggle(list: string[], value: string) {
 export function ProfileForm({
   profile,
   cycleProfile,
+  hasMedications,
 }: {
   profile: Profile
   cycleProfile: CycleProfile | null
+  hasMedications: boolean
 }) {
   const [name, setName] = useState(profile.name ?? "")
   const [age, setAge] = useState(profile.age ? String(profile.age) : "")
@@ -65,6 +67,8 @@ export function ProfileForm({
   const [trackFlowIntensity, setTrackFlowIntensity] = useState(profile.track_flow_intensity)
   const [motivation, setMotivation] = useState(profile.motivation ?? "")
   const [personalNote, setPersonalNote] = useState(profile.personal_note ?? "")
+  const [hasCycle, setHasCycle] = useState(cycleProfile?.has_cycle ?? true)
+  const [lastPeriodStart, setLastPeriodStart] = useState(cycleProfile?.last_period_start ?? "")
   const [averageCycleLength, setAverageCycleLength] = useState(
     cycleProfile?.average_cycle_length ? String(cycleProfile.average_cycle_length) : "",
   )
@@ -81,9 +85,19 @@ export function ProfileForm({
     profile.buddy_message_frequency ?? "",
   )
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle")
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   function handleSave() {
+    if (hasCycle && averageCycleLength) {
+      const len = Number(averageCycleLength)
+      if (!len || len < 15 || len > 60) {
+        setStatus("error")
+        setErrorMessage("Vul een gemiddelde cyclusduur tussen 15 en 60 dagen in.")
+        return
+      }
+    }
+
     startTransition(async () => {
       const result = await updateProfile({
         name: name.trim(),
@@ -104,8 +118,10 @@ export function ProfileForm({
         wellnessPreference: profile.wellness_preference,
         motivation: motivation.trim() || null,
         personalNote: personalNote.trim() || null,
-        averageCycleLength: averageCycleLength ? Number(averageCycleLength) : null,
-        regularity: regularity || null,
+        hasCycle,
+        lastPeriodStart: hasCycle ? lastPeriodStart || null : null,
+        averageCycleLength: hasCycle && averageCycleLength ? Number(averageCycleLength) : null,
+        regularity: hasCycle ? regularity || null : null,
         perimenopauseInfo: perimenopauseInfo.trim() || null,
         hormonalMedicationStatus: hormonalMedicationStatus || null,
         showMedicationOnDashboard,
@@ -113,6 +129,7 @@ export function ProfileForm({
         buddyMessageFrequency: buddyMessageFrequency || null,
       })
       setStatus(result.error ? "error" : "saved")
+      setErrorMessage(result.error ?? null)
     })
   }
 
@@ -120,7 +137,7 @@ export function ProfileForm({
     <div className="flex flex-col gap-5">
       <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
       <Card>
-        <p className="text-sm font-medium text-ink mb-3">Mijn gegevens</p>
+        <h2 className="font-display text-lg text-ink mb-3">Mijn gegevens</h2>
         <div className="flex flex-col gap-4">
           <div>
             <Label htmlFor="name">Naam</Label>
@@ -139,7 +156,7 @@ export function ProfileForm({
       </Card>
 
       <Card>
-        <p className="text-sm font-medium text-ink mb-1">Mijn motivatie</p>
+        <h2 className="font-display text-lg text-ink mb-1">Mijn motivatie</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Waarom doe jij dit voor jezelf? Dit lees jij later terug, voor niemand
           anders zichtbaar.
@@ -153,7 +170,7 @@ export function ProfileForm({
       </Card>
 
       <Card>
-        <p className="text-sm font-medium text-ink mb-1">Mijn lichaam</p>
+        <h2 className="font-display text-lg text-ink mb-1">Mijn lichaam</h2>
         <p className="text-xs text-ink-soft mb-3">Optioneel — helpt om je advies preciezer te maken.</p>
         <div className="flex flex-col gap-4">
           <div>
@@ -190,7 +207,7 @@ export function ProfileForm({
       </Card>
 
       <Card>
-        <p className="text-sm font-medium text-ink mb-3">Mijn doelen</p>
+        <h2 className="font-display text-lg text-ink mb-3">Mijn doelen</h2>
         <div className="flex flex-wrap gap-2">
           {GOAL_OPTIONS.map((opt) => (
             <Chip key={opt} selected={goals.includes(opt)} onClick={() => setGoals((g) => toggle(g, opt))}>
@@ -201,7 +218,7 @@ export function ProfileForm({
       </Card>
 
       <Card>
-        <p className="text-sm font-medium text-ink mb-3">Mijn aandachtspunten</p>
+        <h2 className="font-display text-lg text-ink mb-3">Mijn aandachtspunten</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Geen diagnoses — puur om je advies passender te maken.
         </p>
@@ -233,7 +250,7 @@ export function ProfileForm({
 
       <Card id="beweging">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-sm font-medium text-ink">Mijn beweging</p>
+          <h2 className="font-display text-lg text-ink">Mijn beweging</h2>
           <div className="flex gap-1.5">
             <Chip selected={movementEnabled} onClick={() => setMovementEnabled(true)}>
               Aan
@@ -278,7 +295,7 @@ export function ProfileForm({
 
       <Card id="voeding">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-sm font-medium text-ink">Mijn voeding</p>
+          <h2 className="font-display text-lg text-ink">Mijn voeding</h2>
           <div className="flex gap-1.5">
             <Chip selected={nutritionEnabled} onClick={() => setNutritionEnabled(true)}>
               Aan
@@ -326,7 +343,7 @@ export function ProfileForm({
       </Card>
 
       <Card id="medicatie">
-        <p className="text-sm font-medium text-ink mb-1">Medicatie & hormonen</p>
+        <h2 className="font-display text-lg text-ink mb-1">Medicatie & hormonen</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Gebruik je hormonale medicatie of medicatie die invloed kan hebben op je
           cyclus of hormonen?
@@ -344,7 +361,9 @@ export function ProfileForm({
           ))}
         </div>
 
-        {hormonalMedicationStatus && hormonalMedicationStatus !== "nee" && (
+        {((hormonalMedicationStatus && hormonalMedicationStatus !== "nee") ||
+          hasMedications ||
+          showMedicationOnDashboard) && (
           <>
             <p className="text-xs text-ink-soft bg-cream-soft rounded-2xl p-3 mb-4">
               Voer hier alleen het schema in dat je van je arts, apotheker of bijsluiter hebt
@@ -378,7 +397,7 @@ export function ProfileForm({
       </Card>
 
       <Card id="buddy">
-        <p className="text-sm font-medium text-ink mb-1">Mijn Buddy</p>
+        <h2 className="font-display text-lg text-ink mb-1">Mijn Buddy</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Kies één of meerdere stijlen die bij je passen — je berichten, tips en
           weetjes krijgen dan die toon. Kies niets voor de standaard, warme toon.
@@ -416,7 +435,7 @@ export function ProfileForm({
       </Card>
 
       <Card>
-        <p className="text-sm font-medium text-ink mb-1">Mijn notitie</p>
+        <h2 className="font-display text-lg text-ink mb-1">Mijn notitie</h2>
         <p className="text-xs text-ink-soft mb-3">
           Een plekje voor jezelf. Alleen jij ziet dit terug.
         </p>
@@ -428,71 +447,103 @@ export function ProfileForm({
         />
       </Card>
 
-      {cycleProfile?.has_cycle && (
-        <Card id="cyclus">
-          <p className="text-sm font-medium text-ink mb-3">Mijn cyclus</p>
-          <div className="flex flex-col gap-4">
-            <div>
-              <Label htmlFor="cycleLength">Gemiddelde cyclusduur (dagen)</Label>
-              <Input
-                id="cycleLength"
-                type="number"
-                value={averageCycleLength}
-                onChange={(e) => setAverageCycleLength(e.target.value)}
-              />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-ink mb-2">Regelmaat</p>
-              <div className="flex flex-wrap gap-2">
-                {REGULARITY_OPTIONS.map((opt) => (
-                  <Chip
-                    key={opt.value}
-                    selected={regularity === opt.value}
-                    onClick={() => setRegularity(opt.value)}
-                  >
-                    {opt.label}
-                  </Chip>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-ink">Bloedverlies bijhouden</p>
-                <div className="flex gap-1.5">
-                  <Chip selected={trackFlowIntensity} onClick={() => setTrackFlowIntensity(true)}>
-                    Aan
-                  </Chip>
-                  <Chip selected={!trackFlowIntensity} onClick={() => setTrackFlowIntensity(false)}>
-                    Uit
-                  </Chip>
-                </div>
-              </div>
-              <p className="text-xs text-ink-soft mt-1.5">
-                Optioneel. Zet dit aan om bij menstruatiedagen in je kalender ook de intensiteit
-                (geen/licht/gemiddeld/hevig) te kunnen registreren.
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="perimenopauseInfo">
-                Ervaar je veranderingen rondom de overgang? (optioneel)
-              </Label>
-              <Textarea
-                id="perimenopauseInfo"
-                rows={3}
-                placeholder="Vertel hier kort over wat je merkt, bijvoorbeeld onregelmatige cycli of opvliegers."
-                value={perimenopauseInfo}
-                onChange={(e) => setPerimenopauseInfo(e.target.value)}
-              />
-              <Link
-                href="/cyclus/overgang"
-                className="inline-block text-xs font-medium text-sage-dark mt-2"
-              >
-                Meer lezen over de overgang
-              </Link>
+      <Card id="cyclus">
+        <h2 className="font-display text-lg text-ink mb-3">Mijn cyclus</h2>
+        <div className="flex flex-col gap-4">
+          <div>
+            <p className="text-sm font-medium text-ink mb-2">Heb je momenteel een menstruatiecyclus?</p>
+            <div className="flex gap-2">
+              <Chip selected={hasCycle === true} onClick={() => setHasCycle(true)}>
+                Ja
+              </Chip>
+              <Chip selected={hasCycle === false} onClick={() => setHasCycle(false)}>
+                Nee
+              </Chip>
             </div>
           </div>
-        </Card>
-      )}
+
+          {hasCycle && (
+            <>
+              <div>
+                <Label htmlFor="lastPeriodStart">Wanneer begon je laatste menstruatie?</Label>
+                <Input
+                  id="lastPeriodStart"
+                  type="date"
+                  value={lastPeriodStart}
+                  max={new Date().toISOString().slice(0, 10)}
+                  onChange={(e) => setLastPeriodStart(e.target.value)}
+                />
+                <p className="text-xs text-ink-soft mt-1.5">
+                  Je cyclusdag past zich ook vanzelf aan zodra je een nieuwe menstruatie
+                  aanvinkt in de kalender bij Mijn cyclus.
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="cycleLength">Gemiddelde cyclusduur (dagen)</Label>
+                <Input
+                  id="cycleLength"
+                  type="number"
+                  inputMode="numeric"
+                  min={15}
+                  max={60}
+                  value={averageCycleLength}
+                  onChange={(e) => setAverageCycleLength(e.target.value)}
+                />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-ink mb-2">Regelmaat</p>
+                <div className="flex flex-wrap gap-2">
+                  {REGULARITY_OPTIONS.map((opt) => (
+                    <Chip
+                      key={opt.value}
+                      selected={regularity === opt.value}
+                      onClick={() => setRegularity(opt.value)}
+                    >
+                      {opt.label}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-ink">Bloedverlies bijhouden</p>
+                  <div className="flex gap-1.5">
+                    <Chip selected={trackFlowIntensity} onClick={() => setTrackFlowIntensity(true)}>
+                      Aan
+                    </Chip>
+                    <Chip selected={!trackFlowIntensity} onClick={() => setTrackFlowIntensity(false)}>
+                      Uit
+                    </Chip>
+                  </div>
+                </div>
+                <p className="text-xs text-ink-soft mt-1.5">
+                  Optioneel. Zet dit aan om bij menstruatiedagen in je kalender ook de intensiteit
+                  (geen/licht/gemiddeld/hevig) te kunnen registreren.
+                </p>
+              </div>
+            </>
+          )}
+
+          <div>
+            <Label htmlFor="perimenopauseInfo">
+              Ervaar je veranderingen rondom de overgang? (optioneel)
+            </Label>
+            <Textarea
+              id="perimenopauseInfo"
+              rows={3}
+              placeholder="Vertel hier kort over wat je merkt, bijvoorbeeld onregelmatige cycli of opvliegers."
+              value={perimenopauseInfo}
+              onChange={(e) => setPerimenopauseInfo(e.target.value)}
+            />
+            <Link
+              href="/cyclus/overgang"
+              className="inline-block text-xs font-medium text-sage-dark mt-2"
+            >
+              Meer lezen over de overgang
+            </Link>
+          </div>
+        </div>
+      </Card>
       </div>
 
       <div className="flex items-center gap-3">
@@ -500,7 +551,9 @@ export function ProfileForm({
           {isPending ? "Bezig met opslaan..." : "Opslaan"}
         </Button>
         {status === "saved" && <span className="text-sm text-sage-dark font-medium">Opgeslagen ✓</span>}
-        {status === "error" && <span className="text-sm text-danger">Er ging iets mis.</span>}
+        {status === "error" && (
+          <span className="text-sm text-danger">{errorMessage ?? "Er ging iets mis. Probeer het opnieuw."}</span>
+        )}
       </div>
     </div>
   )

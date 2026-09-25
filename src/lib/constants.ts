@@ -135,7 +135,7 @@ export const FLOW_OPTIONS = [
 // Optional reminders (see the `reminders` table).
 export const REMINDER_TYPE_OPTIONS = [
   { value: "dagelijkse_checkin", label: "Dagelijkse check-in", emoji: "📝", defaultLabel: "Vul je dagelijkse gegevens in" },
-  { value: "symptomen", label: "Symptomen registreren", emoji: "🩺", defaultLabel: "Klachten of symptomen bijhouden" },
+  { value: "symptomen", label: "Klachten registreren", emoji: "🩺", defaultLabel: "Klachten bijhouden" },
   { value: "beweging", label: "Bewegen", emoji: "🏃", defaultLabel: "Tijd om even te bewegen" },
   { value: "routine", label: "Persoonlijke routine", emoji: "🌿", defaultLabel: "Jouw persoonlijke routine" },
   { value: "anders", label: "Iets anders", emoji: "✨", defaultLabel: "" },

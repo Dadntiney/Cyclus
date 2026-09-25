@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation"
-import { Users, ChefHat, Snowflake, PackageOpen } from "lucide-react"
+import { after } from "next/server"
+import Link from "next/link"
+import { Users, ChefHat, Snowflake, PackageOpen, ChevronLeft } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getRecipeDetail, getFavoriteRecipeIds } from "@/lib/data/nutrition"
 import { ensureRecipeImage } from "@/lib/images/ensure-recipe-image"
@@ -34,7 +36,17 @@ export default async function RecipeDetailPage({
 
   if (!recipe) notFound()
 
-  const imageUrl = await ensureRecipeImage(recipe)
+  // Never block the page on image generation — show what's already saved
+  // (or the illustrated placeholder) immediately, and let a missing photo
+  // warm up in the background via after() so the *next* visit has it,
+  // instead of stalling this request for however long the AI/stock-photo
+  // provider takes.
+  const imageUrl = recipe.image_url
+  if (!imageUrl) {
+    after(() => {
+      void ensureRecipeImage(recipe)
+    })
+  }
 
   const ingredients = parseStringArray(recipe.ingredients)
   const optionalIngredients = parseStringArray(recipe.optional_ingredients)
@@ -46,6 +58,14 @@ export default async function RecipeDetailPage({
 
   return (
     <div className="w-full max-w-5xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+      <Link
+        href="/voeding"
+        className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-4 touch-manipulation"
+      >
+        <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
+        Voeding
+      </Link>
+
       <RecipeImage
         title={recipe.title}
         imageUrl={imageUrl}

@@ -82,7 +82,7 @@ export function WorkoutSession({
             {workout.duration} minuten · {exercises.length} oefeningen
           </p>
           {workout.description && <p className="text-sm text-ink-soft mb-5">{workout.description}</p>}
-          <Button onClick={() => setStarted(true)}>Workout starten</Button>
+          <Button onClick={() => setStarted(true)}>Training starten</Button>
         </Card>
 
         {exercises.length > 0 && (
@@ -146,7 +146,7 @@ export function WorkoutSession({
         </p>
         <p className="text-sm text-ink-soft mb-5">Je hebt vandaag weer iets voor jezelf gedaan.</p>
         <Button onClick={handleFinishWorkout} disabled={isPending}>
-          {isPending ? "Bezig..." : "Workout afronden"}
+          {isPending ? "Bezig..." : "Training afronden"}
         </Button>
       </Card>
     )

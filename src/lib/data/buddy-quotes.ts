@@ -56,7 +56,7 @@ const GENERAL_QUOTES: BuddyQuote[] = [
   { emoji: "💧", text: "Wist je dat je vochtbehoefte kan meebewegen met hoe actief je bent, niet alleen met het weer?", category: "weetje" },
   { emoji: "😴", text: "Wist je dat slaap een van de grootste hefbomen is voor hoe je je overdag voelt?", category: "weetje" },
   { emoji: "🩸", text: "Wist je dat de gemiddelde cyclusduur ergens tussen de 21 en 35 dagen ligt — en dat allebei heel normaal kan zijn?", category: "weetje" },
-  { emoji: "🍫", text: "Wist je dat trek in iets zoets niet per se een teken van 'zwak zijn' is, maar gewoon iets is wat veel mensen ervaren?", category: "weetje" },
+  { emoji: "🍫", text: "Wist je dat trek in iets zoets niet per se een teken van 'zwak zijn' is, maar gewoon iets is wat veel vrouwen ervaren?", category: "weetje" },
   { emoji: "🚶", text: "Wist je dat een korte wandeling al kan bijdragen aan een helderder hoofd?", category: "weetje" },
 
   { emoji: "🫠", text: "Sommige dagen voelt alles zwaarder dan het is. Dat is geen falen, dat is een dag.", category: "herkenbaar" },
@@ -141,7 +141,7 @@ const GENERAL_QUOTES: BuddyQuote[] = [
       humor: "Sommige dagen loop je op halve batterij. Geen crisis — gewoon spaarstand aan. 😄",
       spiritueel: "Niet elke dag hoeft licht te voelen. Ook de zwaardere dagen horen bij het ritme van het leven. ✨",
       motiverend: "Zware dag? Je hoeft niet alles te doen — één ding goed doen is ook genoeg. 💪",
-      informatief: "Schommelingen in energie door de dag of over je cyclus heen zijn bij veel mensen heel gewoon.",
+      informatief: "Schommelingen in energie door de dag of over je cyclus heen zijn bij veel vrouwen heel gewoon.",
       rustig: "Als het vandaag zwaar voelt, mag je het rustig aan doen. Er is geen haast. 🌿",
       direct: "Zware dag. Gebeurt. Ga er niet tegenin, ga ermee mee.",
       luchtig: "Vandaag een dag op halve kracht? Morgen draait de teller weer om. 😊",
@@ -230,11 +230,11 @@ const PHASE_QUOTES: BuddyQuote[] = [
   { emoji: "🧣", text: "Als je lichaam om zachtheid vraagt deze dagen, mag je daar gehoor aan geven.", category: "bemoedigend", phases: ["menstruatie"] },
 
   { emoji: "🌤️", text: "Merk je wat meer energie deze dagen? Een fijn moment om iets nieuws te proberen.", category: "motivatie", phases: ["folliculair"] },
-  { emoji: "📋", text: "Veel mensen plannen graag in deze fase — misschien is dit een goed moment om je week te bekijken.", category: "tip", phases: ["folliculair"] },
+  { emoji: "📋", text: "Veel vrouwen plannen graag in deze fase — misschien is dit een goed moment om je week te bekijken.", category: "tip", phases: ["folliculair"] },
   { emoji: "🌼", text: "Frisse energie, frisse start — volg het tempo dat bij jou past.", category: "positief", phases: ["folliculair"] },
 
   { emoji: "⚡", text: "Voelt dit als een sterke dag? Benut het waar het kan.", category: "motivatie", phases: ["ovulatie"] },
-  { emoji: "🎤", text: "Sommige mensen voelen zich rond nu socialer of zelfverzekerder — herken je dat?", category: "weetje", phases: ["ovulatie"] },
+  { emoji: "🎤", text: "Sommige vrouwen voelen zich rond nu socialer of zelfverzekerder — herken je dat?", category: "weetje", phases: ["ovulatie"] },
   { emoji: "🌟", text: "Een piekmoment voelen mag gevierd worden, groot of klein.", category: "positief", phases: ["ovulatie"] },
 
   { emoji: "🍂", text: "Als je merkt dat je lichaam iets rustiger aan wil, is dat de moeite waard om te volgen.", category: "herkenbaar", phases: ["luteaal"] },
@@ -252,7 +252,7 @@ const PHASE_QUOTES: BuddyQuote[] = [
       humor: "Menstruatiedagen: officieel geldige reden voor een extra dekentje en niks moeten. 😄",
       spiritueel: "Deze dagen nodigen uit tot naar binnen keren en loslaten — geef jezelf die ruimte. ✨",
       motiverend: "Ook op rustige dagen ben je in beweging — je lichaam werkt hard, ook als jij even pauzeert. 💪",
-      informatief: "Tijdens je menstruatie daalt je energieniveau bij veel mensen — dat hangt onder andere samen met veranderende hormoonspiegels.",
+      informatief: "Tijdens je menstruatie daalt je energieniveau bij veel vrouwen — dat hangt onder andere samen met veranderende hormoonspiegels.",
       rustig: "Laat jezelf deze dagen wat trager gaan. Dat past bij deze fase van je cyclus. 🌿",
       direct: "Menstruatie betekent vaak minder energie. Plan er niet tegenin, plan ermee mee.",
       luchtig: "Bankdag? Helemaal passend bij deze fase. 😊",

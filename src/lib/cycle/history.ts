@@ -99,6 +99,24 @@ export function computeCycleHistory(logs: CycleLogEntry[]): CycleHistoryEntry[] 
   })
 }
 
+/**
+ * Her calendar logging should always win over a stale onboarding-time
+ * anchor date: if she's logged a period more recently than the stored
+ * `last_period_start`, that becomes the effective anchor for phase
+ * estimation. Without this, marking periods in the calendar would never
+ * feed back into the cyclusdag/fase estimate shown everywhere else, and
+ * the two could silently contradict each other indefinitely.
+ */
+export function getEffectiveLastPeriodStart(
+  storedStart: string | null,
+  cycleHistory: Pick<CycleHistoryEntry, "start">[],
+): string | null {
+  const latestLoggedStart = cycleHistory.length ? cycleHistory[cycleHistory.length - 1].start : null
+  if (!latestLoggedStart) return storedStart
+  if (!storedStart) return latestLoggedStart
+  return latestLoggedStart > storedStart ? latestLoggedStart : storedStart
+}
+
 export function computeSymptomFrequency(
   logs: { symptoms: string[] }[],
 ): { symptom: string; count: number }[] {

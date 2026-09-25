@@ -1,10 +1,11 @@
 import Link from "next/link"
-import { ChevronLeft, Plus } from "lucide-react"
+import { ChevronLeft, Plus, Pill } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getMedications } from "@/lib/data/medications"
 import { MEDICATION_CATEGORY_OPTIONS } from "@/lib/constants"
 import { MedicationList } from "@/components/medication/medication-list"
 import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
 
 export default async function MedicatiePage() {
@@ -36,12 +37,18 @@ export default async function MedicatiePage() {
       </p>
 
       {medications.length === 0 ? (
-        <Card className="text-center py-8">
-          <p className="text-sm text-ink-soft mb-4">Je hebt nog niets toegevoegd.</p>
-          <Link href="/medicatie/nieuw" className={buttonVariants()}>
-            <Plus className="h-4 w-4" strokeWidth={2} />
-            Item toevoegen
-          </Link>
+        <Card>
+          <EmptyState
+            icon={<Pill className="h-6 w-6" strokeWidth={1.5} />}
+            title="Je hebt nog niets toegevoegd"
+            description="Voeg je eigen voorgeschreven schema toe wanneer jij dat wilt."
+            action={
+              <Link href="/medicatie/nieuw" className={buttonVariants()}>
+                <Plus className="h-4 w-4" strokeWidth={2} />
+                Toevoegen
+              </Link>
+            }
+          />
         </Card>
       ) : (
         <div className="flex flex-col gap-6">

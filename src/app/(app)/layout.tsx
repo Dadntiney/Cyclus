@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { createClient, getAuthedUser } from "@/lib/supabase/server"
+import { getAuthedUser } from "@/lib/supabase/server"
 import { Sidebar } from "@/components/nav/sidebar"
 import { BottomNav } from "@/components/nav/bottom-nav"
 import { MobileHeader } from "@/components/nav/mobile-header"
@@ -7,21 +7,17 @@ import { PageTransition } from "@/components/nav/page-transition"
 import { ReminderToastHost } from "@/components/reminders/reminder-toast-host"
 import { getReminders } from "@/lib/data/reminders"
 import { getMedicationReminderSources } from "@/lib/data/medications"
+import { getProfile } from "@/lib/data/profile"
 import type { MedicationReminderLike } from "@/lib/client/medication-reminder-scheduler"
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
   const user = await getAuthedUser()
 
   if (!user) {
     redirect("/login")
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("name, avatar_url, onboarding_completed, buddy_styles")
-    .eq("id", user.id)
-    .single()
+  const profile = await getProfile(user.id)
 
   if (!profile?.onboarding_completed) {
     redirect("/onboarding")

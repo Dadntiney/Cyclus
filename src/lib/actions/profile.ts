@@ -24,6 +24,8 @@ export interface UpdateProfileInput {
   wellnessPreference: string | null
   motivation: string | null
   personalNote: string | null
+  hasCycle: boolean
+  lastPeriodStart: string | null
   averageCycleLength: number | null
   regularity: string | null
   perimenopauseInfo: string | null
@@ -70,9 +72,15 @@ export async function updateProfile(input: UpdateProfileInput) {
 
   if (profileError) return { error: "Opslaan van je profiel is niet gelukt." }
 
+  if (input.averageCycleLength !== null && (input.averageCycleLength < 15 || input.averageCycleLength > 60)) {
+    return { error: "Vul een gemiddelde cyclusduur tussen 15 en 60 dagen in." }
+  }
+
   const { error: cycleError } = await supabase
     .from("cycle_profiles")
     .update({
+      has_cycle: input.hasCycle,
+      last_period_start: input.lastPeriodStart,
       average_cycle_length: input.averageCycleLength,
       regularity: input.regularity,
       perimenopause_information: input.perimenopauseInfo,
@@ -85,11 +93,14 @@ export async function updateProfile(input: UpdateProfileInput) {
   revalidatePath("/vandaag")
   revalidatePath("/training")
   revalidatePath("/voeding")
+  revalidatePath("/voeding/favorieten")
   revalidatePath("/cyclus")
   revalidatePath("/cyclus/vandaag")
   revalidatePath("/cyclus/overgang")
   revalidatePath("/deze-week")
+  revalidatePath("/deze-week/boodschappen")
   revalidatePath("/medicatie")
+  revalidatePath("/buddy")
   return { success: true }
 }
 

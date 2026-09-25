@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation"
 import { Bell, Plus, Trash2, X } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
-import { Input, Label } from "@/components/ui/input"
+import { Input, Label, FieldError } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/ui/empty-state"
 import { REMINDER_TYPE_OPTIONS, REMINDER_DAY_OPTIONS } from "@/lib/constants"
 import { createReminder, updateReminder, deleteReminder, toggleReminder } from "@/lib/actions/reminders"
 import type { ReminderInput } from "@/lib/validations/reminder"
@@ -49,6 +50,7 @@ export function RemindersSection({ initialReminders }: { initialReminders: Remin
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState<ReminderInput>(emptyDraft())
   const [error, setError] = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   function startAdd() {
@@ -99,6 +101,7 @@ export function RemindersSection({ initialReminders }: { initialReminders: Remin
   }
 
   function handleDelete(id: string) {
+    setConfirmDeleteId(null)
     setReminders((prev) => prev.filter((r) => r.id !== id))
     startTransition(async () => {
       await deleteReminder(id)
@@ -128,7 +131,7 @@ export function RemindersSection({ initialReminders }: { initialReminders: Remin
           <button
             type="button"
             onClick={startAdd}
-            className="inline-flex items-center gap-1 text-xs font-medium text-sage-dark touch-manipulation"
+            className="inline-flex items-center gap-1 text-xs font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2} />
             Toevoegen
@@ -147,40 +150,62 @@ export function RemindersSection({ initialReminders }: { initialReminders: Remin
             return (
               <div
                 key={reminder.id}
-                className="flex items-center gap-3 rounded-2xl border border-line px-3.5 py-3"
+                className="flex flex-col gap-2 rounded-2xl border border-line px-3.5 py-3"
               >
-                <span className="text-lg shrink-0" aria-hidden>
-                  {typeOption?.emoji ?? "🔔"}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => startEdit(reminder)}
-                  className="min-w-0 flex-1 text-left touch-manipulation"
-                >
-                  <p className="text-sm font-medium text-ink truncate">
-                    {reminder.label?.trim() || typeOption?.label || "Herinnering"}
-                  </p>
-                  <p className="text-xs text-ink-soft mt-0.5">
-                    {formatTime(reminder.time)} · {daysLabel(reminder.days)}
-                  </p>
-                </button>
-                <Chip
-                  selected={reminder.enabled}
-                  onClick={() => handleToggle(reminder)}
-                  disabled={isPending}
-                  className="shrink-0 min-h-9 px-3 py-1.5 text-xs"
-                >
-                  {reminder.enabled ? "Aan" : "Uit"}
-                </Chip>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(reminder.id)}
-                  disabled={isPending}
-                  className="shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation"
-                  aria-label="Herinnering verwijderen"
-                >
-                  <Trash2 className="h-4 w-4" strokeWidth={1.75} />
-                </button>
+                <div className="flex items-center gap-3">
+                  <span className="text-lg shrink-0" aria-hidden>
+                    {typeOption?.emoji ?? "🔔"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => startEdit(reminder)}
+                    className="min-w-0 flex-1 text-left touch-manipulation"
+                  >
+                    <p className="text-sm font-medium text-ink truncate">
+                      {reminder.label?.trim() || typeOption?.label || "Herinnering"}
+                    </p>
+                    <p className="text-xs text-ink-soft mt-0.5">
+                      {formatTime(reminder.time)} · {daysLabel(reminder.days)}
+                    </p>
+                  </button>
+                  <Chip
+                    selected={reminder.enabled}
+                    onClick={() => handleToggle(reminder)}
+                    disabled={isPending}
+                    className="shrink-0 min-h-9 px-3 py-1.5 text-xs"
+                  >
+                    {reminder.enabled ? "Aan" : "Uit"}
+                  </Chip>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDeleteId(reminder.id)}
+                    disabled={isPending}
+                    className="shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                    aria-label="Herinnering verwijderen"
+                  >
+                    <Trash2 className="h-4 w-4" strokeWidth={1.75} />
+                  </button>
+                </div>
+
+                {confirmDeleteId === reminder.id && (
+                  <div className="flex items-center gap-2 rounded-xl bg-cream-soft p-2.5">
+                    <p className="text-xs text-ink-soft flex-1">Deze herinnering verwijderen?</p>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(reminder.id)}
+                      className="text-xs font-medium text-danger touch-manipulation"
+                    >
+                      Verwijderen
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDeleteId(null)}
+                      className="text-xs font-medium text-ink-soft touch-manipulation"
+                    >
+                      Annuleren
+                    </button>
+                  </div>
+                )}
               </div>
             )
           })}
@@ -188,7 +213,11 @@ export function RemindersSection({ initialReminders }: { initialReminders: Remin
       )}
 
       {!reminders.length && !showForm && (
-        <p className="text-sm text-ink-soft">Nog geen herinneringen ingesteld.</p>
+        <EmptyState
+          icon={<Bell className="h-6 w-6" strokeWidth={1.5} />}
+          title="Nog geen herinneringen ingesteld"
+          description="Voeg er gerust een toe wanneer jij dat wilt — helemaal optioneel."
+        />
       )}
 
       {showForm && (
@@ -200,7 +229,7 @@ export function RemindersSection({ initialReminders }: { initialReminders: Remin
             <button
               type="button"
               onClick={cancelForm}
-              className="h-7 w-7 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation"
+              className="h-7 w-7 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               aria-label="Sluiten"
             >
               <X className="h-4 w-4" />
@@ -261,7 +290,7 @@ export function RemindersSection({ initialReminders }: { initialReminders: Remin
             />
           </div>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          <FieldError>{error}</FieldError>
 
           <div className="flex gap-2">
             <Button onClick={handleSave} disabled={isPending}>

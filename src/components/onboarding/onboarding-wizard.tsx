@@ -260,7 +260,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
           <OptionalModuleToggleStep
             emoji="🏃"
             title="Wil je beweging gebruiken?"
-            subtitle="Sommige mensen willen liever geen trainingsadvies zien. Helemaal jouw keuze — dit kun je later altijd aanpassen in je profiel."
+            subtitle="Sommige vrouwen willen liever geen trainingsadvies zien. Helemaal jouw keuze — dit kun je later altijd aanpassen in je profiel."
             value={data.movementEnabled}
             onChange={(movementEnabled) =>
               setData((d) => ({ ...d, movementEnabled, trainingPreferences: movementEnabled ? d.trainingPreferences : [] }))

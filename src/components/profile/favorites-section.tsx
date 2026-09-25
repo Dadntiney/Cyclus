@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Heart } from "lucide-react"
 import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
 import type { RecipeCardData } from "@/lib/data/nutrition"
 
 type Recipe = RecipeCardData
@@ -19,10 +20,11 @@ export function FavoritesSection({
     <Card>
       <h2 className="font-display text-lg text-ink mb-3">Mijn favorieten</h2>
       {isEmpty ? (
-        <p className="text-sm text-ink-soft">
-          Nog geen favorieten opgeslagen. Tik op het hartje bij een recept of oefening die bij je
-          past — dan vind je ze hier terug.
-        </p>
+        <EmptyState
+          icon={<Heart className="h-6 w-6" strokeWidth={1.5} />}
+          title="Nog geen favorieten opgeslagen"
+          description="Tik op het hartje bij een recept of oefening die bij je past — dan vind je ze hier terug."
+        />
       ) : (
         <div className="flex flex-col gap-4">
           {favoriteRecipes.length > 0 && (

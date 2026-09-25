@@ -76,7 +76,7 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
           </p>
         </>
       ) : (
-        <p className="text-sm text-ink-soft">Geen workout gevonden voor deze focus.</p>
+        <p className="text-sm text-ink-soft">Geen training gevonden voor deze focus.</p>
       )}
 
       {!skipped && (

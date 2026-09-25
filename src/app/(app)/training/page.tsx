@@ -3,6 +3,7 @@ import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 import { Check, Moon, Settings2 } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
+import { getProfile } from "@/lib/data/profile"
 import { getWorkoutLibrary, getWeekSessions } from "@/lib/data/training"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
 import { pickTodaysWorkout } from "@/lib/recommendations/engine"
@@ -27,14 +28,10 @@ export default async function TrainingPage() {
 
   const todayISO = format(new Date(), "yyyy-MM-dd")
 
-  const [workouts, week, { data: profile }, { data: checkin }] = await Promise.all([
+  const [workouts, week, profile, { data: checkin }] = await Promise.all([
     getWorkoutLibrary(),
     getWeekSessions(user.id),
-    supabase
-      .from("profiles")
-      .select("training_frequency, health_conditions, movement_limitations, training_preferences, movement_enabled")
-      .eq("id", user.id)
-      .single(),
+    getProfile(user.id),
     supabase
       .from("daily_checkins")
       .select("energy, mood, sleep, stress, symptoms, need")
@@ -189,7 +186,7 @@ export default async function TrainingPage() {
         <div className="mt-6 lg:mt-0">
           <div className="flex items-baseline justify-between mb-3">
             <h2 className="font-display text-lg text-ink">
-              {rawPreferences.length ? "Workouts voor jou" : "Alle workouts"}
+              {rawPreferences.length ? "Trainingen voor jou" : "Alle trainingen"}
             </h2>
             <Link
               href="/profiel#beweging"

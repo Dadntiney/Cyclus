@@ -17,7 +17,7 @@ export function ProgressCard({
 
   return (
     <Card>
-      <h2 className="font-display text-lg text-ink mb-3">Jouw voortgang</h2>
+      <h2 className="font-display text-lg text-ink mb-3">Mijn voortgang</h2>
       {movementEnabled && (
         <>
           <div className="flex items-center justify-between mb-1.5">

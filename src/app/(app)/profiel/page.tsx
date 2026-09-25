@@ -14,8 +14,10 @@ export default async function ProfielPage() {
   const user = await getAuthedUser()
   if (!user) return null
 
-  const [{ profile, cycleProfile, stats, favoriteRecipes, favoriteExercises, milestones }, reminders] =
-    await Promise.all([getProfileOverview(user.id), getReminders(user.id)])
+  const [
+    { profile, cycleProfile, hasMedications, stats, favoriteRecipes, favoriteExercises, milestones },
+    reminders,
+  ] = await Promise.all([getProfileOverview(user.id), getReminders(user.id)])
 
   if (!profile) return null
 
@@ -30,7 +32,7 @@ export default async function ProfielPage() {
 
       <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
         <div className="lg:col-span-2 flex flex-col gap-5">
-          <ProfileForm profile={profile} cycleProfile={cycleProfile} />
+          <ProfileForm profile={profile} cycleProfile={cycleProfile} hasMedications={hasMedications} />
           <RemindersSection initialReminders={reminders} />
         </div>
 

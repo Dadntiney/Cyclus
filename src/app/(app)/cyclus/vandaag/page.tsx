@@ -2,8 +2,9 @@ import Link from "next/link"
 import { format, subDays } from "date-fns"
 import { ChevronLeft } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
+import { getProfile } from "@/lib/data/profile"
 import { estimateCycle } from "@/lib/cycle/estimate"
-import { computeCycleHistory, computeSymptomFrequency } from "@/lib/cycle/history"
+import { computeCycleHistory, computeSymptomFrequency, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
 import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { buildCyclusdagView } from "@/lib/cycle/cyclusdag"
 import { Card } from "@/components/ui/card"
@@ -21,12 +22,8 @@ export default async function CyclusdagPage() {
 
   const sixMonthsAgo = format(subDays(new Date(), 200), "yyyy-MM-dd")
 
-  const [{ data: profile }, { data: cycleProfile }, { data: checkins }, { data: logs }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("movement_enabled, training_preferences, show_medication_on_dashboard, buddy_styles, buddy_message_frequency")
-      .eq("id", user.id)
-      .single(),
+  const [profile, { data: cycleProfile }, { data: checkins }, { data: logs }] = await Promise.all([
+    getProfile(user.id),
     supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
     supabase
       .from("daily_checkins")
@@ -65,8 +62,11 @@ export default async function CyclusdagPage() {
     )
   }
 
+  const cycleHistory = computeCycleHistory(
+    (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+  )
   const cycleEstimate = estimateCycle(
-    cycleProfile.last_period_start,
+    getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory),
     cycleProfile.average_cycle_length,
     cycleProfile.has_cycle,
   )
@@ -90,10 +90,6 @@ export default async function CyclusdagPage() {
   const showMedication = Boolean(profile?.show_medication_on_dashboard)
   const medicationItems = showMedication ? await getMedicationDashboardItems(user.id, today) : []
   const patterns = computeSymptomFrequency(checkins ?? [])
-
-  const cycleHistory = computeCycleHistory(
-    (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
-  )
   const phaseInsights = computePhaseSymptomInsights(cycleHistory, checkins ?? [])
   const phaseInsight = getTopPhaseSymptomInsight(phaseInsights, cycleEstimate.phase)
   const preferredStyles = (profile?.buddy_styles ?? []) as BuddyStyle[]

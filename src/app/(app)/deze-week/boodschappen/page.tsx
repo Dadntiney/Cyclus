@@ -1,9 +1,11 @@
 import Link from "next/link"
-import { startOfWeek } from "date-fns"
+import { startOfWeek, subDays } from "date-fns"
 import { ChevronLeft } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
+import { getProfile } from "@/lib/data/profile"
 import { buildWeekPlan, type WeekPlanRecipe } from "@/lib/recommendations/week-plan"
 import { buildGroceryList } from "@/lib/nutrition/grocery-list"
+import { computeCycleHistory, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
 import { GroceryList } from "@/components/week/grocery-list"
 import { Card } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
@@ -16,19 +18,21 @@ export default async function BoodschappenPage() {
   if (!user) return null
 
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
+  const sixMonthsAgo = subDays(new Date(), 200).toISOString().slice(0, 10)
 
-  const [{ data: profile }, { data: cycleProfile }, { data: workouts }, { data: recipes }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select(
-        "training_frequency, health_conditions, movement_limitations, training_preferences, nutrition_preferences, nutrition_style, name, nutrition_enabled",
-      )
-      .eq("id", user.id)
-      .single(),
-    supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
-    supabase.from("workouts").select("id, title, type, duration, difficulty"),
-    supabase.from("recipes").select(RECIPE_COLUMNS),
-  ])
+  const [profile, { data: cycleProfile }, { data: workouts }, { data: recipes }, { data: cycleLogs }] =
+    await Promise.all([
+      getProfile(user.id),
+      supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase.from("workouts").select("id, title, type, duration, difficulty"),
+      supabase.from("recipes").select(RECIPE_COLUMNS),
+      supabase
+        .from("cycle_logs")
+        .select("date, menstruation, symptoms")
+        .eq("user_id", user.id)
+        .gte("date", sixMonthsAgo)
+        .order("date", { ascending: true }),
+    ])
 
   if (!profile) return null
 
@@ -56,11 +60,18 @@ export default async function BoodschappenPage() {
     )
   }
 
+  const cycleHistory = computeCycleHistory(
+    (cycleLogs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+  )
+  const effectiveCycleProfile = cycleProfile
+    ? { ...cycleProfile, last_period_start: getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory) }
+    : null
+
   const days = buildWeekPlan({
     weekStart,
     today: new Date(),
     profile,
-    cycleProfile: cycleProfile ?? null,
+    cycleProfile: effectiveCycleProfile,
     workouts: workouts ?? [],
     recipes: recipes ?? [],
     seed: user.id,

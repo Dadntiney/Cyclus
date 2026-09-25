@@ -1,7 +1,9 @@
-import { startOfWeek } from "date-fns"
+import { startOfWeek, subDays } from "date-fns"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
+import { getProfile } from "@/lib/data/profile"
 import { buildWeekPlan, type WeekPlanRecipe, type MealSlot } from "@/lib/recommendations/week-plan"
 import { buildGroceryList } from "@/lib/nutrition/grocery-list"
+import { computeCycleHistory, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
 import { WeekView } from "@/components/week/week-view"
 
 const RECIPE_COLUMNS = "id, title, category, preparation_time, ingredients, nutrition_information"
@@ -13,27 +15,36 @@ export default async function DezeWeekPage() {
   if (!user) return null
 
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
+  const sixMonthsAgo = subDays(new Date(), 200).toISOString().slice(0, 10)
 
-  const [{ data: profile }, { data: cycleProfile }, { data: workouts }, { data: recipes }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select(
-        "training_frequency, health_conditions, movement_limitations, training_preferences, nutrition_preferences, nutrition_style, name, movement_enabled, nutrition_enabled",
-      )
-      .eq("id", user.id)
-      .single(),
-    supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
-    supabase.from("workouts").select(WORKOUT_COLUMNS),
-    supabase.from("recipes").select(RECIPE_COLUMNS),
-  ])
+  const [profile, { data: cycleProfile }, { data: workouts }, { data: recipes }, { data: cycleLogs }] =
+    await Promise.all([
+      getProfile(user.id),
+      supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase.from("workouts").select(WORKOUT_COLUMNS),
+      supabase.from("recipes").select(RECIPE_COLUMNS),
+      supabase
+        .from("cycle_logs")
+        .select("date, menstruation, symptoms")
+        .eq("user_id", user.id)
+        .gte("date", sixMonthsAgo)
+        .order("date", { ascending: true }),
+    ])
 
   if (!profile) return null
+
+  const cycleHistory = computeCycleHistory(
+    (cycleLogs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+  )
+  const effectiveCycleProfile = cycleProfile
+    ? { ...cycleProfile, last_period_start: getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory) }
+    : null
 
   const days = buildWeekPlan({
     weekStart,
     today: new Date(),
     profile,
-    cycleProfile: cycleProfile ?? null,
+    cycleProfile: effectiveCycleProfile,
     workouts: workouts ?? [],
     recipes: recipes ?? [],
     seed: user.id,

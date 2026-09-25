@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
-import { computeCycleHistory } from "@/lib/cycle/history"
+import { computeCycleHistory, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
 import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { startOfWeek, subDays } from "date-fns"
 
@@ -54,9 +54,12 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
   if (profile?.wellness_preference) lines.push(`Voedings-/bewegingsstijl: ${profile.wellness_preference}`)
   if (profile?.buddy_styles?.length) lines.push(`Buddy-stijl (toon-voorkeur): ${profile.buddy_styles.join(", ")}`)
 
+  const cycleHistory = computeCycleHistory(
+    (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+  )
   const cycleEstimate = cycleProfile
     ? estimateCycle(
-        cycleProfile.last_period_start,
+        getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory),
         cycleProfile.average_cycle_length,
         cycleProfile.has_cycle,
       )
@@ -64,9 +67,6 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
   if (cycleEstimate) {
     lines.push(`Cyclusdag ${cycleEstimate.cycleDay} (${cycleEstimate.phaseLabel}, schatting)`)
 
-    const cycleHistory = computeCycleHistory(
-      (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
-    )
     const insight = getTopPhaseSymptomInsight(
       computePhaseSymptomInsights(cycleHistory, recentCheckins ?? []),
       cycleEstimate.phase,
