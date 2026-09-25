@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { Input, Label, Textarea } from "@/components/ui/input"
 import { Chip } from "@/components/ui/chip"
@@ -65,6 +66,7 @@ export function ProfileForm({
     cycleProfile?.average_cycle_length ? String(cycleProfile.average_cycle_length) : "",
   )
   const [regularity, setRegularity] = useState(cycleProfile?.regularity ?? "")
+  const [perimenopauseInfo, setPerimenopauseInfo] = useState(cycleProfile?.perimenopause_information ?? "")
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle")
   const [isPending, startTransition] = useTransition()
 
@@ -91,6 +93,7 @@ export function ProfileForm({
         personalNote: personalNote.trim() || null,
         averageCycleLength: averageCycleLength ? Number(averageCycleLength) : null,
         regularity: regularity || null,
+        perimenopauseInfo: perimenopauseInfo.trim() || null,
       })
       setStatus(result.error ? "error" : "saved")
     })
@@ -319,7 +322,7 @@ export function ProfileForm({
       </Card>
 
       {cycleProfile?.has_cycle && (
-        <Card>
+        <Card id="cyclus">
           <p className="text-sm font-medium text-ink mb-3">Mijn cyclus</p>
           <div className="flex flex-col gap-4">
             <div>
@@ -361,6 +364,24 @@ export function ProfileForm({
                 Optioneel. Zet dit aan om bij menstruatiedagen in je kalender ook de intensiteit
                 (geen/licht/gemiddeld/hevig) te kunnen registreren.
               </p>
+            </div>
+            <div>
+              <Label htmlFor="perimenopauseInfo">
+                Ervaar je veranderingen rondom de overgang? (optioneel)
+              </Label>
+              <Textarea
+                id="perimenopauseInfo"
+                rows={3}
+                placeholder="Vertel hier kort over wat je merkt, bijvoorbeeld onregelmatige cycli of opvliegers."
+                value={perimenopauseInfo}
+                onChange={(e) => setPerimenopauseInfo(e.target.value)}
+              />
+              <Link
+                href="/cyclus/overgang"
+                className="inline-block text-xs font-medium text-sage-dark mt-2"
+              >
+                Meer lezen over de overgang
+              </Link>
             </div>
           </div>
         </Card>

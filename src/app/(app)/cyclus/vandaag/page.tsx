@@ -3,7 +3,8 @@ import { format, subDays } from "date-fns"
 import { ChevronLeft } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
-import { computeSymptomFrequency } from "@/lib/cycle/history"
+import { computeCycleHistory, computeSymptomFrequency } from "@/lib/cycle/history"
+import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { buildCyclusdagView } from "@/lib/cycle/cyclusdag"
 import { Card } from "@/components/ui/card"
 import { Expandable } from "@/components/ui/expandable"
@@ -17,14 +18,20 @@ export default async function CyclusdagPage() {
 
   const sixMonthsAgo = format(subDays(new Date(), 200), "yyyy-MM-dd")
 
-  const [{ data: profile }, { data: cycleProfile }, { data: checkins }] = await Promise.all([
+  const [{ data: profile }, { data: cycleProfile }, { data: checkins }, { data: logs }] = await Promise.all([
     supabase.from("profiles").select("movement_enabled, training_preferences").eq("id", user.id).single(),
     supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
     supabase
       .from("daily_checkins")
-      .select("symptoms")
+      .select("date, symptoms")
       .eq("user_id", user.id)
       .gte("date", sixMonthsAgo),
+    supabase
+      .from("cycle_logs")
+      .select("date, menstruation, symptoms")
+      .eq("user_id", user.id)
+      .gte("date", sixMonthsAgo)
+      .order("date", { ascending: true }),
   ])
 
   const backLink = (
@@ -75,12 +82,19 @@ export default async function CyclusdagPage() {
   const today = format(new Date(), "yyyy-MM-dd")
   const patterns = computeSymptomFrequency(checkins ?? [])
 
+  const cycleHistory = computeCycleHistory(
+    (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+  )
+  const phaseInsights = computePhaseSymptomInsights(cycleHistory, checkins ?? [])
+  const phaseInsight = getTopPhaseSymptomInsight(phaseInsights, cycleEstimate.phase)
+
   const view = buildCyclusdagView({
     cycleEstimate,
     seed: `${user.id}-${today}`,
     movementEnabled: profile?.movement_enabled ?? true,
     trainingPreferences: profile?.training_preferences ?? [],
     topSymptom: patterns[0]?.symptom ?? null,
+    phaseInsight,
   })
 
   return (

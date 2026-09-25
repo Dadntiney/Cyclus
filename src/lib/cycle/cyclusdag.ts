@@ -2,6 +2,7 @@ import type { CycleEstimate, CyclePhase } from "@/lib/cycle/estimate"
 import { getPhaseKnowledge, type BodyChangeItem, type PhaseKnowledge } from "@/lib/cycle/phase-knowledge"
 import { getPhaseContent, type PhaseColorTokens } from "@/lib/cycle/phase-content"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
+import { formatPhaseSymptomInsight, type PhaseSymptomInsight } from "@/lib/cycle/patterns"
 
 /**
  * Composes the Cyclusdag detail page's content from three sources: the
@@ -77,6 +78,15 @@ export interface BuildCyclusdagViewInput {
   trainingPreferences: string[]
   /** Her most frequently logged symptom recently, if any — see computeSymptomFrequency. */
   topSymptom: string | null
+  /**
+   * The strongest phase-specific pattern for *today's* phase, if her
+   * history is rich enough to support one — see computePhaseSymptomInsights.
+   * Preferred over `topSymptom` when present: "vaker moe in de luteale
+   * fase, je laatste 3 cycli" is a stronger, more personal claim than "je
+   * logt vaak moeheid" — this is the app getting more personal as she logs
+   * more data, per the product vision.
+   */
+  phaseInsight: PhaseSymptomInsight | null
 }
 
 function buildPersonalizedMovementTip(
@@ -99,7 +109,7 @@ function buildSymptomNote(topSymptom: string | null, changes: BodyChangeItem[]):
 }
 
 export function buildCyclusdagView(input: BuildCyclusdagViewInput): CyclusdagView {
-  const { cycleEstimate, seed, movementEnabled, trainingPreferences, topSymptom } = input
+  const { cycleEstimate, seed, movementEnabled, trainingPreferences, topSymptom, phaseInsight } = input
   const { phase, phaseLabel, cycleDay } = cycleEstimate
 
   const knowledge = getPhaseKnowledge(phase)
@@ -144,6 +154,8 @@ export function buildCyclusdagView(input: BuildCyclusdagViewInput): CyclusdagVie
     moreChanges,
     funFact,
     buddyMoment,
-    symptomNote: buildSymptomNote(topSymptom, knowledge.changes),
+    symptomNote: phaseInsight
+      ? formatPhaseSymptomInsight(phaseInsight, phaseLabel)
+      : buildSymptomNote(topSymptom, knowledge.changes),
   }
 }

@@ -26,6 +26,7 @@ export interface UpdateProfileInput {
   personalNote: string | null
   averageCycleLength: number | null
   regularity: string | null
+  perimenopauseInfo: string | null
 }
 
 export async function updateProfile(input: UpdateProfileInput) {
@@ -66,6 +67,7 @@ export async function updateProfile(input: UpdateProfileInput) {
     .update({
       average_cycle_length: input.averageCycleLength,
       regularity: input.regularity,
+      perimenopause_information: input.perimenopauseInfo,
     })
     .eq("user_id", user.id)
 
@@ -76,6 +78,8 @@ export async function updateProfile(input: UpdateProfileInput) {
   revalidatePath("/training")
   revalidatePath("/voeding")
   revalidatePath("/cyclus")
+  revalidatePath("/cyclus/vandaag")
+  revalidatePath("/cyclus/overgang")
   revalidatePath("/deze-week")
   return { success: true }
 }
