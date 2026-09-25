@@ -56,6 +56,9 @@ export function ProfileForm({
   const [trainingFrequency, setTrainingFrequency] = useState<number | null>(
     profile.training_frequency,
   )
+  const [movementEnabled, setMovementEnabled] = useState(profile.movement_enabled)
+  const [nutritionEnabled, setNutritionEnabled] = useState(profile.nutrition_enabled)
+  const [trackFlowIntensity, setTrackFlowIntensity] = useState(profile.track_flow_intensity)
   const [motivation, setMotivation] = useState(profile.motivation ?? "")
   const [personalNote, setPersonalNote] = useState(profile.personal_note ?? "")
   const [averageCycleLength, setAverageCycleLength] = useState(
@@ -76,10 +79,13 @@ export function ProfileForm({
         goals,
         healthConditions,
         movementLimitations,
-        trainingPreferences,
+        movementEnabled,
+        trainingPreferences: movementEnabled ? trainingPreferences : [],
+        nutritionEnabled,
         nutritionStyle,
-        nutritionPreferences,
-        trainingFrequency,
+        nutritionPreferences: nutritionEnabled ? nutritionPreferences : [],
+        trainingFrequency: movementEnabled ? trainingFrequency : null,
+        trackFlowIntensity,
         wellnessPreference: profile.wellness_preference,
         motivation: motivation.trim() || null,
         personalNote: personalNote.trim() || null,
@@ -205,54 +211,98 @@ export function ProfileForm({
         </div>
       </Card>
 
-      <Card>
-        <p className="text-sm font-medium text-ink mb-3">Mijn beweging</p>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {TRAINING_OPTIONS.map((opt) => (
-            <Chip
-              key={opt}
-              selected={trainingPreferences.includes(opt)}
-              onClick={() => setTrainingPreferences((v) => toggle(v, opt))}
-            >
-              {opt}
+      <Card id="beweging">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-sm font-medium text-ink">Mijn beweging</p>
+          <div className="flex gap-1.5">
+            <Chip selected={movementEnabled} onClick={() => setMovementEnabled(true)}>
+              Aan
             </Chip>
-          ))}
-        </div>
-        <p className="text-sm font-medium text-ink mb-2">Frequentie per week</p>
-        <div className="flex flex-wrap gap-2">
-          {TRAINING_FREQUENCY_OPTIONS.map((n) => (
-            <Chip key={n} selected={trainingFrequency === n} onClick={() => setTrainingFrequency(n)}>
-              {n}x
+            <Chip selected={!movementEnabled} onClick={() => setMovementEnabled(false)}>
+              Uit
             </Chip>
-          ))}
+          </div>
         </div>
+        {movementEnabled ? (
+          <>
+            <p className="text-xs text-ink-soft mb-3">
+              Kies welke vormen van bewegen relevant voor je zijn — daarop stemmen we Vandaag,
+              Beweging en Deze week af.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {TRAINING_OPTIONS.map((opt) => (
+                <Chip
+                  key={opt}
+                  selected={trainingPreferences.includes(opt)}
+                  onClick={() => setTrainingPreferences((v) => toggle(v, opt))}
+                >
+                  {opt}
+                </Chip>
+              ))}
+            </div>
+            <p className="text-sm font-medium text-ink mb-2">Frequentie per week</p>
+            <div className="flex flex-wrap gap-2">
+              {TRAINING_FREQUENCY_OPTIONS.map((n) => (
+                <Chip key={n} selected={trainingFrequency === n} onClick={() => setTrainingFrequency(n)}>
+                  {n}x
+                </Chip>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-xs text-ink-soft mt-2">
+            Beweging staat uit — je ziet nergens trainingsadvies. Zet dit weer aan wanneer je wilt.
+          </p>
+        )}
       </Card>
 
-      <Card>
-        <p className="text-sm font-medium text-ink mb-3">Mijn voeding</p>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {NUTRITION_STYLE_OPTIONS.map((opt) => (
-            <Chip
-              key={opt.value}
-              selected={nutritionStyle === opt.value}
-              onClick={() => setNutritionStyle(opt.value)}
-            >
-              {opt.label}
+      <Card id="voeding">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-sm font-medium text-ink">Mijn voeding</p>
+          <div className="flex gap-1.5">
+            <Chip selected={nutritionEnabled} onClick={() => setNutritionEnabled(true)}>
+              Aan
             </Chip>
-          ))}
-        </div>
-        <p className="text-sm font-medium text-ink mb-2">Voedingsvoorkeuren</p>
-        <div className="flex flex-wrap gap-2">
-          {NUTRITION_OPTIONS.map((opt) => (
-            <Chip
-              key={opt}
-              selected={nutritionPreferences.includes(opt)}
-              onClick={() => setNutritionPreferences((v) => toggle(v, opt))}
-            >
-              {opt}
+            <Chip selected={!nutritionEnabled} onClick={() => setNutritionEnabled(false)}>
+              Uit
             </Chip>
-          ))}
+          </div>
         </div>
+        {nutritionEnabled ? (
+          <>
+            <p className="text-xs text-ink-soft mb-3">
+              Kies een stijl en eventuele voorkeuren — daarop stemmen we Vandaag, Voeding en
+              Deze week af.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {NUTRITION_STYLE_OPTIONS.map((opt) => (
+                <Chip
+                  key={opt.value}
+                  selected={nutritionStyle === opt.value}
+                  onClick={() => setNutritionStyle(opt.value)}
+                >
+                  {opt.label}
+                </Chip>
+              ))}
+            </div>
+            <p className="text-sm font-medium text-ink mb-2">Voedingsvoorkeuren</p>
+            <div className="flex flex-wrap gap-2">
+              {NUTRITION_OPTIONS.map((opt) => (
+                <Chip
+                  key={opt}
+                  selected={nutritionPreferences.includes(opt)}
+                  onClick={() => setNutritionPreferences((v) => toggle(v, opt))}
+                >
+                  {opt}
+                </Chip>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-xs text-ink-soft mt-2">
+            Voeding staat uit — je ziet nergens voedingsadvies. Zet dit weer aan wanneer je wilt.
+          </p>
+        )}
       </Card>
 
       <Card>
@@ -294,6 +344,23 @@ export function ProfileForm({
                   </Chip>
                 ))}
               </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-ink">Bloedverlies bijhouden</p>
+                <div className="flex gap-1.5">
+                  <Chip selected={trackFlowIntensity} onClick={() => setTrackFlowIntensity(true)}>
+                    Aan
+                  </Chip>
+                  <Chip selected={!trackFlowIntensity} onClick={() => setTrackFlowIntensity(false)}>
+                    Uit
+                  </Chip>
+                </div>
+              </div>
+              <p className="text-xs text-ink-soft mt-1.5">
+                Optioneel. Zet dit aan om bij menstruatiedagen in je kalender ook de intensiteit
+                (geen/licht/gemiddeld/hevig) te kunnen registreren.
+              </p>
             </div>
           </div>
         </Card>

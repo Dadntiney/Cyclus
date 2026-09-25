@@ -25,6 +25,8 @@ interface WeekViewProps {
   recipePoolBySlot: Record<MealSlot, WeekPlanRecipe[]>
   workoutPool: WeekPlanWorkout[]
   groceryItemCount: number
+  movementEnabled: boolean
+  nutritionEnabled: boolean
 }
 
 export function WeekView({
@@ -34,6 +36,8 @@ export function WeekView({
   recipePoolBySlot,
   workoutPool,
   groceryItemCount,
+  movementEnabled,
+  nutritionEnabled,
 }: WeekViewProps) {
   const todayIndex = Math.max(
     0,
@@ -124,38 +128,42 @@ export function WeekView({
         </div>
 
         <div className="flex flex-col gap-4">
-          <section>
-            <p className="text-xs font-medium text-ink-soft mb-2 inline-flex items-center gap-1.5">
-              🥗 Voeding
-            </p>
-            <div className="flex flex-col gap-2">
-              {day.meals.map((meal) => (
-                <MealSlotCard
-                  key={meal.slot}
-                  slot={meal.slot}
-                  label={meal.label}
-                  recipe={meal.recipe}
-                  alternatives={alternativesFor(meal.slot, meal.recipe?.id)}
-                  override={overrides[`${day.date}:${meal.slot}`] ?? null}
-                  onOverride={(o) => updateOverride(meal.slot, o)}
-                />
-              ))}
-            </div>
-          </section>
+          {nutritionEnabled && (
+            <section>
+              <p className="text-xs font-medium text-ink-soft mb-2 inline-flex items-center gap-1.5">
+                🥗 Voeding
+              </p>
+              <div className="flex flex-col gap-2">
+                {day.meals.map((meal) => (
+                  <MealSlotCard
+                    key={meal.slot}
+                    slot={meal.slot}
+                    label={meal.label}
+                    recipe={meal.recipe}
+                    alternatives={alternativesFor(meal.slot, meal.recipe?.id)}
+                    override={overrides[`${day.date}:${meal.slot}`] ?? null}
+                    onOverride={(o) => updateOverride(meal.slot, o)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
-          <section>
-            <p className="text-xs font-medium text-ink-soft mb-2 inline-flex items-center gap-1.5">
-              🏃 Beweging
-            </p>
-            <WorkoutSlotCard
-              focus={day.workout.focus}
-              workout={day.workout.workout}
-              reason={day.workout.reason}
-              alternatives={workoutAlternatives}
-              override={overrides[`${day.date}:workout`] ?? null}
-              onOverride={(o) => updateOverride("workout", o)}
-            />
-          </section>
+          {movementEnabled && (
+            <section>
+              <p className="text-xs font-medium text-ink-soft mb-2 inline-flex items-center gap-1.5">
+                🏃 Beweging
+              </p>
+              <WorkoutSlotCard
+                focus={day.workout.focus}
+                workout={day.workout.workout}
+                reason={day.workout.reason}
+                alternatives={workoutAlternatives}
+                override={overrides[`${day.date}:workout`] ?? null}
+                onOverride={(o) => updateOverride("workout", o)}
+              />
+            </section>
+          )}
 
           {day.focusTips.length > 0 && (
             <section>
@@ -176,19 +184,21 @@ export function WeekView({
         </div>
       </div>
 
-      <Link
-        href="/deze-week/boodschappen"
-        className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3.5 touch-manipulation"
-      >
-        <span className="inline-flex items-center gap-2.5 text-sm font-medium text-ink">
-          <ShoppingCart className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-          Boodschappen voor deze week
-          {groceryItemCount > 0 && (
-            <span className="text-xs text-ink-soft">({groceryItemCount})</span>
-          )}
-        </span>
-        <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
-      </Link>
+      {nutritionEnabled && (
+        <Link
+          href="/deze-week/boodschappen"
+          className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3.5 touch-manipulation"
+        >
+          <span className="inline-flex items-center gap-2.5 text-sm font-medium text-ink">
+            <ShoppingCart className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
+            Boodschappen voor deze week
+            {groceryItemCount > 0 && (
+              <span className="text-xs text-ink-soft">({groceryItemCount})</span>
+            )}
+          </span>
+          <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
+        </Link>
+      )}
 
       {phaseContent && <p className="text-xs text-ink-soft px-1">{phaseContent.whyText}</p>}
     </div>

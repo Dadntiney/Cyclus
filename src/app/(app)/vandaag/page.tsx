@@ -9,7 +9,9 @@ import { CheckinForm } from "@/components/today/checkin-form"
 import { NeedPicker } from "@/components/today/need-picker"
 import { DailyTipCard } from "@/components/today/daily-tip-card"
 import { ProgressCard } from "@/components/today/progress-card"
+import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
+import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { cn } from "@/lib/utils"
 import { greeting } from "@/lib/greeting"
 
@@ -58,6 +60,7 @@ export default async function VandaagPage() {
   const { profile, cycleEstimate, recommendation, checkin, streak, completedThisWeek } =
     await getVandaagData(user.id)
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
+  const buddyQuote = getDailyBuddyQuote(`${user.id}-${today}`, cycleEstimate?.phase ?? null)
 
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
@@ -100,6 +103,10 @@ export default async function VandaagPage() {
         <p className="text-sm text-ink-soft mb-6 lg:mb-8">Fijn dat je er bent.</p>
       )}
 
+      <div className="mb-6 lg:mb-8">
+        <BuddyQuoteCard quote={buddyQuote} />
+      </div>
+
       <Link
         href="/deze-week"
         className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3 mb-6 lg:mb-8 touch-manipulation"
@@ -123,6 +130,7 @@ export default async function VandaagPage() {
             completedThisWeek={completedThisWeek}
             weeklyGoal={profile?.training_frequency ?? null}
             streak={streak}
+            movementEnabled={profile?.movement_enabled ?? true}
           />
 
           <Suspense fallback={<DailyTipSkeleton />}>

@@ -14,10 +14,13 @@ export interface UpdateProfileInput {
   goals: string[]
   healthConditions: string[]
   movementLimitations: string[]
+  movementEnabled: boolean
   trainingPreferences: string[]
+  nutritionEnabled: boolean
   nutritionStyle: string
   nutritionPreferences: string[]
   trainingFrequency: number | null
+  trackFlowIntensity: boolean
   wellnessPreference: string | null
   motivation: string | null
   personalNote: string | null
@@ -43,10 +46,13 @@ export async function updateProfile(input: UpdateProfileInput) {
       goals: input.goals,
       health_conditions: input.healthConditions,
       movement_limitations: input.movementLimitations,
+      movement_enabled: input.movementEnabled,
       training_preferences: input.trainingPreferences,
+      nutrition_enabled: input.nutritionEnabled,
       nutrition_style: input.nutritionStyle,
       nutrition_preferences: input.nutritionPreferences,
       training_frequency: input.trainingFrequency,
+      track_flow_intensity: input.trackFlowIntensity,
       wellness_preference: input.wellnessPreference,
       motivation: input.motivation,
       personal_note: input.personalNote,
@@ -67,6 +73,10 @@ export async function updateProfile(input: UpdateProfileInput) {
 
   revalidatePath("/profiel")
   revalidatePath("/vandaag")
+  revalidatePath("/training")
+  revalidatePath("/voeding")
+  revalidatePath("/cyclus")
+  revalidatePath("/deze-week")
   return { success: true }
 }
 

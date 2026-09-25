@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useMemo, useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input"
@@ -32,14 +32,43 @@ interface FormData {
   goals: string[]
   healthConditions: string[]
   movementLimitations: string[]
+  movementEnabled: boolean | null
   trainingPreferences: string[]
+  trainingFrequency: number | null
+  nutritionEnabled: boolean | null
   nutritionStyle: string
   nutritionPreferences: string[]
-  trainingFrequency: number | null
   wellnessPreference: string
 }
 
-const TOTAL_STEPS = 13
+// The step sequence is dynamic: whether movement/nutrition were switched on
+// decides whether their follow-up questions appear at all, so nobody who
+// says "not relevant for me" gets asked to configure it anyway.
+type StepId =
+  | "welcome"
+  | "name"
+  | "age"
+  | "body"
+  | "cycle"
+  | "goals"
+  | "health"
+  | "movement-toggle"
+  | "movement-preferences"
+  | "movement-frequency"
+  | "nutrition-toggle"
+  | "nutrition-style"
+  | "nutrition-preferences"
+  | "wellness"
+  | "buddy"
+
+function buildStepSequence(data: FormData): StepId[] {
+  const steps: StepId[] = ["welcome", "name", "age", "body", "cycle", "goals", "health", "movement-toggle"]
+  if (data.movementEnabled) steps.push("movement-preferences", "movement-frequency")
+  steps.push("nutrition-toggle")
+  if (data.nutritionEnabled) steps.push("nutrition-style", "nutrition-preferences")
+  steps.push("wellness", "buddy")
+  return steps
+}
 
 function toggle(list: string[], value: string) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
@@ -63,22 +92,28 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
     goals: [],
     healthConditions: [],
     movementLimitations: [],
+    movementEnabled: null,
     trainingPreferences: [],
+    trainingFrequency: null,
+    nutritionEnabled: null,
     nutritionStyle: "normaal",
     nutritionPreferences: [],
-    trainingFrequency: null,
     wellnessPreference: "",
   })
 
+  const stepSequence = useMemo(() => buildStepSequence(data), [data])
+  const stepId = stepSequence[step]
+  const totalSteps = stepSequence.length
+
   function validateStep(): string | null {
-    switch (step) {
-      case 1:
+    switch (stepId) {
+      case "name":
         return data.name.trim().length > 0 ? null : "Vul je naam in."
-      case 2: {
+      case "age": {
         const age = Number(data.age)
         return age >= 10 && age <= 100 ? null : "Vul een geldige leeftijd in."
       }
-      case 4:
+      case "cycle":
         if (data.hasCycle === null) return "Laat ons weten of je een cyclus hebt."
         if (data.hasCycle) {
           if (!data.lastPeriodStart) return "Vul de startdatum van je laatste menstruatie in."
@@ -87,11 +122,15 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
           if (!data.regularity) return "Laat ons weten of je cyclus regelmatig is."
         }
         return null
-      case 5:
+      case "goals":
         return data.goals.length > 0 ? null : "Kies minstens één doel."
-      case 10:
+      case "movement-toggle":
+        return data.movementEnabled === null ? "Laat ons weten of beweging relevant voor je is." : null
+      case "movement-frequency":
         return data.trainingFrequency ? null : "Kies hoe vaak je wilt bewegen."
-      case 11:
+      case "nutrition-toggle":
+        return data.nutritionEnabled === null ? "Laat ons weten of voeding relevant voor je is." : null
+      case "wellness":
         return data.wellnessPreference ? null : "Kies een stijl die bij je past."
       default:
         return null
@@ -105,7 +144,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
       return
     }
     setError(null)
-    setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1))
+    setStep((s) => Math.min(s + 1, totalSteps - 1))
   }
 
   function goBack() {
@@ -134,12 +173,14 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             | undefined,
           perimenopauseInfo: data.perimenopauseInfo || undefined,
           goals: data.goals,
-          healthConditions: data.healthConditions,
-          movementLimitations: data.movementLimitations,
+          movementEnabled: data.movementEnabled ?? false,
           trainingPreferences: data.trainingPreferences,
+          trainingFrequency: data.trainingFrequency ?? undefined,
+          nutritionEnabled: data.nutritionEnabled ?? false,
           nutritionStyle: data.nutritionStyle as "normaal" | "koolhydraatarm",
           nutritionPreferences: data.nutritionPreferences,
-          trainingFrequency: data.trainingFrequency!,
+          healthConditions: data.healthConditions,
+          movementLimitations: data.movementLimitations,
           wellnessPreference: data.wellnessPreference as
             | "natuurlijk"
             | "gebalanceerd"
@@ -157,18 +198,20 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         <div className="w-full h-1.5 rounded-full bg-cream-soft mb-8 overflow-hidden">
           <div
             className="h-full bg-sage-dark rounded-full transition-all duration-300"
-            style={{ width: `${(step / (TOTAL_STEPS - 1)) * 100}%` }}
+            style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
           />
         </div>
       )}
 
       <div className="flex-1 flex flex-col justify-center">
-        {step === 0 && <WelcomeStep />}
-        {step === 1 && <NameStep value={data.name} onChange={(name) => setData((d) => ({ ...d, name }))} />}
-        {step === 2 && <AgeStep value={data.age} onChange={(age) => setData((d) => ({ ...d, age }))} />}
-        {step === 3 && <BodyStep data={data} setData={setData} />}
-        {step === 4 && <CycleStep data={data} setData={setData} />}
-        {step === 5 && (
+        {stepId === "welcome" && <WelcomeStep />}
+        {stepId === "name" && (
+          <NameStep value={data.name} onChange={(name) => setData((d) => ({ ...d, name }))} />
+        )}
+        {stepId === "age" && <AgeStep value={data.age} onChange={(age) => setData((d) => ({ ...d, age }))} />}
+        {stepId === "body" && <BodyStep data={data} setData={setData} />}
+        {stepId === "cycle" && <CycleStep data={data} setData={setData} />}
+        {stepId === "goals" && (
           <MultiSelectStep
             title="Wat zijn jouw doelen?"
             subtitle="Kies wat op dit moment bij je past. Je kunt er meerdere kiezen."
@@ -177,11 +220,24 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             onToggle={(v) => setData((d) => ({ ...d, goals: toggle(d.goals, v) }))}
           />
         )}
-        {step === 6 && <HealthStep data={data} setData={setData} />}
-        {step === 7 && (
+        {stepId === "health" && <HealthStep data={data} setData={setData} />}
+        {stepId === "movement-toggle" && (
+          <OptionalModuleToggleStep
+            emoji="🏃"
+            title="Wil je beweging gebruiken?"
+            subtitle="Sommige mensen willen liever geen trainingsadvies zien. Helemaal jouw keuze — dit kun je later altijd aanpassen in je profiel."
+            value={data.movementEnabled}
+            onChange={(movementEnabled) =>
+              setData((d) => ({ ...d, movementEnabled, trainingPreferences: movementEnabled ? d.trainingPreferences : [] }))
+            }
+            yesLabel="Ja, graag"
+            noLabel="Nee, niet nodig"
+          />
+        )}
+        {stepId === "movement-preferences" && (
           <MultiSelectStep
             title="Welke beweging spreekt je aan?"
-            subtitle="Kies wat je leuk vindt of wilt proberen."
+            subtitle="Kies wat je leuk vindt of wilt proberen. We laten je daarna alleen nog hierop afgestemde suggesties zien."
             options={TRAINING_OPTIONS}
             selected={data.trainingPreferences}
             onToggle={(v) =>
@@ -189,13 +245,32 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             }
           />
         )}
-        {step === 8 && (
+        {stepId === "movement-frequency" && (
+          <FrequencyStep
+            value={data.trainingFrequency}
+            onChange={(trainingFrequency) => setData((d) => ({ ...d, trainingFrequency }))}
+          />
+        )}
+        {stepId === "nutrition-toggle" && (
+          <OptionalModuleToggleStep
+            emoji="🥗"
+            title="Wil je voeding gebruiken?"
+            subtitle="Als voeding nu niet relevant voor je is, sla je dit gerust over. Ook dit pas je later altijd aan in je profiel."
+            value={data.nutritionEnabled}
+            onChange={(nutritionEnabled) =>
+              setData((d) => ({ ...d, nutritionEnabled, nutritionPreferences: nutritionEnabled ? d.nutritionPreferences : [] }))
+            }
+            yesLabel="Ja, graag"
+            noLabel="Nee, niet nodig"
+          />
+        )}
+        {stepId === "nutrition-style" && (
           <NutritionStyleStep
             value={data.nutritionStyle}
             onChange={(nutritionStyle) => setData((d) => ({ ...d, nutritionStyle }))}
           />
         )}
-        {step === 9 && (
+        {stepId === "nutrition-preferences" && (
           <MultiSelectStep
             title="Heb je voedingsvoorkeuren?"
             subtitle="Zo stellen we passende recepten voor."
@@ -206,19 +281,13 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             }
           />
         )}
-        {step === 10 && (
-          <FrequencyStep
-            value={data.trainingFrequency}
-            onChange={(trainingFrequency) => setData((d) => ({ ...d, trainingFrequency }))}
-          />
-        )}
-        {step === 11 && (
+        {stepId === "wellness" && (
           <StyleStep
             value={data.wellnessPreference}
             onChange={(wellnessPreference) => setData((d) => ({ ...d, wellnessPreference }))}
           />
         )}
-        {step === 12 && <BuddyIntroStep name={data.name} />}
+        {stepId === "buddy" && <BuddyIntroStep name={data.name} />}
       </div>
 
       <FieldError>{error}</FieldError>
@@ -229,7 +298,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             Terug
           </Button>
         )}
-        {step < TOTAL_STEPS - 1 ? (
+        {step < totalSteps - 1 ? (
           <Button onClick={goNext} className="flex-1">
             {step === 0 ? "Laten we beginnen" : "Volgende"}
           </Button>
@@ -524,6 +593,42 @@ function HealthStep({
           arts, fysiotherapeut of diëtist altijd verstandig.
         </p>
       )}
+    </div>
+  )
+}
+
+function OptionalModuleToggleStep({
+  emoji,
+  title,
+  subtitle,
+  value,
+  onChange,
+  yesLabel,
+  noLabel,
+}: {
+  emoji: string
+  title: string
+  subtitle: string
+  value: boolean | null
+  onChange: (v: boolean) => void
+  yesLabel: string
+  noLabel: string
+}) {
+  return (
+    <div className="text-center">
+      <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center text-2xl">
+        {emoji}
+      </div>
+      <h2 className="font-display text-2xl text-ink mb-2">{title}</h2>
+      <p className="text-ink-soft text-sm mb-6">{subtitle}</p>
+      <div className="flex gap-2 justify-center">
+        <Chip selected={value === true} onClick={() => onChange(true)}>
+          {yesLabel}
+        </Chip>
+        <Chip selected={value === false} onClick={() => onChange(false)}>
+          {noLabel}
+        </Chip>
+      </div>
     </div>
   )
 }

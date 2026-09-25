@@ -5,6 +5,8 @@ import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { buildWeekPlan, type WeekPlanRecipe } from "@/lib/recommendations/week-plan"
 import { buildGroceryList } from "@/lib/nutrition/grocery-list"
 import { GroceryList } from "@/components/week/grocery-list"
+import { Card } from "@/components/ui/card"
+import { buttonVariants } from "@/components/ui/button"
 
 const RECIPE_COLUMNS = "id, title, category, preparation_time, ingredients, nutrition_information"
 
@@ -19,7 +21,7 @@ export default async function BoodschappenPage() {
     supabase
       .from("profiles")
       .select(
-        "training_frequency, health_conditions, movement_limitations, nutrition_preferences, nutrition_style, name",
+        "training_frequency, health_conditions, movement_limitations, training_preferences, nutrition_preferences, nutrition_style, name, nutrition_enabled",
       )
       .eq("id", user.id)
       .single(),
@@ -29,6 +31,30 @@ export default async function BoodschappenPage() {
   ])
 
   if (!profile) return null
+
+  if (!profile.nutrition_enabled) {
+    return (
+      <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+        <Link
+          href="/deze-week"
+          className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-4 touch-manipulation"
+        >
+          <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
+          Deze week
+        </Link>
+        <Card className="text-center py-8">
+          <p className="text-3xl mb-3">🌿</p>
+          <p className="font-display text-lg text-ink mb-2">Voeding staat nu uit</p>
+          <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
+            Er is geen boodschappenlijst omdat voeding niet aanstaat in je profiel.
+          </p>
+          <Link href="/profiel#voeding" className={buttonVariants()}>
+            Zet aan in mijn profiel
+          </Link>
+        </Card>
+      </div>
+    )
+  }
 
   const days = buildWeekPlan({
     weekStart,

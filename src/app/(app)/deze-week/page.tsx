@@ -18,7 +18,7 @@ export default async function DezeWeekPage() {
     supabase
       .from("profiles")
       .select(
-        "training_frequency, health_conditions, movement_limitations, nutrition_preferences, nutrition_style, name",
+        "training_frequency, health_conditions, movement_limitations, training_preferences, nutrition_preferences, nutrition_style, name, movement_enabled, nutrition_enabled",
       )
       .eq("id", user.id)
       .single(),
@@ -64,6 +64,8 @@ export default async function DezeWeekPage() {
         recipePoolBySlot={recipePoolBySlot}
         workoutPool={workouts ?? []}
         groceryItemCount={groceryItemCount}
+        movementEnabled={profile.movement_enabled}
+        nutritionEnabled={profile.nutrition_enabled}
       />
     </div>
   )

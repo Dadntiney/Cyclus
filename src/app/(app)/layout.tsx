@@ -4,6 +4,8 @@ import { Sidebar } from "@/components/nav/sidebar"
 import { BottomNav } from "@/components/nav/bottom-nav"
 import { MobileHeader } from "@/components/nav/mobile-header"
 import { PageTransition } from "@/components/nav/page-transition"
+import { ReminderToastHost } from "@/components/reminders/reminder-toast-host"
+import { getReminders } from "@/lib/data/reminders"
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -23,6 +25,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/onboarding")
   }
 
+  const reminders = await getReminders(user.id)
+
   return (
     <div className="flex min-h-screen">
       <Sidebar name={profile.name} avatarUrl={profile.avatar_url} />
@@ -32,6 +36,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <PageTransition>{children}</PageTransition>
         </main>
         <BottomNav />
+        <ReminderToastHost reminders={reminders} />
       </div>
     </div>
   )

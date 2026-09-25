@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { format, parseISO, subDays } from "date-fns"
 import { nl } from "date-fns/locale"
 import { Droplet, Sparkles, ChevronRight } from "lucide-react"
+import { FLOW_OPTIONS } from "@/lib/constants"
 
 export default async function CyclusPage() {
   const supabase = await createClient()
@@ -17,11 +18,12 @@ export default async function CyclusPage() {
 
   const sixMonthsAgo = format(subDays(new Date(), 200), "yyyy-MM-dd")
 
-  const [{ data: cycleProfile }, { data: logs }, { data: checkins }] = await Promise.all([
+  const [{ data: profile }, { data: cycleProfile }, { data: logs }, { data: checkins }] = await Promise.all([
+    supabase.from("profiles").select("track_flow_intensity").eq("id", user.id).single(),
     supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
     supabase
       .from("cycle_logs")
-      .select("date, menstruation, symptoms")
+      .select("date, menstruation, symptoms, flow")
       .eq("user_id", user.id)
       .gte("date", sixMonthsAgo)
       .order("date", { ascending: true }),
@@ -32,6 +34,8 @@ export default async function CyclusPage() {
       .gte("date", sixMonthsAgo)
       .order("date", { ascending: false }),
   ])
+
+  const trackFlowEnabled = profile?.track_flow_intensity ?? false
 
   const cycleEstimate = cycleProfile
     ? estimateCycle(
@@ -44,9 +48,15 @@ export default async function CyclusPage() {
   const menstruationDates = new Set(
     (logs ?? []).filter((l) => l.menstruation).map((l) => l.date),
   )
+  const flowByDate = new Map((logs ?? []).filter((l) => l.menstruation).map((l) => [l.date, l.flow]))
 
   const history = computeCycleHistory(
-    (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+    (logs ?? []).map((l) => ({
+      date: l.date,
+      menstruation: l.menstruation,
+      symptoms: l.symptoms,
+      flow: l.flow,
+    })),
   )
   const recentHistory = [...history].reverse().slice(0, 6)
 
@@ -129,27 +139,37 @@ export default async function CyclusPage() {
       <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
         <div className="flex flex-col gap-6 lg:col-span-2">
           <Card>
-            <Calendar menstruationDates={menstruationDates} />
+            <Calendar
+              menstruationDates={menstruationDates}
+              flowByDate={flowByDate}
+              trackFlowEnabled={trackFlowEnabled}
+            />
           </Card>
 
           <div>
             <h2 className="font-display text-lg text-ink mb-3">Eerdere cycli</h2>
             {recentHistory.length ? (
               <Card className="p-0 divide-y divide-line">
-                {recentHistory.map((period) => (
-                  <div key={period.start} className="flex items-center justify-between px-5 py-3.5">
-                    <div>
-                      <p className="text-sm font-medium text-ink">
-                        {format(parseISO(period.start), "d MMM", { locale: nl })} –{" "}
-                        {format(parseISO(period.end), "d MMM yyyy", { locale: nl })}
-                      </p>
-                      <p className="text-xs text-ink-soft mt-0.5">{period.days} dagen menstruatie</p>
+                {recentHistory.map((period) => {
+                  const flowOption = FLOW_OPTIONS.find((f) => f.value === period.dominantFlow)
+                  return (
+                    <div key={period.start} className="flex items-center justify-between px-5 py-3.5">
+                      <div>
+                        <p className="text-sm font-medium text-ink">
+                          {format(parseISO(period.start), "d MMM", { locale: nl })} –{" "}
+                          {format(parseISO(period.end), "d MMM yyyy", { locale: nl })}
+                        </p>
+                        <p className="text-xs text-ink-soft mt-0.5">
+                          {period.days} dagen menstruatie
+                          {trackFlowEnabled && flowOption && ` · ${flowOption.label.toLowerCase()}`}
+                        </p>
+                      </div>
+                      {period.cycleLength && (
+                        <p className="text-xs text-ink-soft">{period.cycleLength} dagen cyclus</p>
+                      )}
                     </div>
-                    {period.cycleLength && (
-                      <p className="text-xs text-ink-soft">{period.cycleLength} dagen cyclus</p>
-                    )}
-                  </div>
-                ))}
+                  )
+                })}
               </Card>
             ) : (
               <Card>

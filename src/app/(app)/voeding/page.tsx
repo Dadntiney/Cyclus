@@ -17,9 +17,33 @@ export default async function VoedingPage() {
 
   const [recipes, { data: profile }, { data: checkin }] = await Promise.all([
     getRecipeLibrary(),
-    supabase.from("profiles").select("nutrition_preferences, nutrition_style").eq("id", user.id).single(),
+    supabase
+      .from("profiles")
+      .select("nutrition_preferences, nutrition_style, nutrition_enabled")
+      .eq("id", user.id)
+      .single(),
     supabase.from("daily_checkins").select("need").eq("user_id", user.id).eq("date", today).maybeSingle(),
   ])
+
+  if (profile && !profile.nutrition_enabled) {
+    return (
+      <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+        <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Voeding</h1>
+        <p className="text-sm text-ink-soft mb-6">Recepten die passen bij jouw voorkeuren.</p>
+        <Card className="text-center py-8">
+          <p className="text-3xl mb-3">🌿</p>
+          <p className="font-display text-lg text-ink mb-2">Voeding staat nu uit</p>
+          <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
+            Je gaf aan dat voeding op dit moment niet relevant voor je is. Dat is helemaal prima —
+            je ziet hierdoor nergens voedingsadvies. Wil je dit toch weer gebruiken?
+          </p>
+          <Link href="/profiel#voeding" className={buttonVariants()}>
+            Zet aan in mijn profiel
+          </Link>
+        </Card>
+      </div>
+    )
+  }
 
   const todaysPick = pickTodaysRecipe({
     profile: {

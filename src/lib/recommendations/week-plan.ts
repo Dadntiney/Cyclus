@@ -58,7 +58,12 @@ export interface BuildWeekPlanInput {
   today: Date
   profile: Pick<
     Profile,
-    "training_frequency" | "health_conditions" | "movement_limitations" | "nutrition_preferences" | "nutrition_style"
+    | "training_frequency"
+    | "health_conditions"
+    | "movement_limitations"
+    | "training_preferences"
+    | "nutrition_preferences"
+    | "nutrition_style"
   >
   cycleProfile: CycleProfile | null
   workouts: Workout[]
@@ -131,6 +136,7 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
     frequency: profile.training_frequency ?? 3,
     healthConditions: profile.health_conditions ?? [],
     movementLimitations: profile.movement_limitations ?? [],
+    trainingPreferences: profile.training_preferences ?? [],
     workouts,
     seed: `${seed}-weekprogram`,
     gentlerDayIndexes,

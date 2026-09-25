@@ -11,14 +11,32 @@ export const GOAL_OPTIONS = [
 ] as const
 
 export const TRAINING_OPTIONS = [
-  "Krachttraining",
-  "Pilates",
-  "Yoga",
   "Wandelen",
   "Fietsen",
+  "Krachttraining",
+  "Yoga",
+  "Pilates",
   "Hardlopen",
+  "Zwemmen",
   "Mobiliteit",
+  "Andere vorm van bewegen",
 ] as const
+
+// Maps a training preference (see TRAINING_OPTIONS) to the `workouts.type`
+// values it should surface. "Zwemmen" and "Andere vorm van bewegen"
+// deliberately have no entry — there's no matching workout content for
+// them yet, and the recommendation engine treats an unmapped-but-selected
+// preference as "show nothing" rather than silently falling back to
+// unrelated workout types.
+export const TRAINING_PREFERENCE_TO_TYPE: Record<string, string> = {
+  Krachttraining: "krachttraining",
+  Pilates: "pilates",
+  Yoga: "yoga",
+  Wandelen: "wandelen",
+  Fietsen: "fietsen",
+  Hardlopen: "hardlopen",
+  Mobiliteit: "mobiliteit",
+}
 
 export const NUTRITION_OPTIONS = [
   "Geen voorkeur",
@@ -104,4 +122,31 @@ export const MOVEMENT_LIMITATION_OPTIONS = [
   "Kan niet lang staan",
   "Kan niet op de grond liggen of overeind komen",
   "Anders",
+] as const
+
+// Optional period flow-intensity tracking (see cycle_logs.flow).
+export const FLOW_OPTIONS = [
+  { value: "geen", label: "Geen", emoji: "⚪" },
+  { value: "licht", label: "Licht", emoji: "🩸" },
+  { value: "gemiddeld", label: "Gemiddeld", emoji: "🩸🩸" },
+  { value: "hevig", label: "Hevig", emoji: "🩸🩸🩸" },
+] as const
+
+// Optional reminders (see the `reminders` table).
+export const REMINDER_TYPE_OPTIONS = [
+  { value: "dagelijkse_checkin", label: "Dagelijkse check-in", emoji: "📝", defaultLabel: "Vul je dagelijkse gegevens in" },
+  { value: "symptomen", label: "Symptomen registreren", emoji: "🩺", defaultLabel: "Klachten of symptomen bijhouden" },
+  { value: "beweging", label: "Bewegen", emoji: "🏃", defaultLabel: "Tijd om even te bewegen" },
+  { value: "routine", label: "Persoonlijke routine", emoji: "🌿", defaultLabel: "Jouw persoonlijke routine" },
+  { value: "anders", label: "Iets anders", emoji: "✨", defaultLabel: "" },
+] as const
+
+export const REMINDER_DAY_OPTIONS = [
+  { value: 1, label: "Ma" },
+  { value: 2, label: "Di" },
+  { value: 3, label: "Wo" },
+  { value: 4, label: "Do" },
+  { value: 5, label: "Vr" },
+  { value: 6, label: "Za" },
+  { value: 7, label: "Zo" },
 ] as const

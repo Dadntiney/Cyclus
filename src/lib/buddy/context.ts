@@ -25,10 +25,14 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
   if (profile?.name) lines.push(`Naam: ${profile.name}`)
   if (profile?.age) lines.push(`Leeftijd: ${profile.age}`)
   if (profile?.goals?.length) lines.push(`Doelen: ${profile.goals.join(", ")}`)
-  if (profile?.training_preferences?.length) {
+  if (profile?.movement_enabled === false) {
+    lines.push("Gebruikt het Bewegen-onderdeel van de app niet — vermijd trainingsadvies tenzij ze er zelf naar vraagt.")
+  } else if (profile?.training_preferences?.length) {
     lines.push(`Bewegingsvoorkeuren: ${profile.training_preferences.join(", ")}`)
   }
-  if (profile?.nutrition_preferences?.length) {
+  if (profile?.nutrition_enabled === false) {
+    lines.push("Gebruikt het Voeding-onderdeel van de app niet — vermijd voedingsadvies tenzij ze er zelf naar vraagt.")
+  } else if (profile?.nutrition_preferences?.length) {
     lines.push(`Voedingsvoorkeuren: ${profile.nutrition_preferences.join(", ")}`)
   }
   if (profile?.wellness_preference) lines.push(`Stijl: ${profile.wellness_preference}`)
@@ -59,7 +63,9 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
     if (checkin.symptoms?.length) lines.push(`Klachten: ${checkin.symptoms.join(", ")}`)
   }
 
-  lines.push(`Trainingen deze week afgerond: ${weekSessions?.length ?? 0}`)
+  if (profile?.movement_enabled !== false) {
+    lines.push(`Trainingen deze week afgerond: ${weekSessions?.length ?? 0}`)
+  }
 
   return lines
 }

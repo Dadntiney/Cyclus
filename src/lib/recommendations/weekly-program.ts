@@ -1,4 +1,5 @@
 import type { Tables } from "@/types/database"
+import { TRAINING_PREFERENCE_TO_TYPE } from "@/lib/constants"
 
 type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
 
@@ -79,6 +80,15 @@ export interface BuildWeeklyProgramInput {
    * within that day's focus gets picked.
    */
   gentlerDayIndexes?: Set<number>
+  /**
+   * Raw training preference labels (see TRAINING_OPTIONS). When set, only
+   * workout types she actually chose are ever suggested — a day whose
+   * template focus (kracht/cardio/mobiliteit/herstel) doesn't match any of
+   * them falls back to another of her preferred types rather than showing
+   * something she didn't pick. No preferences set keeps today's default:
+   * every type is fair game.
+   */
+  trainingPreferences?: string[]
 }
 
 /**
@@ -87,10 +97,24 @@ export interface BuildWeeklyProgramInput {
  * durations), the rest are explicit rest days.
  */
 export function buildWeeklyProgram(input: BuildWeeklyProgramInput): ProgramDay[] {
-  const { frequency, healthConditions, movementLimitations, workouts, seed, preferShort, gentlerDayIndexes } = input
+  const {
+    frequency,
+    healthConditions,
+    movementLimitations,
+    workouts,
+    seed,
+    preferShort,
+    gentlerDayIndexes,
+    trainingPreferences,
+  } = input
   const clampedFrequency = Math.min(7, Math.max(1, Math.round(frequency)))
   const activeDays = new Set(ACTIVE_DAY_SLOTS[clampedFrequency])
   const focusSequence = FOCUS_TEMPLATES[clampedFrequency]
+
+  const hasPreferences = Boolean(trainingPreferences?.length)
+  const preferredTypes = (trainingPreferences ?? [])
+    .map((pref) => TRAINING_PREFERENCE_TO_TYPE[pref])
+    .filter((type): type is string => Boolean(type))
 
   const impactSensitive =
     healthConditions.some((c) => IMPACT_SENSITIVE_TAGS.includes(c)) ||
@@ -108,6 +132,12 @@ export function buildWeeklyProgram(input: BuildWeeklyProgramInput): ProgramDay[]
     activeIndex += 1
 
     let candidates = workouts.filter((w) => FOCUS_TYPES[focus].includes(w.type))
+    if (hasPreferences) {
+      const preferredForFocus = candidates.filter((w) => preferredTypes.includes(w.type))
+      candidates = preferredForFocus.length
+        ? preferredForFocus
+        : workouts.filter((w) => preferredTypes.includes(w.type))
+    }
     if (impactSensitive) {
       const gentler = candidates.filter((w) => w.type !== "hardlopen" && w.difficulty !== "pittig")
       if (gentler.length) candidates = gentler
