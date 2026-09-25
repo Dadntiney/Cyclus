@@ -1,1 +1,4 @@
 @AGENTS.md
+
+@docs/PRODUCT_VISION.md
+
