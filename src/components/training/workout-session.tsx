@@ -2,11 +2,13 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Sparkles } from "lucide-react"
+import { Sparkles, PlayCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ExerciseFavoriteButton } from "@/components/training/exercise-favorite-button"
+import { ExerciseVideoPlayer } from "@/components/training/exercise-video"
 import { completeWorkoutSession, fetchAlternativeExercise } from "@/lib/actions/training"
+import { lookupExerciseVideo } from "@/lib/data/exercise-videos"
 import type { Tables } from "@/types/database"
 
 type Exercise = Tables<"exercises">
@@ -35,6 +37,7 @@ export function WorkoutSession({
   const [finished, setFinished] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [isSwapping, setIsSwapping] = useState(false)
+  const [previewId, setPreviewId] = useState<string | null>(null)
 
   const current = exercises[index]
 
@@ -86,22 +89,43 @@ export function WorkoutSession({
           <Card>
             <p className="text-sm font-medium text-ink mb-3">Wat ga je doen?</p>
             <ul className="flex flex-col gap-3">
-              {exercises.map((ex, i) => (
-                <li key={ex.id} className="flex items-start gap-3">
-                  <span className="mt-0.5 h-5 w-5 rounded-full bg-sage-soft text-sage-dark text-[11px] font-semibold flex items-center justify-center shrink-0">
-                    {i + 1}
-                  </span>
-                  <div>
-                    <p className="text-sm font-medium text-ink">{ex.name}</p>
-                    <p className="text-xs text-ink-soft">
-                      {ex.muscle_group ? `${ex.muscle_group} · ` : ""}
-                      {ex.sets ? `${ex.sets} sets` : ""}
-                      {ex.sets && ex.reps ? " · " : ""}
-                      {ex.reps ?? ""}
-                    </p>
-                  </div>
-                </li>
-              ))}
+              {exercises.map((ex, i) => {
+                const video = lookupExerciseVideo(ex.name)
+                const expanded = previewId === ex.id
+                return (
+                  <li key={ex.id} className="flex flex-col gap-2.5">
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 h-5 w-5 rounded-full bg-sage-soft text-sage-dark text-[11px] font-semibold flex items-center justify-center shrink-0">
+                        {i + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-ink">{ex.name}</p>
+                        <p className="text-xs text-ink-soft">
+                          {ex.muscle_group ? `${ex.muscle_group} · ` : ""}
+                          {ex.sets ? `${ex.sets} sets` : ""}
+                          {ex.sets && ex.reps ? " · " : ""}
+                          {ex.reps ?? ""}
+                        </p>
+                        {video && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewId(expanded ? null : ex.id)}
+                            className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sage-dark touch-manipulation"
+                          >
+                            <PlayCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
+                            {expanded ? "Verberg voorbeeld" : "Bekijk uitvoering"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {expanded && video && (
+                      <div className="pl-8">
+                        <ExerciseVideoPlayer video={video} exerciseName={ex.name} />
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           </Card>
         )}
@@ -131,6 +155,7 @@ export function WorkoutSession({
   if (!current) return null
 
   const steps = parseSteps(current.steps)
+  const currentVideo = lookupExerciseVideo(current.name)
 
   return (
     <Card>
@@ -151,6 +176,12 @@ export function WorkoutSession({
           {current.sets && current.reps ? " · " : ""}
           {current.reps ?? ""}
         </p>
+      )}
+
+      {currentVideo && (
+        <div className="mb-5">
+          <ExerciseVideoPlayer video={currentVideo} exerciseName={current.name} />
+        </div>
       )}
 
       {steps.length > 0 ? (

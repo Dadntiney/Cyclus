@@ -1,6 +1,6 @@
 import type { Tables } from "@/types/database"
 
-type Workout = Tables<"workouts">
+type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
 
 export type DayFocus = "kracht" | "cardio" | "mobiliteit" | "herstel" | "rust"
 
@@ -71,6 +71,14 @@ export interface BuildWeeklyProgramInput {
   seed: string
   /** Prefer short (<=10 min) sessions on more days, for a busier week. */
   preferShort?: boolean
+  /**
+   * Weekday indexes (0=Mon..6=Sun) to lean toward gentler (`makkelijk`)
+   * workouts for — used by the week overview to reflect that many people
+   * prefer lower-intensity movement during menstruation/late luteal days.
+   * Never turns an active day into a rest day; only tilts which workout
+   * within that day's focus gets picked.
+   */
+  gentlerDayIndexes?: Set<number>
 }
 
 /**
@@ -79,7 +87,7 @@ export interface BuildWeeklyProgramInput {
  * durations), the rest are explicit rest days.
  */
 export function buildWeeklyProgram(input: BuildWeeklyProgramInput): ProgramDay[] {
-  const { frequency, healthConditions, movementLimitations, workouts, seed, preferShort } = input
+  const { frequency, healthConditions, movementLimitations, workouts, seed, preferShort, gentlerDayIndexes } = input
   const clampedFrequency = Math.min(7, Math.max(1, Math.round(frequency)))
   const activeDays = new Set(ACTIVE_DAY_SLOTS[clampedFrequency])
   const focusSequence = FOCUS_TEMPLATES[clampedFrequency]
@@ -107,6 +115,10 @@ export function buildWeeklyProgram(input: BuildWeeklyProgramInput): ProgramDay[]
     if (focus === "herstel" || preferShort) {
       const short = candidates.filter((w) => w.duration <= 10)
       if (short.length) candidates = short
+    }
+    if (gentlerDayIndexes?.has(dayIdx)) {
+      const gentle = candidates.filter((w) => w.difficulty === "makkelijk")
+      if (gentle.length) candidates = gentle
     }
 
     // Prefer a workout not already used this week, for variety.

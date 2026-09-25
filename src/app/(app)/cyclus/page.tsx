@@ -1,12 +1,14 @@
+import Link from "next/link"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, computeSymptomFrequency } from "@/lib/cycle/history"
 import { Calendar } from "@/components/cycle/calendar"
+import { PhaseOverview } from "@/components/cycle/phase-overview"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { format, parseISO, subDays } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Droplet, Sparkles } from "lucide-react"
+import { Droplet, Sparkles, ChevronRight } from "lucide-react"
 
 export default async function CyclusPage() {
   const supabase = await createClient()
@@ -109,6 +111,20 @@ export default async function CyclusPage() {
           </p>
         </Card>
       )}
+
+      <div>
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="font-display text-lg text-ink">Cyclusfases</h2>
+          <Link
+            href="/deze-week"
+            className="inline-flex items-center gap-0.5 text-xs font-medium text-sage-dark touch-manipulation"
+          >
+            Deze week
+            <ChevronRight className="h-3.5 w-3.5" strokeWidth={1.75} />
+          </Link>
+        </div>
+        <PhaseOverview currentPhase={cycleEstimate?.phase ?? null} />
+      </div>
 
       <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
         <div className="flex flex-col gap-6 lg:col-span-2">
