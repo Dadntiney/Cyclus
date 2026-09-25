@@ -24,7 +24,7 @@ export default async function WorkoutDetailPage({
   if (!workout) notFound()
 
   return (
-    <div className="max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+    <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
       <WorkoutSession
         workout={workout}
         exercises={exercises}

@@ -49,7 +49,7 @@ export default async function TrainingPage() {
   })
 
   return (
-    <div className="max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
+    <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Training</h1>
         <p className="text-sm text-ink-soft mt-1">Jouw weekplanning en trainingsbibliotheek.</p>
@@ -129,21 +129,22 @@ export default async function TrainingPage() {
 
         <div className="mt-6 lg:mt-0">
           <h2 className="font-display text-lg text-ink mb-3">Bibliotheek</h2>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             {workouts.map((workout) => (
               <Link
                 key={workout.id}
                 href={`/training/${workout.id}`}
                 className="block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
               >
-                <Card interactive>
-                  <div className="flex items-center justify-between">
+                <Card interactive className="p-3.5">
+                  <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="font-display text-lg text-ink">{workout.title}</p>
-                      <p className="text-sm text-ink-soft mt-0.5">
-                        {workout.duration} minuten · {DIFFICULTY_LABELS[workout.difficulty] ?? workout.difficulty}
+                      <p className="text-xs text-ink-soft">
+                        {DIFFICULTY_LABELS[workout.difficulty] ?? workout.difficulty}
                       </p>
+                      <p className="font-medium text-ink text-sm mt-0.5">{workout.title}</p>
                     </div>
+                    <span className="text-xs text-ink-soft shrink-0">{workout.duration} min</span>
                   </div>
                 </Card>
               </Link>

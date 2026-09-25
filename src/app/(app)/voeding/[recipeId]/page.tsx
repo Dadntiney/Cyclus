@@ -47,7 +47,7 @@ export default async function RecipeDetailPage({
       : {}
 
   return (
-    <div className="max-w-5xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+    <div className="w-full max-w-5xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
       <RecipeImage
         title={recipe.title}
         imageUrl={imageUrl}

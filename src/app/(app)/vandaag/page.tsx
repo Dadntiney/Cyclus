@@ -30,7 +30,7 @@ export default async function VandaagPage() {
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
 
   return (
-    <div className="max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+    <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
       <div className="flex items-start justify-between gap-3 mb-6 lg:mb-8">
         <div>
           <h1 className="font-display text-2xl lg:text-3xl text-ink">

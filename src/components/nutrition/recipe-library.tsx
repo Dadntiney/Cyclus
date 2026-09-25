@@ -32,7 +32,7 @@ export function RecipeLibrary({ recipes }: { recipes: Tables<"recipes">[] }) {
 
   return (
     <div>
-      <div className="flex gap-2 mb-4 overflow-x-auto -mx-5 px-5 lg:mx-0 lg:px-0 lg:flex-wrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex w-full gap-2 mb-4 overflow-x-auto lg:flex-wrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <Chip
           className="shrink-0"
           selected={activeFilter === null}

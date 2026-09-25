@@ -21,7 +21,7 @@ export default async function ProfielPage() {
   if (!profile) return null
 
   return (
-    <div className="max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
+    <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
       <ProfileHero
         userId={user.id}
         name={profile.name}
