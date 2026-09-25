@@ -15,6 +15,7 @@ import {
   MOVEMENT_LIMITATION_OPTIONS,
   TRAINING_FREQUENCY_OPTIONS,
   REGULARITY_OPTIONS,
+  HORMONAL_MEDICATION_STATUS_OPTIONS,
 } from "@/lib/constants"
 import { updateProfile } from "@/lib/actions/profile"
 import type { Tables } from "@/types/database"
@@ -67,6 +68,12 @@ export function ProfileForm({
   )
   const [regularity, setRegularity] = useState(cycleProfile?.regularity ?? "")
   const [perimenopauseInfo, setPerimenopauseInfo] = useState(cycleProfile?.perimenopause_information ?? "")
+  const [hormonalMedicationStatus, setHormonalMedicationStatus] = useState(
+    profile.hormonal_medication_status ?? "",
+  )
+  const [showMedicationOnDashboard, setShowMedicationOnDashboard] = useState(
+    profile.show_medication_on_dashboard,
+  )
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle")
   const [isPending, startTransition] = useTransition()
 
@@ -94,6 +101,8 @@ export function ProfileForm({
         averageCycleLength: averageCycleLength ? Number(averageCycleLength) : null,
         regularity: regularity || null,
         perimenopauseInfo: perimenopauseInfo.trim() || null,
+        hormonalMedicationStatus: hormonalMedicationStatus || null,
+        showMedicationOnDashboard,
       })
       setStatus(result.error ? "error" : "saved")
     })
@@ -305,6 +314,58 @@ export function ProfileForm({
           <p className="text-xs text-ink-soft mt-2">
             Voeding staat uit — je ziet nergens voedingsadvies. Zet dit weer aan wanneer je wilt.
           </p>
+        )}
+      </Card>
+
+      <Card id="medicatie">
+        <p className="text-sm font-medium text-ink mb-1">Medicatie & hormonen</p>
+        <p className="text-xs text-ink-soft mb-3">
+          Optioneel. Gebruik je hormonale medicatie of medicatie die invloed kan hebben op je
+          cyclus of hormonen?
+        </p>
+        <div className="flex flex-col gap-2 mb-4">
+          {HORMONAL_MEDICATION_STATUS_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value}
+              selected={hormonalMedicationStatus === opt.value}
+              onClick={() => setHormonalMedicationStatus(opt.value)}
+              className="w-full justify-start"
+            >
+              {opt.label}
+            </Chip>
+          ))}
+        </div>
+
+        {hormonalMedicationStatus && hormonalMedicationStatus !== "nee" && (
+          <>
+            <p className="text-xs text-ink-soft bg-cream-soft rounded-2xl p-3 mb-4">
+              Voer hier alleen het schema in dat je van je arts, apotheker of bijsluiter hebt
+              gekregen. De app geeft geen persoonlijk medisch advies en bepaalt niet welke
+              dosering of behandeling voor jou geschikt is.
+            </p>
+            <Link
+              href="/medicatie"
+              className="inline-block text-sm font-medium text-sage-dark mb-4"
+            >
+              Mijn medicatie beheren →
+            </Link>
+            <div className="flex items-center justify-between">
+              <div className="pr-3">
+                <p className="text-sm font-medium text-ink">Tonen op Vandaag</p>
+                <p className="text-xs text-ink-soft mt-1">
+                  Laat een kort overzicht van je medicatie van vandaag zien op je Vandaag-pagina.
+                </p>
+              </div>
+              <div className="flex gap-1.5 shrink-0">
+                <Chip selected={showMedicationOnDashboard} onClick={() => setShowMedicationOnDashboard(true)}>
+                  Aan
+                </Chip>
+                <Chip selected={!showMedicationOnDashboard} onClick={() => setShowMedicationOnDashboard(false)}>
+                  Uit
+                </Chip>
+              </div>
+            </div>
+          </>
         )}
       </Card>
 

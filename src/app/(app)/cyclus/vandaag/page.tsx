@@ -9,6 +9,8 @@ import { buildCyclusdagView } from "@/lib/cycle/cyclusdag"
 import { Card } from "@/components/ui/card"
 import { Expandable } from "@/components/ui/expandable"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
+import { MedicationTodayCard } from "@/components/today/medication-today-card"
+import { getMedicationDashboardItems } from "@/lib/data/medications"
 import { cn } from "@/lib/utils"
 
 export default async function CyclusdagPage() {
@@ -19,7 +21,11 @@ export default async function CyclusdagPage() {
   const sixMonthsAgo = format(subDays(new Date(), 200), "yyyy-MM-dd")
 
   const [{ data: profile }, { data: cycleProfile }, { data: checkins }, { data: logs }] = await Promise.all([
-    supabase.from("profiles").select("movement_enabled, training_preferences").eq("id", user.id).single(),
+    supabase
+      .from("profiles")
+      .select("movement_enabled, training_preferences, show_medication_on_dashboard")
+      .eq("id", user.id)
+      .single(),
     supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
     supabase
       .from("daily_checkins")
@@ -80,6 +86,8 @@ export default async function CyclusdagPage() {
   }
 
   const today = format(new Date(), "yyyy-MM-dd")
+  const showMedication = Boolean(profile?.show_medication_on_dashboard)
+  const medicationItems = showMedication ? await getMedicationDashboardItems(user.id, today) : []
   const patterns = computeSymptomFrequency(checkins ?? [])
 
   const cycleHistory = computeCycleHistory(
@@ -132,6 +140,16 @@ export default async function CyclusdagPage() {
             </div>
           </Card>
         </section>
+
+        {medicationItems.length > 0 && (
+          <section>
+            <MedicationTodayCard items={medicationItems} date={today} />
+            <p className="text-xs text-ink-soft px-1 mt-2.5 leading-relaxed">
+              Dit toont je cyclusdag, fase, medicatie en klachten naast elkaar — puur ter
+              overzicht. Cyclus trekt hier geen conclusies uit over oorzaak en gevolg.
+            </p>
+          </section>
+        )}
 
         <section>
           <Card className="bg-sage-soft border-transparent">

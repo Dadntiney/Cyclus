@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { buildRecommendation } from "@/lib/recommendations/engine"
 import { computeStreak } from "@/lib/data/streak"
+import { getMedicationDashboardItems } from "@/lib/data/medications"
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10)
@@ -21,6 +22,7 @@ export async function getVandaagData(userId: string) {
     { data: recipes },
     { data: recentCheckins },
     { data: weekSessions },
+    medicationItems,
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).single(),
     supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
@@ -40,6 +42,7 @@ export async function getVandaagData(userId: string) {
       .eq("completed", true)
       .gte("date", weekAgo)
       .lte("date", today),
+    getMedicationDashboardItems(userId, today),
   ])
 
   const streak = computeStreak((recentCheckins ?? []).map((c) => c.date), today)
@@ -73,5 +76,6 @@ export async function getVandaagData(userId: string) {
     today,
     streak,
     completedThisWeek,
+    medicationItems,
   }
 }

@@ -359,6 +359,104 @@ export type Database = {
           },
         ]
       }
+      medications: {
+        Row: {
+          category: string
+          created_at: string
+          dosage: string | null
+          end_date: string | null
+          form: string | null
+          hormone_type: string | null
+          id: string
+          name: string
+          notes: string | null
+          reminder_enabled: boolean
+          schedule_days: number[] | null
+          schedule_days_off: number | null
+          schedule_days_on: number | null
+          schedule_type: string
+          start_date: string | null
+          time_of_day: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          dosage?: string | null
+          end_date?: string | null
+          form?: string | null
+          hormone_type?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          reminder_enabled?: boolean
+          schedule_days?: number[] | null
+          schedule_days_off?: number | null
+          schedule_days_on?: number | null
+          schedule_type: string
+          start_date?: string | null
+          time_of_day?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          dosage?: string | null
+          end_date?: string | null
+          form?: string | null
+          hormone_type?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          reminder_enabled?: boolean
+          schedule_days?: number[] | null
+          schedule_days_off?: number | null
+          schedule_days_on?: number | null
+          schedule_type?: string
+          start_date?: string | null
+          time_of_day?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      medication_logs: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          medication_id: string
+          taken: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          medication_id: string
+          taken?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          medication_id?: string
+          taken?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medication_logs_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "medications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age: number | null
@@ -368,6 +466,7 @@ export type Database = {
           goals: string[]
           health_conditions: string[]
           height_cm: number | null
+          hormonal_medication_status: string | null
           id: string
           motivation: string | null
           movement_enabled: boolean
@@ -378,6 +477,7 @@ export type Database = {
           nutrition_style: string
           onboarding_completed: boolean
           personal_note: string | null
+          show_medication_on_dashboard: boolean
           track_flow_intensity: boolean
           training_frequency: number | null
           training_preferences: string[]
@@ -393,6 +493,7 @@ export type Database = {
           goals?: string[]
           health_conditions?: string[]
           height_cm?: number | null
+          hormonal_medication_status?: string | null
           id: string
           motivation?: string | null
           movement_enabled?: boolean
@@ -403,6 +504,7 @@ export type Database = {
           nutrition_style?: string
           onboarding_completed?: boolean
           personal_note?: string | null
+          show_medication_on_dashboard?: boolean
           track_flow_intensity?: boolean
           training_frequency?: number | null
           training_preferences?: string[]
@@ -418,6 +520,7 @@ export type Database = {
           goals?: string[]
           health_conditions?: string[]
           height_cm?: number | null
+          hormonal_medication_status?: string | null
           id?: string
           motivation?: string | null
           movement_enabled?: boolean
@@ -428,6 +531,7 @@ export type Database = {
           nutrition_style?: string
           onboarding_completed?: boolean
           personal_note?: string | null
+          show_medication_on_dashboard?: boolean
           track_flow_intensity?: boolean
           training_frequency?: number | null
           training_preferences?: string[]

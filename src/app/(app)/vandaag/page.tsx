@@ -10,6 +10,7 @@ import { NeedPicker } from "@/components/today/need-picker"
 import { DailyTipCard } from "@/components/today/daily-tip-card"
 import { ProgressCard } from "@/components/today/progress-card"
 import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
+import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { cn } from "@/lib/utils"
@@ -57,8 +58,9 @@ export default async function VandaagPage() {
   const today = new Date().toISOString().slice(0, 10)
   const dailyTipPromise = getDailyTip(today)
 
-  const { profile, cycleEstimate, recommendation, checkin, streak, completedThisWeek } =
+  const { profile, cycleEstimate, recommendation, checkin, streak, completedThisWeek, medicationItems } =
     await getVandaagData(user.id)
+  const showMedicationCard = Boolean(profile?.show_medication_on_dashboard) && medicationItems.length > 0
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
   const buddyQuote = getDailyBuddyQuote(`${user.id}-${today}`, cycleEstimate?.phase ?? null)
 
@@ -142,6 +144,8 @@ export default async function VandaagPage() {
             streak={streak}
             movementEnabled={profile?.movement_enabled ?? true}
           />
+
+          {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
 
           <Suspense fallback={<DailyTipSkeleton />}>
             <DailyTip promise={dailyTipPromise} />

@@ -150,3 +150,56 @@ export const REMINDER_DAY_OPTIONS = [
   { value: 6, label: "Za" },
   { value: 7, label: "Zo" },
 ] as const
+
+// Optional hormonal medication / HT / contraception tracking (see the
+// `medications` table). The status question is deliberately non-committal —
+// picking an answer here never adds a medication row by itself, it only
+// decides which quick-add entry points are shown.
+export const HORMONAL_MEDICATION_STATUS_OPTIONS = [
+  { value: "nee", label: "Nee" },
+  { value: "ht", label: "Ja, hormoontherapie (HT)" },
+  { value: "ac", label: "Ja, anticonceptie (AC)" },
+  { value: "andere_hormonaal", label: "Ja, andere hormonale medicatie" },
+  { value: "andere_medicatie", label: "Ja, andere medicatie die mogelijk invloed heeft" },
+  { value: "onbekend_liever_niet", label: "Weet ik niet / wil ik liever niet aangeven" },
+] as const
+
+export const MEDICATION_CATEGORY_OPTIONS = [
+  { value: "ht", label: "Hormoontherapie (HT)", emoji: "💊" },
+  { value: "anticonceptie", label: "Anticonceptie", emoji: "🛡️" },
+  { value: "andere_hormonaal", label: "Andere hormonale medicatie", emoji: "🧪" },
+  { value: "andere_medicatie", label: "Andere medicatie", emoji: "📋" },
+] as const
+
+// Quick-pick chips for step 1 of the wizard, per category — always with a
+// free-text fallback, since the app never limits what she can enter.
+export const HT_NAME_SUGGESTIONS = ["Oestrogeen", "Progesteron", "Testosteron"] as const
+export const CONTRACEPTION_METHOD_OPTIONS = [
+  "Pil",
+  "Hormoonspiraal",
+  "Ring",
+  "Pleister",
+  "Injectie",
+  "Implantaat",
+  "Andere vorm",
+] as const
+
+export const MEDICATION_FORM_OPTIONS = [
+  "Spray",
+  "Tablet",
+  "Pleister",
+  "Gel",
+  "Ring",
+  "Spiraal",
+  "Implantaat",
+  "Injectie",
+  "Anders",
+] as const
+
+export const MEDICATION_SCHEDULE_TYPE_OPTIONS = [
+  { value: "dagelijks", label: "Iedere dag" },
+  { value: "om_de_dag", label: "Om de dag" },
+  { value: "wekelijkse_dagen", label: "Bepaalde dagen van de week" },
+  { value: "cyclisch", label: "Periode wel / periode niet" },
+  { value: "eigen_schema", label: "Eigen schema" },
+] as const

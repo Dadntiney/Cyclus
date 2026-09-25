@@ -21,6 +21,9 @@ export const onboardingSchema = z.object({
   healthConditions: z.array(z.string()),
   movementLimitations: z.array(z.string()),
   nutritionStyle: z.enum(["normaal", "koolhydraatarm"]),
+  hormonalMedicationStatus: z
+    .enum(["nee", "ht", "ac", "andere_hormonaal", "andere_medicatie", "onbekend_liever_niet"])
+    .optional(),
 })
 
 export type OnboardingInput = z.infer<typeof onboardingSchema>

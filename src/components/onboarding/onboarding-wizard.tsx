@@ -14,6 +14,7 @@ import {
   TRAINING_FREQUENCY_OPTIONS,
   STYLE_OPTIONS,
   REGULARITY_OPTIONS,
+  HORMONAL_MEDICATION_STATUS_OPTIONS,
 } from "@/lib/constants"
 import { completeOnboarding } from "@/lib/actions/onboarding"
 import { cn } from "@/lib/utils"
@@ -38,6 +39,7 @@ interface FormData {
   nutritionEnabled: boolean | null
   nutritionStyle: string
   nutritionPreferences: string[]
+  hormonalMedicationStatus: string
   wellnessPreference: string
 }
 
@@ -58,6 +60,7 @@ type StepId =
   | "nutrition-toggle"
   | "nutrition-style"
   | "nutrition-preferences"
+  | "medication-status"
   | "wellness"
   | "buddy"
 
@@ -66,7 +69,7 @@ function buildStepSequence(data: FormData): StepId[] {
   if (data.movementEnabled) steps.push("movement-preferences", "movement-frequency")
   steps.push("nutrition-toggle")
   if (data.nutritionEnabled) steps.push("nutrition-style", "nutrition-preferences")
-  steps.push("wellness", "buddy")
+  steps.push("medication-status", "wellness", "buddy")
   return steps
 }
 
@@ -98,6 +101,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
     nutritionEnabled: null,
     nutritionStyle: "normaal",
     nutritionPreferences: [],
+    hormonalMedicationStatus: "",
     wellnessPreference: "",
   })
 
@@ -185,6 +189,14 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             | "natuurlijk"
             | "gebalanceerd"
             | "fitness",
+          hormonalMedicationStatus: (data.hormonalMedicationStatus || undefined) as
+            | "nee"
+            | "ht"
+            | "ac"
+            | "andere_hormonaal"
+            | "andere_medicatie"
+            | "onbekend_liever_niet"
+            | undefined,
         })
       } catch (e) {
         setError(e instanceof Error ? e.message : "Er ging iets mis. Probeer het opnieuw.")
@@ -279,6 +291,12 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             onToggle={(v) =>
               setData((d) => ({ ...d, nutritionPreferences: toggle(d.nutritionPreferences, v) }))
             }
+          />
+        )}
+        {stepId === "medication-status" && (
+          <MedicationStatusStep
+            value={data.hormonalMedicationStatus}
+            onChange={(hormonalMedicationStatus) => setData((d) => ({ ...d, hormonalMedicationStatus }))}
           />
         )}
         {stepId === "wellness" && (
@@ -689,6 +707,37 @@ function FrequencyStep({
         {TRAINING_FREQUENCY_OPTIONS.map((n) => (
           <Chip key={n} selected={value === n} onClick={() => onChange(n)}>
             {n}x per week
+          </Chip>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function MedicationStatusStep({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div>
+      <h2 className="font-display text-2xl text-ink mb-2">Hormonale medicatie</h2>
+      <p className="text-ink-soft text-sm mb-6">
+        Gebruik je hormonale medicatie of medicatie die invloed kan hebben op je cyclus of
+        hormonen? Dit is puur informatief — als je hier iets anders dan &ldquo;Nee&rdquo; kiest,
+        kun je daarna zelf je eigen schema bijhouden. Je past dit later altijd aan in je profiel.
+      </p>
+      <div className="flex flex-col gap-2">
+        {HORMONAL_MEDICATION_STATUS_OPTIONS.map((opt) => (
+          <Chip
+            key={opt.value}
+            selected={value === opt.value}
+            onClick={() => onChange(opt.value)}
+            className="w-full justify-start"
+          >
+            {opt.label}
           </Chip>
         ))}
       </div>

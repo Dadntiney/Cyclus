@@ -27,6 +27,8 @@ export interface UpdateProfileInput {
   averageCycleLength: number | null
   regularity: string | null
   perimenopauseInfo: string | null
+  hormonalMedicationStatus: string | null
+  showMedicationOnDashboard: boolean
 }
 
 export async function updateProfile(input: UpdateProfileInput) {
@@ -57,6 +59,8 @@ export async function updateProfile(input: UpdateProfileInput) {
       wellness_preference: input.wellnessPreference,
       motivation: input.motivation,
       personal_note: input.personalNote,
+      hormonal_medication_status: input.hormonalMedicationStatus,
+      show_medication_on_dashboard: input.showMedicationOnDashboard,
     })
     .eq("id", user.id)
 
@@ -81,6 +85,7 @@ export async function updateProfile(input: UpdateProfileInput) {
   revalidatePath("/cyclus/vandaag")
   revalidatePath("/cyclus/overgang")
   revalidatePath("/deze-week")
+  revalidatePath("/medicatie")
   return { success: true }
 }
 

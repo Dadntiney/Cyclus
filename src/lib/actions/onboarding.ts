@@ -37,6 +37,7 @@ export async function completeOnboarding(input: OnboardingInput) {
       health_conditions: data.healthConditions,
       movement_limitations: data.movementLimitations,
       nutrition_style: data.nutritionStyle,
+      hormonal_medication_status: data.hormonalMedicationStatus || null,
       onboarding_completed: true,
     })
     .eq("id", user.id)
