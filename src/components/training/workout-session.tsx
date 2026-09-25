@@ -173,21 +173,21 @@ export function WorkoutSession({
       {current.common_mistakes && (
         <div className="rounded-2xl bg-peach-soft/60 p-3.5 mb-3">
           <p className="text-xs font-medium text-ink mb-1">Let op</p>
-          <p className="text-xs text-ink-soft">{current.common_mistakes}</p>
+          <p className="text-sm text-ink-soft">{current.common_mistakes}</p>
         </div>
       )}
 
       {current.why_it_helps && (
         <div className="rounded-2xl bg-sage-soft p-3.5 mb-3">
           <p className="text-xs font-medium text-sage-dark mb-1">Waarom deze oefening</p>
-          <p className="text-xs text-ink-soft">{current.why_it_helps}</p>
+          <p className="text-sm text-ink-soft">{current.why_it_helps}</p>
         </div>
       )}
 
       {current.fun_fact && (
         <div className="flex gap-2 rounded-2xl bg-cream-soft p-3.5 mb-5">
           <Sparkles className="h-4 w-4 text-sage-dark shrink-0 mt-0.5" strokeWidth={1.75} />
-          <p className="text-xs text-ink-soft">{current.fun_fact}</p>
+          <p className="text-sm text-ink-soft">{current.fun_fact}</p>
         </div>
       )}
 

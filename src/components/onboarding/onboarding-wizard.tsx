@@ -519,7 +519,7 @@ function HealthStep({
       </div>
 
       {hasAnySelection && (
-        <p className="text-xs text-ink-soft mt-5 bg-cream-soft rounded-2xl p-3">
+        <p className="text-sm text-ink-soft mt-5 bg-cream-soft rounded-2xl p-3">
           Bij twijfel over wat wel of niet passend is voor jouw situatie is overleg met een
           arts, fysiotherapeut of diëtist altijd verstandig.
         </p>

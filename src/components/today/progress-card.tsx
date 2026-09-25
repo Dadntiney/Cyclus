@@ -28,7 +28,7 @@ export function ProgressCard({
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p className="text-xs text-ink-soft mb-4">
+      <p className="text-sm text-ink-soft mb-4">
         {completedThisWeek === 0
           ? "Nog niets deze week? Geen probleem — elk moment is een goed moment om te beginnen."
           : "Dit heb je zelf opgebouwd."}

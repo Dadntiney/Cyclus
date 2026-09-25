@@ -39,7 +39,7 @@ export function DailyTipCard({ tip }: { tip: Tables<"daily_tips"> }) {
         {tip.practical_example}
       </p>
       {tip.fun_fact && (
-        <p className="text-xs text-ink-soft mt-3 bg-cream-soft rounded-2xl p-3">{tip.fun_fact}</p>
+        <p className="text-sm text-ink-soft mt-3 bg-cream-soft rounded-2xl p-3">{tip.fun_fact}</p>
       )}
 
       {tip.quiz_question && options.length > 0 && (
