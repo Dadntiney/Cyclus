@@ -44,3 +44,36 @@ export async function saveCheckin(input: CheckinInput) {
   revalidatePath("/vandaag")
   return { success: true }
 }
+
+const NEED_VALUES = ["rust", "beweging", "voeding", "energie", "mezelf"] as const
+
+/**
+ * Lightweight, tap-to-save counterpart to the full check-in — just the
+ * "waar heb je behoefte aan" answer, saved instantly without touching
+ * whatever else is (or isn't) already recorded for today.
+ */
+export async function setTodayNeed(need: string | null) {
+  if (need !== null && !NEED_VALUES.includes(need as (typeof NEED_VALUES)[number])) {
+    return { error: "Ongeldige invoer." }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: "Je bent niet ingelogd." }
+  }
+
+  const { error } = await supabase.from("daily_checkins").upsert(
+    { user_id: user.id, date: todayISO(), need },
+    { onConflict: "user_id,date" },
+  )
+
+  if (error) {
+    return { error: "Opslaan is niet gelukt. Probeer het opnieuw." }
+  }
+
+  revalidatePath("/vandaag")
+  return { success: true }
+}

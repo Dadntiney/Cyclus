@@ -3,6 +3,7 @@ import { getVandaagData } from "@/lib/data/vandaag"
 import { getDailyTip } from "@/lib/data/daily-tip"
 import { TodayCards } from "@/components/today/today-cards"
 import { CheckinForm } from "@/components/today/checkin-form"
+import { NeedPicker } from "@/components/today/need-picker"
 import { DailyTipCard } from "@/components/today/daily-tip-card"
 import { ProgressCard } from "@/components/today/progress-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
@@ -62,10 +63,14 @@ export default async function VandaagPage() {
         )}
       </div>
 
+      <div className="mb-6 lg:mb-8">
+        <NeedPicker initialNeed={checkin?.need ?? null} />
+      </div>
+
       <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
         <div className="flex flex-col gap-6 lg:col-span-2">
-          <CheckinForm initial={checkin ?? null} />
           {recommendation && <TodayCards recommendation={recommendation} />}
+          <CheckinForm initial={checkin ?? null} />
         </div>
 
         <div className="flex flex-col gap-6 mt-6 lg:mt-0">

@@ -7,7 +7,7 @@ import { RatingScale } from "@/components/ui/rating-scale"
 import { Chip } from "@/components/ui/chip"
 import { Textarea, Label } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { SYMPTOM_OPTIONS, NEED_OPTIONS } from "@/lib/constants"
+import { SYMPTOM_OPTIONS } from "@/lib/constants"
 import { saveCheckin } from "@/lib/actions/checkin"
 import type { CheckinInput } from "@/lib/validations/checkin"
 import type { Tables } from "@/types/database"
@@ -21,7 +21,6 @@ export function CheckinForm({ initial }: { initial: Checkin | null }) {
   const [stress, setStress] = useState<number | null>(initial?.stress ?? null)
   const [symptoms, setSymptoms] = useState<string[]>(initial?.symptoms ?? [])
   const [notes, setNotes] = useState(initial?.notes ?? "")
-  const [need, setNeed] = useState<string | null>(initial?.need ?? null)
   const [showMore, setShowMore] = useState(
     Boolean(initial?.mood || initial?.sleep || initial?.stress || initial?.symptoms?.length || initial?.notes),
   )
@@ -52,7 +51,7 @@ export function CheckinForm({ initial }: { initial: Checkin | null }) {
         stress,
         symptoms,
         notes,
-        need: need as CheckinInput["need"],
+        need: (initial?.need ?? null) as CheckinInput["need"],
       })
       if (result?.error) {
         setStatus("error")
@@ -71,32 +70,10 @@ export function CheckinForm({ initial }: { initial: Checkin | null }) {
 
   return (
     <Card>
-      <p className="text-sage-dark text-sm font-medium mb-1">🌿 Vandaag</p>
-      <p className="text-ink-soft text-sm mb-5 italic">
-        &ldquo;Luister naar hoe je je vandaag voelt en pas je tempo daarop aan.&rdquo;
-      </p>
-
-      <h3 className="font-display text-lg text-ink mb-4">Hoe voel je je vandaag?</h3>
+      <h3 className="font-display text-lg text-ink mb-1">Hoe voel je je vandaag?</h3>
+      <p className="text-ink-soft text-sm mb-4">Helemaal optioneel — vul in wat je wilt bijhouden.</p>
 
       <div className="flex flex-col gap-5">
-        <div>
-          <p className="text-sm font-medium text-ink mb-2">Waar heb je vandaag behoefte aan?</p>
-          <div className="flex flex-wrap gap-2">
-            {NEED_OPTIONS.map((opt) => (
-              <Chip
-                key={opt.value}
-                selected={need === opt.value}
-                onClick={() => setNeed((n) => (n === opt.value ? null : opt.value))}
-              >
-                <span className="mr-1" aria-hidden>
-                  {opt.emoji}
-                </span>
-                {opt.label}
-              </Chip>
-            ))}
-          </div>
-        </div>
-
         <RatingScale label="Energie" value={energy} onChange={setEnergy} lowLabel="Laag" highLabel="Hoog" />
 
         {showMore ? (
