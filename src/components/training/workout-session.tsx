@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import { Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { completeWorkoutSession, fetchAlternativeExercise } from "@/lib/actions/training"
@@ -9,6 +10,10 @@ import type { Tables } from "@/types/database"
 
 type Exercise = Tables<"exercises">
 type Workout = Tables<"workouts">
+
+function parseSteps(steps: Exercise["steps"]): string[] {
+  return Array.isArray(steps) ? steps.filter((s): s is string => typeof s === "string") : []
+}
 
 export function WorkoutSession({
   workout,
@@ -62,14 +67,40 @@ export function WorkoutSession({
 
   if (!started) {
     return (
-      <Card>
-        <p className="font-display text-xl text-ink mb-1">{workout.title}</p>
-        <p className="text-sm text-ink-soft mb-4">
-          {workout.duration} minuten · {exercises.length} oefeningen
-        </p>
-        {workout.description && <p className="text-sm text-ink-soft mb-5">{workout.description}</p>}
-        <Button onClick={() => setStarted(true)}>Workout starten</Button>
-      </Card>
+      <div className="flex flex-col gap-4">
+        <Card>
+          <p className="font-display text-xl text-ink mb-1">{workout.title}</p>
+          <p className="text-sm text-ink-soft mb-4">
+            {workout.duration} minuten · {exercises.length} oefeningen
+          </p>
+          {workout.description && <p className="text-sm text-ink-soft mb-5">{workout.description}</p>}
+          <Button onClick={() => setStarted(true)}>Workout starten</Button>
+        </Card>
+
+        {exercises.length > 0 && (
+          <Card>
+            <p className="text-sm font-medium text-ink mb-3">Wat ga je doen?</p>
+            <ul className="flex flex-col gap-3">
+              {exercises.map((ex, i) => (
+                <li key={ex.id} className="flex items-start gap-3">
+                  <span className="mt-0.5 h-5 w-5 rounded-full bg-sage-soft text-sage-dark text-[11px] font-semibold flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-ink">{ex.name}</p>
+                    <p className="text-xs text-ink-soft">
+                      {ex.muscle_group ? `${ex.muscle_group} · ` : ""}
+                      {ex.sets ? `${ex.sets} sets` : ""}
+                      {ex.sets && ex.reps ? " · " : ""}
+                      {ex.reps ?? ""}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+      </div>
     )
   }
 
@@ -91,21 +122,59 @@ export function WorkoutSession({
 
   if (!current) return null
 
+  const steps = parseSteps(current.steps)
+
   return (
     <Card>
       <p className="text-xs text-ink-soft mb-1">
         Oefening {index + 1} van {exercises.length}
+        {current.muscle_group ? ` · ${current.muscle_group}` : ""}
       </p>
       <p className="font-display text-xl text-ink mb-2">{current.name}</p>
       {(current.sets || current.reps) && (
-        <p className="text-sm text-sage-dark font-medium mb-3">
+        <p className="text-sm text-sage-dark font-medium mb-4">
           {current.sets ? `${current.sets} sets` : ""}
           {current.sets && current.reps ? " · " : ""}
           {current.reps ?? ""}
         </p>
       )}
-      {current.instructions && (
-        <p className="text-sm text-ink-soft mb-6">{current.instructions}</p>
+
+      {steps.length > 0 ? (
+        <ol className="flex flex-col gap-2 mb-5">
+          {steps.map((step, i) => (
+            <li key={i} className="flex gap-2.5 text-sm text-ink-soft">
+              <span className="shrink-0 h-5 w-5 rounded-full bg-cream-soft text-ink text-[11px] font-semibold flex items-center justify-center">
+                {i + 1}
+              </span>
+              {step}
+            </li>
+          ))}
+        </ol>
+      ) : (
+        current.instructions && (
+          <p className="text-sm text-ink-soft mb-5">{current.instructions}</p>
+        )
+      )}
+
+      {current.common_mistakes && (
+        <div className="rounded-2xl bg-peach-soft/60 p-3.5 mb-3">
+          <p className="text-xs font-medium text-ink mb-1">Let op</p>
+          <p className="text-xs text-ink-soft">{current.common_mistakes}</p>
+        </div>
+      )}
+
+      {current.why_it_helps && (
+        <div className="rounded-2xl bg-sage-soft p-3.5 mb-3">
+          <p className="text-xs font-medium text-sage-dark mb-1">Waarom deze oefening</p>
+          <p className="text-xs text-ink-soft">{current.why_it_helps}</p>
+        </div>
+      )}
+
+      {current.fun_fact && (
+        <div className="flex gap-2 rounded-2xl bg-cream-soft p-3.5 mb-5">
+          <Sparkles className="h-4 w-4 text-sage-dark shrink-0 mt-0.5" strokeWidth={1.75} />
+          <p className="text-xs text-ink-soft">{current.fun_fact}</p>
+        </div>
       )}
 
       <div className="flex flex-col gap-2.5">

@@ -1,9 +1,10 @@
 import Link from "next/link"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Check } from "lucide-react"
+import { Check, Moon } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { getWorkoutLibrary, getWeekSessions } from "@/lib/data/training"
+import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
@@ -13,6 +14,14 @@ const DIFFICULTY_LABELS: Record<string, string> = {
   pittig: "Pittig",
 }
 
+const FOCUS_LABELS: Record<DayFocus, string> = {
+  kracht: "Kracht",
+  cardio: "Cardio",
+  mobiliteit: "Mobiliteit",
+  herstel: "Herstel",
+  rust: "Rustdag",
+}
+
 export default async function TrainingPage() {
   const supabase = await createClient()
   const {
@@ -20,8 +29,24 @@ export default async function TrainingPage() {
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  const [workouts, week] = await Promise.all([getWorkoutLibrary(), getWeekSessions(user.id)])
+  const [workouts, week, { data: profile }] = await Promise.all([
+    getWorkoutLibrary(),
+    getWeekSessions(user.id),
+    supabase
+      .from("profiles")
+      .select("training_frequency, health_conditions, movement_limitations")
+      .eq("id", user.id)
+      .single(),
+  ])
   const todayISO = format(new Date(), "yyyy-MM-dd")
+
+  const program = buildWeeklyProgram({
+    frequency: profile?.training_frequency ?? 3,
+    healthConditions: profile?.health_conditions ?? [],
+    movementLimitations: profile?.movement_limitations ?? [],
+    workouts,
+    seed: `${user.id}-weekprogram`,
+  })
 
   return (
     <div className="max-w-2xl mx-auto px-5 py-6 flex flex-col gap-6">
@@ -58,6 +83,47 @@ export default async function TrainingPage() {
             })}
           </div>
         </Card>
+      </div>
+
+      <div>
+        <h2 className="font-display text-lg text-ink mb-3">Jouw weekprogramma</h2>
+        <p className="text-sm text-ink-soft mb-3">
+          Gebaseerd op {profile?.training_frequency ?? 3}x per week uit je profiel. Pas dit aan
+          bij Profiel als dit niet meer klopt.
+        </p>
+        <div className="flex flex-col gap-2">
+          {program.map(({ weekday, focus, workout }) =>
+            workout ? (
+              <Link
+                key={weekday}
+                href={`/training/${workout.id}`}
+                className="block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
+              >
+                <Card interactive className="p-3.5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs text-ink-soft">
+                        {weekday} · {FOCUS_LABELS[focus]}
+                      </p>
+                      <p className="font-medium text-ink text-sm mt-0.5">{workout.title}</p>
+                    </div>
+                    <span className="text-xs text-ink-soft shrink-0">{workout.duration} min</span>
+                  </div>
+                </Card>
+              </Link>
+            ) : (
+              <Card key={weekday} className="p-3.5 bg-cream-soft border-transparent shadow-none">
+                <div className="flex items-center gap-2.5 text-ink-soft">
+                  <Moon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+                  <div>
+                    <p className="text-xs">{weekday}</p>
+                    <p className="text-sm font-medium">{FOCUS_LABELS.rust}</p>
+                  </div>
+                </div>
+              </Card>
+            ),
+          )}
+        </div>
       </div>
 
       <div>

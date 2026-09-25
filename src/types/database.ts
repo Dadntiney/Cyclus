@@ -170,8 +170,49 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_tips: {
+        Row: {
+          category: string
+          created_at: string
+          fun_fact: string | null
+          id: string
+          practical_example: string
+          quiz_answer_explanation: string | null
+          quiz_options: Json | null
+          quiz_question: string | null
+          short_explanation: string
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          fun_fact?: string | null
+          id?: string
+          practical_example: string
+          quiz_answer_explanation?: string | null
+          quiz_options?: Json | null
+          quiz_question?: string | null
+          short_explanation: string
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          fun_fact?: string | null
+          id?: string
+          practical_example?: string
+          quiz_answer_explanation?: string | null
+          quiz_options?: Json | null
+          quiz_question?: string | null
+          short_explanation?: string
+          title?: string
+        }
+        Relationships: []
+      }
       exercises: {
         Row: {
+          common_mistakes: string | null
+          fun_fact: string | null
           id: string
           instructions: string | null
           muscle_group: string | null
@@ -179,9 +220,13 @@ export type Database = {
           order_index: number
           reps: string | null
           sets: number | null
+          steps: Json | null
+          why_it_helps: string | null
           workout_id: string
         }
         Insert: {
+          common_mistakes?: string | null
+          fun_fact?: string | null
           id?: string
           instructions?: string | null
           muscle_group?: string | null
@@ -189,9 +234,13 @@ export type Database = {
           order_index?: number
           reps?: string | null
           sets?: number | null
+          steps?: Json | null
+          why_it_helps?: string | null
           workout_id: string
         }
         Update: {
+          common_mistakes?: string | null
+          fun_fact?: string | null
           id?: string
           instructions?: string | null
           muscle_group?: string | null
@@ -199,6 +248,8 @@ export type Database = {
           order_index?: number
           reps?: string | null
           sets?: number | null
+          steps?: Json | null
+          why_it_helps?: string | null
           workout_id?: string
         }
         Relationships: [
@@ -306,40 +357,58 @@ export type Database = {
         Row: {
           age: number | null
           created_at: string
+          goal_weight_kg: number | null
           goals: string[]
+          health_conditions: string[]
+          height_cm: number | null
           id: string
+          movement_limitations: string[]
           name: string | null
           nutrition_preferences: string[]
+          nutrition_style: string
           onboarding_completed: boolean
           training_frequency: number | null
           training_preferences: string[]
           updated_at: string
+          weight_kg: number | null
           wellness_preference: string | null
         }
         Insert: {
           age?: number | null
           created_at?: string
+          goal_weight_kg?: number | null
           goals?: string[]
+          health_conditions?: string[]
+          height_cm?: number | null
           id: string
+          movement_limitations?: string[]
           name?: string | null
           nutrition_preferences?: string[]
+          nutrition_style?: string
           onboarding_completed?: boolean
           training_frequency?: number | null
           training_preferences?: string[]
           updated_at?: string
+          weight_kg?: number | null
           wellness_preference?: string | null
         }
         Update: {
           age?: number | null
           created_at?: string
+          goal_weight_kg?: number | null
           goals?: string[]
+          health_conditions?: string[]
+          height_cm?: number | null
           id?: string
+          movement_limitations?: string[]
           name?: string | null
           nutrition_preferences?: string[]
+          nutrition_style?: string
           onboarding_completed?: boolean
           training_frequency?: number | null
           training_preferences?: string[]
           updated_at?: string
+          weight_kg?: number | null
           wellness_preference?: string | null
         }
         Relationships: []
@@ -349,36 +418,60 @@ export type Database = {
           category: string[]
           created_at: string
           description: string | null
+          difficulty: string | null
           id: string
           image_url: string | null
           ingredients: Json
           instructions: string | null
+          is_budget: boolean
+          low_carb_variant: string | null
+          meal_prep_tip: string | null
           nutrition_information: Json
+          optional_ingredients: Json | null
           preparation_time: number | null
+          servings: number | null
+          steps: Json | null
+          storage_tip: string | null
           title: string
         }
         Insert: {
           category?: string[]
           created_at?: string
           description?: string | null
+          difficulty?: string | null
           id?: string
           image_url?: string | null
           ingredients?: Json
           instructions?: string | null
+          is_budget?: boolean
+          low_carb_variant?: string | null
+          meal_prep_tip?: string | null
           nutrition_information?: Json
+          optional_ingredients?: Json | null
           preparation_time?: number | null
+          servings?: number | null
+          steps?: Json | null
+          storage_tip?: string | null
           title: string
         }
         Update: {
           category?: string[]
           created_at?: string
           description?: string | null
+          difficulty?: string | null
           id?: string
           image_url?: string | null
           ingredients?: Json
           instructions?: string | null
+          is_budget?: boolean
+          low_carb_variant?: string | null
+          meal_prep_tip?: string | null
           nutrition_information?: Json
+          optional_ingredients?: Json | null
           preparation_time?: number | null
+          servings?: number | null
+          steps?: Json | null
+          storage_tip?: string | null
           title?: string
         }
         Relationships: []

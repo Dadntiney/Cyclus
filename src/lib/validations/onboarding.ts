@@ -11,8 +11,14 @@ export const onboardingSchema = z.object({
   goals: z.array(z.string()).min(1, "Kies minstens één doel."),
   trainingPreferences: z.array(z.string()),
   nutritionPreferences: z.array(z.string()),
-  trainingFrequency: z.number().int().min(2).max(6),
+  trainingFrequency: z.number().int().min(1).max(7),
   wellnessPreference: z.enum(["natuurlijk", "gebalanceerd", "fitness"]),
+  heightCm: z.number().int().min(120).max(220).optional(),
+  weightKg: z.number().min(30).max(250).optional(),
+  goalWeightKg: z.number().min(30).max(250).optional(),
+  healthConditions: z.array(z.string()),
+  movementLimitations: z.array(z.string()),
+  nutritionStyle: z.enum(["normaal", "koolhydraatarm"]),
 })
 
 export type OnboardingInput = z.infer<typeof onboardingSchema>

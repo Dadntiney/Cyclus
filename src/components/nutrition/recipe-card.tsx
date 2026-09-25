@@ -24,8 +24,20 @@ export function RecipeCard({ recipe }: { recipe: Tables<"recipes"> }) {
         {recipe.description && (
           <p className="text-sm text-ink-soft mt-1 line-clamp-2">{recipe.description}</p>
         )}
+        {(recipe.preparation_time || recipe.servings) && (
+          <p className="text-xs text-ink-soft mt-1.5">
+            {recipe.preparation_time ? `${recipe.preparation_time} min` : ""}
+            {recipe.preparation_time && recipe.servings ? " · " : ""}
+            {recipe.servings ? `${recipe.servings} ${recipe.servings === 1 ? "portie" : "porties"}` : ""}
+          </p>
+        )}
         <div className="flex flex-wrap gap-1.5 mt-3">
-          {recipe.category.slice(0, 3).map((c) => (
+          {recipe.is_budget && (
+            <span className="text-[11px] font-medium text-white bg-sage-dark rounded-full px-2.5 py-1">
+              Budget
+            </span>
+          )}
+          {recipe.category.slice(0, 2).map((c) => (
             <span
               key={c}
               className="text-[11px] font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1"

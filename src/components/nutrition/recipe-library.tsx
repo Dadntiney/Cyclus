@@ -8,25 +8,51 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { RECIPE_CATEGORIES } from "@/lib/constants"
 import type { Tables } from "@/types/database"
 
+const BUDGET_FILTER = "Budget"
+const LOW_CARB_FILTER = "Koolhydraatarm"
+
+function isLowCarb(recipe: Tables<"recipes">): boolean {
+  const value = recipe.nutrition_information
+  if (!value || typeof value !== "object") return false
+  const koolhydraten = (value as Record<string, unknown>).koolhydraten
+  if (typeof koolhydraten !== "string") return false
+  const match = koolhydraten.match(/[\d.]+/)
+  return match ? Number(match[0]) <= 20 : false
+}
+
 export function RecipeLibrary({ recipes }: { recipes: Tables<"recipes">[] }) {
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [activeFilter, setActiveFilter] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
-    if (!activeCategory) return recipes
-    return recipes.filter((r) => r.category.includes(activeCategory))
-  }, [recipes, activeCategory])
+    if (!activeFilter) return recipes
+    if (activeFilter === BUDGET_FILTER) return recipes.filter((r) => r.is_budget)
+    if (activeFilter === LOW_CARB_FILTER) return recipes.filter(isLowCarb)
+    return recipes.filter((r) => r.category.includes(activeFilter))
+  }, [recipes, activeFilter])
 
   return (
     <div>
       <div className="flex flex-wrap gap-2 mb-4">
-        <Chip selected={activeCategory === null} onClick={() => setActiveCategory(null)}>
+        <Chip selected={activeFilter === null} onClick={() => setActiveFilter(null)}>
           Alles
+        </Chip>
+        <Chip
+          selected={activeFilter === BUDGET_FILTER}
+          onClick={() => setActiveFilter(BUDGET_FILTER)}
+        >
+          {BUDGET_FILTER}
+        </Chip>
+        <Chip
+          selected={activeFilter === LOW_CARB_FILTER}
+          onClick={() => setActiveFilter(LOW_CARB_FILTER)}
+        >
+          {LOW_CARB_FILTER}
         </Chip>
         {RECIPE_CATEGORIES.map((category) => (
           <Chip
             key={category}
-            selected={activeCategory === category}
-            onClick={() => setActiveCategory(category)}
+            selected={activeFilter === category}
+            onClick={() => setActiveFilter(category)}
           >
             {category}
           </Chip>

@@ -1,7 +1,10 @@
 import { createClient } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
+import { getDailyTip } from "@/lib/data/daily-tip"
 import { TodayCards } from "@/components/today/today-cards"
 import { CheckinForm } from "@/components/today/checkin-form"
+import { DailyTipCard } from "@/components/today/daily-tip-card"
+import { ProgressCard } from "@/components/today/progress-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { cn } from "@/lib/utils"
 
@@ -27,7 +30,9 @@ export default async function VandaagPage() {
 
   if (!user) return null
 
-  const { profile, cycleEstimate, recommendation, checkin, streak } = await getVandaagData(user.id)
+  const { profile, cycleEstimate, recommendation, checkin, streak, completedThisWeek, today } =
+    await getVandaagData(user.id)
+  const dailyTip = await getDailyTip(today)
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
 
   return (
@@ -66,6 +71,19 @@ export default async function VandaagPage() {
       {recommendation && <TodayCards recommendation={recommendation} />}
 
       <CheckinForm initial={checkin ?? null} />
+
+      <ProgressCard
+        completedThisWeek={completedThisWeek}
+        weeklyGoal={profile?.training_frequency ?? null}
+        streak={streak}
+      />
+
+      {dailyTip && (
+        <div>
+          <h2 className="font-display text-lg text-ink mb-3">Kennis</h2>
+          <DailyTipCard tip={dailyTip} />
+        </div>
+      )}
     </div>
   )
 }

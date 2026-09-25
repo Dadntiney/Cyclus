@@ -9,6 +9,9 @@ import {
   GOAL_OPTIONS,
   TRAINING_OPTIONS,
   NUTRITION_OPTIONS,
+  NUTRITION_STYLE_OPTIONS,
+  HEALTH_CONDITION_OPTIONS,
+  MOVEMENT_LIMITATION_OPTIONS,
   TRAINING_FREQUENCY_OPTIONS,
   REGULARITY_OPTIONS,
 } from "@/lib/constants"
@@ -31,10 +34,22 @@ export function ProfileForm({
 }) {
   const [name, setName] = useState(profile.name ?? "")
   const [age, setAge] = useState(profile.age ? String(profile.age) : "")
+  const [heightCm, setHeightCm] = useState(profile.height_cm ? String(profile.height_cm) : "")
+  const [weightKg, setWeightKg] = useState(profile.weight_kg ? String(profile.weight_kg) : "")
+  const [goalWeightKg, setGoalWeightKg] = useState(
+    profile.goal_weight_kg ? String(profile.goal_weight_kg) : "",
+  )
   const [goals, setGoals] = useState<string[]>(profile.goals ?? [])
+  const [healthConditions, setHealthConditions] = useState<string[]>(
+    profile.health_conditions ?? [],
+  )
+  const [movementLimitations, setMovementLimitations] = useState<string[]>(
+    profile.movement_limitations ?? [],
+  )
   const [trainingPreferences, setTrainingPreferences] = useState<string[]>(
     profile.training_preferences ?? [],
   )
+  const [nutritionStyle, setNutritionStyle] = useState(profile.nutrition_style ?? "normaal")
   const [nutritionPreferences, setNutritionPreferences] = useState<string[]>(
     profile.nutrition_preferences ?? [],
   )
@@ -53,8 +68,14 @@ export function ProfileForm({
       const result = await updateProfile({
         name: name.trim(),
         age: age ? Number(age) : null,
+        heightCm: heightCm ? Number(heightCm) : null,
+        weightKg: weightKg ? Number(weightKg) : null,
+        goalWeightKg: goalWeightKg ? Number(goalWeightKg) : null,
         goals,
+        healthConditions,
+        movementLimitations,
         trainingPreferences,
+        nutritionStyle,
         nutritionPreferences,
         trainingFrequency,
         wellnessPreference: profile.wellness_preference,
@@ -86,10 +107,77 @@ export function ProfileForm({
       </Card>
 
       <Card>
+        <p className="text-sm font-medium text-ink mb-3">Lichaamsgegevens</p>
+        <div className="flex flex-col gap-4">
+          <div>
+            <Label htmlFor="heightCm">Lengte (cm)</Label>
+            <Input
+              id="heightCm"
+              type="number"
+              inputMode="numeric"
+              value={heightCm}
+              onChange={(e) => setHeightCm(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="weightKg">Gewicht (kg)</Label>
+            <Input
+              id="weightKg"
+              type="number"
+              inputMode="decimal"
+              value={weightKg}
+              onChange={(e) => setWeightKg(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="goalWeightKg">Doelgewicht (kg, optioneel)</Label>
+            <Input
+              id="goalWeightKg"
+              type="number"
+              inputMode="decimal"
+              value={goalWeightKg}
+              onChange={(e) => setGoalWeightKg(e.target.value)}
+            />
+          </div>
+        </div>
+      </Card>
+
+      <Card>
         <p className="text-sm font-medium text-ink mb-3">Doelen</p>
         <div className="flex flex-wrap gap-2">
           {GOAL_OPTIONS.map((opt) => (
             <Chip key={opt} selected={goals.includes(opt)} onClick={() => setGoals((g) => toggle(g, opt))}>
+              {opt}
+            </Chip>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
+        <p className="text-sm font-medium text-ink mb-3">Aandachtspunten</p>
+        <p className="text-xs text-ink-soft mb-3">
+          Optioneel. Geen diagnoses — puur om je advies passender te maken.
+        </p>
+        <p className="text-sm font-medium text-ink mb-2">Aandoeningen of aandachtspunten</p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {HEALTH_CONDITION_OPTIONS.map((opt) => (
+            <Chip
+              key={opt}
+              selected={healthConditions.includes(opt)}
+              onClick={() => setHealthConditions((v) => toggle(v, opt))}
+            >
+              {opt}
+            </Chip>
+          ))}
+        </div>
+        <p className="text-sm font-medium text-ink mb-2">Beperkingen bij bewegen</p>
+        <div className="flex flex-wrap gap-2">
+          {MOVEMENT_LIMITATION_OPTIONS.map((opt) => (
+            <Chip
+              key={opt}
+              selected={movementLimitations.includes(opt)}
+              onClick={() => setMovementLimitations((v) => toggle(v, opt))}
+            >
               {opt}
             </Chip>
           ))}
@@ -120,7 +208,19 @@ export function ProfileForm({
       </Card>
 
       <Card>
-        <p className="text-sm font-medium text-ink mb-3">Voeding</p>
+        <p className="text-sm font-medium text-ink mb-3">Voedingsstijl</p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {NUTRITION_STYLE_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value}
+              selected={nutritionStyle === opt.value}
+              onClick={() => setNutritionStyle(opt.value)}
+            >
+              {opt.label}
+            </Chip>
+          ))}
+        </div>
+        <p className="text-sm font-medium text-ink mb-2">Voedingsvoorkeuren</p>
         <div className="flex flex-wrap gap-2">
           {NUTRITION_OPTIONS.map((opt) => (
             <Chip

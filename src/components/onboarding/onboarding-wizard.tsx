@@ -8,6 +8,9 @@ import {
   GOAL_OPTIONS,
   TRAINING_OPTIONS,
   NUTRITION_OPTIONS,
+  NUTRITION_STYLE_OPTIONS,
+  HEALTH_CONDITION_OPTIONS,
+  MOVEMENT_LIMITATION_OPTIONS,
   TRAINING_FREQUENCY_OPTIONS,
   STYLE_OPTIONS,
   REGULARITY_OPTIONS,
@@ -18,19 +21,25 @@ import { cn } from "@/lib/utils"
 interface FormData {
   name: string
   age: string
+  heightCm: string
+  weightKg: string
+  goalWeightKg: string
   hasCycle: boolean | null
   lastPeriodStart: string
   averageCycleLength: string
   regularity: string
   perimenopauseInfo: string
   goals: string[]
+  healthConditions: string[]
+  movementLimitations: string[]
   trainingPreferences: string[]
+  nutritionStyle: string
   nutritionPreferences: string[]
   trainingFrequency: number | null
   wellnessPreference: string
 }
 
-const TOTAL_STEPS = 10
+const TOTAL_STEPS = 13
 
 function toggle(list: string[], value: string) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
@@ -43,13 +52,19 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
   const [data, setData] = useState<FormData>({
     name: initialName,
     age: "",
+    heightCm: "",
+    weightKg: "",
+    goalWeightKg: "",
     hasCycle: null,
     lastPeriodStart: "",
     averageCycleLength: "",
     regularity: "",
     perimenopauseInfo: "",
     goals: [],
+    healthConditions: [],
+    movementLimitations: [],
     trainingPreferences: [],
+    nutritionStyle: "normaal",
     nutritionPreferences: [],
     trainingFrequency: null,
     wellnessPreference: "",
@@ -63,7 +78,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         const age = Number(data.age)
         return age >= 10 && age <= 100 ? null : "Vul een geldige leeftijd in."
       }
-      case 3:
+      case 4:
         if (data.hasCycle === null) return "Laat ons weten of je een cyclus hebt."
         if (data.hasCycle) {
           if (!data.lastPeriodStart) return "Vul de startdatum van je laatste menstruatie in."
@@ -72,11 +87,11 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
           if (!data.regularity) return "Laat ons weten of je cyclus regelmatig is."
         }
         return null
-      case 4:
+      case 5:
         return data.goals.length > 0 ? null : "Kies minstens één doel."
-      case 7:
+      case 10:
         return data.trainingFrequency ? null : "Kies hoe vaak je wilt bewegen."
-      case 8:
+      case 11:
         return data.wellnessPreference ? null : "Kies een stijl die bij je past."
       default:
         return null
@@ -104,6 +119,9 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         await completeOnboarding({
           name: data.name.trim(),
           age: Number(data.age),
+          heightCm: data.heightCm ? Number(data.heightCm) : undefined,
+          weightKg: data.weightKg ? Number(data.weightKg) : undefined,
+          goalWeightKg: data.goalWeightKg ? Number(data.goalWeightKg) : undefined,
           hasCycle: data.hasCycle ?? false,
           lastPeriodStart: data.lastPeriodStart || undefined,
           averageCycleLength: data.averageCycleLength
@@ -116,7 +134,10 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             | undefined,
           perimenopauseInfo: data.perimenopauseInfo || undefined,
           goals: data.goals,
+          healthConditions: data.healthConditions,
+          movementLimitations: data.movementLimitations,
           trainingPreferences: data.trainingPreferences,
+          nutritionStyle: data.nutritionStyle as "normaal" | "koolhydraatarm",
           nutritionPreferences: data.nutritionPreferences,
           trainingFrequency: data.trainingFrequency!,
           wellnessPreference: data.wellnessPreference as
@@ -145,8 +166,9 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         {step === 0 && <WelcomeStep />}
         {step === 1 && <NameStep value={data.name} onChange={(name) => setData((d) => ({ ...d, name }))} />}
         {step === 2 && <AgeStep value={data.age} onChange={(age) => setData((d) => ({ ...d, age }))} />}
-        {step === 3 && <CycleStep data={data} setData={setData} />}
-        {step === 4 && (
+        {step === 3 && <BodyStep data={data} setData={setData} />}
+        {step === 4 && <CycleStep data={data} setData={setData} />}
+        {step === 5 && (
           <MultiSelectStep
             title="Wat zijn jouw doelen?"
             subtitle="Kies wat op dit moment bij je past. Je kunt er meerdere kiezen."
@@ -155,7 +177,8 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             onToggle={(v) => setData((d) => ({ ...d, goals: toggle(d.goals, v) }))}
           />
         )}
-        {step === 5 && (
+        {step === 6 && <HealthStep data={data} setData={setData} />}
+        {step === 7 && (
           <MultiSelectStep
             title="Welke beweging spreekt je aan?"
             subtitle="Kies wat je leuk vindt of wilt proberen."
@@ -166,7 +189,13 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             }
           />
         )}
-        {step === 6 && (
+        {step === 8 && (
+          <NutritionStyleStep
+            value={data.nutritionStyle}
+            onChange={(nutritionStyle) => setData((d) => ({ ...d, nutritionStyle }))}
+          />
+        )}
+        {step === 9 && (
           <MultiSelectStep
             title="Heb je voedingsvoorkeuren?"
             subtitle="Zo stellen we passende recepten voor."
@@ -177,19 +206,19 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             }
           />
         )}
-        {step === 7 && (
+        {step === 10 && (
           <FrequencyStep
             value={data.trainingFrequency}
             onChange={(trainingFrequency) => setData((d) => ({ ...d, trainingFrequency }))}
           />
         )}
-        {step === 8 && (
+        {step === 11 && (
           <StyleStep
             value={data.wellnessPreference}
             onChange={(wellnessPreference) => setData((d) => ({ ...d, wellnessPreference }))}
           />
         )}
-        {step === 9 && <BuddyIntroStep name={data.name} />}
+        {step === 12 && <BuddyIntroStep name={data.name} />}
       </div>
 
       <FieldError>{error}</FieldError>
@@ -268,6 +297,65 @@ function AgeStep({ value, onChange }: { value: string; onChange: (v: string) => 
         placeholder="Bijvoorbeeld 32"
         autoFocus
       />
+    </div>
+  )
+}
+
+function BodyStep({
+  data,
+  setData,
+}: {
+  data: FormData
+  setData: React.Dispatch<React.SetStateAction<FormData>>
+}) {
+  return (
+    <div>
+      <h2 className="font-display text-2xl text-ink mb-2">Jouw lichaamsgegevens</h2>
+      <p className="text-ink-soft text-sm mb-6">
+        Optioneel, maar helpt ons om je advies preciezer te maken. Je kunt dit altijd
+        overslaan of later aanpassen.
+      </p>
+      <div className="flex flex-col gap-4">
+        <div>
+          <Label htmlFor="heightCm">Lengte (cm)</Label>
+          <Input
+            id="heightCm"
+            type="number"
+            inputMode="numeric"
+            min={120}
+            max={220}
+            value={data.heightCm}
+            onChange={(e) => setData((d) => ({ ...d, heightCm: e.target.value }))}
+            placeholder="Bijvoorbeeld 168"
+          />
+        </div>
+        <div>
+          <Label htmlFor="weightKg">Gewicht (kg)</Label>
+          <Input
+            id="weightKg"
+            type="number"
+            inputMode="decimal"
+            min={30}
+            max={250}
+            value={data.weightKg}
+            onChange={(e) => setData((d) => ({ ...d, weightKg: e.target.value }))}
+            placeholder="Bijvoorbeeld 68"
+          />
+        </div>
+        <div>
+          <Label htmlFor="goalWeightKg">Doelgewicht (kg, optioneel)</Label>
+          <Input
+            id="goalWeightKg"
+            type="number"
+            inputMode="decimal"
+            min={30}
+            max={250}
+            value={data.goalWeightKg}
+            onChange={(e) => setData((d) => ({ ...d, goalWeightKg: e.target.value }))}
+            placeholder="Alleen als je dit wilt bijhouden"
+          />
+        </div>
+      </div>
     </div>
   )
 }
@@ -386,6 +474,99 @@ function MultiSelectStep({
   )
 }
 
+function HealthStep({
+  data,
+  setData,
+}: {
+  data: FormData
+  setData: React.Dispatch<React.SetStateAction<FormData>>
+}) {
+  const hasAnySelection = data.healthConditions.length > 0 || data.movementLimitations.length > 0
+  return (
+    <div>
+      <h2 className="font-display text-2xl text-ink mb-2">Aandachtspunten</h2>
+      <p className="text-ink-soft text-sm mb-6">
+        Optioneel. Dit helpt ons om trainingen en voeding beter op jou af te stemmen. Cyclus
+        stelt geen diagnoses — dit is puur om je advies passender te maken.
+      </p>
+
+      <p className="text-sm font-medium text-ink mb-2">Aandoeningen of aandachtspunten</p>
+      <div className="flex flex-wrap gap-2 mb-5">
+        {HEALTH_CONDITION_OPTIONS.map((opt) => (
+          <Chip
+            key={opt}
+            selected={data.healthConditions.includes(opt)}
+            onClick={() => setData((d) => ({ ...d, healthConditions: toggle(d.healthConditions, opt) }))}
+          >
+            {opt}
+          </Chip>
+        ))}
+      </div>
+
+      <p className="text-sm font-medium text-ink mb-2">Beperkingen bij bewegen</p>
+      <div className="flex flex-wrap gap-2">
+        {MOVEMENT_LIMITATION_OPTIONS.map((opt) => (
+          <Chip
+            key={opt}
+            selected={data.movementLimitations.includes(opt)}
+            onClick={() =>
+              setData((d) => ({ ...d, movementLimitations: toggle(d.movementLimitations, opt) }))
+            }
+          >
+            {opt}
+          </Chip>
+        ))}
+      </div>
+
+      {hasAnySelection && (
+        <p className="text-xs text-ink-soft mt-5 bg-cream-soft rounded-2xl p-3">
+          Bij twijfel over wat wel of niet passend is voor jouw situatie is overleg met een
+          arts, fysiotherapeut of diëtist altijd verstandig.
+        </p>
+      )}
+    </div>
+  )
+}
+
+function NutritionStyleStep({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div>
+      <h2 className="font-display text-2xl text-ink mb-2">Voedingsvoorkeur</h2>
+      <p className="text-ink-soft text-sm mb-6">
+        Kies een stijl die bij je past. We laten je nooit een extreem of streng dieet zien.
+      </p>
+      <div className="flex flex-col gap-3">
+        {NUTRITION_STYLE_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={cn(
+              "flex flex-col gap-1 rounded-2xl border px-4 py-3.5 text-left transition-colors",
+              value === opt.value
+                ? "bg-sage-soft border-sage"
+                : "bg-white border-line hover:border-sage/60",
+            )}
+          >
+            <span className="font-medium text-ink">{opt.label}</span>
+            <span className="text-xs text-ink-soft">
+              {opt.value === "koolhydraatarm"
+                ? "We laten vooral recepten zien die van nature lager in koolhydraten zijn."
+                : "We laten een gebalanceerde mix van recepten zien."}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function FrequencyStep({
   value,
   onChange,
@@ -396,7 +577,9 @@ function FrequencyStep({
   return (
     <div>
       <h2 className="font-display text-2xl text-ink mb-2">Hoe vaak wil je bewegen?</h2>
-      <p className="text-ink-soft text-sm mb-6">Per week. We passen je planning hierop aan.</p>
+      <p className="text-ink-soft text-sm mb-6">
+        Per week, van 1 tot 7 dagen. We stellen hier een passend weekprogramma op.
+      </p>
       <div className="flex flex-wrap gap-2">
         {TRAINING_FREQUENCY_OPTIONS.map((n) => (
           <Chip key={n} selected={value === n} onClick={() => onChange(n)}>

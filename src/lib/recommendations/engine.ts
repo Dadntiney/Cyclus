@@ -9,7 +9,14 @@ type Checkin = Tables<"daily_checkins">
 export interface RecommendationInput {
   profile: Pick<
     Profile,
-    "name" | "goals" | "training_preferences" | "nutrition_preferences" | "wellness_preference"
+    | "name"
+    | "goals"
+    | "training_preferences"
+    | "nutrition_preferences"
+    | "nutrition_style"
+    | "health_conditions"
+    | "movement_limitations"
+    | "wellness_preference"
   >
   cycleEstimate: CycleEstimate | null
   latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms"> | null
@@ -52,6 +59,16 @@ const TRAINING_PREFERENCE_TO_TYPE: Record<string, string> = {
   Mobiliteit: "mobiliteit",
 }
 
+// Tags that suggest gentler, lower-impact movement is more appropriate —
+// informational, never a diagnosis; just steers away from high-impact types.
+const IMPACT_SENSITIVE_TAGS = [
+  "Rugklachten",
+  "Knieklachten",
+  "Gewrichtsklachten",
+  "Verminderde botdichtheid",
+  "Kan niet springen of high-impact bewegen",
+]
+
 // Small, deterministic hash so the same person sees a stable pick per day
 // (seeded by user id + date) instead of always the first item in the list.
 function seededIndex(seed: string, length: number): number {
@@ -74,6 +91,14 @@ function wantsLowerIntensityToday(
   return lowEnergy || highStress || poorSleep
 }
 
+function parseCarbGrams(nutritionInformation: Recipe["nutrition_information"]): number | null {
+  if (!nutritionInformation || typeof nutritionInformation !== "object") return null
+  const value = (nutritionInformation as Record<string, unknown>).koolhydraten
+  if (typeof value !== "string") return null
+  const match = value.match(/[\d.]+/)
+  return match ? Number(match[0]) : null
+}
+
 export function buildRecommendation(input: RecommendationInput): Recommendation {
   const { profile, cycleEstimate, latestCheckin, workouts, recipes, seed } = input
 
@@ -83,9 +108,18 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
 
   const lowerIntensity = wantsLowerIntensityToday(latestCheckin)
 
+  const impactSensitive = (profile.health_conditions ?? []).some((c) =>
+    IMPACT_SENSITIVE_TAGS.includes(c),
+  ) || (profile.movement_limitations ?? []).some((c) => IMPACT_SENSITIVE_TAGS.includes(c))
+
   let candidateWorkouts = preferredTypes.length
     ? workouts.filter((w) => preferredTypes.includes(w.type))
     : workouts
+
+  if (impactSensitive) {
+    const gentler = candidateWorkouts.filter((w) => w.type !== "hardlopen" && w.difficulty !== "pittig")
+    if (gentler.length) candidateWorkouts = gentler
+  }
 
   if (lowerIntensity) {
     const gentle = candidateWorkouts.filter((w) => w.difficulty === "makkelijk")
@@ -105,24 +139,43 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
       : "Voeg je bewegingsvoorkeuren toe in je profiel voor een passend voorstel."
   } else if (lowerIntensity) {
     trainingReason = "Je energie, slaap of stress gaf aan dat een rustigere sessie vandaag beter past."
+  } else if (impactSensitive) {
+    trainingReason = "Gekozen met oog voor de aandachtspunten uit je profiel."
   } else {
     trainingReason = "Past bij je energie van vandaag en je bewegingsvoorkeuren."
   }
 
   const nutritionPrefs = profile.nutrition_preferences ?? []
+  const wantsLowCarb = profile.nutrition_style === "koolhydraatarm"
+
   let candidateRecipes = nutritionPrefs.length
     ? recipes.filter((r) => r.category.some((c) => nutritionPrefs.includes(c)))
     : recipes
 
   if (!candidateRecipes.length) candidateRecipes = recipes
 
+  let nutritionReason: string
+  if (wantsLowCarb) {
+    const lowCarb = candidateRecipes.filter((r) => {
+      const carbs = parseCarbGrams(r.nutrition_information)
+      return carbs !== null && carbs <= 20
+    })
+    if (lowCarb.length) {
+      candidateRecipes = lowCarb
+      nutritionReason = "Een koolhydraatarme keuze, passend bij jouw voedingsvoorkeur."
+    } else {
+      nutritionReason =
+        "Sluit het best aan bij jouw voorkeuren — bekijk de koolhydraatarme variant in het recept."
+    }
+  } else {
+    nutritionReason = nutritionPrefs.length
+      ? `Sluit aan bij jouw voedingsvoorkeuren (${nutritionPrefs.join(", ")}).`
+      : "Een gebalanceerde maaltijd om je dag te ondersteunen."
+  }
+
   const recipe = candidateRecipes.length
     ? candidateRecipes[seededIndex(`${seed}-nutrition`, candidateRecipes.length)]
     : null
-
-  const nutritionReason = nutritionPrefs.length
-    ? `Sluit aan bij jouw voedingsvoorkeuren (${nutritionPrefs.join(", ")}).`
-    : "Een gebalanceerde maaltijd om je dag te ondersteunen."
 
   const recovery: RecoveryRecommendation = lowerIntensity
     ? {

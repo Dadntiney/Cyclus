@@ -29,6 +29,12 @@ export async function completeOnboarding(input: OnboardingInput) {
       nutrition_preferences: data.nutritionPreferences,
       training_frequency: data.trainingFrequency,
       wellness_preference: data.wellnessPreference,
+      height_cm: data.heightCm ?? null,
+      weight_kg: data.weightKg ?? null,
+      goal_weight_kg: data.goalWeightKg ?? null,
+      health_conditions: data.healthConditions,
+      movement_limitations: data.movementLimitations,
+      nutrition_style: data.nutritionStyle,
       onboarding_completed: true,
     })
     .eq("id", user.id)

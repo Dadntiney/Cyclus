@@ -6,8 +6,14 @@ import { createClient } from "@/lib/supabase/server"
 export interface UpdateProfileInput {
   name: string
   age: number | null
+  heightCm: number | null
+  weightKg: number | null
+  goalWeightKg: number | null
   goals: string[]
+  healthConditions: string[]
+  movementLimitations: string[]
   trainingPreferences: string[]
+  nutritionStyle: string
   nutritionPreferences: string[]
   trainingFrequency: number | null
   wellnessPreference: string | null
@@ -27,8 +33,14 @@ export async function updateProfile(input: UpdateProfileInput) {
     .update({
       name: input.name,
       age: input.age,
+      height_cm: input.heightCm,
+      weight_kg: input.weightKg,
+      goal_weight_kg: input.goalWeightKg,
       goals: input.goals,
+      health_conditions: input.healthConditions,
+      movement_limitations: input.movementLimitations,
       training_preferences: input.trainingPreferences,
+      nutrition_style: input.nutritionStyle,
       nutrition_preferences: input.nutritionPreferences,
       training_frequency: input.trainingFrequency,
       wellness_preference: input.wellnessPreference,

@@ -36,6 +36,7 @@ export async function getVandaagData(userId: string) {
     { data: workouts },
     { data: recipes },
     { data: recentCheckins },
+    { data: weekSessions },
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).single(),
     supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
@@ -48,9 +49,17 @@ export async function getVandaagData(userId: string) {
       .eq("user_id", userId)
       .gte("date", weekAgo)
       .lte("date", today),
+    supabase
+      .from("workout_sessions")
+      .select("date, completed")
+      .eq("user_id", userId)
+      .eq("completed", true)
+      .gte("date", weekAgo)
+      .lte("date", today),
   ])
 
   const streak = computeStreak((recentCheckins ?? []).map((c) => c.date), today)
+  const completedThisWeek = (weekSessions ?? []).length
 
   const cycleEstimate = cycleProfile
     ? estimateCycle(
@@ -79,5 +88,6 @@ export async function getVandaagData(userId: string) {
     recommendation,
     today,
     streak,
+    completedThisWeek,
   }
 }

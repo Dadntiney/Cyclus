@@ -29,7 +29,7 @@ export const NUTRITION_OPTIONS = [
   "Dingen die ik niet lust",
 ] as const
 
-export const TRAINING_FREQUENCY_OPTIONS = [2, 3, 4, 5, 6] as const
+export const TRAINING_FREQUENCY_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const
 
 export const STYLE_OPTIONS = [
   { value: "natuurlijk", label: "Natuurlijk & holistisch", emoji: "\u{1F33F}" },
@@ -67,4 +67,33 @@ export const REGULARITY_OPTIONS = [
   { value: "regelmatig", label: "Regelmatig" },
   { value: "onregelmatig", label: "Onregelmatig" },
   { value: "onbekend", label: "Ik weet het niet zeker" },
+] as const
+
+export const NUTRITION_STYLE_OPTIONS = [
+  { value: "normaal", label: "Normaal" },
+  { value: "koolhydraatarm", label: "Koolhydraatarm" },
+] as const
+
+// Informational tags, not diagnoses — used to tailor training/nutrition
+// suggestions and to show a "check with a professional" note where relevant.
+export const HEALTH_CONDITION_OPTIONS = [
+  "Rugklachten",
+  "Knieklachten",
+  "Gewrichtsklachten",
+  "Hoge bloeddruk",
+  "Schildklieraandoening",
+  "PCOS",
+  "Verminderde botdichtheid",
+  "Zwangerschap of kraamperiode",
+  "Anders",
+] as const
+
+export const MOVEMENT_LIMITATION_OPTIONS = [
+  "Geen beperkingen",
+  "Kan niet springen of high-impact bewegen",
+  "Beperkte mobiliteit schouders",
+  "Beperkte mobiliteit heupen of knieën",
+  "Kan niet lang staan",
+  "Kan niet op de grond liggen of overeind komen",
+  "Anders",
 ] as const
