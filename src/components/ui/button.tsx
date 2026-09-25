@@ -11,14 +11,14 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-sage text-white hover:bg-sage-dark active:bg-sage-dark",
+  primary: "bg-sage-dark text-white hover:bg-sage-darker active:bg-sage-darker",
   secondary: "bg-white text-ink border border-line hover:bg-cream-soft active:bg-cream-soft",
   ghost: "bg-transparent text-ink hover:bg-cream-soft active:bg-cream-soft",
-  danger: "bg-danger text-white hover:opacity-90 active:opacity-90",
+  danger: "bg-danger text-white hover:bg-danger-dark active:bg-danger-dark",
 }
 
 const sizeClasses: Record<Size, string> = {
-  sm: "text-sm px-3.5 py-2.5 rounded-xl min-h-10",
+  sm: "text-sm px-3.5 py-2.5 rounded-xl min-h-11",
   md: "text-[15px] px-5 py-3 rounded-2xl min-h-11",
   lg: "text-base px-6 py-3.5 rounded-2xl min-h-12",
 }

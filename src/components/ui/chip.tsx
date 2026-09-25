@@ -10,11 +10,11 @@ export function Chip({ selected, className, ...props }: ChipProps) {
     <button
       type="button"
       className={cn(
-        "rounded-full border px-4 py-2.5 min-h-10 text-sm font-medium transition-[background-color,border-color,transform] duration-150 touch-manipulation select-none",
+        "rounded-full border px-4 py-2.5 min-h-11 text-sm font-medium transition-[background-color,border-color,transform] duration-150 touch-manipulation select-none",
         "motion-safe:active:scale-[0.96]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream",
         selected
-          ? "bg-sage text-white border-sage"
+          ? "bg-sage-dark text-white border-sage-dark"
           : "bg-white text-ink border-line hover:border-sage/60 active:border-sage/60",
         className,
       )}

@@ -59,7 +59,7 @@ export function Calendar({ menstruationDates: initialDates }: CalendarProps) {
         <button
           type="button"
           onClick={() => setMonth((m) => subMonths(m, 1))}
-          className="h-8 w-8 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft"
+          className="h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
           aria-label="Vorige maand"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -70,7 +70,7 @@ export function Calendar({ menstruationDates: initialDates }: CalendarProps) {
         <button
           type="button"
           onClick={() => setMonth((m) => addMonths(m, 1))}
-          className="h-8 w-8 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft"
+          className="h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
           aria-label="Volgende maand"
         >
           <ChevronRight className="h-4 w-4" />
@@ -97,9 +97,9 @@ export function Calendar({ menstruationDates: initialDates }: CalendarProps) {
               disabled={future}
               onClick={() => handleDayClick(day)}
               className={cn(
-                "relative h-10 rounded-full text-sm mx-auto w-10 flex items-center justify-center transition-colors",
+                "relative h-11 rounded-full text-sm mx-auto w-11 flex items-center justify-center transition-colors touch-manipulation",
                 isSameMonth(day, month) ? "text-ink" : "text-ink-soft/40",
-                isMenstruation && "bg-peach text-white font-medium",
+                isMenstruation && "bg-peach text-ink font-medium",
                 !isMenstruation && isToday(day) && "border border-sage text-sage-dark font-medium",
                 !isMenstruation && !isToday(day) && "hover:bg-cream-soft",
                 future && "opacity-30 cursor-not-allowed",

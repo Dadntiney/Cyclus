@@ -70,7 +70,7 @@ export default async function TrainingPage() {
                     className={cn(
                       "h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium",
                       done
-                        ? "bg-sage text-white"
+                        ? "bg-sage-dark text-white"
                         : date === todayISO
                           ? "border border-sage text-sage-dark"
                           : "bg-cream-soft text-ink-soft",

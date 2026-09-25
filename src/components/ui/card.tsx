@@ -8,7 +8,7 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   media?: ReactNode
 }
 
-const baseClasses = "rounded-3xl bg-white border border-line/70 shadow-[0_2px_16px_rgba(44,42,38,0.05)]"
+const baseClasses = "rounded-3xl bg-white border border-line/70 shadow-[var(--shadow-card)]"
 const interactiveClasses =
   "transition-[border-color,transform,box-shadow] duration-150 motion-safe:active:scale-[0.985] hover:border-sage/50 active:border-sage/50"
 

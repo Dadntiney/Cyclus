@@ -156,7 +156,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
       {step > 0 && (
         <div className="w-full h-1.5 rounded-full bg-cream-soft mb-8 overflow-hidden">
           <div
-            className="h-full bg-sage rounded-full transition-all duration-300"
+            className="h-full bg-sage-dark rounded-full transition-all duration-300"
             style={{ width: `${(step / (TOTAL_STEPS - 1)) * 100}%` }}
           />
         </div>

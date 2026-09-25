@@ -1,18 +1,58 @@
 @import "tailwindcss";
 
+/* ==========================================================
+   Cyclus design tokens
+   ----------------------------------------------------------
+   Palette rationale: sage (muted green) reads as natural,
+   calm and trustworthy without the clinical coldness of blue
+   or the cliché of pink — it's the anchor that makes Cyclus
+   recognizable. Peach adds warmth and a soft, human accent.
+   Cream (never pure white) keeps every screen feeling warm
+   rather than sterile. Every text-bearing color pair below is
+   chosen to clear WCAG AA (4.5:1 for normal text, 3:1 for
+   large text / UI components) against the background it's
+   actually used on — verified pair by pair, not eyeballed.
+   ========================================================== */
 :root {
   --color-cream: #faf6f0;
   --color-cream-soft: #f3ece2;
   --color-ink: #2c2a26;
   --color-ink-soft: #6b665d;
+
+  /* Sage: primary brand + action color. The mid-tone (--color-sage)
+     is reserved for borders, dots and soft fills — never for text
+     or white-on-color fills, since it only clears ~3.5:1. Solid
+     fills and text-on-soft-bg use the deeper --color-sage-dark. */
   --color-sage: #7c8f6f;
-  --color-sage-dark: #5f7154;
+  --color-sage-dark: #4d5d44;
+  --color-sage-darker: #3d4a36;
   --color-sage-soft: #e4e9de;
+
+  /* Peach: secondary/warm accent. Solid peach always pairs with
+     ink text (6.8:1), never white (peach-on-white text is ~2.1:1). */
   --color-peach: #e8a37e;
   --color-peach-soft: #fbe6d8;
+
   --color-line: #e8e1d5;
   --color-white: #ffffff;
-  --color-danger: #c1666b;
+
+  /* Status colors, kept inside the same warm family rather than
+     stock red/amber/blue so they still feel like Cyclus. */
+  --color-danger: #a34952;
+  --color-danger-dark: #8f3f47;
+  --color-danger-soft: #f7e2e2;
+  --color-warning: #8a5a1e;
+  --color-warning-soft: #f5e6cf;
+  --color-info: #5b4a80;
+  --color-info-soft: #ede8f4;
+
+  /* Success intentionally reuses the sage family (not a separate
+     hue) — "green means good" here is the brand color itself, and
+     it's exactly what reinforces recognizability app-wide. */
+  --color-success: var(--color-sage-dark);
+  --color-success-soft: var(--color-sage-soft);
+
+  --shadow-card: 0 2px 16px rgba(44, 42, 38, 0.05);
 }
 
 @theme inline {
@@ -24,11 +64,21 @@
   --color-ink-soft: var(--color-ink-soft);
   --color-sage: var(--color-sage);
   --color-sage-dark: var(--color-sage-dark);
+  --color-sage-darker: var(--color-sage-darker);
   --color-sage-soft: var(--color-sage-soft);
   --color-peach: var(--color-peach);
   --color-peach-soft: var(--color-peach-soft);
   --color-line: var(--color-line);
   --color-danger: var(--color-danger);
+  --color-danger-dark: var(--color-danger-dark);
+  --color-danger-soft: var(--color-danger-soft);
+  --color-warning: var(--color-warning);
+  --color-warning-soft: var(--color-warning-soft);
+  --color-info: var(--color-info);
+  --color-info-soft: var(--color-info-soft);
+  --color-success: var(--color-success);
+  --color-success-soft: var(--color-success-soft);
+  --shadow-card: var(--shadow-card);
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
 }

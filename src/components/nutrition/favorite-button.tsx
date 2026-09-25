@@ -31,7 +31,7 @@ export function FavoriteButton({
       aria-pressed={favorited}
       aria-label={favorited ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"}
       className={cn(
-        "h-10 w-10 rounded-full flex items-center justify-center border transition-colors",
+        "h-11 w-11 rounded-full flex items-center justify-center border transition-colors touch-manipulation",
         favorited ? "bg-peach-soft border-peach text-peach" : "bg-white border-line text-ink-soft",
       )}
     >

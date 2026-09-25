@@ -87,9 +87,9 @@ export function ChatWindow({
           >
             <div
               className={cn(
-                "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                "max-w-[80%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed",
                 m.role === "user"
-                  ? "bg-sage text-white rounded-br-md"
+                  ? "bg-sage-dark text-white rounded-br-md"
                   : "bg-white border border-line text-ink rounded-bl-md",
               )}
             >
@@ -124,9 +124,9 @@ export function ChatWindow({
           disabled={isPending || !input.trim()}
           aria-label="Verstuur bericht"
           className={cn(
-            "h-11 w-11 shrink-0 rounded-full bg-sage text-white flex items-center justify-center",
+            "h-11 w-11 shrink-0 rounded-full bg-sage-dark text-white flex items-center justify-center",
             "transition-[background-color,transform] duration-150 touch-manipulation motion-safe:active:scale-[0.94]",
-            "hover:bg-sage-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+            "hover:bg-sage-darker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
             "disabled:opacity-50 disabled:pointer-events-none",
           )}
         >

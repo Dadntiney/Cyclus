@@ -104,7 +104,7 @@ export default async function RecipeDetailPage({
               <p className="text-sm font-medium text-ink mb-3">
                 {recipe.is_budget ? "Basis" : "Ingrediënten"}
               </p>
-              <ul className="flex flex-col gap-1.5 text-sm text-ink-soft">
+              <ul className="flex flex-col gap-1.5 text-[15px] text-ink-soft">
                 {ingredients.map((ingredient, i) => (
                   <li key={i} className="flex gap-2">
                     <span className="text-sage">•</span>
@@ -115,7 +115,7 @@ export default async function RecipeDetailPage({
               {optionalIngredients.length > 0 && (
                 <>
                   <p className="text-sm font-medium text-ink mt-4 mb-3">Optioneel toevoegen</p>
-                  <ul className="flex flex-col gap-1.5 text-sm text-ink-soft">
+                  <ul className="flex flex-col gap-1.5 text-[15px] text-ink-soft">
                     {optionalIngredients.map((ingredient, i) => (
                       <li key={i} className="flex gap-2">
                         <span className="text-peach">•</span>
@@ -134,7 +134,7 @@ export default async function RecipeDetailPage({
               {steps.length > 0 ? (
                 <ol className="flex flex-col gap-2.5">
                   {steps.map((step, i) => (
-                    <li key={i} className="flex gap-3 text-sm text-ink-soft leading-relaxed">
+                    <li key={i} className="flex gap-3 text-[15px] text-ink-soft leading-relaxed">
                       <span className="shrink-0 h-5 w-5 rounded-full bg-sage-soft text-sage-dark text-[11px] font-semibold flex items-center justify-center">
                         {i + 1}
                       </span>
@@ -143,7 +143,7 @@ export default async function RecipeDetailPage({
                   ))}
                 </ol>
               ) : (
-                <p className="text-sm text-ink-soft leading-relaxed">{recipe.instructions}</p>
+                <p className="text-[15px] text-ink-soft leading-relaxed">{recipe.instructions}</p>
               )}
             </Card>
           )}

@@ -93,7 +93,7 @@ export function AvatarUpload({
   return (
     <div className="flex flex-col items-center">
       <div className="relative">
-        <div className="h-24 w-24 lg:h-28 lg:w-28 rounded-full overflow-hidden bg-sage-soft border-4 border-white shadow-[0_2px_16px_rgba(44,42,38,0.1)] flex items-center justify-center">
+        <div className="h-24 w-24 lg:h-28 lg:w-28 rounded-full overflow-hidden bg-sage-soft border-4 border-white shadow-[var(--shadow-card)] flex items-center justify-center">
           {avatarUrl ? (
             <Image
               src={avatarUrl}
@@ -113,9 +113,9 @@ export function AvatarUpload({
           disabled={busy}
           aria-label="Profielfoto wijzigen"
           className={cn(
-            "absolute -bottom-1 -right-1 h-9 w-9 rounded-full bg-sage text-white flex items-center justify-center border-2 border-cream",
+            "absolute -bottom-1.5 -right-1.5 h-11 w-11 rounded-full bg-sage-dark text-white flex items-center justify-center border-2 border-cream",
             "transition-[background-color,transform] duration-150 touch-manipulation motion-safe:active:scale-[0.94]",
-            "hover:bg-sage-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream",
+            "hover:bg-sage-darker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream",
             "disabled:opacity-60",
           )}
         >

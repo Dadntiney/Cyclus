@@ -58,7 +58,7 @@ export function DailyTipCard({ tip }: { tip: Tables<"daily_tips"> }) {
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full border px-4 py-2.5 min-h-10 text-sm font-medium transition-colors touch-manipulation",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream disabled:cursor-default",
-                    showResult && opt.correct && "bg-sage text-white border-sage",
+                    showResult && opt.correct && "bg-sage-dark text-white border-sage-dark",
                     showResult && isSelected && !opt.correct && "bg-danger/10 text-danger border-danger/40",
                     !showResult && "bg-white text-ink border-line hover:border-sage/60",
                     showResult && !isSelected && !opt.correct && "bg-white text-ink-soft border-line opacity-60",
