@@ -350,6 +350,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          image_url: string | null
           ingredients: Json
           instructions: string | null
           nutrition_information: Json
@@ -361,6 +362,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_url?: string | null
           ingredients?: Json
           instructions?: string | null
           nutrition_information?: Json
@@ -372,6 +374,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_url?: string | null
           ingredients?: Json
           instructions?: string | null
           nutrition_information?: Json

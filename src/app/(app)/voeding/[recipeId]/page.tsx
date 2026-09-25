@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getRecipeDetail, getFavoriteRecipeIds } from "@/lib/data/nutrition"
+import { ensureRecipeImage } from "@/lib/images/ensure-recipe-image"
 import { FavoriteButton } from "@/components/nutrition/favorite-button"
-import { RecipeMedia } from "@/components/nutrition/recipe-media"
+import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { Card } from "@/components/ui/card"
 
 export default async function RecipeDetailPage({
@@ -24,6 +25,8 @@ export default async function RecipeDetailPage({
 
   if (!recipe) notFound()
 
+  const imageUrl = await ensureRecipeImage(recipe)
+
   const ingredients = Array.isArray(recipe.ingredients)
     ? (recipe.ingredients as unknown[]).filter((i): i is string => typeof i === "string")
     : []
@@ -34,10 +37,13 @@ export default async function RecipeDetailPage({
 
   return (
     <div className="max-w-2xl mx-auto px-5 py-6">
-      <RecipeMedia
+      <RecipeImage
         title={recipe.title}
+        imageUrl={imageUrl}
         className="aspect-[16/9] w-full rounded-3xl mb-5"
         iconClassName="h-20 w-20"
+        sizes="(min-width: 672px) 672px, 100vw"
+        priority
       />
 
       <div className="flex items-start justify-between gap-4 mb-1">
