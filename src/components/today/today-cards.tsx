@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import type { Recommendation } from "@/lib/recommendations/engine"
 
 export function TodayCards({ recommendation }: { recommendation: Recommendation }) {
@@ -17,8 +18,8 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
               <p className="font-display text-lg text-ink">{training.workout.title}</p>
               <p className="text-sm text-ink-soft mt-0.5">{training.workout.duration} minuten</p>
               <p className="text-xs text-ink-soft mt-2">{training.reason}</p>
-              <Link href={`/training/${training.workout.id}`} className="inline-block mt-3">
-                <Button size="sm">Start training</Button>
+              <Link href={`/training/${training.workout.id}`} className={cn(buttonVariants(), "mt-3")}>
+                Start training
               </Link>
             </>
           ) : (
@@ -34,10 +35,11 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
             <>
               <p className="font-display text-lg text-ink">{nutrition.recipe.title}</p>
               <p className="text-xs text-ink-soft mt-2">{nutrition.reason}</p>
-              <Link href={`/voeding/${nutrition.recipe.id}`} className="inline-block mt-3">
-                <Button size="sm" variant="secondary">
-                  Bekijk recept
-                </Button>
+              <Link
+                href={`/voeding/${nutrition.recipe.id}`}
+                className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
+              >
+                Bekijk recept
               </Link>
             </>
           ) : (

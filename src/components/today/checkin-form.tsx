@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useState, useTransition } from "react"
+import { Check } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { RatingScale } from "@/components/ui/rating-scale"
 import { Chip } from "@/components/ui/chip"
@@ -49,6 +50,12 @@ export function CheckinForm({ initial }: { initial: Checkin | null }) {
     })
   }
 
+  useEffect(() => {
+    if (status !== "saved") return
+    const timer = setTimeout(() => setStatus("idle"), 2500)
+    return () => clearTimeout(timer)
+  }, [status])
+
   return (
     <Card>
       <p className="text-sage-dark text-sm font-medium mb-1">🌿 Vandaag</p>
@@ -95,7 +102,12 @@ export function CheckinForm({ initial }: { initial: Checkin | null }) {
             {isPending ? "Bezig met opslaan..." : "Check-in opslaan"}
           </Button>
           {status === "saved" && (
-            <span className="text-sm text-sage-dark font-medium">Opgeslagen ✓</span>
+            <span className="animate-pop-in inline-flex items-center gap-1.5 text-sm text-sage-dark font-medium">
+              <span className="h-5 w-5 rounded-full bg-sage-soft flex items-center justify-center">
+                <Check className="h-3 w-3" strokeWidth={3} />
+              </span>
+              Opgeslagen
+            </span>
           )}
           {status === "error" && <span className="text-sm text-danger">{errorMsg}</span>}
         </div>

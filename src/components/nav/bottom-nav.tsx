@@ -18,7 +18,8 @@ export function BottomNav() {
               <Link
                 href={href}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-medium",
+                  "flex flex-col items-center justify-center gap-1 py-2.5 min-h-[52px] text-[11px] font-medium touch-manipulation transition-[color,transform] duration-150 motion-safe:active:scale-[0.94]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset",
                   active ? "text-sage-dark" : "text-ink-soft",
                 )}
               >

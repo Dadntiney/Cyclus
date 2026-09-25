@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { format, parseISO, subDays } from "date-fns"
 import { nl } from "date-fns/locale"
+import { Droplet, Sparkles } from "lucide-react"
 
 export default async function CyclusPage() {
   const supabase = await createClient()
@@ -137,6 +138,7 @@ export default async function CyclusPage() {
         ) : (
           <Card>
             <EmptyState
+              icon={<Droplet className="h-6 w-6" />}
               title="Voeg je eerste cyclusdag toe."
               description="Tik in de kalender hierboven op een dag om je menstruatie bij te houden."
             />
@@ -165,6 +167,7 @@ export default async function CyclusPage() {
         ) : (
           <Card>
             <EmptyState
+              icon={<Sparkles className="h-6 w-6" />}
               title="Nog geen patronen zichtbaar."
               description="Vul een paar dagelijkse check-ins in op Vandaag om je persoonlijke patronen te zien."
             />

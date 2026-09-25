@@ -64,8 +64,12 @@ export default async function TrainingPage() {
         <h2 className="font-display text-lg text-ink mb-3">Bibliotheek</h2>
         <div className="flex flex-col gap-3">
           {workouts.map((workout) => (
-            <Link key={workout.id} href={`/training/${workout.id}`}>
-              <Card className="hover:border-sage/50 transition-colors">
+            <Link
+              key={workout.id}
+              href={`/training/${workout.id}`}
+              className="block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
+            >
+              <Card interactive>
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-display text-lg text-ink">{workout.title}</p>

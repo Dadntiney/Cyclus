@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { Salad } from "lucide-react"
 import { Chip } from "@/components/ui/chip"
 import { RecipeCard } from "./recipe-card"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -39,7 +40,7 @@ export function RecipeLibrary({ recipes }: { recipes: Tables<"recipes">[] }) {
           ))}
         </div>
       ) : (
-        <EmptyState title="Geen recepten in deze categorie." />
+        <EmptyState icon={<Salad className="h-6 w-6" />} title="Geen recepten in deze categorie." />
       )}
     </div>
   )

@@ -27,10 +27,11 @@ export function RatingScale({
             aria-label={`${label}: ${n} van 5`}
             aria-pressed={value === n}
             className={cn(
-              "h-11 w-11 rounded-full border text-sm font-semibold transition-colors flex items-center justify-center",
+              "h-11 w-11 rounded-full border text-sm font-semibold flex items-center justify-center touch-manipulation transition-[background-color,border-color,transform] duration-150 motion-safe:active:scale-[0.92]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream",
               value === n
                 ? "bg-sage text-white border-sage"
-                : "bg-white text-ink-soft border-line hover:border-sage/60",
+                : "bg-white text-ink-soft border-line hover:border-sage/60 active:border-sage/60",
             )}
           >
             {n}

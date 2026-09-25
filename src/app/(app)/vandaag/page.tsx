@@ -2,12 +2,21 @@ import { createClient } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { TodayCards } from "@/components/today/today-cards"
 import { CheckinForm } from "@/components/today/checkin-form"
+import type { CyclePhase } from "@/lib/cycle/estimate"
+import { cn } from "@/lib/utils"
 
 function greeting(): string {
   const hour = new Date().getHours()
   if (hour < 12) return "Goedemorgen"
   if (hour < 18) return "Goedemiddag"
   return "Goedenavond"
+}
+
+const PHASE_TONE: Record<CyclePhase, { bg: string; text: string; dot: string }> = {
+  menstruatie: { bg: "bg-peach-soft", text: "text-ink", dot: "bg-peach" },
+  folliculair: { bg: "bg-sage-soft", text: "text-sage-dark", dot: "bg-sage" },
+  ovulatie: { bg: "bg-sage-soft", text: "text-sage-dark", dot: "bg-sage-dark" },
+  luteaal: { bg: "bg-peach-soft", text: "text-ink", dot: "bg-peach" },
 }
 
 export default async function VandaagPage() {
@@ -18,21 +27,39 @@ export default async function VandaagPage() {
 
   if (!user) return null
 
-  const { profile, cycleEstimate, recommendation, checkin } = await getVandaagData(user.id)
+  const { profile, cycleEstimate, recommendation, checkin, streak } = await getVandaagData(user.id)
+  const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
 
   return (
     <div className="max-w-2xl mx-auto px-5 py-6 flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl text-ink">
-          {greeting()}
-          {profile?.name ? `, ${profile.name}` : ""} 🌿
-        </h1>
-        {cycleEstimate ? (
-          <p className="text-sm text-ink-soft mt-1">
-            Cyclusdag {cycleEstimate.cycleDay} · {cycleEstimate.phaseLabel} · schatting
-          </p>
-        ) : (
-          <p className="text-sm text-ink-soft mt-1">Fijn dat je er bent.</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl text-ink">
+            {greeting()}
+            {profile?.name ? `, ${profile.name}` : ""} 🌿
+          </h1>
+          {cycleEstimate && tone ? (
+            <div
+              className={cn(
+                "inline-flex items-center gap-1.5 mt-2 rounded-full px-2.5 py-1 text-xs font-medium",
+                tone.bg,
+                tone.text,
+              )}
+            >
+              <span className={cn("h-1.5 w-1.5 rounded-full", tone.dot)} />
+              Cyclusdag {cycleEstimate.cycleDay} · {cycleEstimate.phaseLabel} · schatting
+            </div>
+          ) : (
+            <p className="text-sm text-ink-soft mt-1">Fijn dat je er bent.</p>
+          )}
+        </div>
+        {streak >= 2 && (
+          <div
+            className="shrink-0 flex items-center gap-1 rounded-full bg-sage-soft text-sage-dark text-xs font-semibold px-2.5 py-1.5"
+            title={`${streak} dagen op rij een check-in ingevuld`}
+          >
+            🔥 {streak}
+          </div>
         )}
       </div>
 
