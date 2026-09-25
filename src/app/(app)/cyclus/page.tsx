@@ -112,6 +112,15 @@ export default async function CyclusPage() {
               geen exacte voorspelling. Dit is geen medisch advies.
             </p>
           )}
+          {cycleEstimate && (
+            <Link
+              href="/cyclus/vandaag"
+              className="mt-4 pt-4 border-t border-line flex items-center justify-between touch-manipulation"
+            >
+              <span className="text-sm font-medium text-sage-dark">Wat betekent dit voor jou?</span>
+              <ChevronRight className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
+            </Link>
+          )}
         </Card>
       ) : (
         <Card>

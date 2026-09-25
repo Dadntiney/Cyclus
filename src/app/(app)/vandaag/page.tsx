@@ -80,7 +80,13 @@ export default async function VandaagPage() {
       </div>
 
       {cycleEstimate && tone ? (
-        <div className={cn("rounded-3xl p-5 lg:p-6 flex items-center gap-4 lg:gap-5 mb-6 lg:mb-8", tone.bg)}>
+        <Link
+          href="/cyclus/vandaag"
+          className={cn(
+            "rounded-3xl p-5 lg:p-6 flex items-center gap-4 lg:gap-5 mb-6 lg:mb-8 touch-manipulation motion-safe:active:scale-[0.99] transition-transform",
+            tone.bg,
+          )}
+        >
           <div
             className={cn(
               "shrink-0 h-20 w-20 lg:h-24 lg:w-24 rounded-full flex flex-col items-center justify-center",
@@ -92,13 +98,17 @@ export default async function VandaagPage() {
             </span>
             <span className="text-[10px] text-ink-soft mt-1">cyclusdag</span>
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className={cn("text-sm font-semibold", tone.text)}>
               {cycleEstimate.phaseLabel} · schatting
             </p>
             <p className="text-sm text-ink-soft mt-0.5">{PHASE_TAGLINE[cycleEstimate.phase]}</p>
+            <p className={cn("text-xs font-medium mt-2 inline-flex items-center gap-0.5", tone.text)}>
+              Wat betekent dit voor jou?
+              <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+            </p>
           </div>
-        </div>
+        </Link>
       ) : (
         <p className="text-sm text-ink-soft mb-6 lg:mb-8">Fijn dat je er bent.</p>
       )}
