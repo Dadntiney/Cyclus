@@ -1,12 +1,9 @@
-import { createClient } from "@/lib/supabase/server"
+import { getAuthedUser } from "@/lib/supabase/server"
 import { getActiveConversation } from "@/lib/data/buddy"
 import { ChatWindow } from "@/components/buddy/chat-window"
 
 export default async function BuddyPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthedUser()
   if (!user) return null
 
   const { conversationId, messages } = await getActiveConversation(user.id)

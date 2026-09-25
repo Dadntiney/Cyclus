@@ -1,9 +1,9 @@
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
-import type { Tables } from "@/types/database"
+import type { RecipeCardData } from "@/lib/data/nutrition"
 
-export function RecipeCard({ recipe }: { recipe: Tables<"recipes"> }) {
+export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
   return (
     <Link
       href={`/voeding/${recipe.id}`}

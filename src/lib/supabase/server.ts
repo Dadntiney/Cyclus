@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
+import { cache } from "react"
 import type { Database } from "@/types/database"
 
 export async function createClient() {
@@ -27,3 +28,15 @@ export async function createClient() {
     },
   )
 }
+
+// The layout and the page it wraps both need the authed user for the same
+// request; auth.getUser() re-validates the session against Supabase's Auth
+// server over the network, so without this every navigation paid for that
+// round-trip twice. React's cache() dedupes it to one call per request.
+export const getAuthedUser = cache(async () => {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  return user
+})

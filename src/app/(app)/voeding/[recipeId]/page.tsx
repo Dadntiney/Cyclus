@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import { Users, ChefHat, Snowflake, PackageOpen } from "lucide-react"
-import { createClient } from "@/lib/supabase/server"
+import { getAuthedUser } from "@/lib/supabase/server"
 import { getRecipeDetail, getFavoriteRecipeIds } from "@/lib/data/nutrition"
 import { ensureRecipeImage } from "@/lib/images/ensure-recipe-image"
 import { FavoriteButton } from "@/components/nutrition/favorite-button"
@@ -23,10 +23,7 @@ export default async function RecipeDetailPage({
   params: Promise<{ recipeId: string }>
 }) {
   const { recipeId } = await params
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthedUser()
   if (!user) return null
 
   const [recipe, favoriteIds] = await Promise.all([

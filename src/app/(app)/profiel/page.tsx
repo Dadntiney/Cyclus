@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfileOverview } from "@/lib/data/profile"
 import { ProfileHero } from "@/components/profile/profile-hero"
 import { ProfileForm } from "@/components/profile/profile-form"
@@ -9,10 +9,7 @@ import { logout } from "@/lib/actions/auth"
 import { Button } from "@/components/ui/button"
 
 export default async function ProfielPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthedUser()
   if (!user) return null
 
   const { profile, cycleProfile, stats, favoriteRecipes, favoriteExercises, milestones } =

@@ -2,7 +2,7 @@ import Link from "next/link"
 import { format } from "date-fns"
 import { nl } from "date-fns/locale"
 import { Check, Moon } from "lucide-react"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getWorkoutLibrary, getWeekSessions } from "@/lib/data/training"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
 import { Card } from "@/components/ui/card"
@@ -24,9 +24,7 @@ const FOCUS_LABELS: Record<DayFocus, string> = {
 
 export default async function TrainingPage() {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthedUser()
   if (!user) return null
 
   const [workouts, week, { data: profile }] = await Promise.all([

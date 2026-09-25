@@ -61,7 +61,7 @@ export function Sidebar({ name, avatarUrl }: { name: string | null; avatarUrl: s
         >
           {avatarUrl ? (
             <span className="h-6 w-6 rounded-full overflow-hidden shrink-0 bg-sage-soft">
-              <Image src={avatarUrl} alt="" width={24} height={24} className="h-full w-full object-cover" unoptimized />
+              <Image src={avatarUrl} alt="" width={24} height={24} className="h-full w-full object-cover" />
             </span>
           ) : (
             <User className="h-4.5 w-4.5" strokeWidth={1.75} />

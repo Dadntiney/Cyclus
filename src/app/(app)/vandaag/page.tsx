@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server"
+import { Suspense } from "react"
+import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { getDailyTip } from "@/lib/data/daily-tip"
 import { TodayCards } from "@/components/today/today-cards"
@@ -9,6 +10,26 @@ import { ProgressCard } from "@/components/today/progress-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { cn } from "@/lib/utils"
 import { greeting } from "@/lib/greeting"
+
+async function DailyTip({ promise }: { promise: ReturnType<typeof getDailyTip> }) {
+  const dailyTip = await promise
+  if (!dailyTip) return null
+  return (
+    <div>
+      <h2 className="font-display text-lg text-ink mb-3">Kennis</h2>
+      <DailyTipCard tip={dailyTip} />
+    </div>
+  )
+}
+
+function DailyTipSkeleton() {
+  return (
+    <div>
+      <h2 className="font-display text-lg text-ink mb-3">Kennis</h2>
+      <div className="rounded-3xl bg-cream-soft h-32 animate-pulse" />
+    </div>
+  )
+}
 
 const PHASE_TONE: Record<CyclePhase, { bg: string; text: string; ring: string }> = {
   menstruatie: { bg: "bg-peach-soft", text: "text-ink", ring: "bg-white/70" },
@@ -25,16 +46,15 @@ const PHASE_TAGLINE: Record<CyclePhase, string> = {
 }
 
 export default async function VandaagPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthedUser()
 
   if (!user) return null
 
-  const { profile, cycleEstimate, recommendation, checkin, streak, completedThisWeek, today } =
+  const today = new Date().toISOString().slice(0, 10)
+  const dailyTipPromise = getDailyTip(today)
+
+  const { profile, cycleEstimate, recommendation, checkin, streak, completedThisWeek } =
     await getVandaagData(user.id)
-  const dailyTip = await getDailyTip(today)
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
 
   return (
@@ -95,12 +115,9 @@ export default async function VandaagPage() {
             streak={streak}
           />
 
-          {dailyTip && (
-            <div>
-              <h2 className="font-display text-lg text-ink mb-3">Kennis</h2>
-              <DailyTipCard tip={dailyTip} />
-            </div>
-          )}
+          <Suspense fallback={<DailyTipSkeleton />}>
+            <DailyTip promise={dailyTipPromise} />
+          </Suspense>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getWorkoutDetail, getFavoriteExerciseIds } from "@/lib/data/training"
 import { WorkoutSession } from "@/components/training/workout-session"
 
@@ -10,9 +10,7 @@ export default async function WorkoutDetailPage({
 }) {
   const { workoutId } = await params
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthedUser()
   if (!user) return null
 
   const [{ workout, exercises }, favoriteExerciseIds, { data: profile }] = await Promise.all([

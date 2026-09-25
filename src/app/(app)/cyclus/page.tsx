@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, computeSymptomFrequency } from "@/lib/cycle/history"
 import { Calendar } from "@/components/cycle/calendar"
@@ -10,9 +10,7 @@ import { Droplet, Sparkles } from "lucide-react"
 
 export default async function CyclusPage() {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthedUser()
   if (!user) return null
 
   const sixMonthsAgo = format(subDays(new Date(), 200), "yyyy-MM-dd")

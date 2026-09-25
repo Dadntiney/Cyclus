@@ -101,7 +101,6 @@ export function AvatarUpload({
               width={112}
               height={112}
               className="h-full w-full object-cover"
-              unoptimized
             />
           ) : (
             <span className="font-display text-2xl text-sage-dark">{initials(name)}</span>

@@ -1,14 +1,11 @@
-import { createClient } from "@/lib/supabase/server"
+import { getAuthedUser } from "@/lib/supabase/server"
 import { getFavoriteRecipes } from "@/lib/data/nutrition"
 import { RecipeCard } from "@/components/nutrition/recipe-card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Heart } from "lucide-react"
 
 export default async function FavorietenPage() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await getAuthedUser()
   if (!user) return null
 
   const recipes = await getFavoriteRecipes(user.id)

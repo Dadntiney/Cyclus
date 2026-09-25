@@ -6,7 +6,7 @@ import { Chip } from "@/components/ui/chip"
 import { RecipeCard } from "./recipe-card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { RECIPE_CATEGORIES } from "@/lib/constants"
-import type { Tables } from "@/types/database"
+import type { RecipeCardData } from "@/lib/data/nutrition"
 
 const BUDGET_FILTER = "Budget"
 const LOW_CARB_FILTER = "Koolhydraatarm"
@@ -17,7 +17,7 @@ const TIME_OPTIONS = [
   { value: 30, label: "30+ min" },
 ] as const
 
-function isLowCarb(recipe: Tables<"recipes">): boolean {
+function isLowCarb(recipe: RecipeCardData): boolean {
   const value = recipe.nutrition_information
   if (!value || typeof value !== "object") return false
   const koolhydraten = (value as Record<string, unknown>).koolhydraten
@@ -26,7 +26,7 @@ function isLowCarb(recipe: Tables<"recipes">): boolean {
   return match ? Number(match[0]) <= 20 : false
 }
 
-export function RecipeLibrary({ recipes }: { recipes: Tables<"recipes">[] }) {
+export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [timeFilter, setTimeFilter] = useState<number | null>(null)
 
