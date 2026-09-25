@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getRecipeDetail, getFavoriteRecipeIds } from "@/lib/data/nutrition"
 import { FavoriteButton } from "@/components/nutrition/favorite-button"
+import { RecipeMedia } from "@/components/nutrition/recipe-media"
 import { Card } from "@/components/ui/card"
 
 export default async function RecipeDetailPage({
@@ -33,6 +34,12 @@ export default async function RecipeDetailPage({
 
   return (
     <div className="max-w-2xl mx-auto px-5 py-6">
+      <RecipeMedia
+        title={recipe.title}
+        className="aspect-[16/9] w-full rounded-3xl mb-5"
+        iconClassName="h-20 w-20"
+      />
+
       <div className="flex items-start justify-between gap-4 mb-1">
         <h1 className="font-display text-2xl text-ink">{recipe.title}</h1>
         <FavoriteButton recipeId={recipe.id} initialFavorited={favoriteIds.has(recipe.id)} />
