@@ -13,18 +13,8 @@ export function ForgotPasswordForm() {
   if (state.success) {
     return (
       <div className="rounded-2xl bg-sage-soft text-sage-dark text-sm p-4">
-        {state.testMode ? (
-          <>
-            Testmodus actief: er wordt geen echte e-mail verstuurd. In
-            productie ontvang je hier een resetlink, als dit e-mailadres bij
-            ons bekend is.
-          </>
-        ) : (
-          <>
-            Check je inbox. Als dit e-mailadres bij ons bekend is, ontvang je
-            een link om je wachtwoord te resetten.
-          </>
-        )}
+        Check je inbox. Als dit e-mailadres bij ons bekend is, ontvang je een
+        link om je wachtwoord te resetten.
       </div>
     )
   }
