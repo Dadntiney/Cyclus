@@ -72,8 +72,8 @@ export function ChatWindow({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-8.5rem)] md:h-[calc(100dvh-3rem)]">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 lg:px-8 py-4 flex flex-col gap-3">
+    <div className="flex flex-col flex-1 min-h-0">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-5 lg:px-8 py-4 flex flex-col gap-3">
         {messages.length === 0 && (
           <div className="text-center text-sm text-ink-soft py-10">
             Stel een vraag of vertel hoe je je vandaag voelt. Je Buddy denkt mee op basis van
@@ -110,7 +110,7 @@ export function ChatWindow({
 
       <form
         onSubmit={handleSubmit}
-        className="flex items-center gap-2 px-5 lg:px-8 py-3 border-t border-line bg-white"
+        className="shrink-0 flex items-center gap-2 px-5 lg:px-8 py-3 border-t border-line bg-white"
       >
         <Input
           value={input}
