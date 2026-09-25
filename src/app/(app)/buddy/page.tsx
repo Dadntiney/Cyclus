@@ -9,7 +9,7 @@ export default async function BuddyPage() {
   const { conversationId, messages } = await getActiveConversation(user.id)
 
   return (
-    <div className="w-full max-w-3xl mx-auto flex flex-col h-[calc(100dvh-165px)] md:h-[calc(100dvh-40px)]">
+    <div className="w-full max-w-3xl mx-auto flex flex-col -mb-24 md:mb-0 h-[calc(100dvh_-_122px_-_env(safe-area-inset-bottom))] md:h-[calc(100dvh-40px)]">
       <div className="px-5 lg:px-8 pt-6 lg:pt-10 pb-2 shrink-0">
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Buddy</h1>
         <p className="text-sm text-ink-soft mt-1">
