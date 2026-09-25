@@ -74,6 +74,9 @@ export async function ensureRecipeImage(recipe: Tables<"recipes">): Promise<stri
       .upload(path, Buffer.from(base64, "base64"), {
         contentType,
         upsert: true,
+        // One fixed image per recipe, never re-fetched once set — safe to
+        // cache for a year instead of Storage's 1-hour default.
+        cacheControl: "31536000",
       })
     if (uploadError) {
       throw uploadError
