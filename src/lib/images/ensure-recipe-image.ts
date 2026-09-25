@@ -16,15 +16,39 @@ function extensionFor(contentType: string): string {
   return "jpg"
 }
 
-/** Prefers a real, paid AI-generated photo when configured; otherwise a free stock photo. */
+/**
+ * Prefers a real, paid AI-generated photo when configured, but falls back
+ * to the free Pexels provider if that fails for any reason (no credits,
+ * transient error, etc.) instead of giving up — and vice versa if only
+ * Pexels is configured.
+ */
 async function fetchImage(
   recipe: Tables<"recipes">,
 ): Promise<{ base64: string; contentType: string }> {
+  const errors: unknown[] = []
+
   if (process.env.OPENAI_API_KEY) {
-    return generateRecipeImage(recipe.title, recipe.description, parseStringArray(recipe.ingredients))
+    try {
+      return await generateRecipeImage(
+        recipe.title,
+        recipe.description,
+        parseStringArray(recipe.ingredients),
+      )
+    } catch (error) {
+      errors.push(error)
+    }
   }
+
   if (process.env.PEXELS_API_KEY) {
-    return fetchRecipeStockPhoto(recipe.title, recipe.category)
+    try {
+      return await fetchRecipeStockPhoto(recipe.title, recipe.category)
+    } catch (error) {
+      errors.push(error)
+    }
+  }
+
+  if (errors.length) {
+    throw new AggregateError(errors, "All configured image providers failed.")
   }
   throw new Error("No image provider configured (set OPENAI_API_KEY or PEXELS_API_KEY).")
 }
