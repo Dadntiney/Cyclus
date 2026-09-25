@@ -1,0 +1,40 @@
+const dictionary = {
+  nav: {
+    today: "Vandaag",
+    cycle: "Cyclus",
+    training: "Training",
+    nutrition: "Voeding",
+    buddy: "Buddy",
+    profile: "Profiel",
+    settings: "Instellingen",
+    logout: "Uitloggen",
+  },
+  common: {
+    save: "Opslaan",
+    saving: "Bezig met opslaan...",
+    saved: "Opgeslagen",
+    cancel: "Annuleren",
+    next: "Volgende",
+    back: "Terug",
+    close: "Sluiten",
+    loading: "Laden...",
+    retry: "Probeer opnieuw",
+    error: "Er ging iets mis. Probeer het opnieuw.",
+    start: "Starten",
+    finish: "Afronden",
+    skip: "Overslaan",
+  },
+  auth: {
+    login: "Inloggen",
+    register: "Registreren",
+    email: "E-mailadres",
+    password: "Wachtwoord",
+    forgotPassword: "Wachtwoord vergeten?",
+    noAccount: "Nog geen account?",
+    hasAccount: "Al een account?",
+    resetPassword: "Wachtwoord resetten",
+    sendResetLink: "Stuur resetlink",
+  },
+} as const
+
+export default dictionary

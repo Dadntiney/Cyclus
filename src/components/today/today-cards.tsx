@@ -1,0 +1,59 @@
+import Link from "next/link"
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import type { Recommendation } from "@/lib/recommendations/engine"
+
+export function TodayCards({ recommendation }: { recommendation: Recommendation }) {
+  const { training, nutrition, recovery } = recommendation
+
+  return (
+    <div>
+      <h2 className="font-display text-lg text-ink mb-3">Jouw dag</h2>
+      <div className="flex flex-col gap-4">
+        <Card>
+          <p className="text-sm font-medium text-sage-dark mb-1">🏋️ Beweging</p>
+          {training.workout ? (
+            <>
+              <p className="font-display text-lg text-ink">{training.workout.title}</p>
+              <p className="text-sm text-ink-soft mt-0.5">{training.workout.duration} minuten</p>
+              <p className="text-xs text-ink-soft mt-2">{training.reason}</p>
+              <Link href={`/training/${training.workout.id}`} className="inline-block mt-3">
+                <Button size="sm">Start training</Button>
+              </Link>
+            </>
+          ) : (
+            <p className="text-sm text-ink-soft mt-1">
+              Je hebt nog geen trainingen afgerond. Bekijk de bibliotheek in Training.
+            </p>
+          )}
+        </Card>
+
+        <Card>
+          <p className="text-sm font-medium text-sage-dark mb-1">🥗 Voeding</p>
+          {nutrition.recipe ? (
+            <>
+              <p className="font-display text-lg text-ink">{nutrition.recipe.title}</p>
+              <p className="text-xs text-ink-soft mt-2">{nutrition.reason}</p>
+              <Link href={`/voeding/${nutrition.recipe.id}`} className="inline-block mt-3">
+                <Button size="sm" variant="secondary">
+                  Bekijk recept
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <p className="text-sm text-ink-soft mt-1">
+              Nog geen recepten beschikbaar. Kijk later nog eens terug.
+            </p>
+          )}
+        </Card>
+
+        <Card>
+          <p className="text-sm font-medium text-sage-dark mb-1">🧘 Herstel</p>
+          <p className="font-display text-lg text-ink">{recovery.title}</p>
+          <p className="text-sm text-ink-soft mt-0.5">{recovery.duration} minuten</p>
+          <p className="text-xs text-ink-soft mt-2">{recovery.description}</p>
+        </Card>
+      </div>
+    </div>
+  )
+}

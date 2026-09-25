@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  --color-cream: #faf6f0;
+  --color-cream-soft: #f3ece2;
+  --color-ink: #2c2a26;
+  --color-ink-soft: #6b665d;
+  --color-sage: #7c8f6f;
+  --color-sage-dark: #5f7154;
+  --color-sage-soft: #e4e9de;
+  --color-peach: #e8a37e;
+  --color-peach-soft: #fbe6d8;
+  --color-line: #e8e1d5;
+  --color-white: #ffffff;
+  --color-danger: #c1666b;
+}
+
+@theme inline {
+  --color-background: var(--color-cream);
+  --color-foreground: var(--color-ink);
+  --color-cream: var(--color-cream);
+  --color-cream-soft: var(--color-cream-soft);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-sage: var(--color-sage);
+  --color-sage-dark: var(--color-sage-dark);
+  --color-sage-soft: var(--color-sage-soft);
+  --color-peach: var(--color-peach);
+  --color-peach-soft: var(--color-peach-soft);
+  --color-line: var(--color-line);
+  --color-danger: var(--color-danger);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

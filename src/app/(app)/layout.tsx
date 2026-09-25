@@ -1,0 +1,37 @@
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import { Sidebar } from "@/components/nav/sidebar"
+import { BottomNav } from "@/components/nav/bottom-nav"
+import { MobileHeader } from "@/components/nav/mobile-header"
+
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect("/login")
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("name, onboarding_completed")
+    .eq("id", user.id)
+    .single()
+
+  if (!profile?.onboarding_completed) {
+    redirect("/onboarding")
+  }
+
+  return (
+    <div className="flex min-h-screen">
+      <Sidebar name={profile.name} />
+      <div className="flex-1 flex flex-col min-w-0">
+        <MobileHeader />
+        <main className="flex-1 pb-24 md:pb-10">{children}</main>
+        <BottomNav />
+      </div>
+    </div>
+  )
+}

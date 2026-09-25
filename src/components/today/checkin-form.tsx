@@ -1,0 +1,105 @@
+"use client"
+
+import { useState, useTransition } from "react"
+import { Card } from "@/components/ui/card"
+import { RatingScale } from "@/components/ui/rating-scale"
+import { Chip } from "@/components/ui/chip"
+import { Textarea, Label } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { SYMPTOM_OPTIONS } from "@/lib/constants"
+import { saveCheckin } from "@/lib/actions/checkin"
+import type { Tables } from "@/types/database"
+
+type Checkin = Tables<"daily_checkins">
+
+export function CheckinForm({ initial }: { initial: Checkin | null }) {
+  const [energy, setEnergy] = useState<number | null>(initial?.energy ?? null)
+  const [mood, setMood] = useState<number | null>(initial?.mood ?? null)
+  const [sleep, setSleep] = useState<number | null>(initial?.sleep ?? null)
+  const [stress, setStress] = useState<number | null>(initial?.stress ?? null)
+  const [symptoms, setSymptoms] = useState<string[]>(initial?.symptoms ?? [])
+  const [notes, setNotes] = useState(initial?.notes ?? "")
+  const [status, setStatus] = useState<"idle" | "saved" | "error">("idle")
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  function toggleSymptom(value: string) {
+    setSymptoms((prev) => {
+      if (value === "Geen klachten") {
+        return prev.includes("Geen klachten") ? [] : ["Geen klachten"]
+      }
+      const withoutNone = prev.filter((s) => s !== "Geen klachten")
+      return withoutNone.includes(value)
+        ? withoutNone.filter((s) => s !== value)
+        : [...withoutNone, value]
+    })
+  }
+
+  function handleSave() {
+    setStatus("idle")
+    setErrorMsg(null)
+    startTransition(async () => {
+      const result = await saveCheckin({ energy, mood, sleep, stress, symptoms, notes })
+      if (result?.error) {
+        setStatus("error")
+        setErrorMsg(result.error)
+      } else {
+        setStatus("saved")
+      }
+    })
+  }
+
+  return (
+    <Card>
+      <p className="text-sage-dark text-sm font-medium mb-1">🌿 Vandaag</p>
+      <p className="text-ink-soft text-sm mb-5 italic">
+        &ldquo;Luister naar hoe je je vandaag voelt en pas je tempo daarop aan.&rdquo;
+      </p>
+
+      <h3 className="font-display text-lg text-ink mb-4">Hoe voel je je vandaag?</h3>
+
+      <div className="flex flex-col gap-5">
+        <RatingScale label="Energie" value={energy} onChange={setEnergy} lowLabel="Laag" highLabel="Hoog" />
+        <RatingScale label="Stemming" value={mood} onChange={setMood} lowLabel="Somber" highLabel="Blij" />
+        <RatingScale label="Slaap" value={sleep} onChange={setSleep} lowLabel="Slecht" highLabel="Goed" />
+        <RatingScale label="Stress" value={stress} onChange={setStress} lowLabel="Rustig" highLabel="Gespannen" />
+
+        <div>
+          <p className="text-sm font-medium text-ink mb-2">Klachten</p>
+          <div className="flex flex-wrap gap-2">
+            {SYMPTOM_OPTIONS.map((symptom) => (
+              <Chip
+                key={symptom}
+                selected={symptoms.includes(symptom)}
+                onClick={() => toggleSymptom(symptom)}
+              >
+                {symptom}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="notes">Notities (optioneel)</Label>
+          <Textarea
+            id="notes"
+            rows={3}
+            placeholder="Wil je verder nog iets kwijt over vandaag?"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button onClick={handleSave} disabled={isPending}>
+            {isPending ? "Bezig met opslaan..." : "Check-in opslaan"}
+          </Button>
+          {status === "saved" && (
+            <span className="text-sm text-sage-dark font-medium">Opgeslagen ✓</span>
+          )}
+          {status === "error" && <span className="text-sm text-danger">{errorMsg}</span>}
+        </div>
+      </div>
+    </Card>
+  )
+}
