@@ -19,7 +19,7 @@ export interface RecommendationInput {
     | "wellness_preference"
   >
   cycleEstimate: CycleEstimate | null
-  latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms"> | null
+  latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms" | "need"> | null
   workouts: Workout[]
   recipes: Recipe[]
   seed: string
@@ -88,7 +88,7 @@ function wantsLowerIntensityToday(
   const lowEnergy = checkin.energy !== null && checkin.energy <= 2
   const highStress = checkin.stress !== null && checkin.stress >= 4
   const poorSleep = checkin.sleep !== null && checkin.sleep <= 2
-  return lowEnergy || highStress || poorSleep
+  return lowEnergy || highStress || poorSleep || checkin.need === "rust"
 }
 
 function parseCarbGrams(nutritionInformation: Recipe["nutrition_information"]): number | null {
@@ -101,6 +101,11 @@ function parseCarbGrams(nutritionInformation: Recipe["nutrition_information"]): 
 
 export function buildRecommendation(input: RecommendationInput): Recommendation {
   const { profile, cycleEstimate, latestCheckin, workouts, recipes, seed } = input
+
+  const need = latestCheckin?.need ?? null
+  const wantsMoreActive = need === "beweging"
+  const wantsQuickMeal = need === "voeding"
+  const wantsSelfCare = need === "mezelf"
 
   const preferredTypes = profile.training_preferences
     .map((pref) => TRAINING_PREFERENCE_TO_TYPE[pref])
@@ -124,6 +129,9 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
   if (lowerIntensity) {
     const gentle = candidateWorkouts.filter((w) => w.difficulty === "makkelijk")
     if (gentle.length) candidateWorkouts = gentle
+  } else if (wantsMoreActive) {
+    const active = candidateWorkouts.filter((w) => w.difficulty !== "makkelijk")
+    if (active.length) candidateWorkouts = active
   }
 
   if (!candidateWorkouts.length) candidateWorkouts = workouts
@@ -133,12 +141,16 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     : null
 
   let trainingReason: string
-  if (!latestCheckin) {
+  if (lowerIntensity && need === "rust") {
+    trainingReason = "Je gaf aan dat je vandaag naar rust verlangt — een zachte sessie dus."
+  } else if (lowerIntensity) {
+    trainingReason = "Je energie, slaap of stress gaf aan dat een rustigere sessie vandaag beter past."
+  } else if (wantsMoreActive) {
+    trainingReason = "Je gaf aan dat je vandaag zin hebt om te bewegen — hier is een actievere keuze."
+  } else if (!latestCheckin) {
     trainingReason = workout
       ? "Gebaseerd op je bewegingsvoorkeuren uit je profiel."
       : "Voeg je bewegingsvoorkeuren toe in je profiel voor een passend voorstel."
-  } else if (lowerIntensity) {
-    trainingReason = "Je energie, slaap of stress gaf aan dat een rustigere sessie vandaag beter past."
   } else if (impactSensitive) {
     trainingReason = "Gekozen met oog voor de aandachtspunten uit je profiel."
   } else {
@@ -155,7 +167,15 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
   if (!candidateRecipes.length) candidateRecipes = recipes
 
   let nutritionReason: string
-  if (wantsLowCarb) {
+  if (wantsQuickMeal) {
+    const quick = candidateRecipes.filter((r) => r.preparation_time !== null && r.preparation_time <= 20)
+    if (quick.length) {
+      candidateRecipes = quick
+      nutritionReason = "Je gaf aan dat je zin had in gezond eten — dit maak je binnen 20 minuten."
+    } else {
+      nutritionReason = "Sluit aan bij jouw voedingsvoorkeuren."
+    }
+  } else if (wantsLowCarb) {
     const lowCarb = candidateRecipes.filter((r) => {
       const carbs = parseCarbGrams(r.nutrition_information)
       return carbs !== null && carbs <= 20
@@ -177,25 +197,37 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     ? candidateRecipes[seededIndex(`${seed}-nutrition`, candidateRecipes.length)]
     : null
 
-  const recovery: RecoveryRecommendation = lowerIntensity
+  const recovery: RecoveryRecommendation = wantsSelfCare
     ? {
-        title: "Zachte mobiliteit",
-        duration: 10,
-        description: "Neem vandaag de tijd voor rustige mobiliteit en ademhaling. Luister naar wat je lichaam nodig heeft.",
+        title: "Tijd voor jezelf",
+        duration: 15,
+        description: "Je gaf aan dat je daar vandaag behoefte aan hebt. Neem een moment zonder schuldgevoel — een bad, een boek, of gewoon niets.",
       }
-    : {
-        title: "Korte ontspanning",
-        duration: 10,
-        description: "Een paar minuten bewust ontspannen helpt je lichaam herstellen, ook op een goede dag.",
-      }
+    : lowerIntensity
+      ? {
+          title: "Zachte mobiliteit",
+          duration: 10,
+          description: "Neem vandaag de tijd voor rustige mobiliteit en ademhaling. Luister naar wat je lichaam nodig heeft.",
+        }
+      : {
+          title: "Korte ontspanning",
+          duration: 10,
+          description: "Een paar minuten bewust ontspannen helpt je lichaam herstellen, ook op een goede dag.",
+        }
 
   const namePart = profile.name ? `, ${profile.name}` : ""
   let dayFocus = `Luister vandaag naar hoe je je voelt en pas je tempo daarop aan${namePart}.`
   if (cycleEstimate) {
     dayFocus = `Je cyclusdag ${cycleEstimate.cycleDay} valt naar schatting in de ${cycleEstimate.phaseLabel.toLowerCase()}. Luister naar hoe je je vandaag voelt en pas je tempo daarop aan.`
   }
-  if (lowerIntensity) {
+  if (need === "rust") {
+    dayFocus = `Je gaf aan dat je vandaag naar rust verlangt${namePart}. Wees zacht voor jezelf — dat is vandaag genoeg.`
+  } else if (lowerIntensity) {
     dayFocus = `Je gaf aan dat het vandaag wat minder gaat${namePart}. Wees zacht voor jezelf en kies rust waar dat kan.`
+  } else if (wantsMoreActive) {
+    dayFocus = `Je gaf aan dat je zin hebt om te bewegen vandaag${namePart} — dit hebben we daarom voor je samengesteld.`
+  } else if (wantsSelfCare) {
+    dayFocus = `Je gaf aan dat je vandaag tijd voor jezelf wilt${namePart}. Dat mag er gewoon zijn.`
   }
 
   const buddyContext: string[] = []

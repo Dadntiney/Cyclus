@@ -32,6 +32,7 @@ export async function saveCheckin(input: CheckinInput) {
       stress: parsed.data.stress,
       symptoms: parsed.data.symptoms,
       notes: parsed.data.notes || null,
+      need: parsed.data.need,
     },
     { onConflict: "user_id,date" },
   )

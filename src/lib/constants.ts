@@ -37,6 +37,14 @@ export const STYLE_OPTIONS = [
   { value: "fitness", label: "Fitness & kracht", emoji: "\u{1F3CB}️" },
 ] as const
 
+export const NEED_OPTIONS = [
+  { value: "rust", emoji: "🌿", label: "Rust" },
+  { value: "beweging", emoji: "🏃", label: "Beweging" },
+  { value: "voeding", emoji: "🥗", label: "Gezond eten" },
+  { value: "energie", emoji: "⚡", label: "Energie" },
+  { value: "mezelf", emoji: "❤️", label: "Tijd voor mezelf" },
+] as const
+
 export const SYMPTOM_OPTIONS = [
   "Opvliegers",
   "Nachtelijk zweten",

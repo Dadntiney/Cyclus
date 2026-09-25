@@ -64,8 +64,8 @@ export default async function VandaagPage() {
 
       <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
         <div className="flex flex-col gap-6 lg:col-span-2">
-          {recommendation && <TodayCards recommendation={recommendation} />}
           <CheckinForm initial={checkin ?? null} />
+          {recommendation && <TodayCards recommendation={recommendation} />}
         </div>
 
         <div className="flex flex-col gap-6 mt-6 lg:mt-0">

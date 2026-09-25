@@ -11,6 +11,12 @@ import type { Tables } from "@/types/database"
 const BUDGET_FILTER = "Budget"
 const LOW_CARB_FILTER = "Koolhydraatarm"
 
+const TIME_OPTIONS = [
+  { value: 10, label: "10 min" },
+  { value: 20, label: "20 min" },
+  { value: 30, label: "30+ min" },
+] as const
+
 function isLowCarb(recipe: Tables<"recipes">): boolean {
   const value = recipe.nutrition_information
   if (!value || typeof value !== "object") return false
@@ -22,13 +28,22 @@ function isLowCarb(recipe: Tables<"recipes">): boolean {
 
 export function RecipeLibrary({ recipes }: { recipes: Tables<"recipes">[] }) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
+  const [timeFilter, setTimeFilter] = useState<number | null>(null)
 
   const filtered = useMemo(() => {
-    if (!activeFilter) return recipes
-    if (activeFilter === BUDGET_FILTER) return recipes.filter((r) => r.is_budget)
-    if (activeFilter === LOW_CARB_FILTER) return recipes.filter(isLowCarb)
-    return recipes.filter((r) => r.category.includes(activeFilter))
-  }, [recipes, activeFilter])
+    let result = recipes
+    if (activeFilter === BUDGET_FILTER) result = result.filter((r) => r.is_budget)
+    else if (activeFilter === LOW_CARB_FILTER) result = result.filter(isLowCarb)
+    else if (activeFilter) result = result.filter((r) => r.category.includes(activeFilter))
+
+    if (timeFilter === 30) {
+      result = result.filter((r) => r.preparation_time !== null && r.preparation_time >= 30)
+    } else if (timeFilter) {
+      result = result.filter((r) => r.preparation_time !== null && r.preparation_time <= timeFilter)
+    }
+
+    return result
+  }, [recipes, activeFilter, timeFilter])
 
   return (
     <div>
@@ -66,6 +81,22 @@ export function RecipeLibrary({ recipes }: { recipes: Tables<"recipes">[] }) {
         ))}
       </div>
 
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-xs text-ink-soft shrink-0">Ik heb tijd:</span>
+        <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {TIME_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value}
+              className="shrink-0"
+              selected={timeFilter === opt.value}
+              onClick={() => setTimeFilter((t) => (t === opt.value ? null : opt.value))}
+            >
+              {opt.label}
+            </Chip>
+          ))}
+        </div>
+      </div>
+
       {filtered.length ? (
         <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((recipe) => (
@@ -73,7 +104,11 @@ export function RecipeLibrary({ recipes }: { recipes: Tables<"recipes">[] }) {
           ))}
         </div>
       ) : (
-        <EmptyState icon={<Salad className="h-6 w-6" />} title="Geen recepten in deze categorie." />
+        <EmptyState
+          icon={<Salad className="h-6 w-6" />}
+          title="Geen recepten bij deze filters."
+          description="Probeer een andere combinatie, of bekijk alles."
+        />
       )}
     </div>
   )
