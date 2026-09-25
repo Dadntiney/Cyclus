@@ -18,6 +18,20 @@ const RECIPE_QUERIES: Record<string, string> = {
   "Bonen-groentestoof": "bean vegetable stew",
   "Gebakken ei met volkoren brood en groente": "fried egg toast vegetables",
   "Linzen-aardappel curry": "lentil potato curry",
+  "Hummus met groentesticks": "hummus vegetable sticks dip",
+  "Appel met pindakaas en kaneel": "apple peanut butter slices",
+  "Cottage cheese met komkommer en radijs": "cottage cheese cucumber radish",
+  "Courgette-noedels met gehaktballetjes": "zucchini noodles meatballs",
+  "Volkoren wrap met hummus en groenten": "vegetable wrap hummus",
+  "Zalmfilet met broccolipuree en amandeldressing": "salmon broccoli puree plate",
+  "Linzensoep met venkel": "lentil soup fennel",
+  "Havermout-pannenkoekjes": "oatmeal pancakes stack",
+  "Griekse yoghurt met honing en walnoten": "greek yogurt honey walnuts bowl",
+  "Gerookte makreel op rijstwafel": "smoked mackerel rice cake",
+  "Overnight oats met bosvruchten": "overnight oats mixed berries jar",
+  "Roerei met spinazie en volkoren toast": "scrambled eggs spinach toast",
+  "Quinoa salade met feta en granaatappelpit": "quinoa salad feta pomegranate",
+  "Kip-avocado wrap": "chicken avocado wrap",
 }
 
 const CATEGORY_QUERIES: Record<string, string> = {
