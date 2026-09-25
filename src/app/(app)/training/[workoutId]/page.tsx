@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
-import { getWorkoutDetail } from "@/lib/data/training"
+import { createClient } from "@/lib/supabase/server"
+import { getWorkoutDetail, getFavoriteExerciseIds } from "@/lib/data/training"
 import { WorkoutSession } from "@/components/training/workout-session"
 
 export default async function WorkoutDetailPage({
@@ -8,13 +9,28 @@ export default async function WorkoutDetailPage({
   params: Promise<{ workoutId: string }>
 }) {
   const { workoutId } = await params
-  const { workout, exercises } = await getWorkoutDetail(workoutId)
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const [{ workout, exercises }, favoriteExerciseIds, { data: profile }] = await Promise.all([
+    getWorkoutDetail(workoutId),
+    getFavoriteExerciseIds(user.id),
+    supabase.from("profiles").select("name").eq("id", user.id).single(),
+  ])
 
   if (!workout) notFound()
 
   return (
     <div className="max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <WorkoutSession workout={workout} exercises={exercises} />
+      <WorkoutSession
+        workout={workout}
+        exercises={exercises}
+        favoriteExerciseIds={[...favoriteExerciseIds]}
+        name={profile?.name ?? null}
+      />
     </div>
   )
 }

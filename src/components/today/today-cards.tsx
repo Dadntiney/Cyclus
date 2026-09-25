@@ -5,11 +5,12 @@ import { cn } from "@/lib/utils"
 import type { Recommendation } from "@/lib/recommendations/engine"
 
 export function TodayCards({ recommendation }: { recommendation: Recommendation }) {
-  const { training, nutrition, recovery } = recommendation
+  const { training, nutrition, recovery, dayFocus } = recommendation
 
   return (
     <div>
-      <h2 className="font-display text-lg text-ink mb-3">Jouw dag</h2>
+      <h2 className="font-display text-lg text-ink mb-1">Jouw dag</h2>
+      {dayFocus && <p className="text-sm text-ink-soft mb-3">{dayFocus}</p>}
       <div className="flex flex-col gap-4">
         <Card>
           <p className="text-sm font-medium text-sage-dark mb-1">🏋️ Beweging</p>

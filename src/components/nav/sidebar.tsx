@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { User, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -10,7 +11,7 @@ import { logout } from "@/lib/actions/auth"
 const navLinkFocus =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset"
 
-export function Sidebar({ name }: { name: string | null }) {
+export function Sidebar({ name, avatarUrl }: { name: string | null; avatarUrl: string | null }) {
   const pathname = usePathname()
 
   return (
@@ -58,8 +59,14 @@ export function Sidebar({ name }: { name: string | null }) {
               : "text-ink-soft hover:bg-cream-soft hover:text-ink",
           )}
         >
-          <User className="h-4.5 w-4.5" strokeWidth={1.75} />
-          <span className="truncate">{name ?? "Profiel"}</span>
+          {avatarUrl ? (
+            <span className="h-6 w-6 rounded-full overflow-hidden shrink-0 bg-sage-soft">
+              <Image src={avatarUrl} alt="" width={24} height={24} className="h-full w-full object-cover" unoptimized />
+            </span>
+          ) : (
+            <User className="h-4.5 w-4.5" strokeWidth={1.75} />
+          )}
+          <span className="truncate">{name ?? "Mijn profiel"}</span>
         </Link>
         <form action={logout}>
           <button

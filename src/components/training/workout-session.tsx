@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { ExerciseFavoriteButton } from "@/components/training/exercise-favorite-button"
 import { completeWorkoutSession, fetchAlternativeExercise } from "@/lib/actions/training"
 import type { Tables } from "@/types/database"
 
@@ -18,9 +19,13 @@ function parseSteps(steps: Exercise["steps"]): string[] {
 export function WorkoutSession({
   workout,
   exercises: initialExercises,
+  favoriteExerciseIds,
+  name,
 }: {
   workout: Workout
   exercises: Exercise[]
+  favoriteExerciseIds: string[]
+  name: string | null
 }) {
   const router = useRouter()
   const [started, setStarted] = useState(false)
@@ -109,10 +114,13 @@ export function WorkoutSession({
     return (
       <Card className="text-center">
         <p className="text-3xl mb-2">🎉</p>
-        <p className="font-display text-xl text-ink mb-1">Goed gedaan!</p>
-        <p className="text-sm text-ink-soft mb-5">
+        <p className="font-display text-xl text-ink mb-1">
+          Mooi gedaan{name ? `, ${name}` : ""}.
+        </p>
+        <p className="text-sm text-ink-soft mb-1">
           Je hebt {doneCount} van de {exercises.length} oefeningen afgerond.
         </p>
+        <p className="text-sm text-ink-soft mb-5">Je hebt vandaag weer iets voor jezelf gedaan.</p>
         <Button onClick={handleFinishWorkout} disabled={isPending}>
           {isPending ? "Bezig..." : "Workout afronden"}
         </Button>
@@ -130,7 +138,13 @@ export function WorkoutSession({
         Oefening {index + 1} van {exercises.length}
         {current.muscle_group ? ` · ${current.muscle_group}` : ""}
       </p>
-      <p className="font-display text-xl text-ink mb-2">{current.name}</p>
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <p className="font-display text-xl text-ink">{current.name}</p>
+        <ExerciseFavoriteButton
+          exerciseId={current.id}
+          initialFavorited={favoriteExerciseIds.includes(current.id)}
+        />
+      </div>
       {(current.sets || current.reps) && (
         <p className="text-sm text-sage-dark font-medium mb-4">
           {current.sets ? `${current.sets} sets` : ""}

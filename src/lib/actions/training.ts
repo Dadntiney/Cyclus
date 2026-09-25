@@ -40,5 +40,38 @@ export async function completeWorkoutSession(workoutId: string) {
 
   revalidatePath("/training")
   revalidatePath("/vandaag")
+  revalidatePath("/profiel")
   return { success: true }
+}
+
+export async function toggleExerciseFavorite(exerciseId: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Je bent niet ingelogd." }
+
+  const { data: existing } = await supabase
+    .from("exercise_favorites")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("exercise_id", exerciseId)
+    .maybeSingle()
+
+  if (existing) {
+    const { error } = await supabase.from("exercise_favorites").delete().eq("id", existing.id)
+    if (error) return { error: "Verwijderen is niet gelukt." }
+    revalidatePath("/training")
+    revalidatePath("/profiel")
+    return { success: true, favorited: false }
+  }
+
+  const { error } = await supabase
+    .from("exercise_favorites")
+    .insert({ user_id: user.id, exercise_id: exerciseId })
+  if (error) return { error: "Opslaan is niet gelukt." }
+
+  revalidatePath("/training")
+  revalidatePath("/profiel")
+  return { success: true, favorited: true }
 }

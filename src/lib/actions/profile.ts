@@ -1,7 +1,9 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 
 export interface UpdateProfileInput {
   name: string
@@ -17,6 +19,8 @@ export interface UpdateProfileInput {
   nutritionPreferences: string[]
   trainingFrequency: number | null
   wellnessPreference: string | null
+  motivation: string | null
+  personalNote: string | null
   averageCycleLength: number | null
   regularity: string | null
 }
@@ -44,6 +48,8 @@ export async function updateProfile(input: UpdateProfileInput) {
       nutrition_preferences: input.nutritionPreferences,
       training_frequency: input.trainingFrequency,
       wellness_preference: input.wellnessPreference,
+      motivation: input.motivation,
+      personal_note: input.personalNote,
     })
     .eq("id", user.id)
 
@@ -62,4 +68,45 @@ export async function updateProfile(input: UpdateProfileInput) {
   revalidatePath("/profiel")
   revalidatePath("/vandaag")
   return { success: true }
+}
+
+export async function updateAvatar(avatarUrl: string | null) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Je bent niet ingelogd." }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ avatar_url: avatarUrl })
+    .eq("id", user.id)
+
+  if (error) return { error: "Opslaan van je foto is niet gelukt." }
+
+  revalidatePath("/profiel")
+  revalidatePath("/vandaag")
+  return { success: true }
+}
+
+/**
+ * Permanently deletes the signed-in user's account and everything tied to
+ * it (profile, check-ins, cycle data, favorites, chat history — all of it
+ * cascades via foreign keys). Uses the service-role client because
+ * `auth.admin.deleteUser` is a privileged operation no regular session can
+ * perform on itself.
+ */
+export async function deleteAccount() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Je bent niet ingelogd." }
+
+  const service = createServiceClient()
+  const { error } = await service.auth.admin.deleteUser(user.id)
+  if (error) return { error: "Verwijderen van je account is niet gelukt. Probeer het later opnieuw." }
+
+  await supabase.auth.signOut()
+  redirect("/login")
 }

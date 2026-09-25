@@ -356,17 +356,20 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
+          avatar_url: string | null
           created_at: string
           goal_weight_kg: number | null
           goals: string[]
           health_conditions: string[]
           height_cm: number | null
           id: string
+          motivation: string | null
           movement_limitations: string[]
           name: string | null
           nutrition_preferences: string[]
           nutrition_style: string
           onboarding_completed: boolean
+          personal_note: string | null
           training_frequency: number | null
           training_preferences: string[]
           updated_at: string
@@ -375,17 +378,20 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          avatar_url?: string | null
           created_at?: string
           goal_weight_kg?: number | null
           goals?: string[]
           health_conditions?: string[]
           height_cm?: number | null
           id: string
+          motivation?: string | null
           movement_limitations?: string[]
           name?: string | null
           nutrition_preferences?: string[]
           nutrition_style?: string
           onboarding_completed?: boolean
+          personal_note?: string | null
           training_frequency?: number | null
           training_preferences?: string[]
           updated_at?: string
@@ -394,17 +400,20 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          avatar_url?: string | null
           created_at?: string
           goal_weight_kg?: number | null
           goals?: string[]
           health_conditions?: string[]
           height_cm?: number | null
           id?: string
+          motivation?: string | null
           movement_limitations?: string[]
           name?: string | null
           nutrition_preferences?: string[]
           nutrition_style?: string
           onboarding_completed?: boolean
+          personal_note?: string | null
           training_frequency?: number | null
           training_preferences?: string[]
           updated_at?: string
@@ -412,6 +421,35 @@ export type Database = {
           wellness_preference?: string | null
         }
         Relationships: []
+      }
+      exercise_favorites: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_favorites_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recipes: {
         Row: {

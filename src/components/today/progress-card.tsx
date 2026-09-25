@@ -22,16 +22,21 @@ export function ProgressCard({
           {completedThisWeek} / {goal}
         </p>
       </div>
-      <div className="w-full h-2 rounded-full bg-cream-soft overflow-hidden mb-4">
+      <div className="w-full h-2 rounded-full bg-cream-soft overflow-hidden mb-2">
         <div
           className={cn("h-full rounded-full transition-all duration-500", "bg-sage")}
           style={{ width: `${pct}%` }}
         />
       </div>
+      <p className="text-xs text-ink-soft mb-4">
+        {completedThisWeek === 0
+          ? "Nog niets deze week? Geen probleem — elk moment is een goed moment om te beginnen."
+          : "Dit heb je zelf opgebouwd."}
+      </p>
       <div className="flex items-center justify-between">
         <p className="text-sm text-ink-soft">Check-in reeks</p>
         <p className="text-sm font-medium text-ink">
-          {streak} {streak === 1 ? "dag" : "dagen"}
+          {streak > 0 ? `${streak} ${streak === 1 ? "dag" : "dagen"}` : "Begin vandaag"}
         </p>
       </div>
     </Card>

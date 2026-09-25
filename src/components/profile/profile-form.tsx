@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { Card } from "@/components/ui/card"
-import { Input, Label } from "@/components/ui/input"
+import { Input, Label, Textarea } from "@/components/ui/input"
 import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
 import {
@@ -56,6 +56,8 @@ export function ProfileForm({
   const [trainingFrequency, setTrainingFrequency] = useState<number | null>(
     profile.training_frequency,
   )
+  const [motivation, setMotivation] = useState(profile.motivation ?? "")
+  const [personalNote, setPersonalNote] = useState(profile.personal_note ?? "")
   const [averageCycleLength, setAverageCycleLength] = useState(
     cycleProfile?.average_cycle_length ? String(cycleProfile.average_cycle_length) : "",
   )
@@ -79,6 +81,8 @@ export function ProfileForm({
         nutritionPreferences,
         trainingFrequency,
         wellnessPreference: profile.wellness_preference,
+        motivation: motivation.trim() || null,
+        personalNote: personalNote.trim() || null,
         averageCycleLength: averageCycleLength ? Number(averageCycleLength) : null,
         regularity: regularity || null,
       })
@@ -90,6 +94,7 @@ export function ProfileForm({
     <div className="flex flex-col gap-5">
       <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
       <Card>
+        <p className="text-sm font-medium text-ink mb-3">Mijn gegevens</p>
         <div className="flex flex-col gap-4">
           <div>
             <Label htmlFor="name">Naam</Label>
@@ -108,7 +113,22 @@ export function ProfileForm({
       </Card>
 
       <Card>
-        <p className="text-sm font-medium text-ink mb-3">Lichaamsgegevens</p>
+        <p className="text-sm font-medium text-ink mb-1">Mijn motivatie</p>
+        <p className="text-xs text-ink-soft mb-3">
+          Optioneel. Waarom doe jij dit voor jezelf? Dit lees jij later terug, voor niemand
+          anders zichtbaar.
+        </p>
+        <Textarea
+          rows={2}
+          placeholder="Bijvoorbeeld: ik wil me weer sterk voelen in mijn eigen lijf."
+          value={motivation}
+          onChange={(e) => setMotivation(e.target.value)}
+        />
+      </Card>
+
+      <Card>
+        <p className="text-sm font-medium text-ink mb-1">Mijn lichaam</p>
+        <p className="text-xs text-ink-soft mb-3">Optioneel — helpt om je advies preciezer te maken.</p>
         <div className="flex flex-col gap-4">
           <div>
             <Label htmlFor="heightCm">Lengte (cm)</Label>
@@ -144,7 +164,7 @@ export function ProfileForm({
       </Card>
 
       <Card>
-        <p className="text-sm font-medium text-ink mb-3">Doelen</p>
+        <p className="text-sm font-medium text-ink mb-3">Mijn doelen</p>
         <div className="flex flex-wrap gap-2">
           {GOAL_OPTIONS.map((opt) => (
             <Chip key={opt} selected={goals.includes(opt)} onClick={() => setGoals((g) => toggle(g, opt))}>
@@ -155,7 +175,7 @@ export function ProfileForm({
       </Card>
 
       <Card>
-        <p className="text-sm font-medium text-ink mb-3">Aandachtspunten</p>
+        <p className="text-sm font-medium text-ink mb-3">Mijn aandachtspunten</p>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Geen diagnoses — puur om je advies passender te maken.
         </p>
@@ -186,7 +206,7 @@ export function ProfileForm({
       </Card>
 
       <Card>
-        <p className="text-sm font-medium text-ink mb-3">Beweging</p>
+        <p className="text-sm font-medium text-ink mb-3">Mijn beweging</p>
         <div className="flex flex-wrap gap-2 mb-4">
           {TRAINING_OPTIONS.map((opt) => (
             <Chip
@@ -209,7 +229,7 @@ export function ProfileForm({
       </Card>
 
       <Card>
-        <p className="text-sm font-medium text-ink mb-3">Voedingsstijl</p>
+        <p className="text-sm font-medium text-ink mb-3">Mijn voeding</p>
         <div className="flex flex-wrap gap-2 mb-4">
           {NUTRITION_STYLE_OPTIONS.map((opt) => (
             <Chip
@@ -235,9 +255,22 @@ export function ProfileForm({
         </div>
       </Card>
 
+      <Card>
+        <p className="text-sm font-medium text-ink mb-1">Mijn notitie</p>
+        <p className="text-xs text-ink-soft mb-3">
+          Een plekje voor jezelf. Alleen jij ziet dit terug.
+        </p>
+        <Textarea
+          rows={3}
+          placeholder="Schrijf hier iets voor jezelf op — een gedachte, een reminder, een klein succesje."
+          value={personalNote}
+          onChange={(e) => setPersonalNote(e.target.value)}
+        />
+      </Card>
+
       {cycleProfile?.has_cycle && (
         <Card>
-          <p className="text-sm font-medium text-ink mb-3">Cyclusinstellingen</p>
+          <p className="text-sm font-medium text-ink mb-3">Mijn cyclus</p>
           <div className="flex flex-col gap-4">
             <div>
               <Label htmlFor="cycleLength">Gemiddelde cyclusduur (dagen)</Label>

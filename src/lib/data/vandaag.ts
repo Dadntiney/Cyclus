@@ -2,26 +2,10 @@ import { subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { buildRecommendation } from "@/lib/recommendations/engine"
+import { computeStreak } from "@/lib/data/streak"
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10)
-}
-
-/** Consecutive days (counting back from today) with a saved check-in. */
-function computeStreak(checkinDates: string[], today: string): number {
-  const dates = new Set(checkinDates)
-  let streak = 0
-  let cursor = new Date(today)
-  // If today isn't checked in yet, that's fine — the streak still counts
-  // up through yesterday so it doesn't flicker to 0 while the day is young.
-  if (!dates.has(today)) {
-    cursor = subDays(cursor, 1)
-  }
-  while (dates.has(cursor.toISOString().slice(0, 10))) {
-    streak += 1
-    cursor = subDays(cursor, 1)
-  }
-  return streak
 }
 
 export async function getVandaagData(userId: string) {

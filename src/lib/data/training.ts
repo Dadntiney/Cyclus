@@ -20,6 +20,15 @@ export async function getWorkoutDetail(workoutId: string) {
   return { workout, exercises: exercises ?? [] }
 }
 
+export async function getFavoriteExerciseIds(userId: string): Promise<Set<string>> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from("exercise_favorites")
+    .select("exercise_id")
+    .eq("user_id", userId)
+  return new Set((data ?? []).map((f) => f.exercise_id))
+}
+
 export async function getWeekSessions(userId: string) {
   const supabase = await createClient()
   const monday = startOfWeek(new Date(), { weekStartsOn: 1 })

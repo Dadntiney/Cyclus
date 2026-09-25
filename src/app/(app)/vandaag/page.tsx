@@ -7,13 +7,7 @@ import { DailyTipCard } from "@/components/today/daily-tip-card"
 import { ProgressCard } from "@/components/today/progress-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { cn } from "@/lib/utils"
-
-function greeting(): string {
-  const hour = new Date().getHours()
-  if (hour < 12) return "Goedemorgen"
-  if (hour < 18) return "Goedemiddag"
-  return "Goedenavond"
-}
+import { greeting } from "@/lib/greeting"
 
 const PHASE_TONE: Record<CyclePhase, { bg: string; text: string; dot: string }> = {
   menstruatie: { bg: "bg-peach-soft", text: "text-ink", dot: "bg-peach" },
