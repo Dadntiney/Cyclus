@@ -13,7 +13,14 @@ import {
 export interface ActionState {
   error?: string
   success?: boolean
+  testMode?: boolean
 }
+
+// Temporary test-phase switch: when enabled, auth flows that would normally
+// send a Supabase email are short-circuited so the app can be tested without
+// a working SMTP/email quota. Set AUTH_TEST_MODE=false (or unset) to restore
+// normal behavior once going live — no other code path changes.
+const isAuthTestMode = () => process.env.AUTH_TEST_MODE === "true"
 
 export async function login(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = loginSchema.safeParse({
@@ -80,13 +87,19 @@ export async function register(_prev: ActionState, formData: FormData): Promise<
   }
 
   if (!data.session) {
+    if (isAuthTestMode()) {
+      return {
+        error:
+          "Testmodus staat aan, maar Supabase vraagt nog om e-mailbevestiging. Zet 'Confirm email' uit bij Authentication → Providers → Email in het Supabase dashboard om dit tijdens de testfase te omzeilen.",
+      }
+    }
     return {
       error:
         "Check je e-mail om je account te bevestigen voordat je verder kunt.",
     }
   }
 
-  redirect("/onboarding")
+  redirect(isAuthTestMode() ? "/onboarding?testMode=1" : "/onboarding")
 }
 
 export async function logout() {
@@ -104,17 +117,22 @@ export async function forgotPassword(
     return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." }
   }
 
-  const supabase = await createClient()
-  const originHeader = (await headers()).get("origin")
-  const origin = originHeader ?? process.env.NEXT_PUBLIC_SITE_URL ?? ""
+  const testMode = isAuthTestMode()
 
-  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${origin}/auth/callback?next=/wachtwoord-resetten`,
-  })
+  if (!testMode) {
+    const supabase = await createClient()
+    const originHeader = (await headers()).get("origin")
+    const origin = originHeader ?? process.env.NEXT_PUBLIC_SITE_URL ?? ""
+
+    await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+      redirectTo: `${origin}/auth/callback?next=/wachtwoord-resetten`,
+    })
+  }
 
   // Always report success, regardless of whether the email exists, so we
-  // don't leak which addresses have an account.
-  return { success: true }
+  // don't leak which addresses have an account. In test mode we skip the
+  // actual Supabase call entirely so it never touches the email quota.
+  return { success: true, testMode }
 }
 
 export async function resetPassword(
