@@ -133,8 +133,11 @@ Ter oriëntatie — niet uitputtend, en dit moet meegroeien met de app:
   uitleg per fase) + `src/lib/cycle/cyclusdag.ts` (compositie tot de
   Cyclusdag-pagina, `/cyclus/vandaag`).
 - **Herkennen**: `src/lib/cycle/history.ts` (`computeSymptomFrequency`,
-  cyclusgeschiedenis) op de Cyclus-pagina, en de lichte symptoom-personalisatie
-  in `cyclusdag.ts`.
+  cyclusgeschiedenis) en `src/lib/cycle/patterns.ts`
+  (`computePhaseSymptomInsights` — vergelijkt symptomen per cyclusfase over
+  meerdere afgeronde cycli, bijv. "vaker vermoeid tijdens de luteale fase,
+  je laatste 3 cycli") op de Cyclus-pagina en in de personalisatie op
+  `/cyclus/vandaag`.
 - **Ondersteunen**: `src/lib/cycle/phase-content.ts` (voeding/beweging per
   fase), `src/lib/recommendations/*` (dag- en weekplanning), optioneel te
   maken via `profiles.movement_enabled` / `nutrition_enabled`, en de
@@ -143,10 +146,20 @@ Ter oriëntatie — niet uitputtend, en dit moet meegroeien met de app:
   buddy-boodschappen), hedgende formuleringen door alle content-modules
   heen, en de expliciete "geen medisch advies"-notes op cyclus-gerelateerde
   pagina's.
+- **Levensfase (30+/overgang)**: `src/lib/cycle/life-stage-knowledge.ts` +
+  `/cyclus/overgang` — hoe de cyclus kan veranderen met leeftijd, wat
+  perimenopauze inhoudt, veelvoorkomende signalen (waaronder opvliegers en
+  nachtelijk zweten, die als check-in-symptoom al bestonden maar nergens
+  werden uitgelegd), en wanneer contact met een zorgverlener zinvol kan
+  zijn. `cycle_profiles.perimenopause_information` is nu ook zichtbaar en
+  bewerkbaar in Profiel, niet meer alleen write-only voor de Buddy.
+
+De Buddy-chat (`src/lib/buddy/context.ts`) krijgt het sterkste patroon voor
+de huidige fase ook mee in haar context, met de instructie dit alleen
+subtiel te noemen als het gesprek daar natuurlijk toe leidt.
 
 Bekende gaps ten opzichte van deze visie (voor vervolgwerk, niet nu
-opgepakt): overgangsspecifieke content (perimenopauze) is nu vooral een
-vrij invulveld in het profiel, geen eigen kennislaag; "patronen herkennen"
-is nog vooral symptoom-frequentie, geen trend-over-tijd-vergelijking
-("dit cyclus vs. vorige cycli"); en cyclusveranderingen-met-de-leeftijd
-worden nog nergens expliciet uitgelegd.
+opgepakt): de patroonherkenning kijkt per klacht per fase, maar nog niet
+naar samenhang tussen klachten (bijv. "als X, dan vaak ook Y") of naar
+cyclusduur-trends zelf (wordt je cyclus over meerdere maanden onregelmatiger
+of stabieler?).
