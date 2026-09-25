@@ -6,7 +6,7 @@ import "server-only"
 const RECIPE_QUERIES: Record<string, string> = {
   "Zalm met zoete aardappel en groenten": "salmon sweet potato vegetables plate",
   "Overnight oats met bessen": "overnight oats berries jar",
-  "Linzensalade met feta": "lentil salad feta",
+  "Linzensalade met feta": "lentil salad feta cheese",
   Kikkererwtencurry: "chickpea curry bowl",
   "Griekse yoghurt met noten en honing": "greek yogurt honey walnuts",
   "Gegrilde kip met quinoa en groenten": "grilled chicken quinoa vegetables",
