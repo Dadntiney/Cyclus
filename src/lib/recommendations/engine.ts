@@ -30,9 +30,23 @@ export interface TrainingRecommendation {
   reason: string
 }
 
+export interface TrainingPickInput {
+  profile: Pick<Profile, "training_preferences" | "health_conditions" | "movement_limitations">
+  latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms" | "need"> | null
+  workouts: Workout[]
+  seed: string
+}
+
 export interface NutritionRecommendation {
   recipe: Recipe | null
   reason: string
+}
+
+export interface NutritionPickInput {
+  profile: Pick<Profile, "nutrition_preferences" | "nutrition_style">
+  latestCheckin: Pick<Checkin, "need"> | null
+  recipes: Recipe[]
+  seed: string
 }
 
 export interface RecoveryRecommendation {
@@ -99,13 +113,15 @@ function parseCarbGrams(nutritionInformation: Recipe["nutrition_information"]): 
   return match ? Number(match[0]) : null
 }
 
-export function buildRecommendation(input: RecommendationInput): Recommendation {
-  const { profile, cycleEstimate, latestCheckin, workouts, recipes, seed } = input
-
+/**
+ * Picks today's suggested workout. Shared by the Vandaag recommendation and
+ * the Beweging page itself, seeded identically (`${userId}-${date}`) so both
+ * surfaces land on the exact same pick instead of contradicting each other.
+ */
+export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendation {
+  const { profile, latestCheckin, workouts, seed } = input
   const need = latestCheckin?.need ?? null
   const wantsMoreActive = need === "beweging"
-  const wantsQuickMeal = need === "voeding"
-  const wantsSelfCare = need === "mezelf"
 
   const preferredTypes = profile.training_preferences
     .map((pref) => TRAINING_PREFERENCE_TO_TYPE[pref])
@@ -140,23 +156,33 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     ? candidateWorkouts[seededIndex(`${seed}-training`, candidateWorkouts.length)]
     : null
 
-  let trainingReason: string
+  let reason: string
   if (lowerIntensity && need === "rust") {
-    trainingReason = "Je gaf aan dat je vandaag naar rust verlangt — een zachte sessie dus."
+    reason = "Je gaf aan dat je vandaag naar rust verlangt — een zachte sessie dus."
   } else if (lowerIntensity) {
-    trainingReason = "Je energie, slaap of stress gaf aan dat een rustigere sessie vandaag beter past."
+    reason = "Je energie, slaap of stress gaf aan dat een rustigere sessie vandaag beter past."
   } else if (wantsMoreActive) {
-    trainingReason = "Je gaf aan dat je vandaag zin hebt om te bewegen — hier is een actievere keuze."
+    reason = "Je gaf aan dat je vandaag zin hebt om te bewegen — hier is een actievere keuze."
   } else if (!latestCheckin) {
-    trainingReason = workout
+    reason = workout
       ? "Gebaseerd op je bewegingsvoorkeuren uit je profiel."
       : "Voeg je bewegingsvoorkeuren toe in je profiel voor een passend voorstel."
   } else if (impactSensitive) {
-    trainingReason = "Gekozen met oog voor de aandachtspunten uit je profiel."
+    reason = "Gekozen met oog voor de aandachtspunten uit je profiel."
   } else {
-    trainingReason = "Past bij je energie van vandaag en je bewegingsvoorkeuren."
+    reason = "Past bij je energie van vandaag en je bewegingsvoorkeuren."
   }
 
+  return { workout, reason }
+}
+
+/**
+ * Picks today's suggested recipe. Shared by the Vandaag recommendation and
+ * the Voeding page itself, seeded identically so both surfaces agree.
+ */
+export function pickTodaysRecipe(input: NutritionPickInput): NutritionRecommendation {
+  const { profile, latestCheckin, recipes, seed } = input
+  const wantsQuickMeal = latestCheckin?.need === "voeding"
   const nutritionPrefs = profile.nutrition_preferences ?? []
   const wantsLowCarb = profile.nutrition_style === "koolhydraatarm"
 
@@ -166,14 +192,14 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
 
   if (!candidateRecipes.length) candidateRecipes = recipes
 
-  let nutritionReason: string
+  let reason: string
   if (wantsQuickMeal) {
     const quick = candidateRecipes.filter((r) => r.preparation_time !== null && r.preparation_time <= 20)
     if (quick.length) {
       candidateRecipes = quick
-      nutritionReason = "Je gaf aan dat je zin had in gezond eten — dit maak je binnen 20 minuten."
+      reason = "Je gaf aan dat je zin had in gezond eten — dit maak je binnen 20 minuten."
     } else {
-      nutritionReason = "Sluit aan bij jouw voedingsvoorkeuren."
+      reason = "Sluit aan bij jouw voedingsvoorkeuren."
     }
   } else if (wantsLowCarb) {
     const lowCarb = candidateRecipes.filter((r) => {
@@ -182,13 +208,12 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     })
     if (lowCarb.length) {
       candidateRecipes = lowCarb
-      nutritionReason = "Een koolhydraatarme keuze, passend bij jouw voedingsvoorkeur."
+      reason = "Een koolhydraatarme keuze, passend bij jouw voedingsvoorkeur."
     } else {
-      nutritionReason =
-        "Sluit het best aan bij jouw voorkeuren — bekijk de koolhydraatarme variant in het recept."
+      reason = "Sluit het best aan bij jouw voorkeuren — bekijk de koolhydraatarme variant in het recept."
     }
   } else {
-    nutritionReason = nutritionPrefs.length
+    reason = nutritionPrefs.length
       ? `Sluit aan bij jouw voedingsvoorkeuren (${nutritionPrefs.join(", ")}).`
       : "Een gebalanceerde maaltijd om je dag te ondersteunen."
   }
@@ -196,6 +221,31 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
   const recipe = candidateRecipes.length
     ? candidateRecipes[seededIndex(`${seed}-nutrition`, candidateRecipes.length)]
     : null
+
+  return { recipe, reason }
+}
+
+export function buildRecommendation(input: RecommendationInput): Recommendation {
+  const { profile, cycleEstimate, latestCheckin, workouts, recipes, seed } = input
+
+  const need = latestCheckin?.need ?? null
+  const wantsMoreActive = need === "beweging"
+  const wantsSelfCare = need === "mezelf"
+  const lowerIntensity = wantsLowerIntensityToday(latestCheckin)
+
+  const { workout, reason: trainingReason } = pickTodaysWorkout({
+    profile,
+    latestCheckin,
+    workouts,
+    seed,
+  })
+
+  const { recipe, reason: nutritionReason } = pickTodaysRecipe({
+    profile,
+    latestCheckin,
+    recipes,
+    seed,
+  })
 
   const recovery: RecoveryRecommendation = wantsSelfCare
     ? {

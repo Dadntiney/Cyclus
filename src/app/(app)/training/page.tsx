@@ -5,14 +5,10 @@ import { Check, Moon } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getWorkoutLibrary, getWeekSessions } from "@/lib/data/training"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
+import { pickTodaysWorkout } from "@/lib/recommendations/engine"
+import { WorkoutLibrary } from "@/components/training/workout-library"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-
-const DIFFICULTY_LABELS: Record<string, string> = {
-  makkelijk: "Makkelijk",
-  gemiddeld: "Gemiddeld",
-  pittig: "Pittig",
-}
 
 const FOCUS_LABELS: Record<DayFocus, string> = {
   kracht: "Kracht",
@@ -27,16 +23,23 @@ export default async function TrainingPage() {
   const user = await getAuthedUser()
   if (!user) return null
 
-  const [workouts, week, { data: profile }] = await Promise.all([
+  const todayISO = format(new Date(), "yyyy-MM-dd")
+
+  const [workouts, week, { data: profile }, { data: checkin }] = await Promise.all([
     getWorkoutLibrary(),
     getWeekSessions(user.id),
     supabase
       .from("profiles")
-      .select("training_frequency, health_conditions, movement_limitations")
+      .select("training_frequency, health_conditions, movement_limitations, training_preferences")
       .eq("id", user.id)
       .single(),
+    supabase
+      .from("daily_checkins")
+      .select("energy, mood, sleep, stress, symptoms, need")
+      .eq("user_id", user.id)
+      .eq("date", todayISO)
+      .maybeSingle(),
   ])
-  const todayISO = format(new Date(), "yyyy-MM-dd")
 
   const program = buildWeeklyProgram({
     frequency: profile?.training_frequency ?? 3,
@@ -45,6 +48,23 @@ export default async function TrainingPage() {
     workouts,
     seed: `${user.id}-weekprogram`,
   })
+
+  // Today's slot in the week plan is replaced with the same, check-in-aware
+  // pick Vandaag shows (same seed, so both pages agree) — the weekday
+  // rotation can't know she has low energy or asked for rest today, but the
+  // one live signal we have should win over a fixed schedule. A rest day
+  // stays a rest day: this only steps in on days she already planned to move.
+  const todaysPick = pickTodaysWorkout({
+    profile: {
+      training_preferences: profile?.training_preferences ?? [],
+      health_conditions: profile?.health_conditions ?? [],
+      movement_limitations: profile?.movement_limitations ?? [],
+    },
+    latestCheckin: checkin ?? null,
+    workouts,
+    seed: `${user.id}-${todayISO}`,
+  })
+  const todayIndex = week.findIndex((d) => d.date === todayISO)
 
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
@@ -91,63 +111,53 @@ export default async function TrainingPage() {
             bij Profiel als dit niet meer klopt.
           </p>
           <div className="flex flex-col gap-2">
-            {program.map(({ weekday, focus, workout }) =>
-              workout ? (
+            {program.map((day, i) => {
+              const isToday = i === todayIndex
+              const workout = isToday && day.focus !== "rust" ? (todaysPick.workout ?? day.workout) : day.workout
+
+              if (!workout) {
+                return (
+                  <Card key={day.weekday} className="p-3.5 bg-cream-soft border-transparent shadow-none">
+                    <div className="flex items-center gap-2.5 text-ink-soft">
+                      <Moon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+                      <div>
+                        <p className="text-xs">{day.weekday}</p>
+                        <p className="text-sm font-medium">{FOCUS_LABELS.rust}</p>
+                      </div>
+                    </div>
+                  </Card>
+                )
+              }
+
+              return (
                 <Link
-                  key={weekday}
+                  key={day.weekday}
                   href={`/training/${workout.id}`}
                   className="block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
                 >
-                  <Card interactive className="p-3.5">
+                  <Card interactive className={cn("p-3.5", isToday && "bg-sage-soft border-transparent")}>
                     <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs text-ink-soft">
-                          {weekday} · {FOCUS_LABELS[focus]}
+                      <div className="min-w-0">
+                        <p className={cn("text-xs", isToday ? "text-sage-dark font-medium" : "text-ink-soft")}>
+                          {isToday ? "Vandaag voor jou" : `${day.weekday} · ${FOCUS_LABELS[day.focus]}`}
                         </p>
                         <p className="font-medium text-ink text-sm mt-0.5">{workout.title}</p>
+                        {isToday && (
+                          <p className="text-xs text-ink-soft mt-1">{todaysPick.reason}</p>
+                        )}
                       </div>
                       <span className="text-xs text-ink-soft shrink-0">{workout.duration} min</span>
                     </div>
                   </Card>
                 </Link>
-              ) : (
-                <Card key={weekday} className="p-3.5 bg-cream-soft border-transparent shadow-none">
-                  <div className="flex items-center gap-2.5 text-ink-soft">
-                    <Moon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                    <div>
-                      <p className="text-xs">{weekday}</p>
-                      <p className="text-sm font-medium">{FOCUS_LABELS.rust}</p>
-                    </div>
-                  </div>
-                </Card>
-              ),
-            )}
+              )
+            })}
           </div>
         </div>
 
         <div className="mt-6 lg:mt-0">
-          <h2 className="font-display text-lg text-ink mb-3">Bibliotheek</h2>
-          <div className="flex flex-col gap-2">
-            {workouts.map((workout) => (
-              <Link
-                key={workout.id}
-                href={`/training/${workout.id}`}
-                className="block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
-              >
-                <Card interactive className="p-3.5">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs text-ink-soft">
-                        {DIFFICULTY_LABELS[workout.difficulty] ?? workout.difficulty}
-                      </p>
-                      <p className="font-medium text-ink text-sm mt-0.5">{workout.title}</p>
-                    </div>
-                    <span className="text-xs text-ink-soft shrink-0">{workout.duration} min</span>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
+          <h2 className="font-display text-lg text-ink mb-3">Alle workouts</h2>
+          <WorkoutLibrary workouts={workouts} />
         </div>
       </div>
     </div>
