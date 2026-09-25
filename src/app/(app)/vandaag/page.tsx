@@ -36,10 +36,10 @@ export default async function VandaagPage() {
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
 
   return (
-    <div className="max-w-2xl mx-auto px-5 py-6 flex flex-col gap-6">
-      <div className="flex items-start justify-between gap-3">
+    <div className="max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+      <div className="flex items-start justify-between gap-3 mb-6 lg:mb-8">
         <div>
-          <h1 className="font-display text-2xl text-ink">
+          <h1 className="font-display text-2xl lg:text-3xl text-ink">
             {greeting()}
             {profile?.name ? `, ${profile.name}` : ""} 🌿
           </h1>
@@ -68,22 +68,27 @@ export default async function VandaagPage() {
         )}
       </div>
 
-      {recommendation && <TodayCards recommendation={recommendation} />}
-
-      <CheckinForm initial={checkin ?? null} />
-
-      <ProgressCard
-        completedThisWeek={completedThisWeek}
-        weeklyGoal={profile?.training_frequency ?? null}
-        streak={streak}
-      />
-
-      {dailyTip && (
-        <div>
-          <h2 className="font-display text-lg text-ink mb-3">Kennis</h2>
-          <DailyTipCard tip={dailyTip} />
+      <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          {recommendation && <TodayCards recommendation={recommendation} />}
+          <CheckinForm initial={checkin ?? null} />
         </div>
-      )}
+
+        <div className="flex flex-col gap-6 mt-6 lg:mt-0">
+          <ProgressCard
+            completedThisWeek={completedThisWeek}
+            weeklyGoal={profile?.training_frequency ?? null}
+            streak={streak}
+          />
+
+          {dailyTip && (
+            <div>
+              <h2 className="font-display text-lg text-ink mb-3">Kennis</h2>
+              <DailyTipCard tip={dailyTip} />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

@@ -4,6 +4,7 @@ import { useRef, useState, useTransition, type FormEvent } from "react"
 import { Send } from "lucide-react"
 import { sendBuddyMessage } from "@/lib/actions/buddy"
 import { cn } from "@/lib/utils"
+import { Input } from "@/components/ui/input"
 import type { Tables } from "@/types/database"
 
 type Message = Tables<"buddy_messages">
@@ -72,7 +73,7 @@ export function ChatWindow({
 
   return (
     <div className="flex flex-col h-[calc(100dvh-8.5rem)] md:h-[calc(100dvh-3rem)]">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 lg:px-8 py-4 flex flex-col gap-3">
         {messages.length === 0 && (
           <div className="text-center text-sm text-ink-soft py-10">
             Stel een vraag of vertel hoe je je vandaag voelt. Je Buddy denkt mee op basis van
@@ -107,18 +108,27 @@ export function ChatWindow({
 
       {error && <p className="text-sm text-danger px-5 pb-1">{error}</p>}
 
-      <form onSubmit={handleSubmit} className="flex items-center gap-2 px-5 py-3 border-t border-line bg-white">
-        <input
+      <form
+        onSubmit={handleSubmit}
+        className="flex items-center gap-2 px-5 lg:px-8 py-3 border-t border-line bg-white"
+      >
+        <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Typ een bericht..."
-          className="flex-1 rounded-full border border-line px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sage/40 focus:border-sage"
+          aria-label="Typ een bericht aan je Buddy"
+          className="rounded-full min-h-11"
         />
         <button
           type="submit"
           disabled={isPending || !input.trim()}
-          aria-label="Verstuur"
-          className="h-10 w-10 shrink-0 rounded-full bg-sage text-white flex items-center justify-center disabled:opacity-50"
+          aria-label="Verstuur bericht"
+          className={cn(
+            "h-11 w-11 shrink-0 rounded-full bg-sage text-white flex items-center justify-center",
+            "transition-[background-color,transform] duration-150 touch-manipulation motion-safe:active:scale-[0.94]",
+            "hover:bg-sage-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+            "disabled:opacity-50 disabled:pointer-events-none",
+          )}
         >
           <Send className="h-4 w-4" />
         </button>

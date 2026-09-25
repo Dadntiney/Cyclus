@@ -18,7 +18,7 @@ export default async function ProfielPage() {
   if (!profile) return null
 
   return (
-    <div className="max-w-2xl mx-auto px-5 py-6 flex flex-col gap-6">
+    <div className="max-w-4xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
       <div>
         <h1 className="font-display text-2xl text-ink">Profiel</h1>
         <p className="text-sm text-ink-soft mt-1">{user.email}</p>

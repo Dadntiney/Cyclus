@@ -12,8 +12,8 @@ export default async function BuddyPage() {
   const { conversationId, messages } = await getActiveConversation(user.id)
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col h-full">
-      <div className="px-5 pt-6 pb-2">
+    <div className="max-w-3xl mx-auto flex flex-col h-full">
+      <div className="px-5 lg:px-8 pt-6 lg:pt-10 pb-2">
         <h1 className="font-display text-2xl text-ink">Buddy</h1>
         <p className="text-sm text-ink-soft mt-1">
           Geen diagnoses, geen paniek — wel een luisterend oor. Bij ernstige klachten raden we

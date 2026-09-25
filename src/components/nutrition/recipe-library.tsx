@@ -60,7 +60,7 @@ export function RecipeLibrary({ recipes }: { recipes: Tables<"recipes">[] }) {
       </div>
 
       {filtered.length ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((recipe) => (
             <RecipeCard key={recipe.id} recipe={recipe} />
           ))}

@@ -88,6 +88,7 @@ export function ProfileForm({
 
   return (
     <div className="flex flex-col gap-5">
+      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
       <Card>
         <div className="flex flex-col gap-4">
           <div>
@@ -264,6 +265,7 @@ export function ProfileForm({
           </div>
         </Card>
       )}
+      </div>
 
       <div className="flex items-center gap-3">
         <Button onClick={handleSave} disabled={isPending}>

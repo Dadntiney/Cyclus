@@ -49,9 +49,9 @@ export default async function TrainingPage() {
   })
 
   return (
-    <div className="max-w-2xl mx-auto px-5 py-6 flex flex-col gap-6">
+    <div className="max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
-        <h1 className="font-display text-2xl text-ink">Training</h1>
+        <h1 className="font-display text-2xl lg:text-3xl text-ink">Training</h1>
         <p className="text-sm text-ink-soft mt-1">Jouw weekplanning en trainingsbibliotheek.</p>
       </div>
 
@@ -85,68 +85,70 @@ export default async function TrainingPage() {
         </Card>
       </div>
 
-      <div>
-        <h2 className="font-display text-lg text-ink mb-3">Jouw weekprogramma</h2>
-        <p className="text-sm text-ink-soft mb-3">
-          Gebaseerd op {profile?.training_frequency ?? 3}x per week uit je profiel. Pas dit aan
-          bij Profiel als dit niet meer klopt.
-        </p>
-        <div className="flex flex-col gap-2">
-          {program.map(({ weekday, focus, workout }) =>
-            workout ? (
+      <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+        <div>
+          <h2 className="font-display text-lg text-ink mb-3">Jouw weekprogramma</h2>
+          <p className="text-sm text-ink-soft mb-3">
+            Gebaseerd op {profile?.training_frequency ?? 3}x per week uit je profiel. Pas dit aan
+            bij Profiel als dit niet meer klopt.
+          </p>
+          <div className="flex flex-col gap-2">
+            {program.map(({ weekday, focus, workout }) =>
+              workout ? (
+                <Link
+                  key={weekday}
+                  href={`/training/${workout.id}`}
+                  className="block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
+                >
+                  <Card interactive className="p-3.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs text-ink-soft">
+                          {weekday} · {FOCUS_LABELS[focus]}
+                        </p>
+                        <p className="font-medium text-ink text-sm mt-0.5">{workout.title}</p>
+                      </div>
+                      <span className="text-xs text-ink-soft shrink-0">{workout.duration} min</span>
+                    </div>
+                  </Card>
+                </Link>
+              ) : (
+                <Card key={weekday} className="p-3.5 bg-cream-soft border-transparent shadow-none">
+                  <div className="flex items-center gap-2.5 text-ink-soft">
+                    <Moon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
+                    <div>
+                      <p className="text-xs">{weekday}</p>
+                      <p className="text-sm font-medium">{FOCUS_LABELS.rust}</p>
+                    </div>
+                  </div>
+                </Card>
+              ),
+            )}
+          </div>
+        </div>
+
+        <div className="mt-6 lg:mt-0">
+          <h2 className="font-display text-lg text-ink mb-3">Bibliotheek</h2>
+          <div className="flex flex-col gap-3">
+            {workouts.map((workout) => (
               <Link
-                key={weekday}
+                key={workout.id}
                 href={`/training/${workout.id}`}
                 className="block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
               >
-                <Card interactive className="p-3.5">
-                  <div className="flex items-center justify-between gap-3">
+                <Card interactive>
+                  <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-ink-soft">
-                        {weekday} · {FOCUS_LABELS[focus]}
+                      <p className="font-display text-lg text-ink">{workout.title}</p>
+                      <p className="text-sm text-ink-soft mt-0.5">
+                        {workout.duration} minuten · {DIFFICULTY_LABELS[workout.difficulty] ?? workout.difficulty}
                       </p>
-                      <p className="font-medium text-ink text-sm mt-0.5">{workout.title}</p>
                     </div>
-                    <span className="text-xs text-ink-soft shrink-0">{workout.duration} min</span>
                   </div>
                 </Card>
               </Link>
-            ) : (
-              <Card key={weekday} className="p-3.5 bg-cream-soft border-transparent shadow-none">
-                <div className="flex items-center gap-2.5 text-ink-soft">
-                  <Moon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                  <div>
-                    <p className="text-xs">{weekday}</p>
-                    <p className="text-sm font-medium">{FOCUS_LABELS.rust}</p>
-                  </div>
-                </div>
-              </Card>
-            ),
-          )}
-        </div>
-      </div>
-
-      <div>
-        <h2 className="font-display text-lg text-ink mb-3">Bibliotheek</h2>
-        <div className="flex flex-col gap-3">
-          {workouts.map((workout) => (
-            <Link
-              key={workout.id}
-              href={`/training/${workout.id}`}
-              className="block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
-            >
-              <Card interactive>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-display text-lg text-ink">{workout.title}</p>
-                    <p className="text-sm text-ink-soft mt-0.5">
-                      {workout.duration} minuten · {DIFFICULTY_LABELS[workout.difficulty] ?? workout.difficulty}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -56,9 +56,9 @@ export default async function CyclusPage() {
   const isIrregular = cycleProfile?.regularity === "onregelmatig" || cycleProfile?.regularity === "onbekend"
 
   return (
-    <div className="max-w-2xl mx-auto px-5 py-6 flex flex-col gap-6">
+    <div className="max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
-        <h1 className="font-display text-2xl text-ink">Jouw cyclus</h1>
+        <h1 className="font-display text-2xl lg:text-3xl text-ink">Jouw cyclus</h1>
         <p className="text-sm text-ink-soft mt-1">
           Een overzicht van je cyclus, patronen en klachten.
         </p>
@@ -112,67 +112,71 @@ export default async function CyclusPage() {
         </Card>
       )}
 
-      <Card>
-        <Calendar menstruationDates={menstruationDates} />
-      </Card>
+      <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <Card>
+            <Calendar menstruationDates={menstruationDates} />
+          </Card>
 
-      <div>
-        <h2 className="font-display text-lg text-ink mb-3">Eerdere cycli</h2>
-        {recentHistory.length ? (
-          <Card className="p-0 divide-y divide-line">
-            {recentHistory.map((period) => (
-              <div key={period.start} className="flex items-center justify-between px-5 py-3.5">
-                <div>
-                  <p className="text-sm font-medium text-ink">
-                    {format(parseISO(period.start), "d MMM", { locale: nl })} –{" "}
-                    {format(parseISO(period.end), "d MMM yyyy", { locale: nl })}
-                  </p>
-                  <p className="text-xs text-ink-soft mt-0.5">{period.days} dagen menstruatie</p>
-                </div>
-                {period.cycleLength && (
-                  <p className="text-xs text-ink-soft">{period.cycleLength} dagen cyclus</p>
-                )}
-              </div>
-            ))}
-          </Card>
-        ) : (
-          <Card>
-            <EmptyState
-              icon={<Droplet className="h-6 w-6" />}
-              title="Voeg je eerste cyclusdag toe."
-              description="Tik in de kalender hierboven op een dag om je menstruatie bij te houden."
-            />
-          </Card>
-        )}
-      </div>
+          <div>
+            <h2 className="font-display text-lg text-ink mb-3">Eerdere cycli</h2>
+            {recentHistory.length ? (
+              <Card className="p-0 divide-y divide-line">
+                {recentHistory.map((period) => (
+                  <div key={period.start} className="flex items-center justify-between px-5 py-3.5">
+                    <div>
+                      <p className="text-sm font-medium text-ink">
+                        {format(parseISO(period.start), "d MMM", { locale: nl })} –{" "}
+                        {format(parseISO(period.end), "d MMM yyyy", { locale: nl })}
+                      </p>
+                      <p className="text-xs text-ink-soft mt-0.5">{period.days} dagen menstruatie</p>
+                    </div>
+                    {period.cycleLength && (
+                      <p className="text-xs text-ink-soft">{period.cycleLength} dagen cyclus</p>
+                    )}
+                  </div>
+                ))}
+              </Card>
+            ) : (
+              <Card>
+                <EmptyState
+                  icon={<Droplet className="h-6 w-6" />}
+                  title="Voeg je eerste cyclusdag toe."
+                  description="Tik in de kalender hierboven op een dag om je menstruatie bij te houden."
+                />
+              </Card>
+            )}
+          </div>
+        </div>
 
-      <div>
-        <h2 className="font-display text-lg text-ink mb-3">Persoonlijke patronen</h2>
-        {patterns.length ? (
-          <Card>
-            <ul className="flex flex-col gap-2.5">
-              {patterns.slice(0, 6).map(({ symptom, count }) => (
-                <li key={symptom} className="flex items-center justify-between text-sm">
-                  <span className="text-ink">{symptom}</span>
-                  <span className="text-ink-soft">
-                    {count}x in je check-ins
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="text-xs text-ink-soft mt-4">
-              Gebaseerd op de klachten die je bij je dagelijkse check-ins hebt aangevinkt.
-            </p>
-          </Card>
-        ) : (
-          <Card>
-            <EmptyState
-              icon={<Sparkles className="h-6 w-6" />}
-              title="Nog geen patronen zichtbaar."
-              description="Vul een paar dagelijkse check-ins in op Vandaag om je persoonlijke patronen te zien."
-            />
-          </Card>
-        )}
+        <div className="mt-6 lg:mt-0">
+          <h2 className="font-display text-lg text-ink mb-3">Persoonlijke patronen</h2>
+          {patterns.length ? (
+            <Card>
+              <ul className="flex flex-col gap-2.5">
+                {patterns.slice(0, 6).map(({ symptom, count }) => (
+                  <li key={symptom} className="flex items-center justify-between text-sm">
+                    <span className="text-ink">{symptom}</span>
+                    <span className="text-ink-soft">
+                      {count}x in je check-ins
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-ink-soft mt-4">
+                Gebaseerd op de klachten die je bij je dagelijkse check-ins hebt aangevinkt.
+              </p>
+            </Card>
+          ) : (
+            <Card>
+              <EmptyState
+                icon={<Sparkles className="h-6 w-6" />}
+                title="Nog geen patronen zichtbaar."
+                description="Vul een paar dagelijkse check-ins in op Vandaag om je persoonlijke patronen te zien."
+              />
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -13,7 +13,7 @@ export default async function WorkoutDetailPage({
   if (!workout) notFound()
 
   return (
-    <div className="max-w-2xl mx-auto px-5 py-6">
+    <div className="max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
       <WorkoutSession workout={workout} exercises={exercises} />
     </div>
   )
