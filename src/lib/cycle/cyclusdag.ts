@@ -3,6 +3,7 @@ import { getPhaseKnowledge, type BodyChangeItem, type PhaseKnowledge } from "@/l
 import { getPhaseContent, type PhaseColorTokens } from "@/lib/cycle/phase-content"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { formatPhaseSymptomInsight, type PhaseSymptomInsight } from "@/lib/cycle/patterns"
+import type { BuddyStyle } from "@/lib/buddy/styles"
 
 /**
  * Composes the Cyclusdag detail page's content from three sources: the
@@ -87,6 +88,8 @@ export interface BuildCyclusdagViewInput {
    * more data, per the product vision.
    */
   phaseInsight: PhaseSymptomInsight | null
+  /** Her optional Buddy tone-of-voice preference(s) — empty means the neutral default tone. */
+  preferredStyles?: BuddyStyle[]
 }
 
 function buildPersonalizedMovementTip(
@@ -109,7 +112,8 @@ function buildSymptomNote(topSymptom: string | null, changes: BodyChangeItem[]):
 }
 
 export function buildCyclusdagView(input: BuildCyclusdagViewInput): CyclusdagView {
-  const { cycleEstimate, seed, movementEnabled, trainingPreferences, topSymptom, phaseInsight } = input
+  const { cycleEstimate, seed, movementEnabled, trainingPreferences, topSymptom, phaseInsight, preferredStyles = [] } =
+    input
   const { phase, phaseLabel, cycleDay } = cycleEstimate
 
   const knowledge = getPhaseKnowledge(phase)
@@ -140,7 +144,7 @@ export function buildCyclusdagView(input: BuildCyclusdagViewInput): CyclusdagVie
       }
     }
   } else {
-    const quote = getDailyBuddyQuote(`${seed}-cyclusdag`, phase)
+    const quote = getDailyBuddyQuote(`${seed}-cyclusdag`, phase, preferredStyles)
     buddyMoment = { kind: "quote", title: "Even onthouden 💛", emoji: quote.emoji, text: quote.text }
   }
 

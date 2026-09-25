@@ -24,6 +24,10 @@ export const onboardingSchema = z.object({
   hormonalMedicationStatus: z
     .enum(["nee", "ht", "ac", "andere_hormonaal", "andere_medicatie", "onbekend_liever_niet"])
     .optional(),
+  buddyStyles: z
+    .array(z.enum(["liefdevol", "humor", "spiritueel", "motiverend", "informatief", "rustig", "direct", "luchtig"]))
+    .default([]),
+  buddyMessageFrequency: z.enum(["elke_dag", "paar_keer_per_week", "alleen_relevant", "uit"]).optional(),
 })
 
 export type OnboardingInput = z.infer<typeof onboardingSchema>

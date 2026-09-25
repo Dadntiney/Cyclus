@@ -38,6 +38,8 @@ export async function completeOnboarding(input: OnboardingInput) {
       movement_limitations: data.movementLimitations,
       nutrition_style: data.nutritionStyle,
       hormonal_medication_status: data.hormonalMedicationStatus || null,
+      buddy_styles: data.buddyStyles,
+      buddy_message_frequency: data.buddyMessageFrequency || null,
       onboarding_completed: true,
     })
     .eq("id", user.id)

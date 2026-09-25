@@ -16,6 +16,8 @@ import {
   TRAINING_FREQUENCY_OPTIONS,
   REGULARITY_OPTIONS,
   HORMONAL_MEDICATION_STATUS_OPTIONS,
+  BUDDY_STYLE_OPTIONS,
+  BUDDY_FREQUENCY_OPTIONS,
 } from "@/lib/constants"
 import { updateProfile } from "@/lib/actions/profile"
 import type { Tables } from "@/types/database"
@@ -74,6 +76,10 @@ export function ProfileForm({
   const [showMedicationOnDashboard, setShowMedicationOnDashboard] = useState(
     profile.show_medication_on_dashboard,
   )
+  const [buddyStyles, setBuddyStyles] = useState<string[]>(profile.buddy_styles ?? [])
+  const [buddyMessageFrequency, setBuddyMessageFrequency] = useState(
+    profile.buddy_message_frequency ?? "",
+  )
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle")
   const [isPending, startTransition] = useTransition()
 
@@ -103,6 +109,8 @@ export function ProfileForm({
         perimenopauseInfo: perimenopauseInfo.trim() || null,
         hormonalMedicationStatus: hormonalMedicationStatus || null,
         showMedicationOnDashboard,
+        buddyStyles,
+        buddyMessageFrequency: buddyMessageFrequency || null,
       })
       setStatus(result.error ? "error" : "saved")
     })
@@ -367,6 +375,44 @@ export function ProfileForm({
             </div>
           </>
         )}
+      </Card>
+
+      <Card id="buddy">
+        <p className="text-sm font-medium text-ink mb-1">Mijn Buddy</p>
+        <p className="text-xs text-ink-soft mb-3">
+          Optioneel. Kies één of meerdere stijlen die bij je passen — je berichten, tips en
+          weetjes krijgen dan die toon. Kies niets voor de standaard, warme toon.
+        </p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          <Chip selected={buddyStyles.length === 0} onClick={() => setBuddyStyles([])}>
+            Geen voorkeur
+          </Chip>
+          {BUDDY_STYLE_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value}
+              selected={buddyStyles.includes(opt.value)}
+              onClick={() => setBuddyStyles((v) => toggle(v, opt.value))}
+            >
+              <span className="mr-1" aria-hidden>
+                {opt.emoji}
+              </span>
+              {opt.label}
+            </Chip>
+          ))}
+        </div>
+
+        <p className="text-sm font-medium text-ink mb-2">Hoe vaak wil je berichten van je Buddy?</p>
+        <div className="flex flex-wrap gap-2">
+          {BUDDY_FREQUENCY_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value}
+              selected={buddyMessageFrequency === opt.value}
+              onClick={() => setBuddyMessageFrequency(opt.value)}
+            >
+              {opt.label}
+            </Chip>
+          ))}
+        </div>
       </Card>
 
       <Card>

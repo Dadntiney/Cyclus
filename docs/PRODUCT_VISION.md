@@ -145,7 +145,15 @@ Ter oriëntatie — niet uitputtend, en dit moet meegroeien met de app:
 - **Balans / toon**: `src/lib/data/buddy-quotes.ts` (dagelijkse
   buddy-boodschappen), hedgende formuleringen door alle content-modules
   heen, en de expliciete "geen medisch advies"-notes op cyclus-gerelateerde
-  pagina's.
+  pagina's. Optioneel is dit ook persoonlijk te kleuren via
+  `profiles.buddy_styles` (Liefdevol/Humor/Spiritueel/Motiverend/
+  Informatief/Rustig/Direct/Luchtig, meerdere te kiezen, instelbaar bij
+  onboarding en in Profiel → Mijn Buddy) en `profiles.buddy_message_frequency`
+  (hoe vaak ze de dagelijkse quote-kaart en "even onthouden"-momenten wil
+  zien) — zie `src/lib/buddy/styles.ts` voor de selectie-/frequentielogica
+  en de `styles`-map op een deel van de quotes in `buddy-quotes.ts` voor
+  hoe dezelfde boodschap per stijl anders klinkt. Zonder voorkeur blijft de
+  bestaande neutrale, warme toon ongewijzigd.
 - **Levensfase (30+/overgang)**: `src/lib/cycle/life-stage-knowledge.ts` +
   `/cyclus/overgang` — hoe de cyclus kan veranderen met leeftijd, wat
   perimenopauze inhoudt, veelvoorkomende signalen (waaronder opvliegers en

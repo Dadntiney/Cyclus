@@ -461,6 +461,8 @@ export type Database = {
         Row: {
           age: number | null
           avatar_url: string | null
+          buddy_message_frequency: string | null
+          buddy_styles: string[]
           created_at: string
           goal_weight_kg: number | null
           goals: string[]
@@ -488,6 +490,8 @@ export type Database = {
         Insert: {
           age?: number | null
           avatar_url?: string | null
+          buddy_message_frequency?: string | null
+          buddy_styles?: string[]
           created_at?: string
           goal_weight_kg?: number | null
           goals?: string[]
@@ -515,6 +519,8 @@ export type Database = {
         Update: {
           age?: number | null
           avatar_url?: string | null
+          buddy_message_frequency?: string | null
+          buddy_styles?: string[]
           created_at?: string
           goal_weight_kg?: number | null
           goals?: string[]

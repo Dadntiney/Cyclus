@@ -9,6 +9,7 @@ import {
   type MedicationReminderLike,
 } from "@/lib/client/medication-reminder-scheduler"
 import { wasReminderShownToday, markReminderShownToday } from "@/lib/client/reminder-storage"
+import { resolveReminderText } from "@/lib/buddy/reminder-labels"
 import { cn } from "@/lib/utils"
 
 const TYPE_BY_VALUE = new Map<string, (typeof REMINDER_TYPE_OPTIONS)[number]>(
@@ -21,11 +22,18 @@ interface Toast {
   text: string
 }
 
-function reminderToast(reminder: ReminderLike): Toast {
+function reminderToast(reminder: ReminderLike, preferredStyles: string[], todayISO: string): Toast {
+  const typeOption = TYPE_BY_VALUE.get(reminder.type)
   return {
     id: reminder.id,
-    emoji: TYPE_BY_VALUE.get(reminder.type)?.emoji ?? "🔔",
-    text: reminder.label?.trim() || TYPE_BY_VALUE.get(reminder.type)?.defaultLabel || "Even een herinnering voor je.",
+    emoji: typeOption?.emoji ?? "🔔",
+    text: resolveReminderText(
+      reminder.type,
+      reminder.label,
+      typeOption?.defaultLabel ?? "",
+      preferredStyles,
+      `${reminder.id}-${todayISO}`,
+    ),
   }
 }
 
@@ -48,9 +56,11 @@ function medicationToast(medication: MedicationReminderLike): Toast {
 export function ReminderToastHost({
   reminders,
   medications = [],
+  buddyStyles = [],
 }: {
   reminders: ReminderLike[]
   medications?: MedicationReminderLike[]
+  buddyStyles?: string[]
 }) {
   const [visible, setVisible] = useState<Toast[]>([])
 
@@ -70,7 +80,7 @@ export function ReminderToastHost({
 
       for (const reminder of dueReminders) {
         markReminderShownToday(reminder.id, todayISO)
-        toasts.push(reminderToast(reminder))
+        toasts.push(reminderToast(reminder, buddyStyles, todayISO))
       }
       for (const medication of dueMedications) {
         markReminderShownToday(medication.id, todayISO)
@@ -93,7 +103,7 @@ export function ReminderToastHost({
     check()
     const interval = setInterval(check, 60_000)
     return () => clearInterval(interval)
-  }, [reminders, medications])
+  }, [reminders, medications, buddyStyles])
 
   function dismiss(id: string) {
     setVisible((prev) => prev.filter((r) => r.id !== id))

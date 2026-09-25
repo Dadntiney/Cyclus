@@ -11,6 +11,7 @@ import { Expandable } from "@/components/ui/expandable"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
+import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { cn } from "@/lib/utils"
 
 export default async function CyclusdagPage() {
@@ -23,7 +24,7 @@ export default async function CyclusdagPage() {
   const [{ data: profile }, { data: cycleProfile }, { data: checkins }, { data: logs }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("movement_enabled, training_preferences, show_medication_on_dashboard")
+      .select("movement_enabled, training_preferences, show_medication_on_dashboard, buddy_styles, buddy_message_frequency")
       .eq("id", user.id)
       .single(),
     supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
@@ -95,6 +96,7 @@ export default async function CyclusdagPage() {
   )
   const phaseInsights = computePhaseSymptomInsights(cycleHistory, checkins ?? [])
   const phaseInsight = getTopPhaseSymptomInsight(phaseInsights, cycleEstimate.phase)
+  const preferredStyles = (profile?.buddy_styles ?? []) as BuddyStyle[]
 
   const view = buildCyclusdagView({
     cycleEstimate,
@@ -103,7 +105,18 @@ export default async function CyclusdagPage() {
     trainingPreferences: profile?.training_preferences ?? [],
     topSymptom: patterns[0]?.symptom ?? null,
     phaseInsight,
+    preferredStyles,
   })
+
+  // Passive/ambient buddy content (fun fact + "even onthouden" moment) —
+  // gated by her optional cadence preference, not by whether medication is
+  // shown. "Alleen relevant" leans on whether there's an actual recognized
+  // pattern to point to, not just a generic quote.
+  const showAmbientBuddyContent = shouldShowBuddyMessage(
+    `${user.id}-${today}-cyclusdag`,
+    profile?.buddy_message_frequency ?? null,
+    view.symptomNote !== null,
+  )
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
@@ -151,12 +164,14 @@ export default async function CyclusdagPage() {
           </section>
         )}
 
-        <section>
-          <Card className="bg-sage-soft border-transparent">
-            <p className="text-xs font-medium text-sage-dark mb-1">Wist je dat...?</p>
-            <p className="text-sm text-ink leading-relaxed">{view.funFact}</p>
-          </Card>
-        </section>
+        {showAmbientBuddyContent && (
+          <section>
+            <Card className="bg-sage-soft border-transparent">
+              <p className="text-xs font-medium text-sage-dark mb-1">Wist je dat...?</p>
+              <p className="text-sm text-ink leading-relaxed">{view.funFact}</p>
+            </Card>
+          </section>
+        )}
 
         <Expandable label="Meer weten over deze fase">
           <div className="flex flex-col gap-4">
@@ -175,17 +190,19 @@ export default async function CyclusdagPage() {
           </div>
         </Expandable>
 
-        <section>
-          <Card className="bg-white">
-            <p className="text-xs font-medium text-sage-dark mb-1">
-              <span className="mr-1" aria-hidden>
-                {view.buddyMoment.emoji}
-              </span>
-              {view.buddyMoment.title}
-            </p>
-            <p className="text-sm text-ink leading-relaxed">{view.buddyMoment.text}</p>
-          </Card>
-        </section>
+        {showAmbientBuddyContent && (
+          <section>
+            <Card className="bg-white">
+              <p className="text-xs font-medium text-sage-dark mb-1">
+                <span className="mr-1" aria-hidden>
+                  {view.buddyMoment.emoji}
+                </span>
+                {view.buddyMoment.title}
+              </p>
+              <p className="text-sm text-ink leading-relaxed">{view.buddyMoment.text}</p>
+            </Card>
+          </section>
+        )}
 
         <p className="text-xs text-ink-soft px-1 leading-relaxed">
           Deze uitleg is algemene, informatieve content — geen medisch advies en geen diagnose.

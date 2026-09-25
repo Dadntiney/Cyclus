@@ -19,7 +19,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("name, avatar_url, onboarding_completed")
+    .select("name, avatar_url, onboarding_completed, buddy_styles")
     .eq("id", user.id)
     .single()
 
@@ -53,7 +53,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <PageTransition>{children}</PageTransition>
         </main>
         <BottomNav />
-        <ReminderToastHost reminders={reminders} medications={medicationReminders} />
+        <ReminderToastHost reminders={reminders} medications={medicationReminders} buddyStyles={profile.buddy_styles} />
       </div>
     </div>
   )

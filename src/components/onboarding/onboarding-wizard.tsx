@@ -15,6 +15,8 @@ import {
   STYLE_OPTIONS,
   REGULARITY_OPTIONS,
   HORMONAL_MEDICATION_STATUS_OPTIONS,
+  BUDDY_STYLE_OPTIONS,
+  BUDDY_FREQUENCY_OPTIONS,
 } from "@/lib/constants"
 import { completeOnboarding } from "@/lib/actions/onboarding"
 import { cn } from "@/lib/utils"
@@ -41,6 +43,8 @@ interface FormData {
   nutritionPreferences: string[]
   hormonalMedicationStatus: string
   wellnessPreference: string
+  buddyStyles: string[]
+  buddyMessageFrequency: string
 }
 
 // The step sequence is dynamic: whether movement/nutrition were switched on
@@ -62,6 +66,7 @@ type StepId =
   | "nutrition-preferences"
   | "medication-status"
   | "wellness"
+  | "buddy-style"
   | "buddy"
 
 function buildStepSequence(data: FormData): StepId[] {
@@ -69,7 +74,7 @@ function buildStepSequence(data: FormData): StepId[] {
   if (data.movementEnabled) steps.push("movement-preferences", "movement-frequency")
   steps.push("nutrition-toggle")
   if (data.nutritionEnabled) steps.push("nutrition-style", "nutrition-preferences")
-  steps.push("medication-status", "wellness", "buddy")
+  steps.push("medication-status", "wellness", "buddy-style", "buddy")
   return steps
 }
 
@@ -103,6 +108,8 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
     nutritionPreferences: [],
     hormonalMedicationStatus: "",
     wellnessPreference: "",
+    buddyStyles: [],
+    buddyMessageFrequency: "",
   })
 
   const stepSequence = useMemo(() => buildStepSequence(data), [data])
@@ -196,6 +203,22 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             | "andere_hormonaal"
             | "andere_medicatie"
             | "onbekend_liever_niet"
+            | undefined,
+          buddyStyles: data.buddyStyles as (
+            | "liefdevol"
+            | "humor"
+            | "spiritueel"
+            | "motiverend"
+            | "informatief"
+            | "rustig"
+            | "direct"
+            | "luchtig"
+          )[],
+          buddyMessageFrequency: (data.buddyMessageFrequency || undefined) as
+            | "elke_dag"
+            | "paar_keer_per_week"
+            | "alleen_relevant"
+            | "uit"
             | undefined,
         })
       } catch (e) {
@@ -305,7 +328,16 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             onChange={(wellnessPreference) => setData((d) => ({ ...d, wellnessPreference }))}
           />
         )}
-        {stepId === "buddy" && <BuddyIntroStep name={data.name} />}
+        {stepId === "buddy-style" && (
+          <BuddyStyleStep
+            styles={data.buddyStyles}
+            onToggleStyle={(v) => setData((d) => ({ ...d, buddyStyles: toggle(d.buddyStyles, v) }))}
+            onClear={() => setData((d) => ({ ...d, buddyStyles: [] }))}
+            frequency={data.buddyMessageFrequency}
+            onChangeFrequency={(buddyMessageFrequency) => setData((d) => ({ ...d, buddyMessageFrequency }))}
+          />
+        )}
+        {stepId === "buddy" && <BuddyIntroStep name={data.name} styles={data.buddyStyles} />}
       </div>
 
       <FieldError>{error}</FieldError>
@@ -778,7 +810,54 @@ function StyleStep({
   )
 }
 
-function BuddyIntroStep({ name }: { name: string }) {
+function BuddyStyleStep({
+  styles,
+  onToggleStyle,
+  onClear,
+  frequency,
+  onChangeFrequency,
+}: {
+  styles: string[]
+  onToggleStyle: (v: string) => void
+  onClear: () => void
+  frequency: string
+  onChangeFrequency: (v: string) => void
+}) {
+  return (
+    <div>
+      <h2 className="font-display text-2xl text-ink mb-2">Hoe praat je Buddy met je?</h2>
+      <p className="text-ink-soft text-sm mb-6">
+        Optioneel. Kies één of meerdere stijlen die bij je passen — je berichten, tips en
+        weetjes krijgen dan die toon. Later altijd aan te passen via Profiel.
+      </p>
+      <div className="flex flex-wrap gap-2 mb-3">
+        <Chip selected={styles.length === 0} onClick={onClear}>
+          Geen voorkeur
+        </Chip>
+        {BUDDY_STYLE_OPTIONS.map((opt) => (
+          <Chip key={opt.value} selected={styles.includes(opt.value)} onClick={() => onToggleStyle(opt.value)}>
+            <span className="mr-1" aria-hidden>
+              {opt.emoji}
+            </span>
+            {opt.label}
+          </Chip>
+        ))}
+      </div>
+
+      <p className="text-sm font-medium text-ink mb-2 mt-6">Hoe vaak wil je berichten van je Buddy?</p>
+      <div className="flex flex-wrap gap-2">
+        {BUDDY_FREQUENCY_OPTIONS.map((opt) => (
+          <Chip key={opt.value} selected={frequency === opt.value} onClick={() => onChangeFrequency(opt.value)}>
+            {opt.label}
+          </Chip>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function BuddyIntroStep({ name, styles }: { name: string; styles: string[] }) {
+  const styleLabel = BUDDY_STYLE_OPTIONS.find((opt) => opt.value === styles[0])?.label
   return (
     <div className="text-center">
       <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-sage-soft flex items-center justify-center text-2xl">
@@ -789,6 +868,7 @@ function BuddyIntroStep({ name }: { name: string }) {
         {name ? `${name}, je` : "Je"} Buddy is er om mee te praten over hoe je je voelt, je
         cyclus en je dag. Geen diagnoses, wel een luisterend oor en praktische tips. Bij
         ernstige klachten verwijst je Buddy je altijd door naar een zorgprofessional.
+        {styleLabel ? ` Ze praat voortaan met je in een ${styleLabel.toLowerCase()} toon.` : ""}
       </p>
     </div>
   )

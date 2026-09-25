@@ -29,6 +29,8 @@ export interface UpdateProfileInput {
   perimenopauseInfo: string | null
   hormonalMedicationStatus: string | null
   showMedicationOnDashboard: boolean
+  buddyStyles: string[]
+  buddyMessageFrequency: string | null
 }
 
 export async function updateProfile(input: UpdateProfileInput) {
@@ -61,6 +63,8 @@ export async function updateProfile(input: UpdateProfileInput) {
       personal_note: input.personalNote,
       hormonal_medication_status: input.hormonalMedicationStatus,
       show_medication_on_dashboard: input.showMedicationOnDashboard,
+      buddy_styles: input.buddyStyles,
+      buddy_message_frequency: input.buddyMessageFrequency,
     })
     .eq("id", user.id)
 

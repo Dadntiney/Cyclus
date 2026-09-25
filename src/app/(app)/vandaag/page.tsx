@@ -13,6 +13,7 @@ import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
+import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { cn } from "@/lib/utils"
 import { greeting } from "@/lib/greeting"
 
@@ -62,7 +63,13 @@ export default async function VandaagPage() {
     await getVandaagData(user.id)
   const showMedicationCard = Boolean(profile?.show_medication_on_dashboard) && medicationItems.length > 0
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
-  const buddyQuote = getDailyBuddyQuote(`${user.id}-${today}`, cycleEstimate?.phase ?? null)
+  const preferredStyles = (profile?.buddy_styles ?? []) as BuddyStyle[]
+  const buddyQuote = getDailyBuddyQuote(`${user.id}-${today}`, cycleEstimate?.phase ?? null, preferredStyles)
+  const showBuddyQuote = shouldShowBuddyMessage(
+    `${user.id}-${today}-vandaag`,
+    profile?.buddy_message_frequency ?? null,
+    cycleEstimate !== null,
+  )
 
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
@@ -115,9 +122,11 @@ export default async function VandaagPage() {
         <p className="text-sm text-ink-soft mb-6 lg:mb-8">Fijn dat je er bent.</p>
       )}
 
-      <div className="mb-6 lg:mb-8">
-        <BuddyQuoteCard quote={buddyQuote} />
-      </div>
+      {showBuddyQuote && (
+        <div className="mb-6 lg:mb-8">
+          <BuddyQuoteCard quote={buddyQuote} />
+        </div>
+      )}
 
       <Link
         href="/deze-week"

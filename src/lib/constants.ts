@@ -203,3 +203,27 @@ export const MEDICATION_SCHEDULE_TYPE_OPTIONS = [
   { value: "cyclisch", label: "Periode wel / periode niet" },
   { value: "eigen_schema", label: "Eigen schema" },
 ] as const
+
+// Optional Buddy tone-of-voice preference (see profiles.buddy_styles).
+// Multi-select, empty = "geen voorkeur" — the app then uses a warm, neutral
+// default tone everywhere a Buddy message appears.
+export const BUDDY_STYLE_OPTIONS = [
+  { value: "liefdevol", label: "Liefdevol", emoji: "💛", description: "warm, zacht en bemoedigend" },
+  { value: "humor", label: "Humor", emoji: "😄", description: "luchtig, grappig en soms een knipoog" },
+  { value: "spiritueel", label: "Spiritueel", emoji: "✨", description: "rust, bewustwording en verbinding" },
+  { value: "motiverend", label: "Motiverend", emoji: "💪", description: "actief, positief en stimulerend" },
+  { value: "informatief", label: "Informatief", emoji: "🧠", description: "interessante weetjes en uitleg" },
+  { value: "rustig", label: "Rustig", emoji: "🌿", description: "kalm, ontspannen en mindful" },
+  { value: "direct", label: "Direct", emoji: "🔥", description: "eerlijk, duidelijk en zonder omwegen" },
+  { value: "luchtig", label: "Luchtig", emoji: "😊", description: "vrolijk, speels en positief" },
+] as const
+
+// How often she wants to see the passive/ambient Buddy content (daily quote
+// card, "even onthouden" moments on Cyclusdag) — separate from the explicit,
+// per-item schedule in `reminders`, which she already configures precisely.
+export const BUDDY_FREQUENCY_OPTIONS = [
+  { value: "elke_dag", label: "Elke dag" },
+  { value: "paar_keer_per_week", label: "Een paar keer per week" },
+  { value: "alleen_relevant", label: "Alleen wanneer relevant" },
+  { value: "uit", label: "Uit" },
+] as const
