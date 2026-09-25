@@ -58,7 +58,7 @@ export default async function CyclusPage() {
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
-        <h1 className="font-display text-2xl lg:text-3xl text-ink">Jouw cyclus</h1>
+        <h1 className="font-display text-2xl lg:text-3xl text-ink">Mijn cyclus</h1>
         <p className="text-sm text-ink-soft mt-1">
           Een overzicht van je cyclus, patronen en klachten.
         </p>

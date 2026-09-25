@@ -25,7 +25,7 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
             </>
           ) : (
             <p className="text-sm text-ink-soft mt-1">
-              Je hebt nog geen trainingen afgerond. Bekijk de bibliotheek in Training.
+              Je hebt nog geen trainingen afgerond. Bekijk de bibliotheek in Beweging.
             </p>
           )}
         </Card>
