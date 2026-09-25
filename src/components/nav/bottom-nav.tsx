@@ -26,13 +26,13 @@ export function BottomNav() {
               >
                 <span
                   className={cn(
-                    "flex flex-col items-center gap-1 rounded-2xl px-3.5 py-1 transition-colors duration-150",
+                    "flex items-center justify-center h-7 w-9 rounded-full transition-colors duration-150",
                     active && "bg-sage-soft",
                   )}
                 >
                   <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
-                  {label}
                 </span>
+                {label}
               </Link>
             </li>
           )
