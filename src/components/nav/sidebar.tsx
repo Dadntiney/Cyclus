@@ -31,6 +31,7 @@ export function Sidebar({ name, avatarUrl }: { name: string | null; avatarUrl: s
               <li key={href}>
                 <Link
                   href={href}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
                     "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                     navLinkFocus,
@@ -51,6 +52,7 @@ export function Sidebar({ name, avatarUrl }: { name: string | null; avatarUrl: s
       <div className="border-t border-line pt-4 mt-4 flex flex-col gap-1">
         <Link
           href="/profiel"
+          aria-current={pathname === "/profiel" ? "page" : undefined}
           className={cn(
             "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
             navLinkFocus,

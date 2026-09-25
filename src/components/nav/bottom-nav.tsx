@@ -17,14 +17,22 @@ export function BottomNav() {
             <li key={href} className="flex-1">
               <Link
                 href={href}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 py-2.5 min-h-[52px] text-[11px] font-medium touch-manipulation transition-[color,transform] duration-150 motion-safe:active:scale-[0.94]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset",
                   active ? "text-sage-dark" : "text-ink-soft",
                 )}
               >
-                <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
-                {label}
+                <span
+                  className={cn(
+                    "flex flex-col items-center gap-1 rounded-2xl px-3.5 py-1 transition-colors duration-150",
+                    active && "bg-sage-soft",
+                  )}
+                >
+                  <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
+                  {label}
+                </span>
               </Link>
             </li>
           )
