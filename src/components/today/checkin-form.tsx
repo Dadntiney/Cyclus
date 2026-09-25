@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useTransition } from "react"
-import { Check } from "lucide-react"
+import { Check, ChevronDown } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { RatingScale } from "@/components/ui/rating-scale"
 import { Chip } from "@/components/ui/chip"
@@ -22,6 +22,9 @@ export function CheckinForm({ initial }: { initial: Checkin | null }) {
   const [symptoms, setSymptoms] = useState<string[]>(initial?.symptoms ?? [])
   const [notes, setNotes] = useState(initial?.notes ?? "")
   const [need, setNeed] = useState<string | null>(initial?.need ?? null)
+  const [showMore, setShowMore] = useState(
+    Boolean(initial?.mood || initial?.sleep || initial?.stress || initial?.symptoms?.length || initial?.notes),
+  )
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle")
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -95,35 +98,49 @@ export function CheckinForm({ initial }: { initial: Checkin | null }) {
         </div>
 
         <RatingScale label="Energie" value={energy} onChange={setEnergy} lowLabel="Laag" highLabel="Hoog" />
-        <RatingScale label="Stemming" value={mood} onChange={setMood} lowLabel="Somber" highLabel="Blij" />
-        <RatingScale label="Slaap" value={sleep} onChange={setSleep} lowLabel="Slecht" highLabel="Goed" />
-        <RatingScale label="Stress" value={stress} onChange={setStress} lowLabel="Rustig" highLabel="Gespannen" />
 
-        <div>
-          <p className="text-sm font-medium text-ink mb-2">Klachten</p>
-          <div className="flex flex-wrap gap-2">
-            {SYMPTOM_OPTIONS.map((symptom) => (
-              <Chip
-                key={symptom}
-                selected={symptoms.includes(symptom)}
-                onClick={() => toggleSymptom(symptom)}
-              >
-                {symptom}
-              </Chip>
-            ))}
-          </div>
-        </div>
+        {showMore ? (
+          <>
+            <RatingScale label="Stemming" value={mood} onChange={setMood} lowLabel="Somber" highLabel="Blij" />
+            <RatingScale label="Slaap" value={sleep} onChange={setSleep} lowLabel="Slecht" highLabel="Goed" />
+            <RatingScale label="Stress" value={stress} onChange={setStress} lowLabel="Rustig" highLabel="Gespannen" />
 
-        <div>
-          <Label htmlFor="notes">Notities (optioneel)</Label>
-          <Textarea
-            id="notes"
-            rows={3}
-            placeholder="Wil je verder nog iets kwijt over vandaag?"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </div>
+            <div>
+              <p className="text-sm font-medium text-ink mb-2">Klachten</p>
+              <div className="flex flex-wrap gap-2">
+                {SYMPTOM_OPTIONS.map((symptom) => (
+                  <Chip
+                    key={symptom}
+                    selected={symptoms.includes(symptom)}
+                    onClick={() => toggleSymptom(symptom)}
+                  >
+                    {symptom}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="notes">Notities (optioneel)</Label>
+              <Textarea
+                id="notes"
+                rows={3}
+                placeholder="Wil je verder nog iets kwijt over vandaag?"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowMore(true)}
+            className="self-start inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 py-1"
+          >
+            Meer over vandaag toevoegen
+            <ChevronDown className="h-4 w-4" strokeWidth={2} />
+          </button>
+        )}
 
         <div className="flex items-center gap-3">
           <Button onClick={handleSave} disabled={isPending}>
