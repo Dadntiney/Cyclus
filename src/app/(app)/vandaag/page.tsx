@@ -68,6 +68,7 @@ export default async function VandaagPage() {
     cycleProfile,
     cycleEstimate,
     openPeriod,
+    menstruationDay,
     recommendation,
     checkin,
     streak,
@@ -132,7 +133,9 @@ export default async function VandaagPage() {
           <p className="text-sm text-ink-soft mb-6 lg:mb-8">Fijn dat je er bent.</p>
         )}
 
-        {showMenstruationQuickAction && <MenstruationQuickAction isOpen={openPeriod !== null} />}
+        {showMenstruationQuickAction && (
+          <MenstruationQuickAction isOpen={openPeriod !== null} day={menstruationDay} />
+        )}
 
         {showBuddyQuote && (
           <div className="mb-6 lg:mb-8">

@@ -1,4 +1,4 @@
-import { subDays } from "date-fns"
+import { differenceInCalendarDays, parseISO, subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, getEffectiveLastPeriodStart, getOpenPeriod } from "@/lib/cycle/history"
@@ -75,6 +75,9 @@ export async function getVandaagData(userId: string) {
       )
     : null
   const openPeriod = cycleProfile?.has_cycle ? getOpenPeriod(cycleHistory, today) : null
+  // Day count within the CURRENT period specifically (not the whole cycle) —
+  // "Dag 2 van je menstruatie" on Vandaag's quick-action widget.
+  const menstruationDay = openPeriod ? differenceInCalendarDays(parseISO(today), parseISO(openPeriod.start)) + 1 : null
 
   const recommendation = profile
     ? buildRecommendation({
@@ -122,6 +125,7 @@ export async function getVandaagData(userId: string) {
     checkin,
     cycleEstimate,
     openPeriod,
+    menstruationDay,
     recommendation,
     today,
     streak,
