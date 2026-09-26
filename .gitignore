@@ -40,3 +40,22 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Capacitor native projects — the app/ folders themselves are checked in
+# (they hold the actual Xcode/Gradle project + our plugin config), but not
+# each platform's own build output/dependency caches.
+ios/App/Pods
+ios/App/Podfile.lock
+ios/App/App/public
+ios/App/build
+ios/App/DerivedData
+android/app/src/main/assets/public
+android/.gradle
+android/build
+android/app/build
+android/local.properties
+android/.idea
+android/*.iml
+android/app/*.iml
+android/captures
+android/.cxx

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
-import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
+import { ClientBootstrap } from "@/components/bootstrap/client-bootstrap";
 import "./globals.css";
 
 const bodyFont = Plus_Jakarta_Sans({
@@ -48,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="min-h-full flex flex-col bg-cream text-ink font-sans">
         {children}
-        <RegisterServiceWorker />
+        <ClientBootstrap />
       </body>
     </html>
   );
