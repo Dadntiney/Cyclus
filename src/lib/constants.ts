@@ -200,7 +200,7 @@ export const HORMONAL_MEDICATION_STATUS_OPTIONS = [
   { value: "ht", label: "Ja, hormoontherapie (HT)" },
   { value: "ac", label: "Ja, anticonceptie (AC)" },
   { value: "andere_hormonaal", label: "Ja, andere hormonale medicatie" },
-  { value: "andere_medicatie", label: "Ja, andere medicatie die mogelijk invloed heeft" },
+  { value: "andere_medicatie", label: "Ja, niet-hormonale medicatie die mogelijk invloed heeft" },
   { value: "onbekend_liever_niet", label: "Weet ik niet / wil ik liever niet aangeven" },
 ] as const
 
@@ -208,7 +208,7 @@ export const MEDICATION_CATEGORY_OPTIONS = [
   { value: "ht", label: "Hormoontherapie (HT)", emoji: "💊" },
   { value: "anticonceptie", label: "Anticonceptie", emoji: "🛡️" },
   { value: "andere_hormonaal", label: "Andere hormonale medicatie", emoji: "🧪" },
-  { value: "andere_medicatie", label: "Andere medicatie", emoji: "📋" },
+  { value: "andere_medicatie", label: "Niet-hormonale medicatie", emoji: "📋" },
 ] as const
 
 // Quick-pick chips for step 1 of the wizard, per category — always with a
