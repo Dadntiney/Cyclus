@@ -5,50 +5,52 @@ import { cn } from "@/lib/utils"
 import type { Recommendation } from "@/lib/recommendations/engine"
 
 export function TodayCards({ recommendation }: { recommendation: Recommendation }) {
-  const { training, nutrition, recovery, dayFocus } = recommendation
+  const { training, nutrition, recovery, dayFocus, movementEnabled, nutritionEnabled } = recommendation
 
   return (
     <div>
       <h2 className="font-display text-lg text-ink mb-1">Vandaag voor jou</h2>
       {dayFocus && <p className="text-sm text-ink-soft mb-3">{dayFocus}</p>}
       <div className="flex flex-col gap-4">
-        <Card>
-          <p className="text-sm font-medium text-sage-dark mb-1">🏋️ Beweging</p>
-          {training.workout ? (
-            <>
-              <p className="font-display text-lg text-ink">{training.workout.title}</p>
-              <p className="text-sm text-ink-soft mt-0.5">{training.workout.duration} minuten</p>
-              <p className="text-sm text-ink-soft mt-2">{training.reason}</p>
-              <Link href={`/training/${training.workout.id}`} className={cn(buttonVariants(), "mt-3")}>
-                Start training
-              </Link>
-            </>
-          ) : (
-            <p className="text-sm text-ink-soft mt-1">
-              Je hebt nog geen trainingen afgerond. Bekijk de bibliotheek in Beweging.
-            </p>
-          )}
-        </Card>
+        {movementEnabled && (
+          <Card>
+            <p className="text-sm font-medium text-sage-dark mb-1">🏋️ Beweging</p>
+            {training.workout ? (
+              <>
+                <p className="font-display text-lg text-ink">{training.workout.title}</p>
+                <p className="text-sm text-ink-soft mt-0.5">{training.workout.duration} minuten</p>
+                <p className="text-sm text-ink-soft mt-2">{training.reason}</p>
+                <Link href={`/training/${training.workout.id}`} className={cn(buttonVariants(), "mt-3")}>
+                  Start training
+                </Link>
+              </>
+            ) : (
+              <p className="text-sm text-ink-soft mt-1">{training.reason}</p>
+            )}
+          </Card>
+        )}
 
-        <Card>
-          <p className="text-sm font-medium text-sage-dark mb-1">🥗 Voeding</p>
-          {nutrition.recipe ? (
-            <>
-              <p className="font-display text-lg text-ink">{nutrition.recipe.title}</p>
-              <p className="text-sm text-ink-soft mt-2">{nutrition.reason}</p>
-              <Link
-                href={`/voeding/${nutrition.recipe.id}`}
-                className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
-              >
-                Bekijk recept
-              </Link>
-            </>
-          ) : (
-            <p className="text-sm text-ink-soft mt-1">
-              Nog geen recepten beschikbaar. Kijk later nog eens terug.
-            </p>
-          )}
-        </Card>
+        {nutritionEnabled && (
+          <Card>
+            <p className="text-sm font-medium text-sage-dark mb-1">🥗 Voeding</p>
+            {nutrition.recipe ? (
+              <>
+                <p className="font-display text-lg text-ink">{nutrition.recipe.title}</p>
+                <p className="text-sm text-ink-soft mt-2">{nutrition.reason}</p>
+                <Link
+                  href={`/voeding/${nutrition.recipe.id}`}
+                  className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
+                >
+                  Bekijk recept
+                </Link>
+              </>
+            ) : (
+              <p className="text-sm text-ink-soft mt-1">
+                Nog geen recepten beschikbaar. Kijk later nog eens terug.
+              </p>
+            )}
+          </Card>
+        )}
 
         <Card>
           <p className="text-sm font-medium text-sage-dark mb-1">🧘 Herstel</p>

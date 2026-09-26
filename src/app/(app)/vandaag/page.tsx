@@ -1,4 +1,6 @@
 import { Suspense } from "react"
+import Link from "next/link"
+import { ChevronRight } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { getDailyTip } from "@/lib/data/daily-tip"
@@ -7,7 +9,11 @@ import { CheckinForm } from "@/components/today/checkin-form"
 import { NeedPicker } from "@/components/today/need-picker"
 import { DailyTipCard } from "@/components/today/daily-tip-card"
 import { ProgressCard } from "@/components/today/progress-card"
+import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
+import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
+import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
+import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { cn } from "@/lib/utils"
 import { greeting } from "@/lib/greeting"
 
@@ -53,9 +59,17 @@ export default async function VandaagPage() {
   const today = new Date().toISOString().slice(0, 10)
   const dailyTipPromise = getDailyTip(today)
 
-  const { profile, cycleEstimate, recommendation, checkin, streak, completedThisWeek } =
+  const { profile, cycleEstimate, recommendation, checkin, streak, completedThisWeek, medicationItems } =
     await getVandaagData(user.id)
+  const showMedicationCard = Boolean(profile?.show_medication_on_dashboard) && medicationItems.length > 0
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
+  const preferredStyles = (profile?.buddy_styles ?? []) as BuddyStyle[]
+  const buddyQuote = getDailyBuddyQuote(`${user.id}-${today}`, cycleEstimate?.phase ?? null, preferredStyles)
+  const showBuddyQuote = shouldShowBuddyMessage(
+    `${user.id}-${today}-vandaag`,
+    profile?.buddy_message_frequency ?? null,
+    cycleEstimate !== null,
+  )
 
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
@@ -75,7 +89,13 @@ export default async function VandaagPage() {
       </div>
 
       {cycleEstimate && tone ? (
-        <div className={cn("rounded-3xl p-5 lg:p-6 flex items-center gap-4 lg:gap-5 mb-6 lg:mb-8", tone.bg)}>
+        <Link
+          href="/cyclus/vandaag"
+          className={cn(
+            "rounded-3xl p-5 lg:p-6 flex items-center gap-4 lg:gap-5 mb-6 lg:mb-8 touch-manipulation motion-safe:active:scale-[0.99] transition-transform",
+            tone.bg,
+          )}
+        >
           <div
             className={cn(
               "shrink-0 h-20 w-20 lg:h-24 lg:w-24 rounded-full flex flex-col items-center justify-center",
@@ -87,16 +107,34 @@ export default async function VandaagPage() {
             </span>
             <span className="text-[10px] text-ink-soft mt-1">cyclusdag</span>
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className={cn("text-sm font-semibold", tone.text)}>
               {cycleEstimate.phaseLabel} · schatting
             </p>
             <p className="text-sm text-ink-soft mt-0.5">{PHASE_TAGLINE[cycleEstimate.phase]}</p>
+            <p className={cn("text-xs font-medium mt-2 inline-flex items-center gap-0.5", tone.text)}>
+              Wat betekent dit voor jou?
+              <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+            </p>
           </div>
-        </div>
+        </Link>
       ) : (
         <p className="text-sm text-ink-soft mb-6 lg:mb-8">Fijn dat je er bent.</p>
       )}
+
+      {showBuddyQuote && (
+        <div className="mb-6 lg:mb-8">
+          <BuddyQuoteCard quote={buddyQuote} />
+        </div>
+      )}
+
+      <Link
+        href="/deze-week"
+        className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3 mb-6 lg:mb-8 touch-manipulation"
+      >
+        <span className="text-sm font-medium text-ink">📆 Bekijk je hele week</span>
+        <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
+      </Link>
 
       <div className="mb-6 lg:mb-8">
         <NeedPicker initialNeed={checkin?.need ?? null} />
@@ -113,7 +151,10 @@ export default async function VandaagPage() {
             completedThisWeek={completedThisWeek}
             weeklyGoal={profile?.training_frequency ?? null}
             streak={streak}
+            movementEnabled={profile?.movement_enabled ?? true}
           />
+
+          {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
 
           <Suspense fallback={<DailyTipSkeleton />}>
             <DailyTip promise={dailyTipPromise} />

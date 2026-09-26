@@ -2,8 +2,10 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { Dumbbell } from "lucide-react"
 import { Chip } from "@/components/ui/chip"
 import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
 import type { Tables } from "@/types/database"
 
 type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
@@ -41,6 +43,13 @@ export function WorkoutLibrary({ workouts }: { workouts: Workout[] }) {
           </Chip>
         ))}
       </div>
+      {filtered.length === 0 && (
+        <EmptyState
+          icon={<Dumbbell className="h-6 w-6" strokeWidth={1.5} />}
+          title="Geen trainingen gevonden"
+          description="Probeer een andere categorie te kiezen."
+        />
+      )}
       <div className="flex flex-col gap-2">
         {filtered.map((workout) => (
           <Link

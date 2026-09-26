@@ -9,9 +9,11 @@ export const onboardingSchema = z.object({
   regularity: z.enum(["regelmatig", "onregelmatig", "onbekend"]).optional(),
   perimenopauseInfo: z.string().max(500).optional(),
   goals: z.array(z.string()).min(1, "Kies minstens één doel."),
+  movementEnabled: z.boolean(),
   trainingPreferences: z.array(z.string()),
+  trainingFrequency: z.number().int().min(1).max(7).optional(),
+  nutritionEnabled: z.boolean(),
   nutritionPreferences: z.array(z.string()),
-  trainingFrequency: z.number().int().min(1).max(7),
   wellnessPreference: z.enum(["natuurlijk", "gebalanceerd", "fitness"]),
   heightCm: z.number().int().min(120).max(220).optional(),
   weightKg: z.number().min(30).max(250).optional(),
@@ -19,6 +21,13 @@ export const onboardingSchema = z.object({
   healthConditions: z.array(z.string()),
   movementLimitations: z.array(z.string()),
   nutritionStyle: z.enum(["normaal", "koolhydraatarm"]),
+  hormonalMedicationStatus: z
+    .enum(["nee", "ht", "ac", "andere_hormonaal", "andere_medicatie", "onbekend_liever_niet"])
+    .optional(),
+  buddyStyles: z
+    .array(z.enum(["liefdevol", "humor", "spiritueel", "motiverend", "informatief", "rustig", "direct", "luchtig"]))
+    .default([]),
+  buddyMessageFrequency: z.enum(["elke_dag", "paar_keer_per_week", "alleen_relevant", "uit"]).optional(),
 })
 
 export type OnboardingInput = z.infer<typeof onboardingSchema>

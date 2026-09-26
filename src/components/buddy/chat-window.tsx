@@ -1,10 +1,11 @@
 "use client"
 
 import { useRef, useState, useTransition, type FormEvent } from "react"
-import { Send } from "lucide-react"
+import { Send, MessageCircle } from "lucide-react"
 import { sendBuddyMessage } from "@/lib/actions/buddy"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
+import { EmptyState } from "@/components/ui/empty-state"
 import type { Tables } from "@/types/database"
 
 type Message = Tables<"buddy_messages">
@@ -75,10 +76,11 @@ export function ChatWindow({
     <div className="flex flex-col flex-1 min-h-0">
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-5 lg:px-8 py-4 flex flex-col gap-3">
         {messages.length === 0 && (
-          <div className="text-center text-sm text-ink-soft py-10">
-            Stel een vraag of vertel hoe je je vandaag voelt. Je Buddy denkt mee op basis van
-            je profiel en check-ins.
-          </div>
+          <EmptyState
+            icon={<MessageCircle className="h-6 w-6" strokeWidth={1.5} />}
+            title="Stel een vraag of vertel hoe je je voelt"
+            description="Je Buddy denkt mee op basis van je profiel en check-ins."
+          />
         )}
         {messages.map((m) => (
           <div
@@ -117,6 +119,7 @@ export function ChatWindow({
           onChange={(e) => setInput(e.target.value)}
           placeholder="Typ een bericht..."
           aria-label="Typ een bericht aan je Buddy"
+          maxLength={4000}
           className="rounded-full min-h-11"
         />
         <button

@@ -13,21 +13,34 @@ import {
   subMonths,
 } from "date-fns"
 import { nl } from "date-fns/locale"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { toggleMenstruationDay } from "@/lib/actions/cycle"
+import { toggleMenstruationDay, setCycleLogFlow } from "@/lib/actions/cycle"
+import { FLOW_OPTIONS } from "@/lib/constants"
 
 interface CalendarProps {
   menstruationDates: Set<string>
+  /** Only meaningful when `trackFlowEnabled` — flow value per marked date. */
+  flowByDate?: Map<string, string | null>
+  /** Opt-in per profile.track_flow_intensity — see ProfileForm. */
+  trackFlowEnabled?: boolean
 }
 
 const WEEKDAY_LABELS = ["ma", "di", "wo", "do", "vr", "za", "zo"]
 
-export function Calendar({ menstruationDates: initialDates }: CalendarProps) {
+export function Calendar({
+  menstruationDates: initialDates,
+  flowByDate: initialFlowByDate,
+  trackFlowEnabled = false,
+}: CalendarProps) {
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [dates, setDates] = useState(initialDates)
+  const [flowByDate, setFlowByDate] = useState<Map<string, string | null>>(
+    initialFlowByDate ?? new Map(),
+  )
   const [isPending, startTransition] = useTransition()
   const [pendingDate, setPendingDate] = useState<string | null>(null)
+  const [flowPickerDate, setFlowPickerDate] = useState<string | null>(null)
 
   const days = useMemo(() => {
     const start = startOfMonth(month)
@@ -36,10 +49,26 @@ export function Calendar({ menstruationDates: initialDates }: CalendarProps) {
   }, [month])
 
   const leadingBlanks = (getDay(startOfMonth(month)) + 6) % 7
+  const todayISO = format(new Date(), "yyyy-MM-dd")
 
   function handleDayClick(day: Date) {
     const iso = format(day, "yyyy-MM-dd")
-    if (iso > format(new Date(), "yyyy-MM-dd")) return
+    if (iso > todayISO) return
+
+    // With flow-tracking on, tapping a day opens the intensity picker
+    // instead of instantly unmarking it — marking + choosing an intensity
+    // are two small steps instead of one, but nothing gets lost silently.
+    if (trackFlowEnabled) {
+      if (!dates.has(iso)) {
+        setDates((prev) => new Set(prev).add(iso))
+        startTransition(async () => {
+          await setCycleLogFlow(iso, null)
+        })
+      }
+      setFlowPickerDate(iso)
+      return
+    }
+
     setPendingDate(iso)
     setDates((prev) => {
       const next = new Set(prev)
@@ -50,6 +79,30 @@ export function Calendar({ menstruationDates: initialDates }: CalendarProps) {
     startTransition(async () => {
       await toggleMenstruationDay(iso)
       setPendingDate(null)
+    })
+  }
+
+  function handleSetFlow(iso: string, flow: (typeof FLOW_OPTIONS)[number]["value"]) {
+    setFlowByDate((prev) => new Map(prev).set(iso, flow))
+    startTransition(async () => {
+      await setCycleLogFlow(iso, flow)
+    })
+  }
+
+  function handleRemoveDay(iso: string) {
+    setDates((prev) => {
+      const next = new Set(prev)
+      next.delete(iso)
+      return next
+    })
+    setFlowByDate((prev) => {
+      const next = new Map(prev)
+      next.delete(iso)
+      return next
+    })
+    setFlowPickerDate(null)
+    startTransition(async () => {
+      await toggleMenstruationDay(iso)
     })
   }
 
@@ -89,7 +142,8 @@ export function Calendar({ menstruationDates: initialDates }: CalendarProps) {
         {days.map((day) => {
           const iso = format(day, "yyyy-MM-dd")
           const isMenstruation = dates.has(iso)
-          const future = iso > format(new Date(), "yyyy-MM-dd")
+          const flow = flowByDate.get(iso)
+          const future = iso > todayISO
           return (
             <button
               key={iso}
@@ -107,12 +161,19 @@ export function Calendar({ menstruationDates: initialDates }: CalendarProps) {
               )}
             >
               {format(day, "d")}
+              {isMenstruation && trackFlowEnabled && flow && flow !== "geen" && (
+                <span className="absolute bottom-1 flex items-center gap-0.5" aria-hidden>
+                  {Array.from({ length: flow === "licht" ? 1 : flow === "gemiddeld" ? 2 : 3 }).map((_, i) => (
+                    <span key={i} className="h-1 w-1 rounded-full bg-danger" />
+                  ))}
+                </span>
+              )}
             </button>
           )
         })}
       </div>
 
-      <div className="flex items-center gap-4 mt-4 text-xs text-ink-soft">
+      <div className="flex items-center gap-4 mt-4 text-xs text-ink-soft flex-wrap">
         <div className="flex items-center gap-1.5">
           <span className="h-3 w-3 rounded-full bg-peach inline-block" />
           Menstruatie
@@ -122,7 +183,56 @@ export function Calendar({ menstruationDates: initialDates }: CalendarProps) {
           Vandaag
         </div>
       </div>
-      <p className="text-xs text-ink-soft mt-3">Tik op een dag om menstruatie te markeren.</p>
+      <p className="text-xs text-ink-soft mt-3">
+        {trackFlowEnabled
+          ? "Tik op een dag om menstruatie en bloedverlies bij te houden."
+          : "Tik op een dag om menstruatie te markeren."}
+      </p>
+
+      {trackFlowEnabled && flowPickerDate && (
+        <div className="mt-4 rounded-2xl bg-cream-soft p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-medium text-ink">
+              Bloedverlies op {format(new Date(flowPickerDate), "d MMMM", { locale: nl })}
+            </p>
+            <button
+              type="button"
+              onClick={() => setFlowPickerDate(null)}
+              className="h-7 w-7 rounded-full flex items-center justify-center text-ink-soft hover:bg-white touch-manipulation"
+              aria-label="Sluiten"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {FLOW_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleSetFlow(flowPickerDate, opt.value)}
+                className={cn(
+                  "rounded-full border px-3.5 py-2 text-sm font-medium touch-manipulation transition-colors",
+                  flowByDate.get(flowPickerDate) === opt.value
+                    ? "bg-sage-dark text-white border-sage-dark"
+                    : "bg-white text-ink border-line hover:border-sage/60",
+                )}
+              >
+                <span className="mr-1" aria-hidden>
+                  {opt.emoji}
+                </span>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => handleRemoveDay(flowPickerDate)}
+            className="text-xs font-medium text-danger touch-manipulation"
+          >
+            Deze dag verwijderen als menstruatiedag
+          </button>
+        </div>
+      )}
     </div>
   )
 }

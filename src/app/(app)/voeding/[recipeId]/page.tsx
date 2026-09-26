@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation"
-import { Users, ChefHat, Snowflake, PackageOpen } from "lucide-react"
+import { after } from "next/server"
+import Link from "next/link"
+import { Users, ChefHat, Snowflake, PackageOpen, ChevronLeft } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getRecipeDetail, getFavoriteRecipeIds } from "@/lib/data/nutrition"
 import { ensureRecipeImage } from "@/lib/images/ensure-recipe-image"
 import { FavoriteButton } from "@/components/nutrition/favorite-button"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
+import { IngredientList } from "@/components/nutrition/ingredient-info-sheet"
 import { Card } from "@/components/ui/card"
 
 const DIFFICULTY_LABELS: Record<string, string> = {
@@ -33,7 +36,17 @@ export default async function RecipeDetailPage({
 
   if (!recipe) notFound()
 
-  const imageUrl = await ensureRecipeImage(recipe)
+  // Never block the page on image generation — show what's already saved
+  // (or the illustrated placeholder) immediately, and let a missing photo
+  // warm up in the background via after() so the *next* visit has it,
+  // instead of stalling this request for however long the AI/stock-photo
+  // provider takes.
+  const imageUrl = recipe.image_url
+  if (!imageUrl) {
+    after(() => {
+      void ensureRecipeImage(recipe)
+    })
+  }
 
   const ingredients = parseStringArray(recipe.ingredients)
   const optionalIngredients = parseStringArray(recipe.optional_ingredients)
@@ -45,6 +58,14 @@ export default async function RecipeDetailPage({
 
   return (
     <div className="w-full max-w-5xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+      <Link
+        href="/voeding"
+        className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-4 touch-manipulation"
+      >
+        <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
+        Voeding
+      </Link>
+
       <RecipeImage
         title={recipe.title}
         imageUrl={imageUrl}
@@ -101,25 +122,11 @@ export default async function RecipeDetailPage({
               <p className="text-sm font-medium text-ink mb-3">
                 {recipe.is_budget ? "Basis" : "Ingrediënten"}
               </p>
-              <ul className="flex flex-col gap-1.5 text-[15px] text-ink-soft">
-                {ingredients.map((ingredient, i) => (
-                  <li key={i} className="flex gap-2">
-                    <span className="text-sage">•</span>
-                    {ingredient}
-                  </li>
-                ))}
-              </ul>
+              <IngredientList ingredients={ingredients} />
               {optionalIngredients.length > 0 && (
                 <>
                   <p className="text-sm font-medium text-ink mt-4 mb-3">Optioneel toevoegen</p>
-                  <ul className="flex flex-col gap-1.5 text-[15px] text-ink-soft">
-                    {optionalIngredients.map((ingredient, i) => (
-                      <li key={i} className="flex gap-2">
-                        <span className="text-peach">•</span>
-                        {ingredient}
-                      </li>
-                    ))}
-                  </ul>
+                  <IngredientList ingredients={optionalIngredients} bulletClassName="text-peach" />
                 </>
               )}
             </Card>

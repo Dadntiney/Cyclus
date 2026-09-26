@@ -1,6 +1,17 @@
+import { cache } from "react"
 import { createClient } from "@/lib/supabase/server"
 import { computeStreak } from "@/lib/data/streak"
 import { getFavoriteRecipes } from "@/lib/data/nutrition"
+
+// The layout and whichever page it wraps both need her profile row on
+// nearly every navigation; without this every request paid for that
+// select twice. React's cache() dedupes it to one query per request, the
+// same pattern getAuthedUser already uses for the auth round-trip.
+export const getProfile = cache(async (userId: string) => {
+  const supabase = await createClient()
+  const { data } = await supabase.from("profiles").select("*").eq("id", userId).single()
+  return data
+})
 
 export interface Milestone {
   id: string
@@ -60,8 +71,9 @@ export async function getProfileOverview(userId: string) {
     { data: workoutSessions },
     favoriteRecipes,
     { data: exerciseFavoriteRows },
+    { count: medicationCount },
   ] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", userId).single(),
+    getProfile(userId).then((data) => ({ data })),
     supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
     supabase.from("daily_checkins").select("date").eq("user_id", userId),
     supabase.from("workout_sessions").select("date").eq("user_id", userId).eq("completed", true),
@@ -71,6 +83,7 @@ export async function getProfileOverview(userId: string) {
       .select("exercise_id")
       .eq("user_id", userId)
       .order("created_at", { ascending: false }),
+    supabase.from("medications").select("id", { count: "exact", head: true }).eq("user_id", userId),
   ])
 
   const dates = (checkinDates ?? []).map((c) => c.date)
@@ -102,6 +115,7 @@ export async function getProfileOverview(userId: string) {
   return {
     profile,
     cycleProfile,
+    hasMedications: (medicationCount ?? 0) > 0,
     stats: {
       memberSince: profile?.created_at ?? null,
       totalCheckins,

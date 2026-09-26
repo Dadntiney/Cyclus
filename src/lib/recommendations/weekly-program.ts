@@ -1,6 +1,7 @@
 import type { Tables } from "@/types/database"
+import { TRAINING_PREFERENCE_TO_TYPE } from "@/lib/constants"
 
-type Workout = Tables<"workouts">
+type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
 
 export type DayFocus = "kracht" | "cardio" | "mobiliteit" | "herstel" | "rust"
 
@@ -71,6 +72,23 @@ export interface BuildWeeklyProgramInput {
   seed: string
   /** Prefer short (<=10 min) sessions on more days, for a busier week. */
   preferShort?: boolean
+  /**
+   * Weekday indexes (0=Mon..6=Sun) to lean toward gentler (`makkelijk`)
+   * workouts for — used by the week overview to reflect that many people
+   * prefer lower-intensity movement during menstruation/late luteal days.
+   * Never turns an active day into a rest day; only tilts which workout
+   * within that day's focus gets picked.
+   */
+  gentlerDayIndexes?: Set<number>
+  /**
+   * Raw training preference labels (see TRAINING_OPTIONS). When set, only
+   * workout types she actually chose are ever suggested — a day whose
+   * template focus (kracht/cardio/mobiliteit/herstel) doesn't match any of
+   * them falls back to another of her preferred types rather than showing
+   * something she didn't pick. No preferences set keeps today's default:
+   * every type is fair game.
+   */
+  trainingPreferences?: string[]
 }
 
 /**
@@ -79,10 +97,24 @@ export interface BuildWeeklyProgramInput {
  * durations), the rest are explicit rest days.
  */
 export function buildWeeklyProgram(input: BuildWeeklyProgramInput): ProgramDay[] {
-  const { frequency, healthConditions, movementLimitations, workouts, seed, preferShort } = input
+  const {
+    frequency,
+    healthConditions,
+    movementLimitations,
+    workouts,
+    seed,
+    preferShort,
+    gentlerDayIndexes,
+    trainingPreferences,
+  } = input
   const clampedFrequency = Math.min(7, Math.max(1, Math.round(frequency)))
   const activeDays = new Set(ACTIVE_DAY_SLOTS[clampedFrequency])
   const focusSequence = FOCUS_TEMPLATES[clampedFrequency]
+
+  const hasPreferences = Boolean(trainingPreferences?.length)
+  const preferredTypes = (trainingPreferences ?? [])
+    .map((pref) => TRAINING_PREFERENCE_TO_TYPE[pref])
+    .filter((type): type is string => Boolean(type))
 
   const impactSensitive =
     healthConditions.some((c) => IMPACT_SENSITIVE_TAGS.includes(c)) ||
@@ -100,6 +132,12 @@ export function buildWeeklyProgram(input: BuildWeeklyProgramInput): ProgramDay[]
     activeIndex += 1
 
     let candidates = workouts.filter((w) => FOCUS_TYPES[focus].includes(w.type))
+    if (hasPreferences) {
+      const preferredForFocus = candidates.filter((w) => preferredTypes.includes(w.type))
+      candidates = preferredForFocus.length
+        ? preferredForFocus
+        : workouts.filter((w) => preferredTypes.includes(w.type))
+    }
     if (impactSensitive) {
       const gentler = candidates.filter((w) => w.type !== "hardlopen" && w.difficulty !== "pittig")
       if (gentler.length) candidates = gentler
@@ -107,6 +145,10 @@ export function buildWeeklyProgram(input: BuildWeeklyProgramInput): ProgramDay[]
     if (focus === "herstel" || preferShort) {
       const short = candidates.filter((w) => w.duration <= 10)
       if (short.length) candidates = short
+    }
+    if (gentlerDayIndexes?.has(dayIdx)) {
+      const gentle = candidates.filter((w) => w.difficulty === "makkelijk")
+      if (gentle.length) candidates = gentle
     }
 
     // Prefer a workout not already used this week, for variety.

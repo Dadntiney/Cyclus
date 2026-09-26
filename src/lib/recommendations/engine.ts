@@ -1,5 +1,6 @@
 import type { Tables } from "@/types/database"
 import type { CycleEstimate } from "@/lib/cycle/estimate"
+import { TRAINING_PREFERENCE_TO_TYPE } from "@/lib/constants"
 
 type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
 type Recipe = Pick<Tables<"recipes">, "id" | "title" | "category" | "preparation_time" | "nutrition_information">
@@ -17,6 +18,8 @@ export interface RecommendationInput {
     | "health_conditions"
     | "movement_limitations"
     | "wellness_preference"
+    | "movement_enabled"
+    | "nutrition_enabled"
   >
   cycleEstimate: CycleEstimate | null
   latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms" | "need"> | null
@@ -61,16 +64,8 @@ export interface Recommendation {
   recovery: RecoveryRecommendation
   dayFocus: string
   buddyContext: string[]
-}
-
-const TRAINING_PREFERENCE_TO_TYPE: Record<string, string> = {
-  Krachttraining: "krachttraining",
-  Pilates: "pilates",
-  Yoga: "yoga",
-  Wandelen: "wandelen",
-  Fietsen: "fietsen",
-  Hardlopen: "hardlopen",
-  Mobiliteit: "mobiliteit",
+  movementEnabled: boolean
+  nutritionEnabled: boolean
 }
 
 // Tags that suggest gentler, lower-impact movement is more appropriate —
@@ -123,6 +118,7 @@ export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendat
   const need = latestCheckin?.need ?? null
   const wantsMoreActive = need === "beweging"
 
+  const rawPreferenceCount = profile.training_preferences.length
   const preferredTypes = profile.training_preferences
     .map((pref) => TRAINING_PREFERENCE_TO_TYPE[pref])
     .filter((type): type is string => Boolean(type))
@@ -133,7 +129,12 @@ export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendat
     IMPACT_SENSITIVE_TAGS.includes(c),
   ) || (profile.movement_limitations ?? []).some((c) => IMPACT_SENSITIVE_TAGS.includes(c))
 
-  let candidateWorkouts = preferredTypes.length
+  // When she's set preferences, only ever show those types — even if none
+  // of them happen to map to workout content yet (e.g. only "Zwemmen").
+  // Falling back to the full library in that case would defeat the point
+  // of choosing specific types. No preferences set at all keeps today's
+  // default: show everything.
+  let candidateWorkouts = rawPreferenceCount > 0
     ? workouts.filter((w) => preferredTypes.includes(w.type))
     : workouts
 
@@ -150,14 +151,16 @@ export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendat
     if (active.length) candidateWorkouts = active
   }
 
-  if (!candidateWorkouts.length) candidateWorkouts = workouts
+  if (!candidateWorkouts.length && rawPreferenceCount === 0) candidateWorkouts = workouts
 
   const workout = candidateWorkouts.length
     ? candidateWorkouts[seededIndex(`${seed}-training`, candidateWorkouts.length)]
     : null
 
   let reason: string
-  if (lowerIntensity && need === "rust") {
+  if (!workout && rawPreferenceCount > 0) {
+    reason = "We hebben nog geen passende workouts voor de bewegingsvorm(en) die je koos — pas dit aan in je profiel."
+  } else if (lowerIntensity && need === "rust") {
     reason = "Je gaf aan dat je vandaag naar rust verlangt — een zachte sessie dus."
   } else if (lowerIntensity) {
     reason = "Je energie, slaap of stress gaf aan dat een rustigere sessie vandaag beter past."
@@ -233,19 +236,13 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
   const wantsSelfCare = need === "mezelf"
   const lowerIntensity = wantsLowerIntensityToday(latestCheckin)
 
-  const { workout, reason: trainingReason } = pickTodaysWorkout({
-    profile,
-    latestCheckin,
-    workouts,
-    seed,
-  })
+  const { workout, reason: trainingReason } = profile.movement_enabled
+    ? pickTodaysWorkout({ profile, latestCheckin, workouts, seed })
+    : { workout: null, reason: "" }
 
-  const { recipe, reason: nutritionReason } = pickTodaysRecipe({
-    profile,
-    latestCheckin,
-    recipes,
-    seed,
-  })
+  const { recipe, reason: nutritionReason } = profile.nutrition_enabled
+    ? pickTodaysRecipe({ profile, latestCheckin, recipes, seed })
+    : { recipe: null, reason: "" }
 
   const recovery: RecoveryRecommendation = wantsSelfCare
     ? {
@@ -306,5 +303,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     recovery,
     dayFocus,
     buddyContext,
+    movementEnabled: profile.movement_enabled,
+    nutritionEnabled: profile.nutrition_enabled,
   }
 }
