@@ -1,7 +1,7 @@
 import { subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
-import { computeCycleHistory, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
+import { computeCycleHistory, getEffectiveLastPeriodStart, getOpenPeriod } from "@/lib/cycle/history"
 import { buildRecommendation } from "@/lib/recommendations/engine"
 import { computeStreak } from "@/lib/data/streak"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
@@ -74,6 +74,7 @@ export async function getVandaagData(userId: string) {
         cycleProfile.has_cycle,
       )
     : null
+  const openPeriod = cycleProfile?.has_cycle ? getOpenPeriod(cycleHistory, today) : null
 
   const recommendation = profile
     ? buildRecommendation({
@@ -120,6 +121,7 @@ export async function getVandaagData(userId: string) {
     cycleProfile,
     checkin,
     cycleEstimate,
+    openPeriod,
     recommendation,
     today,
     streak,

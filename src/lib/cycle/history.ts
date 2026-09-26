@@ -117,6 +117,27 @@ export function getEffectiveLastPeriodStart(
   return latestLoggedStart > storedStart ? latestLoggedStart : storedStart
 }
 
+export const MENSTRUATION_OPEN_GAP_DAYS = 10
+
+/**
+ * Whether her most recently logged period is still "open" — recent enough
+ * that a quick "menstruatie gestopt" action on Vandaag should finish it by
+ * filling any gap through today, rather than treating it as unrelated old
+ * history. A generous cap (real periods rarely exceed ~10 days) keeps this
+ * from ever reaching back into a clearly separate, much older cycle.
+ *
+ * @param cycleHistory Completed + current period history, oldest first (see computeCycleHistory).
+ */
+export function getOpenPeriod(
+  cycleHistory: Pick<CycleHistoryEntry, "start" | "end">[],
+  today: string,
+): { start: string; end: string } | null {
+  const latest = cycleHistory[cycleHistory.length - 1]
+  if (!latest) return null
+  if (differenceInCalendarDays(parseISO(today), parseISO(latest.end)) > MENSTRUATION_OPEN_GAP_DAYS) return null
+  return latest
+}
+
 export function computeSymptomFrequency(
   logs: { symptoms: string[] }[],
 ): { symptom: string; count: number }[] {

@@ -13,6 +13,7 @@ import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { MentalWellbeingSuggestionCard } from "@/components/today/mental-wellbeing-suggestion-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
+import { MenstruationQuickAction } from "@/components/cycle/menstruation-quick-action"
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
@@ -64,7 +65,9 @@ export default async function VandaagPage() {
 
   const {
     profile,
+    cycleProfile,
     cycleEstimate,
+    openPeriod,
     recommendation,
     checkin,
     streak,
@@ -74,6 +77,7 @@ export default async function VandaagPage() {
     sleepEntry,
     sleepObservation,
   } = await getVandaagData(user.id)
+  const showMenstruationQuickAction = Boolean(cycleProfile?.has_cycle)
   const showMedicationCard = Boolean(profile?.show_medication_on_dashboard) && medicationItems.length > 0
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
   const preferredStyles = (profile?.buddy_styles ?? []) as BuddyStyle[]
@@ -127,6 +131,8 @@ export default async function VandaagPage() {
         ) : (
           <p className="text-sm text-ink-soft mb-6 lg:mb-8">Fijn dat je er bent.</p>
         )}
+
+        {showMenstruationQuickAction && <MenstruationQuickAction isOpen={openPeriod !== null} />}
 
         {showBuddyQuote && (
           <div className="mb-6 lg:mb-8">
