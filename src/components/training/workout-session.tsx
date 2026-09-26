@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { ExerciseFavoriteButton } from "@/components/training/exercise-favorite-button"
 import { ExerciseDemo } from "@/components/training/exercise-demo"
 import { completeWorkoutSession, fetchAlternativeExercise } from "@/lib/actions/training"
+import { triggerHaptic } from "@/lib/platform"
 import type { Tables } from "@/types/database"
 
 type Exercise = Tables<"exercises">
@@ -54,6 +55,7 @@ export function WorkoutSession({
 
   function advance(markDone: boolean) {
     if (markDone && current) {
+      triggerHaptic("medium")
       setDoneIds((prev) => new Set(prev).add(current.id))
     }
     if (index + 1 >= exercises.length) {

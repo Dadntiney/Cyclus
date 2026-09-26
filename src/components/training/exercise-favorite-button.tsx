@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { Heart } from "lucide-react"
 import { toggleExerciseFavorite } from "@/lib/actions/training"
+import { triggerHaptic } from "@/lib/platform"
 import { cn } from "@/lib/utils"
 
 export function ExerciseFavoriteButton({
@@ -16,6 +17,7 @@ export function ExerciseFavoriteButton({
   const [isPending, startTransition] = useTransition()
 
   function handleClick() {
+    triggerHaptic("light")
     setFavorited((f) => !f)
     startTransition(async () => {
       const result = await toggleExerciseFavorite(exerciseId)
