@@ -17,7 +17,6 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toggleMenstruationDay, setCycleLogFlow } from "@/lib/actions/cycle"
 import { FLOW_OPTIONS } from "@/lib/constants"
-import { Button } from "@/components/ui/button"
 
 interface CalendarProps {
   menstruationDates: Set<string>
@@ -58,27 +57,12 @@ export function Calendar({
     if (iso > todayISO) return
     setError(null)
 
-    // With flow-tracking on, tapping a day opens the intensity picker
-    // instead of instantly unmarking it — marking + choosing an intensity
-    // are two small steps instead of one, but nothing gets lost silently.
-    if (trackFlowEnabled) {
-      if (!dates.has(iso)) {
-        setDates((prev) => new Set(prev).add(iso))
-        startTransition(async () => {
-          const result = await setCycleLogFlow(iso, null)
-          if (result?.error) {
-            setDates((prev) => {
-              const next = new Set(prev)
-              next.delete(iso)
-              return next
-            })
-            setError(result.error)
-          }
-        })
-      }
-      setFlowPickerDate(iso)
-      return
-    }
+    // A plain tap always toggles the day directly — on becomes off, off
+    // becomes on, no extra step. Only when a day goes from off to on (a
+    // NEW menstruation day), and flow-tracking is enabled, do we also open
+    // the intensity picker, since that's the moment it's actually relevant
+    // to ask "hoeveel bloedverlies vandaag?".
+    const wasMarked = dates.has(iso)
 
     setPendingDate(iso)
     setDates((prev) => {
@@ -87,6 +71,12 @@ export function Calendar({
       else next.add(iso)
       return next
     })
+    if (wasMarked) {
+      if (flowPickerDate === iso) setFlowPickerDate(null)
+    } else if (trackFlowEnabled) {
+      setFlowPickerDate(iso)
+    }
+
     startTransition(async () => {
       const result = await toggleMenstruationDay(iso)
       setPendingDate(null)
@@ -98,6 +88,7 @@ export function Calendar({
           else next.add(iso)
           return next
         })
+        if (!wasMarked) setFlowPickerDate((current) => (current === iso ? null : current))
         setError(result.error)
       }
     })
@@ -111,31 +102,6 @@ export function Calendar({
       const result = await setCycleLogFlow(iso, flow)
       if (result?.error) {
         setFlowByDate((prev) => new Map(prev).set(iso, previous))
-        setError(result.error)
-      }
-    })
-  }
-
-  function handleRemoveDay(iso: string) {
-    setError(null)
-    const previousFlow = flowByDate.get(iso) ?? null
-    setDates((prev) => {
-      const next = new Set(prev)
-      next.delete(iso)
-      return next
-    })
-    setFlowByDate((prev) => {
-      const next = new Map(prev)
-      next.delete(iso)
-      return next
-    })
-    setFlowPickerDate(null)
-    startTransition(async () => {
-      const result = await toggleMenstruationDay(iso)
-      if (result?.error) {
-        // Roll back: this day was still a menstruation day.
-        setDates((prev) => new Set(prev).add(iso))
-        setFlowByDate((prev) => new Map(prev).set(iso, previousFlow))
         setError(result.error)
       }
     })
@@ -243,15 +209,6 @@ export function Calendar({
               <X className="h-4 w-4" />
             </button>
           </div>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => handleRemoveDay(flowPickerDate)}
-            className="w-full mb-4 text-danger border-danger/30 hover:bg-danger/5"
-          >
-            Geen menstruatiedag — dag verwijderen
-          </Button>
 
           <p className="text-xs font-medium text-ink mb-2">Bloedverlies deze dag</p>
           <div className="flex flex-wrap gap-2">
