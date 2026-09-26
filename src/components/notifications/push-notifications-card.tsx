@@ -107,11 +107,17 @@ export function PushNotificationsCard() {
       try {
         const registration = await navigator.serviceWorker.ready
         const subscription = await registration.pushManager.getSubscription()
+        let cleanupError: string | null = null
         if (subscription) {
-          await unsubscribeFromPush(subscription.endpoint)
+          const result = await unsubscribeFromPush(subscription.endpoint)
+          if (result?.error) cleanupError = result.error
           await subscription.unsubscribe()
         }
+        // The browser-level unsubscribe is what actually stops notifications,
+        // so the status always reflects that — even if the server-side
+        // cleanup below failed, she won't receive push messages anymore.
         setStatus("not-subscribed")
+        if (cleanupError) setError(cleanupError)
       } catch {
         setError("Uitschakelen is niet gelukt. Probeer het later opnieuw.")
       }

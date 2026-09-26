@@ -15,14 +15,21 @@ import { cn } from "@/lib/utils"
  */
 export function MedicationTodayCard({ items, date }: { items: MedicationDashboardItem[]; date: string }) {
   const [logs, setLogs] = useState(() => new Map(items.map((i) => [i.id, i.taken])))
+  const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   if (items.length === 0) return null
 
   function handleToggle(id: string) {
+    setError(null)
     setLogs((prev) => new Map(prev).set(id, !prev.get(id)))
     startTransition(async () => {
-      await toggleMedicationTaken(id, date)
+      const result = await toggleMedicationTaken(id, date)
+      if (result?.error) {
+        // Roll back the optimistic flip so the checkbox reflects reality.
+        setLogs((prev) => new Map(prev).set(id, !prev.get(id)))
+        setError(result.error)
+      }
     })
   }
 
@@ -66,6 +73,7 @@ export function MedicationTodayCard({ items, date }: { items: MedicationDashboar
             )
           })}
         </div>
+        {error && <p className="text-xs text-danger mt-2.5">{error}</p>}
         <Link href="/medicatie" className="inline-block text-xs font-medium text-sage-dark mt-3.5">
           Beheer mijn medicatie
         </Link>

@@ -46,6 +46,7 @@ export function WorkoutSession({
   const [isPending, startTransition] = useTransition()
   const [isSwapping, setIsSwapping] = useState(false)
   const [previewId, setPreviewId] = useState<string | null>(null)
+  const [finishError, setFinishError] = useState<string | null>(null)
 
   const current = exercises[index]
 
@@ -75,8 +76,13 @@ export function WorkoutSession({
   }
 
   function handleFinishWorkout() {
+    setFinishError(null)
     startTransition(async () => {
-      await completeWorkoutSession(workout.id)
+      const result = await completeWorkoutSession(workout.id)
+      if (result?.error) {
+        setFinishError(result.error)
+        return
+      }
       router.push("/training")
       router.refresh()
     })
@@ -168,6 +174,7 @@ export function WorkoutSession({
         <Button onClick={handleFinishWorkout} disabled={isPending}>
           {isPending ? "Bezig..." : "Training afronden"}
         </Button>
+        {finishError && <p className="text-sm text-danger mt-3">{finishError}</p>}
       </Card>
     )
   }

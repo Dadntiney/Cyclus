@@ -119,20 +119,40 @@ export function RemindersSection({
   }
 
   function handleDelete(id: string) {
+    setError(null)
     setConfirmDeleteId(null)
+    const removed = reminders.find((r) => r.id === id)
+    const removedIndex = reminders.findIndex((r) => r.id === id)
     setReminders((prev) => prev.filter((r) => r.id !== id))
     startTransition(async () => {
-      await deleteReminder(id)
+      const result = await deleteReminder(id)
+      if (result?.error) {
+        // Roll back: put the reminder back where it was.
+        if (removed) {
+          setReminders((prev) => {
+            const next = [...prev]
+            next.splice(removedIndex, 0, removed)
+            return next
+          })
+        }
+        setError(result.error)
+        return
+      }
       router.refresh()
     })
   }
 
   function handleToggle(reminder: Reminder) {
+    setError(null)
     const nextEnabled = !reminder.enabled
     setReminders((prev) => prev.map((r) => (r.id === reminder.id ? { ...r, enabled: nextEnabled } : r)))
     if (nextEnabled) maybeRequestNotificationPermission()
     startTransition(async () => {
-      await toggleReminder(reminder.id, nextEnabled)
+      const result = await toggleReminder(reminder.id, nextEnabled)
+      if (result?.error) {
+        setReminders((prev) => prev.map((r) => (r.id === reminder.id ? { ...r, enabled: !nextEnabled } : r)))
+        setError(result.error)
+      }
     })
   }
 
@@ -160,6 +180,8 @@ export function RemindersSection({
         Helemaal optioneel. We laten een herinnering zien zodra je de app open hebt op dat moment
         — en, met jouw toestemming, ook als melding van je browser.
       </p>
+
+      {!showForm && error && <p className="text-xs text-danger mb-2">{error}</p>}
 
       {reminders.length > 0 && !showForm && (
         <div className="flex flex-col gap-2 mb-3">

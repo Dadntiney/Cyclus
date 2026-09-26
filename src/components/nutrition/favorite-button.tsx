@@ -19,7 +19,12 @@ export function FavoriteButton({
     setFavorited((f) => !f)
     startTransition(async () => {
       const result = await toggleFavorite(recipeId)
-      if (result?.favorited !== undefined) setFavorited(result.favorited)
+      if (result?.favorited !== undefined) {
+        setFavorited(result.favorited)
+      } else {
+        // The save failed — undo the optimistic toggle so the heart doesn't lie.
+        setFavorited((f) => !f)
+      }
     })
   }
 

@@ -765,9 +765,10 @@ function MentalWellbeingPreferencesStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Waar heb je behoefte aan?</h2>
+      <h2 className="font-display text-2xl text-ink mb-2">Bij welke gevoelens wil je ondersteuning?</h2>
       <p className="text-ink-soft text-sm mb-6">
-        Optioneel, en je kunt er meerdere kiezen. Zo laten we je sneller passende content zien.
+        Optioneel, en je kunt er meerdere kiezen. Zo laten we je sneller passende meditaties,
+        mindfulness-oefeningen en affirmaties zien.
       </p>
       <div className="flex flex-wrap gap-2">
         {MENTAL_WELLBEING_CATEGORY_OPTIONS.map((opt) => (

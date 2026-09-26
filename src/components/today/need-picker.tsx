@@ -9,13 +9,21 @@ import { setTodayNeed } from "@/lib/actions/checkin"
 export function NeedPicker({ initialNeed }: { initialNeed: string | null }) {
   const router = useRouter()
   const [need, setNeed] = useState(initialNeed)
+  const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   function handleSelect(value: string) {
+    setError(null)
+    const previous = need
     const next = need === value ? null : value
     setNeed(next)
     startTransition(async () => {
-      await setTodayNeed(next)
+      const result = await setTodayNeed(next)
+      if (result?.error) {
+        setNeed(previous)
+        setError(result.error)
+        return
+      }
       router.refresh()
     })
   }
@@ -38,6 +46,7 @@ export function NeedPicker({ initialNeed }: { initialNeed: string | null }) {
           </Chip>
         ))}
       </div>
+      {error && <p className="text-xs text-danger mt-2">{error}</p>}
     </div>
   )
 }

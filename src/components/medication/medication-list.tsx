@@ -26,13 +26,22 @@ export function MedicationList({ medications }: { medications: Medication[] }) {
   const router = useRouter()
   const [items, setItems] = useState(medications)
   const [confirmId, setConfirmId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   function handleDelete(id: string) {
+    setError(null)
+    const removed = items.find((m) => m.id === id)
     setItems((prev) => prev.filter((m) => m.id !== id))
     setConfirmId(null)
     startTransition(async () => {
-      await deleteMedication(id)
+      const result = await deleteMedication(id)
+      if (result?.error) {
+        // Roll back: put the item back so it doesn't look deleted when it wasn't.
+        if (removed) setItems((prev) => [...prev, removed].sort((a, b) => a.name.localeCompare(b.name)))
+        setError(result.error)
+        return
+      }
       router.refresh()
     })
   }
@@ -41,6 +50,7 @@ export function MedicationList({ medications }: { medications: Medication[] }) {
 
   return (
     <div className="flex flex-col gap-2.5">
+      {error && <p className="text-xs text-danger px-1">{error}</p>}
       {items.map((m) => (
         <Card key={m.id} className="p-4">
           <div className="flex items-start gap-3">

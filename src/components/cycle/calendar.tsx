@@ -41,6 +41,7 @@ export function Calendar({
   const [isPending, startTransition] = useTransition()
   const [pendingDate, setPendingDate] = useState<string | null>(null)
   const [flowPickerDate, setFlowPickerDate] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const days = useMemo(() => {
     const start = startOfMonth(month)
@@ -54,6 +55,7 @@ export function Calendar({
   function handleDayClick(day: Date) {
     const iso = format(day, "yyyy-MM-dd")
     if (iso > todayISO) return
+    setError(null)
 
     // With flow-tracking on, tapping a day opens the intensity picker
     // instead of instantly unmarking it — marking + choosing an intensity
@@ -62,7 +64,15 @@ export function Calendar({
       if (!dates.has(iso)) {
         setDates((prev) => new Set(prev).add(iso))
         startTransition(async () => {
-          await setCycleLogFlow(iso, null)
+          const result = await setCycleLogFlow(iso, null)
+          if (result?.error) {
+            setDates((prev) => {
+              const next = new Set(prev)
+              next.delete(iso)
+              return next
+            })
+            setError(result.error)
+          }
         })
       }
       setFlowPickerDate(iso)
@@ -77,19 +87,37 @@ export function Calendar({
       return next
     })
     startTransition(async () => {
-      await toggleMenstruationDay(iso)
+      const result = await toggleMenstruationDay(iso)
       setPendingDate(null)
+      if (result?.error) {
+        // Roll back: flip the day back to how it was before the tap.
+        setDates((prev) => {
+          const next = new Set(prev)
+          if (next.has(iso)) next.delete(iso)
+          else next.add(iso)
+          return next
+        })
+        setError(result.error)
+      }
     })
   }
 
   function handleSetFlow(iso: string, flow: (typeof FLOW_OPTIONS)[number]["value"]) {
+    setError(null)
+    const previous = flowByDate.get(iso) ?? null
     setFlowByDate((prev) => new Map(prev).set(iso, flow))
     startTransition(async () => {
-      await setCycleLogFlow(iso, flow)
+      const result = await setCycleLogFlow(iso, flow)
+      if (result?.error) {
+        setFlowByDate((prev) => new Map(prev).set(iso, previous))
+        setError(result.error)
+      }
     })
   }
 
   function handleRemoveDay(iso: string) {
+    setError(null)
+    const previousFlow = flowByDate.get(iso) ?? null
     setDates((prev) => {
       const next = new Set(prev)
       next.delete(iso)
@@ -102,7 +130,13 @@ export function Calendar({
     })
     setFlowPickerDate(null)
     startTransition(async () => {
-      await toggleMenstruationDay(iso)
+      const result = await toggleMenstruationDay(iso)
+      if (result?.error) {
+        // Roll back: this day was still a menstruation day.
+        setDates((prev) => new Set(prev).add(iso))
+        setFlowByDate((prev) => new Map(prev).set(iso, previousFlow))
+        setError(result.error)
+      }
     })
   }
 
@@ -188,6 +222,7 @@ export function Calendar({
           ? "Tik op een dag om menstruatie en bloedverlies bij te houden."
           : "Tik op een dag om menstruatie te markeren."}
       </p>
+      {error && <p className="text-xs text-danger mt-2">{error}</p>}
 
       {trackFlowEnabled && flowPickerDate && (
         <div className="mt-4 rounded-2xl bg-cream-soft p-4">
