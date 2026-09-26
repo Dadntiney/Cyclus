@@ -534,6 +534,15 @@ function ReminderStep({
             onChange={(e) => setData((d) => ({ ...d, timeOfDay: e.target.value }))}
             className="max-w-[160px]"
           />
+          {data.scheduleType === "cyclisch" && (
+            <p className="text-sm text-ink-soft bg-cream-soft rounded-2xl p-3 mt-4 leading-relaxed">
+              Omdat dit een wel/niet-schema is, krijg je hier automatisch nog twee extra
+              momenten bij, zonder dat je dat apart hoeft in te stellen: een melding op de
+              eerste dag dat je weer moet beginnen (&ldquo;je schema start weer&rdquo;), en een
+              melding op de laatste dag vóór je pauze begint (&ldquo;je schema eindigt
+              vandaag&rdquo;).
+            </p>
+          )}
         </div>
       )}
     </div>
