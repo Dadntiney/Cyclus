@@ -4,7 +4,8 @@ import { sendPushToUser } from "@/lib/push/send"
 import { isReminderDueToday, isoWeekday, type ReminderLike } from "@/lib/client/reminder-scheduler"
 import { isDosingDay, isScheduleStartDay, isScheduleStopDay, type MedicationSchedule } from "@/lib/medication/schedule"
 import { resolveReminderText } from "@/lib/buddy/reminder-labels"
-import { REMINDER_TYPE_OPTIONS } from "@/lib/constants"
+import { getMorningMessage } from "@/lib/data/morning-messages"
+import { REMINDER_TYPE_OPTIONS, type MorningReminderContentType } from "@/lib/constants"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 60
@@ -75,7 +76,9 @@ export async function GET(request: NextRequest) {
         await Promise.all([
           service
             .from("profiles")
-            .select("buddy_styles, nutrition_enabled, movement_enabled, mental_wellbeing_enabled")
+            .select(
+              "buddy_styles, nutrition_enabled, movement_enabled, mental_wellbeing_enabled, morning_reminder_enabled, morning_reminder_time, morning_reminder_days, morning_reminder_content_type",
+            )
             .eq("id", userId)
             .single(),
           service.from("reminders").select("*").eq("user_id", userId).eq("enabled", true),
@@ -183,6 +186,38 @@ export async function GET(request: NextRequest) {
         await service
           .from("push_notification_log")
           .upsert({ user_id: userId, source_type: sourceType, source_id: m.id, date: dateISO }, { onConflict: "source_type,source_id,date" })
+        notificationsSent += sent
+      }
+
+      // ---- Morning reminder (Goedemorgen) ----
+      // Day-level match only, same honest limitation as generic reminders
+      // above: her chosen time is respected exactly by the in-app toast
+      // while Cyclus is open, but this once-daily cron can only send around
+      // its own fixed run time (see vercel.json / the TIMEZONE comment).
+      if (
+        profile?.morning_reminder_enabled === true &&
+        profile.morning_reminder_days.includes(weekday) &&
+        !alreadySent.has("morning_reminder:singleton")
+      ) {
+        const message = getMorningMessage({
+          contentType: profile.morning_reminder_content_type as MorningReminderContentType,
+          seed: `morning-${userId}-${dateISO}`,
+          phase: null,
+          preferredStyles: buddyStyles as Parameters<typeof getMorningMessage>[0]["preferredStyles"],
+        })
+        const { sent } = await sendPushToUser(userId, {
+          title: message.title,
+          body: message.body,
+          url: "/vandaag",
+          tag: "morning-reminder",
+        })
+        if (sent > 0) userHasSend = true
+        await service
+          .from("push_notification_log")
+          .upsert(
+            { user_id: userId, source_type: "morning_reminder", source_id: "singleton", date: dateISO },
+            { onConflict: "source_type,source_id,date" },
+          )
         notificationsSent += sent
       }
 

@@ -272,3 +272,37 @@ export const BUDDY_FREQUENCY_OPTIONS = [
   { value: "alleen_relevant", label: "Alleen wanneer relevant" },
   { value: "uit", label: "Uit" },
 ] as const
+
+// Optional Goedemorgen-melding (see profiles.morning_reminder_*).
+export const MORNING_REMINDER_CONTENT_TYPE_OPTIONS = [
+  { value: "reminder", label: "Alleen herinnering", description: "Een korte uitnodiging voor je check-in." },
+  { value: "quote", label: "Met quote", description: "Een kort 'wist je dat' of buddy-quote." },
+  { value: "affirmation", label: "Met affirmatie", description: "Een korte, geloofwaardige affirmatie." },
+  { value: "buddy", label: "Met buddy-boodschap", description: "Een persoonlijk bericht in jouw buddy-stijl." },
+] as const
+
+export type MorningReminderContentType = (typeof MORNING_REMINDER_CONTENT_TYPE_OPTIONS)[number]["value"]
+
+// Optioneel, eenvoudig slaappatroon bijhouden (zie sleep_entries).
+export const WAKE_FEELING_OPTIONS = [
+  { value: "uitgerust", label: "Uitgerust", emoji: "😊" },
+  { value: "redelijk_uitgerust", label: "Redelijk uitgerust", emoji: "🙂" },
+  { value: "moe", label: "Moe", emoji: "😐" },
+  { value: "erg_moe", label: "Erg moe", emoji: "😴" },
+] as const
+
+export const SLEEP_QUALITY_OPTIONS = [
+  { value: "slecht", label: "Slecht" },
+  { value: "matig", label: "Matig" },
+  { value: "redelijk", label: "Redelijk" },
+  { value: "goed", label: "Goed" },
+  { value: "heel_goed", label: "Heel goed" },
+] as const
+
+// 3 = "3 of meer keer" — een bucket, geen exact getal.
+export const WAKE_COUNT_OPTIONS = [
+  { value: 0, label: "Niet" },
+  { value: 1, label: "1 keer" },
+  { value: 2, label: "2 keer" },
+  { value: 3, label: "3+ keer" },
+] as const

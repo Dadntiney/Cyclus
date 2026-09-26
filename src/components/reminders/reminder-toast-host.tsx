@@ -11,7 +11,17 @@ import {
 import { wasReminderShownToday, markReminderShownToday } from "@/lib/client/reminder-storage"
 import { resolveReminderText } from "@/lib/buddy/reminder-labels"
 import { isScheduleStartDay, isScheduleStopDay } from "@/lib/medication/schedule"
+import { getMorningMessage } from "@/lib/data/morning-messages"
+import type { MorningReminderContentType } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+
+export interface MorningReminderSettings {
+  enabled: boolean
+  time: string
+  days: number[]
+  contentType: MorningReminderContentType
+  preferredStyles: string[]
+}
 
 const TYPE_BY_VALUE = new Map<string, (typeof REMINDER_TYPE_OPTIONS)[number]>(
   REMINDER_TYPE_OPTIONS.map((t) => [t.value, t]),
@@ -61,23 +71,44 @@ export function ReminderToastHost({
   reminders,
   medications = [],
   buddyStyles = [],
+  morningReminder = null,
 }: {
   reminders: ReminderLike[]
   medications?: MedicationReminderLike[]
   buddyStyles?: string[]
+  morningReminder?: MorningReminderSettings | null
 }) {
   const [visible, setVisible] = useState<Toast[]>([])
 
   useEffect(() => {
     const hasReminders = reminders.some((r) => r.enabled)
     const hasMedicationReminders = medications.some((m) => m.reminderEnabled)
-    if (!hasReminders && !hasMedicationReminders) return
+    const hasMorningReminder = morningReminder?.enabled === true
+    if (!hasReminders && !hasMedicationReminders && !hasMorningReminder) return
 
     function check() {
       const now = new Date()
       const dueReminders = getDueReminders(reminders, now, wasReminderShownToday)
       const dueMedications = getDueMedicationReminders(medications, now, wasReminderShownToday)
-      if (!dueReminders.length && !dueMedications.length) return
+      // Synthetic single-item "reminder" so the exact-time due-check logic
+      // (day + grace window) is shared, not reimplemented for this one case.
+      const dueMorning = hasMorningReminder
+        ? getDueReminders(
+            [
+              {
+                id: "morning-reminder",
+                type: "goedemorgen",
+                label: null,
+                enabled: true,
+                days: morningReminder!.days,
+                time: morningReminder!.time,
+              },
+            ],
+            now,
+            wasReminderShownToday,
+          )
+        : []
+      if (!dueReminders.length && !dueMedications.length && !dueMorning.length) return
 
       const todayISO = now.toISOString().slice(0, 10)
       const toasts: Toast[] = []
@@ -89,6 +120,16 @@ export function ReminderToastHost({
       for (const medication of dueMedications) {
         markReminderShownToday(medication.id, todayISO)
         toasts.push(medicationToast(medication, now))
+      }
+      for (const reminder of dueMorning) {
+        markReminderShownToday(reminder.id, todayISO)
+        const message = getMorningMessage({
+          contentType: morningReminder!.contentType,
+          seed: `morning-${todayISO}`,
+          phase: null,
+          preferredStyles: morningReminder!.preferredStyles as Parameters<typeof getMorningMessage>[0]["preferredStyles"],
+        })
+        toasts.push({ id: reminder.id, emoji: "☀️", text: message.body })
       }
 
       if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
@@ -107,7 +148,7 @@ export function ReminderToastHost({
     check()
     const interval = setInterval(check, 60_000)
     return () => clearInterval(interval)
-  }, [reminders, medications, buddyStyles])
+  }, [reminders, medications, buddyStyles, morningReminder])
 
   function dismiss(id: string) {
     setVisible((prev) => prev.filter((r) => r.id !== id))

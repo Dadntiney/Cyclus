@@ -4,7 +4,7 @@ import { Sidebar } from "@/components/nav/sidebar"
 import { BottomNav } from "@/components/nav/bottom-nav"
 import { MobileHeader } from "@/components/nav/mobile-header"
 import { PageTransition } from "@/components/nav/page-transition"
-import { ReminderToastHost } from "@/components/reminders/reminder-toast-host"
+import { ReminderToastHost, type MorningReminderSettings } from "@/components/reminders/reminder-toast-host"
 import { getReminders } from "@/lib/data/reminders"
 import { getMedicationReminderSources } from "@/lib/data/medications"
 import { getProfile } from "@/lib/data/profile"
@@ -49,7 +49,22 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <PageTransition>{children}</PageTransition>
         </main>
         <BottomNav />
-        <ReminderToastHost reminders={reminders} medications={medicationReminders} buddyStyles={profile.buddy_styles} />
+        <ReminderToastHost
+          reminders={reminders}
+          medications={medicationReminders}
+          buddyStyles={profile.buddy_styles}
+          morningReminder={
+            profile.morning_reminder_enabled === true
+              ? {
+                  enabled: true,
+                  time: profile.morning_reminder_time,
+                  days: profile.morning_reminder_days,
+                  contentType: profile.morning_reminder_content_type as MorningReminderSettings["contentType"],
+                  preferredStyles: profile.buddy_styles,
+                }
+              : null
+          }
+        />
       </div>
     </div>
   )

@@ -19,8 +19,12 @@ import {
   BUDDY_STYLE_OPTIONS,
   BUDDY_FREQUENCY_OPTIONS,
   MENTAL_WELLBEING_CATEGORY_OPTIONS,
+  REMINDER_DAY_OPTIONS,
+  MORNING_REMINDER_CONTENT_TYPE_OPTIONS,
+  type MorningReminderContentType,
 } from "@/lib/constants"
 import { updateProfile } from "@/lib/actions/profile"
+import { cn } from "@/lib/utils"
 import type { Tables } from "@/types/database"
 
 type Profile = Tables<"profiles">
@@ -28,6 +32,10 @@ type CycleProfile = Tables<"cycle_profiles">
 
 function toggle(list: string[], value: string) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
+}
+
+function toggleDay(days: number[], day: number) {
+  return days.includes(day) ? days.filter((d) => d !== day) : [...days, day].sort((a, b) => a - b)
 }
 
 export function ProfileForm({
@@ -69,6 +77,15 @@ export function ProfileForm({
   const [mentalWellbeingCategories, setMentalWellbeingCategories] = useState<string[]>(
     profile.mental_wellbeing_categories ?? [],
   )
+  const [morningReminderEnabled, setMorningReminderEnabled] = useState(profile.morning_reminder_enabled === true)
+  const [morningReminderTime, setMorningReminderTime] = useState(profile.morning_reminder_time.slice(0, 5))
+  const [morningReminderDays, setMorningReminderDays] = useState<number[]>(
+    profile.morning_reminder_days ?? [1, 2, 3, 4, 5, 6, 7],
+  )
+  const [morningReminderContentType, setMorningReminderContentType] = useState<MorningReminderContentType>(
+    (profile.morning_reminder_content_type as MorningReminderContentType) ?? "reminder",
+  )
+  const [sleepTrackingEnabled, setSleepTrackingEnabled] = useState(profile.sleep_tracking_enabled === true)
   const [trackFlowIntensity, setTrackFlowIntensity] = useState(profile.track_flow_intensity)
   const [motivation, setMotivation] = useState(profile.motivation ?? "")
   const [personalNote, setPersonalNote] = useState(profile.personal_note ?? "")
@@ -120,6 +137,11 @@ export function ProfileForm({
         nutritionPreferences: nutritionEnabled ? nutritionPreferences : [],
         mentalWellbeingEnabled,
         mentalWellbeingCategories: mentalWellbeingEnabled ? mentalWellbeingCategories : [],
+        morningReminderEnabled,
+        morningReminderTime,
+        morningReminderDays: morningReminderDays.length ? morningReminderDays : [1, 2, 3, 4, 5, 6, 7],
+        morningReminderContentType,
+        sleepTrackingEnabled,
         trainingFrequency: movementEnabled ? trainingFrequency : null,
         trackFlowIntensity,
         wellnessPreference: profile.wellness_preference,
@@ -386,6 +408,97 @@ export function ProfileForm({
           <p className="text-xs text-ink-soft mt-2">
             Mentale rust staat uit — je ziet nergens meditaties, mindfulness of affirmaties. Zet
             dit weer aan wanneer je wilt.
+          </p>
+        )}
+      </Card>
+
+      <Card id="goedemorgen">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="font-display text-lg text-ink">Goedemorgen</h2>
+          <div className="flex gap-1.5">
+            <Chip selected={morningReminderEnabled} onClick={() => setMorningReminderEnabled(true)}>
+              Aan
+            </Chip>
+            <Chip selected={!morningReminderEnabled} onClick={() => setMorningReminderEnabled(false)}>
+              Uit
+            </Chip>
+          </div>
+        </div>
+        {morningReminderEnabled ? (
+          <>
+            <p className="text-xs text-ink-soft mb-3">
+              Een ochtendmelding op een tijdstip en dagen die jij kiest. Let op: op ons hostingplan
+              kan de push soms iets later of eerder aankomen dan het exacte tijdstip — terwijl je
+              de app open hebt, klopt het tijdstip wel altijd precies.
+            </p>
+            <Label htmlFor="morning-time">Tijdstip</Label>
+            <Input
+              id="morning-time"
+              type="time"
+              value={morningReminderTime}
+              onChange={(e) => setMorningReminderTime(e.target.value)}
+              className="max-w-[160px] mb-4"
+            />
+            <p className="text-sm font-medium text-ink mb-2">Dagen</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {REMINDER_DAY_OPTIONS.map((opt) => (
+                <Chip
+                  key={opt.value}
+                  selected={morningReminderDays.includes(opt.value)}
+                  onClick={() => setMorningReminderDays((d) => toggleDay(d, opt.value))}
+                >
+                  {opt.label}
+                </Chip>
+              ))}
+            </div>
+            <p className="text-sm font-medium text-ink mb-2">Inhoud</p>
+            <div className="flex flex-col gap-2">
+              {MORNING_REMINDER_CONTENT_TYPE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setMorningReminderContentType(opt.value)}
+                  className={cn(
+                    "text-left rounded-2xl border px-3.5 py-2.5 touch-manipulation transition-colors",
+                    morningReminderContentType === opt.value
+                      ? "border-sage bg-sage-soft"
+                      : "border-line hover:border-sage/50",
+                  )}
+                >
+                  <p className="text-sm font-medium text-ink">{opt.label}</p>
+                  <p className="text-xs text-ink-soft mt-0.5">{opt.description}</p>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-xs text-ink-soft mt-2">
+            Goedemorgen staat uit — geen ochtendmelding. Zet dit weer aan wanneer je wilt.
+          </p>
+        )}
+      </Card>
+
+      <Card id="slaap">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="font-display text-lg text-ink">Slaap bijhouden</h2>
+          <div className="flex gap-1.5">
+            <Chip selected={sleepTrackingEnabled} onClick={() => setSleepTrackingEnabled(true)}>
+              Aan
+            </Chip>
+            <Chip selected={!sleepTrackingEnabled} onClick={() => setSleepTrackingEnabled(false)}>
+              Uit
+            </Chip>
+          </div>
+        </div>
+        {sleepTrackingEnabled ? (
+          <p className="text-xs text-ink-soft mt-2">
+            Je ziet nu op Vandaag een snelle manier om je bedtijd en opsta-tijd in te vullen, en bij
+            Slaap je eigen slaapduur en eenvoudige inzichten.
+          </p>
+        ) : (
+          <p className="text-xs text-ink-soft mt-2">
+            Slaap bijhouden staat uit — je ziet nergens slaapvragen of slaapkaarten. Zet dit weer
+            aan wanneer je wilt.
           </p>
         )}
       </Card>

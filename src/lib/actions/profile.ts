@@ -21,6 +21,11 @@ export interface UpdateProfileInput {
   nutritionPreferences: string[]
   mentalWellbeingEnabled: boolean
   mentalWellbeingCategories: string[]
+  morningReminderEnabled: boolean
+  morningReminderTime: string
+  morningReminderDays: number[]
+  morningReminderContentType: string
+  sleepTrackingEnabled: boolean
   trainingFrequency: number | null
   trackFlowIntensity: boolean
   wellnessPreference: string | null
@@ -62,6 +67,11 @@ export async function updateProfile(input: UpdateProfileInput) {
       nutrition_preferences: input.nutritionPreferences,
       mental_wellbeing_enabled: input.mentalWellbeingEnabled,
       mental_wellbeing_categories: input.mentalWellbeingCategories,
+      morning_reminder_enabled: input.morningReminderEnabled,
+      morning_reminder_time: input.morningReminderTime,
+      morning_reminder_days: input.morningReminderDays,
+      morning_reminder_content_type: input.morningReminderContentType,
+      sleep_tracking_enabled: input.sleepTrackingEnabled,
       training_frequency: input.trainingFrequency,
       track_flow_intensity: input.trackFlowIntensity,
       wellness_preference: input.wellnessPreference,
@@ -106,6 +116,7 @@ export async function updateProfile(input: UpdateProfileInput) {
   revalidatePath("/medicatie")
   revalidatePath("/buddy")
   revalidatePath("/mentale-rust")
+  revalidatePath("/slaap")
   return { success: true }
 }
 

@@ -7,6 +7,8 @@ import { computeStreak } from "@/lib/data/streak"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
 import { getProfile } from "@/lib/data/profile"
 import { pickMentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
+import { computeSleepDurationMinutes } from "@/lib/sleep/duration"
+import { pickSleepObservation } from "@/lib/sleep/insights"
 import type { BuddyStyle } from "@/lib/buddy/styles"
 
 function todayISO() {
@@ -29,6 +31,7 @@ export async function getVandaagData(userId: string) {
     { data: weekSessions },
     { data: cycleLogs },
     medicationItems,
+    { data: sleepEntry },
   ] = await Promise.all([
     getProfile(userId),
     supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
@@ -55,6 +58,7 @@ export async function getVandaagData(userId: string) {
       .gte("date", sixMonthsAgo)
       .order("date", { ascending: true }),
     getMedicationDashboardItems(userId, today),
+    supabase.from("sleep_entries").select("*").eq("user_id", userId).eq("date", today).maybeSingle(),
   ])
 
   const streak = computeStreak((recentCheckins ?? []).map((c) => c.date), today)
@@ -96,6 +100,21 @@ export async function getVandaagData(userId: string) {
         })
       : null
 
+  // Only meaningful when she opted into sleep tracking — otherwise there's
+  // no sleep_entries row to speak of, and no observation to show.
+  const sleepDurationMinutes =
+    sleepEntry?.bedtime && sleepEntry?.wake_time
+      ? computeSleepDurationMinutes(sleepEntry.bedtime, sleepEntry.wake_time)
+      : null
+  const sleepObservation =
+    profile?.sleep_tracking_enabled === true
+      ? pickSleepObservation({
+          durationMinutes: sleepDurationMinutes,
+          wakeFeeling: sleepEntry?.wake_feeling ?? null,
+          energy: checkin?.energy ?? null,
+        })
+      : null
+
   return {
     profile,
     cycleProfile,
@@ -107,5 +126,7 @@ export async function getVandaagData(userId: string) {
     completedThisWeek,
     medicationItems,
     mentalWellbeingSuggestion,
+    sleepEntry,
+    sleepObservation,
   }
 }

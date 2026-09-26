@@ -12,6 +12,7 @@ import { ProgressCard } from "@/components/today/progress-card"
 import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { MentalWellbeingSuggestionCard } from "@/components/today/mental-wellbeing-suggestion-card"
+import { SleepCard } from "@/components/sleep/sleep-card"
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
@@ -70,6 +71,8 @@ export default async function VandaagPage() {
     completedThisWeek,
     medicationItems,
     mentalWellbeingSuggestion,
+    sleepEntry,
+    sleepObservation,
   } = await getVandaagData(user.id)
   const showMedicationCard = Boolean(profile?.show_medication_on_dashboard) && medicationItems.length > 0
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
@@ -177,6 +180,16 @@ export default async function VandaagPage() {
           </div>
 
           <div className="flex flex-col gap-6 mt-6 lg:mt-0">
+            {profile?.sleep_tracking_enabled === true && (
+              <div>
+                <SleepCard date={today} entry={sleepEntry} />
+                {sleepObservation && <p className="text-xs text-ink-soft mt-2 px-1 leading-relaxed">{sleepObservation}</p>}
+                <Link href="/slaap" className="text-xs font-medium text-sage-dark mt-2 px-1 inline-block touch-manipulation">
+                  Bekijk slaapgeschiedenis
+                </Link>
+              </div>
+            )}
+
             <ProgressCard
               completedThisWeek={completedThisWeek}
               weeklyGoal={profile?.training_frequency ?? null}

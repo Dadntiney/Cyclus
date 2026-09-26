@@ -509,6 +509,10 @@ export type Database = {
           id: string
           mental_wellbeing_categories: string[]
           mental_wellbeing_enabled: boolean | null
+          morning_reminder_content_type: string
+          morning_reminder_days: number[]
+          morning_reminder_enabled: boolean | null
+          morning_reminder_time: string
           motivation: string | null
           movement_enabled: boolean
           movement_limitations: string[]
@@ -519,6 +523,7 @@ export type Database = {
           onboarding_completed: boolean
           personal_note: string | null
           show_medication_on_dashboard: boolean
+          sleep_tracking_enabled: boolean | null
           track_flow_intensity: boolean
           training_frequency: number | null
           training_preferences: string[]
@@ -540,6 +545,10 @@ export type Database = {
           id: string
           mental_wellbeing_categories?: string[]
           mental_wellbeing_enabled?: boolean | null
+          morning_reminder_content_type?: string
+          morning_reminder_days?: number[]
+          morning_reminder_enabled?: boolean | null
+          morning_reminder_time?: string
           motivation?: string | null
           movement_enabled?: boolean
           movement_limitations?: string[]
@@ -550,6 +559,7 @@ export type Database = {
           onboarding_completed?: boolean
           personal_note?: string | null
           show_medication_on_dashboard?: boolean
+          sleep_tracking_enabled?: boolean | null
           track_flow_intensity?: boolean
           training_frequency?: number | null
           training_preferences?: string[]
@@ -571,6 +581,10 @@ export type Database = {
           id?: string
           mental_wellbeing_categories?: string[]
           mental_wellbeing_enabled?: boolean | null
+          morning_reminder_content_type?: string
+          morning_reminder_days?: number[]
+          morning_reminder_enabled?: boolean | null
+          morning_reminder_time?: string
           motivation?: string | null
           movement_enabled?: boolean
           movement_limitations?: string[]
@@ -581,6 +595,7 @@ export type Database = {
           onboarding_completed?: boolean
           personal_note?: string | null
           show_medication_on_dashboard?: boolean
+          sleep_tracking_enabled?: boolean | null
           track_flow_intensity?: boolean
           training_frequency?: number | null
           training_preferences?: string[]
@@ -746,6 +761,45 @@ export type Database = {
           type?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      sleep_entries: {
+        Row: {
+          bedtime: string | null
+          created_at: string
+          date: string
+          id: string
+          sleep_quality: string | null
+          updated_at: string
+          user_id: string
+          wake_count: number | null
+          wake_feeling: string | null
+          wake_time: string | null
+        }
+        Insert: {
+          bedtime?: string | null
+          created_at?: string
+          date: string
+          id?: string
+          sleep_quality?: string | null
+          updated_at?: string
+          user_id: string
+          wake_count?: number | null
+          wake_feeling?: string | null
+          wake_time?: string | null
+        }
+        Update: {
+          bedtime?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          sleep_quality?: string | null
+          updated_at?: string
+          user_id?: string
+          wake_count?: number | null
+          wake_feeling?: string | null
+          wake_time?: string | null
         }
         Relationships: []
       }
