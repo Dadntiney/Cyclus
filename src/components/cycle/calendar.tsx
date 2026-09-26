@@ -17,6 +17,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toggleMenstruationDay, setCycleLogFlow } from "@/lib/actions/cycle"
 import { FLOW_OPTIONS } from "@/lib/constants"
+import { Button } from "@/components/ui/button"
 
 interface CalendarProps {
   menstruationDates: Set<string>
@@ -227,9 +228,12 @@ export function Calendar({
       {trackFlowEnabled && flowPickerDate && (
         <div className="mt-4 rounded-2xl bg-cream-soft p-4">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-medium text-ink">
-              Bloedverlies op {format(new Date(flowPickerDate), "d MMMM", { locale: nl })}
-            </p>
+            <div>
+              <p className="text-sm font-medium text-ink">
+                {format(new Date(flowPickerDate), "d MMMM", { locale: nl })}
+              </p>
+              <p className="text-xs text-ink-soft mt-0.5">Menstruatiedag</p>
+            </div>
             <button
               type="button"
               onClick={() => setFlowPickerDate(null)}
@@ -239,7 +243,18 @@ export function Calendar({
               <X className="h-4 w-4" />
             </button>
           </div>
-          <div className="flex flex-wrap gap-2 mb-3">
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => handleRemoveDay(flowPickerDate)}
+            className="w-full mb-4 text-danger border-danger/30 hover:bg-danger/5"
+          >
+            Geen menstruatiedag — dag verwijderen
+          </Button>
+
+          <p className="text-xs font-medium text-ink mb-2">Bloedverlies deze dag</p>
+          <div className="flex flex-wrap gap-2">
             {FLOW_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -259,13 +274,6 @@ export function Calendar({
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={() => handleRemoveDay(flowPickerDate)}
-            className="text-xs font-medium text-danger touch-manipulation"
-          >
-            Deze dag verwijderen als menstruatiedag
-          </button>
         </div>
       )}
     </div>
