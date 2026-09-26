@@ -57,12 +57,14 @@ export function Calendar({
     if (iso > todayISO) return
     setError(null)
 
-    // A plain tap always toggles the day directly — on becomes off, off
-    // becomes on, no extra step. Only when a day goes from off to on (a
-    // NEW menstruation day), and flow-tracking is enabled, do we also open
-    // the intensity picker, since that's the moment it's actually relevant
-    // to ask "hoeveel bloedverlies vandaag?".
-    const wasMarked = dates.has(iso)
+    if (trackFlowEnabled) {
+      // Never assume anything on a bare tap — always ask "hoeveel
+      // bloedverlies?" first. Marking, changing, or removing a day all
+      // happen through the flow choice below (handleSetFlow), never as a
+      // side effect of just opening this panel.
+      setFlowPickerDate(iso)
+      return
+    }
 
     setPendingDate(iso)
     setDates((prev) => {
@@ -71,12 +73,6 @@ export function Calendar({
       else next.add(iso)
       return next
     })
-    if (wasMarked) {
-      if (flowPickerDate === iso) setFlowPickerDate(null)
-    } else if (trackFlowEnabled) {
-      setFlowPickerDate(iso)
-    }
-
     startTransition(async () => {
       const result = await toggleMenstruationDay(iso)
       setPendingDate(null)
@@ -88,7 +84,6 @@ export function Calendar({
           else next.add(iso)
           return next
         })
-        if (!wasMarked) setFlowPickerDate((current) => (current === iso ? null : current))
         setError(result.error)
       }
     })
@@ -96,12 +91,48 @@ export function Calendar({
 
   function handleSetFlow(iso: string, flow: (typeof FLOW_OPTIONS)[number]["value"]) {
     setError(null)
-    const previous = flowByDate.get(iso) ?? null
+    const wasMarked = dates.has(iso)
+    const previousFlow = flowByDate.get(iso) ?? null
+
+    if (wasMarked && previousFlow === flow) {
+      // Tapping the already-selected level again removes the day entirely
+      // — the one, consistent way to undo a wrongly-included day (e.g. she
+      // stopped a period a day too late), without a separate hidden step.
+      setDates((prev) => {
+        const next = new Set(prev)
+        next.delete(iso)
+        return next
+      })
+      setFlowByDate((prev) => {
+        const next = new Map(prev)
+        next.delete(iso)
+        return next
+      })
+      setFlowPickerDate(null)
+      startTransition(async () => {
+        const result = await toggleMenstruationDay(iso)
+        if (result?.error) {
+          setDates((prev) => new Set(prev).add(iso))
+          setFlowByDate((prev) => new Map(prev).set(iso, previousFlow))
+          setError(result.error)
+        }
+      })
+      return
+    }
+
+    setDates((prev) => new Set(prev).add(iso))
     setFlowByDate((prev) => new Map(prev).set(iso, flow))
     startTransition(async () => {
       const result = await setCycleLogFlow(iso, flow)
       if (result?.error) {
-        setFlowByDate((prev) => new Map(prev).set(iso, previous))
+        setFlowByDate((prev) => new Map(prev).set(iso, previousFlow))
+        if (!wasMarked) {
+          setDates((prev) => {
+            const next = new Set(prev)
+            next.delete(iso)
+            return next
+          })
+        }
         setError(result.error)
       }
     })
@@ -198,7 +229,9 @@ export function Calendar({
               <p className="text-sm font-medium text-ink">
                 {format(new Date(flowPickerDate), "d MMMM", { locale: nl })}
               </p>
-              <p className="text-xs text-ink-soft mt-0.5">Menstruatiedag</p>
+              <p className="text-xs text-ink-soft mt-0.5">
+                {dates.has(flowPickerDate) ? "Menstruatiedag" : "Nog geen menstruatiedag"}
+              </p>
             </div>
             <button
               type="button"
@@ -231,6 +264,11 @@ export function Calendar({
               </button>
             ))}
           </div>
+          {dates.has(flowPickerDate) && (
+            <p className="text-xs text-ink-soft mt-3">
+              Tik nogmaals op het geselecteerde niveau om deze dag te verwijderen.
+            </p>
+          )}
         </div>
       )}
     </div>
