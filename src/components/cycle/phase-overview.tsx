@@ -26,7 +26,8 @@ export function PhaseOverview({ currentPhase }: { currentPhase: CyclePhase | nul
               type="button"
               onClick={() => setSelected(phase)}
               className={cn(
-                "flex flex-col items-center gap-1.5 rounded-2xl px-1.5 py-3 touch-manipulation transition-colors",
+                "flex flex-col items-center gap-1.5 rounded-2xl px-1.5 py-3 min-h-11 touch-manipulation transition-[background-color,transform] duration-150 motion-safe:active:scale-[0.96]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
                 isSelected ? PHASE_CONTENT[phase].colors.bg : "bg-white border border-line",
               )}
             >

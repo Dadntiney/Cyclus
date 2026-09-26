@@ -259,7 +259,8 @@ function CategoryStep({
             type="button"
             onClick={() => onChange(opt.value)}
             className={cn(
-              "flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-colors",
+              "flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left touch-manipulation transition-[background-color,border-color,transform] duration-150 motion-safe:active:scale-[0.98]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
               value === opt.value ? "bg-sage-soft border-sage" : "bg-white border-line hover:border-sage/60",
             )}
           >
