@@ -6,6 +6,8 @@ import { buildRecommendation } from "@/lib/recommendations/engine"
 import { computeStreak } from "@/lib/data/streak"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
 import { getProfile } from "@/lib/data/profile"
+import { pickMentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
+import type { BuddyStyle } from "@/lib/buddy/styles"
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10)
@@ -80,6 +82,20 @@ export async function getVandaagData(userId: string) {
       })
     : null
 
+  // Derived purely from her existing check-in (mood + the optional mental
+  // symptom checkboxes) — never a second question. Only computed when she
+  // opted in, and null on any day nothing relevant was reported, so the
+  // Vandaag card simply doesn't render rather than showing something empty.
+  const mentalWellbeingSuggestion =
+    profile?.mental_wellbeing_enabled === true
+      ? pickMentalWellbeingSuggestion({
+          symptoms: checkin?.symptoms ?? [],
+          mood: checkin?.mood ?? null,
+          seed: `${userId}-${today}-mentale-rust`,
+          preferredStyles: (profile.buddy_styles ?? []) as BuddyStyle[],
+        })
+      : null
+
   return {
     profile,
     cycleProfile,
@@ -90,5 +106,6 @@ export async function getVandaagData(userId: string) {
     streak,
     completedThisWeek,
     medicationItems,
+    mentalWellbeingSuggestion,
   }
 }

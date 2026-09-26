@@ -44,6 +44,7 @@ const REMINDER_TYPE_URL: Record<string, string> = {
   cyclus: "/cyclus",
   herstel: "/vandaag",
   routine: "/vandaag",
+  mentale_ondersteuning: "/mentale-rust",
   anders: "/vandaag",
 }
 
@@ -72,7 +73,11 @@ export async function GET(request: NextRequest) {
     try {
       const [{ data: profile }, { data: reminderRows }, { data: medicationRows }, { data: logRows }] =
         await Promise.all([
-          service.from("profiles").select("buddy_styles, nutrition_enabled, movement_enabled").eq("id", userId).single(),
+          service
+            .from("profiles")
+            .select("buddy_styles, nutrition_enabled, movement_enabled, mental_wellbeing_enabled")
+            .eq("id", userId)
+            .single(),
           service.from("reminders").select("*").eq("user_id", userId).eq("enabled", true),
           service
             .from("medications")
@@ -106,6 +111,7 @@ export async function GET(request: NextRequest) {
         if (alreadySent.has(`reminder:${r.id}`)) return false
         if (r.type === "voeding" && profile?.nutrition_enabled === false) return false
         if (r.type === "beweging" && profile?.movement_enabled === false) return false
+        if (r.type === "mentale_ondersteuning" && profile?.mental_wellbeing_enabled !== true) return false
         return true
       })
 

@@ -11,6 +11,7 @@ import { DailyTipCard } from "@/components/today/daily-tip-card"
 import { ProgressCard } from "@/components/today/progress-card"
 import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
+import { MentalWellbeingSuggestionCard } from "@/components/today/mental-wellbeing-suggestion-card"
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
@@ -60,8 +61,16 @@ export default async function VandaagPage() {
   const today = new Date().toISOString().slice(0, 10)
   const dailyTipPromise = getDailyTip(today)
 
-  const { profile, cycleEstimate, recommendation, checkin, streak, completedThisWeek, medicationItems } =
-    await getVandaagData(user.id)
+  const {
+    profile,
+    cycleEstimate,
+    recommendation,
+    checkin,
+    streak,
+    completedThisWeek,
+    medicationItems,
+    mentalWellbeingSuggestion,
+  } = await getVandaagData(user.id)
   const showMedicationCard = Boolean(profile?.show_medication_on_dashboard) && medicationItems.length > 0
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
   const preferredStyles = (profile?.buddy_styles ?? []) as BuddyStyle[]
@@ -130,13 +139,32 @@ export default async function VandaagPage() {
           </div>
         )}
 
+        {mentalWellbeingSuggestion && (
+          <div className="mb-6 lg:mb-8">
+            <MentalWellbeingSuggestionCard suggestion={mentalWellbeingSuggestion} />
+          </div>
+        )}
+
         <Link
           href="/deze-week"
-          className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3 mb-6 lg:mb-8 touch-manipulation"
+          className={cn(
+            "flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3 touch-manipulation",
+            profile?.mental_wellbeing_enabled === true ? "mb-3" : "mb-6 lg:mb-8",
+          )}
         >
           <span className="text-base font-medium text-ink">📆 Bekijk je hele week</span>
           <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
         </Link>
+
+        {profile?.mental_wellbeing_enabled === true && (
+          <Link
+            href="/mentale-rust"
+            className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3 mb-6 lg:mb-8 touch-manipulation"
+          >
+            <span className="text-base font-medium text-ink">🧘 Mijn mentale rust</span>
+            <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
+          </Link>
+        )}
 
         <div className="mb-6 lg:mb-8">
           <NeedPicker initialNeed={checkin?.need ?? null} />
@@ -145,7 +173,7 @@ export default async function VandaagPage() {
         <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
           <div className="flex flex-col gap-6 lg:col-span-2">
             {recommendation && <TodayCards recommendation={recommendation} />}
-            <CheckinForm initial={checkin ?? null} />
+            <CheckinForm initial={checkin ?? null} mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true} />
           </div>
 
           <div className="flex flex-col gap-6 mt-6 lg:mt-0">

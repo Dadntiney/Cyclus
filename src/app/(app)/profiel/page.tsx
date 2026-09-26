@@ -39,6 +39,7 @@ export default async function ProfielPage() {
             initialReminders={reminders}
             movementEnabled={profile.movement_enabled}
             nutritionEnabled={profile.nutrition_enabled}
+            mentalWellbeingEnabled={profile.mental_wellbeing_enabled === true}
           />
         </div>
 

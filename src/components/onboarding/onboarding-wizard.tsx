@@ -17,6 +17,7 @@ import {
   HORMONAL_MEDICATION_STATUS_OPTIONS,
   BUDDY_STYLE_OPTIONS,
   BUDDY_FREQUENCY_OPTIONS,
+  MENTAL_WELLBEING_CATEGORY_OPTIONS,
 } from "@/lib/constants"
 import { completeOnboarding } from "@/lib/actions/onboarding"
 import { cn } from "@/lib/utils"
@@ -41,6 +42,11 @@ interface FormData {
   nutritionEnabled: boolean | null
   nutritionStyle: string
   nutritionPreferences: string[]
+  // Tri-state, unlike movement/nutrition: "misschien_later" is a genuine
+  // third answer (not a decision-avoidance null), so it's tracked separately
+  // from "unanswered" — see the completeOnboarding mapping in handleFinish.
+  mentalWellbeingChoice: "ja" | "misschien_later" | "nee" | null
+  mentalWellbeingCategories: string[]
   hormonalMedicationStatus: string
   wellnessPreference: string
   buddyStyles: string[]
@@ -64,6 +70,8 @@ type StepId =
   | "nutrition-toggle"
   | "nutrition-style"
   | "nutrition-preferences"
+  | "wellbeing-toggle"
+  | "wellbeing-preferences"
   | "medication-status"
   | "wellness"
   | "buddy-style"
@@ -74,6 +82,8 @@ function buildStepSequence(data: FormData): StepId[] {
   if (data.movementEnabled) steps.push("movement-preferences", "movement-frequency")
   steps.push("nutrition-toggle")
   if (data.nutritionEnabled) steps.push("nutrition-style", "nutrition-preferences")
+  steps.push("wellbeing-toggle")
+  if (data.mentalWellbeingChoice === "ja") steps.push("wellbeing-preferences")
   steps.push("medication-status", "wellness", "buddy-style", "buddy")
   return steps
 }
@@ -106,6 +116,8 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
     nutritionEnabled: null,
     nutritionStyle: "normaal",
     nutritionPreferences: [],
+    mentalWellbeingChoice: null,
+    mentalWellbeingCategories: [],
     hormonalMedicationStatus: "",
     wellnessPreference: "",
     buddyStyles: [],
@@ -141,6 +153,8 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         return data.trainingFrequency ? null : "Kies hoe vaak je wilt bewegen."
       case "nutrition-toggle":
         return data.nutritionEnabled === null ? "Laat ons weten of voeding relevant voor je is." : null
+      case "wellbeing-toggle":
+        return data.mentalWellbeingChoice === null ? "Laat ons weten wat hier bij jou past." : null
       case "wellness":
         return data.wellnessPreference ? null : "Kies een stijl die bij je past."
       default:
@@ -190,6 +204,13 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
           nutritionEnabled: data.nutritionEnabled ?? false,
           nutritionStyle: data.nutritionStyle as "normaal" | "koolhydraatarm",
           nutritionPreferences: data.nutritionPreferences,
+          // "misschien_later" and "unanswered" both map to null (never asked
+          // her again automatically, distinct from an explicit "nee") — see
+          // the migration comment in mental_wellbeing.sql.
+          mentalWellbeingEnabled:
+            data.mentalWellbeingChoice === "ja" ? true : data.mentalWellbeingChoice === "nee" ? false : null,
+          mentalWellbeingCategories:
+            data.mentalWellbeingChoice === "ja" ? data.mentalWellbeingCategories : [],
           healthConditions: data.healthConditions,
           movementLimitations: data.movementLimitations,
           wellnessPreference: data.wellnessPreference as
@@ -313,6 +334,26 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             selected={data.nutritionPreferences}
             onToggle={(v) =>
               setData((d) => ({ ...d, nutritionPreferences: toggle(d.nutritionPreferences, v) }))
+            }
+          />
+        )}
+        {stepId === "wellbeing-toggle" && (
+          <MentalWellbeingToggleStep
+            value={data.mentalWellbeingChoice}
+            onChange={(mentalWellbeingChoice) =>
+              setData((d) => ({
+                ...d,
+                mentalWellbeingChoice,
+                mentalWellbeingCategories: mentalWellbeingChoice === "ja" ? d.mentalWellbeingCategories : [],
+              }))
+            }
+          />
+        )}
+        {stepId === "wellbeing-preferences" && (
+          <MentalWellbeingPreferencesStep
+            selected={data.mentalWellbeingCategories}
+            onToggle={(v) =>
+              setData((d) => ({ ...d, mentalWellbeingCategories: toggle(d.mentalWellbeingCategories, v) }))
             }
           />
         )}
@@ -678,6 +719,65 @@ function OptionalModuleToggleStep({
         <Chip selected={value === false} onClick={() => onChange(false)}>
           {noLabel}
         </Chip>
+      </div>
+    </div>
+  )
+}
+
+function MentalWellbeingToggleStep({
+  value,
+  onChange,
+}: {
+  value: "ja" | "misschien_later" | "nee" | null
+  onChange: (v: "ja" | "misschien_later" | "nee") => void
+}) {
+  return (
+    <div className="text-center">
+      <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center text-2xl">
+        🧘
+      </div>
+      <h2 className="font-display text-2xl text-ink mb-2">Wil je ook ondersteuning voor je mentale rust?</h2>
+      <p className="text-ink-soft text-sm mb-6">
+        Denk aan korte meditaties, mindfulness-oefeningen en affirmaties. Helemaal optioneel — en
+        dit kun je later altijd aanpassen in je profiel.
+      </p>
+      <div className="flex flex-col gap-2 items-center">
+        <Chip selected={value === "ja"} onClick={() => onChange("ja")}>
+          Ja, graag
+        </Chip>
+        <Chip selected={value === "misschien_later"} onClick={() => onChange("misschien_later")}>
+          Misschien later
+        </Chip>
+        <Chip selected={value === "nee"} onClick={() => onChange("nee")}>
+          Nee, liever niet
+        </Chip>
+      </div>
+    </div>
+  )
+}
+
+function MentalWellbeingPreferencesStep({
+  selected,
+  onToggle,
+}: {
+  selected: string[]
+  onToggle: (value: string) => void
+}) {
+  return (
+    <div>
+      <h2 className="font-display text-2xl text-ink mb-2">Waar heb je behoefte aan?</h2>
+      <p className="text-ink-soft text-sm mb-6">
+        Optioneel, en je kunt er meerdere kiezen. Zo laten we je sneller passende content zien.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {MENTAL_WELLBEING_CATEGORY_OPTIONS.map((opt) => (
+          <Chip key={opt.value} selected={selected.includes(opt.value)} onClick={() => onToggle(opt.value)}>
+            <span className="mr-1" aria-hidden>
+              {opt.emoji}
+            </span>
+            {opt.label}
+          </Chip>
+        ))}
       </div>
     </div>
   )

@@ -30,6 +30,8 @@ export async function completeOnboarding(input: OnboardingInput) {
       training_frequency: data.movementEnabled ? (data.trainingFrequency ?? null) : null,
       nutrition_enabled: data.nutritionEnabled,
       nutrition_preferences: data.nutritionEnabled ? data.nutritionPreferences : [],
+      mental_wellbeing_enabled: data.mentalWellbeingEnabled ?? null,
+      mental_wellbeing_categories: data.mentalWellbeingEnabled ? data.mentalWellbeingCategories : [],
       wellness_preference: data.wellnessPreference,
       height_cm: data.heightCm ?? null,
       weight_kg: data.weightKg ?? null,

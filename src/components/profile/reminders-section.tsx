@@ -48,10 +48,12 @@ export function RemindersSection({
   initialReminders,
   movementEnabled = true,
   nutritionEnabled = true,
+  mentalWellbeingEnabled = false,
 }: {
   initialReminders: Reminder[]
   movementEnabled?: boolean
   nutritionEnabled?: boolean
+  mentalWellbeingEnabled?: boolean
 }) {
   const router = useRouter()
   const [reminders, setReminders] = useState(initialReminders)
@@ -59,6 +61,7 @@ export function RemindersSection({
     const requires = "requires" in opt ? opt.requires : undefined
     if (requires === "movement_enabled") return movementEnabled
     if (requires === "nutrition_enabled") return nutritionEnabled
+    if (requires === "mental_wellbeing_enabled") return mentalWellbeingEnabled
     return true
   })
   const [editingId, setEditingId] = useState<string | null>(null)

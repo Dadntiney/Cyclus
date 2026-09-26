@@ -7,14 +7,21 @@ import { RatingScale } from "@/components/ui/rating-scale"
 import { Chip } from "@/components/ui/chip"
 import { Textarea, Label } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { SYMPTOM_OPTIONS } from "@/lib/constants"
+import { SYMPTOM_OPTIONS, MENTAL_SYMPTOM_OPTIONS } from "@/lib/constants"
 import { saveCheckin } from "@/lib/actions/checkin"
 import type { CheckinInput } from "@/lib/validations/checkin"
 import type { Tables } from "@/types/database"
 
 type Checkin = Tables<"daily_checkins">
 
-export function CheckinForm({ initial }: { initial: Checkin | null }) {
+export function CheckinForm({
+  initial,
+  mentalWellbeingEnabled = false,
+}: {
+  initial: Checkin | null
+  mentalWellbeingEnabled?: boolean
+}) {
+  const symptomOptions = mentalWellbeingEnabled ? [...SYMPTOM_OPTIONS, ...MENTAL_SYMPTOM_OPTIONS] : SYMPTOM_OPTIONS
   const [energy, setEnergy] = useState<number | null>(initial?.energy ?? null)
   const [mood, setMood] = useState<number | null>(initial?.mood ?? null)
   const [sleep, setSleep] = useState<number | null>(initial?.sleep ?? null)
@@ -85,7 +92,7 @@ export function CheckinForm({ initial }: { initial: Checkin | null }) {
             <div>
               <p className="text-sm font-medium text-ink mb-2">Klachten</p>
               <div className="flex flex-wrap gap-2">
-                {SYMPTOM_OPTIONS.map((symptom) => (
+                {symptomOptions.map((symptom) => (
                   <Chip
                     key={symptom}
                     selected={symptoms.includes(symptom)}

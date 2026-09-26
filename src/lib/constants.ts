@@ -77,6 +77,21 @@ export const SYMPTOM_OPTIONS = [
   "Geen klachten",
 ] as const
 
+// Extra symptom-checkboxes shown in de dagelijkse check-in only when she
+// heeft aangegeven geestelijke ondersteuning te willen (profiles.mental_
+// wellbeing_enabled) — zo hoeft niemand die dit niet wil er ooit iets van te
+// zien, en hoeft zij die het wel wil niet twee keer hetzelfde in te vullen:
+// dit voedt rechtstreeks de suggestie op Vandaag (zie lib/mental-wellbeing).
+export const MENTAL_SYMPTOM_OPTIONS = [
+  "Gespannen",
+  "Angstig",
+  "Overprikkeld",
+  "Prikkelbaar",
+  "Somber",
+  "Eenzaam",
+  "Piekerig",
+] as const
+
 export const RECIPE_CATEGORIES = [
   "Ontbijt",
   "Lunch",
@@ -141,6 +156,13 @@ export const REMINDER_TYPE_OPTIONS = [
   { value: "cyclus", label: "Cyclus", emoji: "🌙", defaultLabel: "Even kijken wat er in jouw fase speelt" },
   { value: "herstel", label: "Rust & herstel", emoji: "🛀", defaultLabel: "Even een moment van rust" },
   { value: "routine", label: "Persoonlijke routine", emoji: "🌿", defaultLabel: "Jouw persoonlijke routine" },
+  {
+    value: "mentale_ondersteuning",
+    label: "Mentale rust",
+    emoji: "🧘",
+    defaultLabel: "Even een moment voor je mentale rust",
+    requires: "mental_wellbeing_enabled",
+  },
   { value: "anders", label: "Iets anders", emoji: "✨", defaultLabel: "" },
 ] as const
 
@@ -220,6 +242,26 @@ export const BUDDY_STYLE_OPTIONS = [
   { value: "direct", label: "Direct", emoji: "🔥", description: "eerlijk, duidelijk en zonder omwegen" },
   { value: "luchtig", label: "Luchtig", emoji: "😊", description: "vrolijk, speels en positief" },
 ] as const
+
+// Optional "geestelijke ondersteuning" preferences (see
+// profiles.mental_wellbeing_enabled / mental_wellbeing_categories). Multi-
+// select, empty = show a bit of everything. These are feelings and support
+// needs, never diagnoses — see docs/PRODUCT_VISION.md's contentregels.
+export const MENTAL_WELLBEING_CATEGORY_OPTIONS = [
+  { value: "rust", label: "Rust & ontspanning", emoji: "🧘", description: "Voor wanneer je wilt vertragen en tot rust wilt komen." },
+  { value: "angst_spanning", label: "Angst & spanning", emoji: "🌬️", description: "Voor momenten waarop je gespannen, angstig of onrustig bent." },
+  { value: "overprikkeling", label: "Overprikkeling", emoji: "🌫️", description: "Voor wanneer alles even te veel voelt." },
+  { value: "prikkelbaarheid", label: "Prikkelbaarheid", emoji: "⚡", description: "Voor wanneer je sneller geïrriteerd of emotioneel reageert." },
+  { value: "somberheid", label: "Somberheid", emoji: "🌧️", description: "Voor momenten waarop je je minder vrolijk of zwaar voelt." },
+  { value: "eenzaamheid", label: "Eenzaamheid", emoji: "💭", description: "Voor wanneer je behoefte hebt aan verbinding of je alleen voelt." },
+  { value: "piekeren", label: "Piekeren", emoji: "🌀", description: "Voor wanneer gedachten blijven rondgaan." },
+  { value: "zelfvertrouwen", label: "Zelfvertrouwen", emoji: "✨", description: "Voor positieve ondersteuning en een sterker gevoel van eigenwaarde." },
+  { value: "slaap", label: "Slaap & ontspanning", emoji: "🌙", description: "Voor het tot rust komen richting de avond." },
+  { value: "positiviteit", label: "Positiviteit", emoji: "🌼", description: "Voor een klein positief moment gedurende de dag." },
+  { value: "zelfzorg", label: "Zelfzorg", emoji: "❤️", description: "Voor bewust tijd nemen voor jezelf." },
+] as const
+
+export type MentalWellbeingCategory = (typeof MENTAL_WELLBEING_CATEGORY_OPTIONS)[number]["value"]
 
 // How often she wants to see the passive/ambient Buddy content (daily quote
 // card, "even onthouden" moments on Cyclusdag) — separate from the explicit,

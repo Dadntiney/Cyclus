@@ -19,6 +19,8 @@ export interface UpdateProfileInput {
   nutritionEnabled: boolean
   nutritionStyle: string
   nutritionPreferences: string[]
+  mentalWellbeingEnabled: boolean
+  mentalWellbeingCategories: string[]
   trainingFrequency: number | null
   trackFlowIntensity: boolean
   wellnessPreference: string | null
@@ -58,6 +60,8 @@ export async function updateProfile(input: UpdateProfileInput) {
       nutrition_enabled: input.nutritionEnabled,
       nutrition_style: input.nutritionStyle,
       nutrition_preferences: input.nutritionPreferences,
+      mental_wellbeing_enabled: input.mentalWellbeingEnabled,
+      mental_wellbeing_categories: input.mentalWellbeingCategories,
       training_frequency: input.trainingFrequency,
       track_flow_intensity: input.trackFlowIntensity,
       wellness_preference: input.wellnessPreference,
@@ -101,6 +105,7 @@ export async function updateProfile(input: UpdateProfileInput) {
   revalidatePath("/deze-week/boodschappen")
   revalidatePath("/medicatie")
   revalidatePath("/buddy")
+  revalidatePath("/mentale-rust")
   return { success: true }
 }
 

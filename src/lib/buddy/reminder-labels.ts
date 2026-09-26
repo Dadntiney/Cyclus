@@ -77,6 +77,16 @@ const REMINDER_TYPE_STYLE_LABELS: Record<string, Partial<Record<string, string>>
     direct: "Tijd voor je routine.",
     luchtig: "Hoi! Tijd voor jouw eigen dingetje. 😊",
   },
+  mentale_ondersteuning: {
+    liefdevol: "Gun jezelf een klein momentje waarin niets hoeft. 💛",
+    humor: "Je hoofd heeft ook wel eens pauze verdiend. Tijd voor een momentje voor jezelf. 😄",
+    spiritueel: "Een moment om even bij jezelf naar binnen te keren. ✨",
+    motiverend: "Je hoeft het niet perfect te doen — één klein moment voor je hoofd is al winst. 💪",
+    informatief: "Tijd voor een kort moment van mentale rust — bijvoorbeeld een ademhalingsoefening of meditatie.",
+    rustig: "Adem rustig in. En laat je schouders bij de uitademing zakken. 🌿",
+    direct: "Momentje voor je hoofd. Neem het.",
+    luchtig: "Even een momentje voor je mentale rust? 😊",
+  },
 }
 
 /**

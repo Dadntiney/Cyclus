@@ -18,6 +18,7 @@ import {
   HORMONAL_MEDICATION_STATUS_OPTIONS,
   BUDDY_STYLE_OPTIONS,
   BUDDY_FREQUENCY_OPTIONS,
+  MENTAL_WELLBEING_CATEGORY_OPTIONS,
 } from "@/lib/constants"
 import { updateProfile } from "@/lib/actions/profile"
 import type { Tables } from "@/types/database"
@@ -64,6 +65,10 @@ export function ProfileForm({
   )
   const [movementEnabled, setMovementEnabled] = useState(profile.movement_enabled)
   const [nutritionEnabled, setNutritionEnabled] = useState(profile.nutrition_enabled)
+  const [mentalWellbeingEnabled, setMentalWellbeingEnabled] = useState(profile.mental_wellbeing_enabled === true)
+  const [mentalWellbeingCategories, setMentalWellbeingCategories] = useState<string[]>(
+    profile.mental_wellbeing_categories ?? [],
+  )
   const [trackFlowIntensity, setTrackFlowIntensity] = useState(profile.track_flow_intensity)
   const [motivation, setMotivation] = useState(profile.motivation ?? "")
   const [personalNote, setPersonalNote] = useState(profile.personal_note ?? "")
@@ -113,6 +118,8 @@ export function ProfileForm({
         nutritionEnabled,
         nutritionStyle,
         nutritionPreferences: nutritionEnabled ? nutritionPreferences : [],
+        mentalWellbeingEnabled,
+        mentalWellbeingCategories: mentalWellbeingEnabled ? mentalWellbeingCategories : [],
         trainingFrequency: movementEnabled ? trainingFrequency : null,
         trackFlowIntensity,
         wellnessPreference: profile.wellness_preference,
@@ -338,6 +345,47 @@ export function ProfileForm({
         ) : (
           <p className="text-xs text-ink-soft mt-2">
             Voeding staat uit — je ziet nergens voedingsadvies. Zet dit weer aan wanneer je wilt.
+          </p>
+        )}
+      </Card>
+
+      <Card id="mentale-rust">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="font-display text-lg text-ink">Mijn mentale rust</h2>
+          <div className="flex gap-1.5">
+            <Chip selected={mentalWellbeingEnabled} onClick={() => setMentalWellbeingEnabled(true)}>
+              Aan
+            </Chip>
+            <Chip selected={!mentalWellbeingEnabled} onClick={() => setMentalWellbeingEnabled(false)}>
+              Uit
+            </Chip>
+          </div>
+        </div>
+        {mentalWellbeingEnabled ? (
+          <>
+            <p className="text-xs text-ink-soft mb-3">
+              Korte meditaties, mindfulness-oefeningen en affirmaties. Kies waar je behoefte aan
+              hebt — je vindt alles terug bij Mijn mentale rust.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {MENTAL_WELLBEING_CATEGORY_OPTIONS.map((opt) => (
+                <Chip
+                  key={opt.value}
+                  selected={mentalWellbeingCategories.includes(opt.value)}
+                  onClick={() => setMentalWellbeingCategories((v) => toggle(v, opt.value))}
+                >
+                  <span className="mr-1" aria-hidden>
+                    {opt.emoji}
+                  </span>
+                  {opt.label}
+                </Chip>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-xs text-ink-soft mt-2">
+            Mentale rust staat uit — je ziet nergens meditaties, mindfulness of affirmaties. Zet
+            dit weer aan wanneer je wilt.
           </p>
         )}
       </Card>

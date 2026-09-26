@@ -9,6 +9,7 @@ export const reminderSchema = z.object({
     "voeding",
     "cyclus",
     "herstel",
+    "mentale_ondersteuning",
     "anders",
   ]),
   label: z.string().max(80).optional(),
