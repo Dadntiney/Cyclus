@@ -1,15 +1,22 @@
 "use client"
 
+import { useRef } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
 import { NAV_ITEMS } from "./nav-items"
 
 export function BottomNav() {
   const pathname = usePathname()
+  const ref = useRef<HTMLElement>(null)
+  useMeasuredHeightVar(ref, "--bottom-nav-h")
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-line safe-bottom safe-x">
+    <nav
+      ref={ref}
+      className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-line safe-bottom safe-x"
+    >
       <ul className="flex items-stretch justify-between px-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`)

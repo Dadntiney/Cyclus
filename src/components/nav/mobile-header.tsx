@@ -1,10 +1,18 @@
+"use client"
+
+import { useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { User } from "lucide-react"
+import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
 
 export function MobileHeader({ avatarUrl }: { avatarUrl: string | null }) {
+  const ref = useRef<HTMLElement>(null)
+  useMeasuredHeightVar(ref, "--mobile-header-h")
+
   return (
     <header
+      ref={ref}
       className="md:hidden sticky top-0 z-20 flex items-center justify-between bg-cream/90 backdrop-blur border-b border-line/60 pb-4"
       style={{
         paddingTop: "max(1rem, env(safe-area-inset-top))",
