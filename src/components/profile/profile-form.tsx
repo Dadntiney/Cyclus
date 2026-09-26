@@ -522,38 +522,32 @@ export function ProfileForm({
           ))}
         </div>
 
-        {((hormonalMedicationStatus && hormonalMedicationStatus !== "nee") ||
-          hasMedications ||
-          showMedicationOnDashboard) && (
-          <>
-            <p className="text-xs text-ink-soft bg-cream-soft rounded-2xl p-3 mb-4">
-              Voer hier alleen het schema in dat je van je arts, apotheker of bijsluiter hebt
-              gekregen. De app geeft geen persoonlijk medisch advies en bepaalt niet welke
-              dosering of behandeling voor jou geschikt is.
-            </p>
-            <Link
-              href="/medicatie"
-              className="inline-block text-sm font-medium text-sage-dark mb-4"
-            >
-              Mijn medicatie beheren →
-            </Link>
-            <div className="flex items-center justify-between">
-              <div className="pr-3">
-                <p className="text-sm font-medium text-ink">Tonen op Vandaag</p>
-                <p className="text-xs text-ink-soft mt-1">
-                  Laat een kort overzicht van je medicatie van vandaag zien op je Vandaag-pagina.
-                </p>
-              </div>
-              <div className="flex gap-1.5 shrink-0">
-                <Chip selected={showMedicationOnDashboard} onClick={() => setShowMedicationOnDashboard(true)}>
-                  Aan
-                </Chip>
-                <Chip selected={!showMedicationOnDashboard} onClick={() => setShowMedicationOnDashboard(false)}>
-                  Uit
-                </Chip>
-              </div>
+        <p className="text-xs text-ink-soft bg-cream-soft rounded-2xl p-3 mb-4">
+          Voer hier alleen het schema in dat je van je arts, apotheker of bijsluiter hebt
+          gekregen. De app geeft geen persoonlijk medisch advies en bepaalt niet welke dosering
+          of behandeling voor jou geschikt is.
+        </p>
+        <Link href="/medicatie" className="inline-block text-sm font-medium text-sage-dark mb-4">
+          {hasMedications ? "Mijn medicatie beheren →" : "Medicatie toevoegen →"}
+        </Link>
+
+        {hasMedications && (
+          <div className="flex items-center justify-between">
+            <div className="pr-3">
+              <p className="text-sm font-medium text-ink">Tonen op Vandaag</p>
+              <p className="text-xs text-ink-soft mt-1">
+                Laat een kort overzicht van je medicatie van vandaag zien op je Vandaag-pagina.
+              </p>
             </div>
-          </>
+            <div className="flex gap-1.5 shrink-0">
+              <Chip selected={showMedicationOnDashboard} onClick={() => setShowMedicationOnDashboard(true)}>
+                Aan
+              </Chip>
+              <Chip selected={!showMedicationOnDashboard} onClick={() => setShowMedicationOnDashboard(false)}>
+                Uit
+              </Chip>
+            </div>
+          </div>
         )}
       </Card>
 

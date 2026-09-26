@@ -151,24 +151,11 @@ export default async function VandaagPage() {
 
         <Link
           href="/deze-week"
-          className={cn(
-            "flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3 touch-manipulation",
-            profile?.mental_wellbeing_enabled === true ? "mb-3" : "mb-6 lg:mb-8",
-          )}
+          className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3 mb-6 lg:mb-8 touch-manipulation"
         >
           <span className="text-base font-medium text-ink">📆 Bekijk je hele week</span>
           <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
         </Link>
-
-        {profile?.mental_wellbeing_enabled === true && (
-          <Link
-            href="/mentale-rust"
-            className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3 mb-6 lg:mb-8 touch-manipulation"
-          >
-            <span className="text-base font-medium text-ink">🧘 Mijn mentale rust</span>
-            <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
-          </Link>
-        )}
 
         <div className="mb-6 lg:mb-8">
           <NeedPicker initialNeed={checkin?.need ?? null} />

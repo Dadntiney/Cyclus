@@ -2,18 +2,16 @@
 
 import { useRef } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { User } from "lucide-react"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
 
-export function MobileHeader({ avatarUrl }: { avatarUrl: string | null }) {
+export function MobileHeader() {
   const ref = useRef<HTMLElement>(null)
   useMeasuredHeightVar(ref, "--mobile-header-h")
 
   return (
     <header
       ref={ref}
-      className="md:hidden sticky top-0 z-20 flex items-center justify-between bg-cream/90 backdrop-blur border-b border-line/60 pb-4"
+      className="md:hidden sticky top-0 z-20 flex items-center bg-cream/90 backdrop-blur border-b border-line/60 pb-4"
       style={{
         paddingTop: "max(1rem, env(safe-area-inset-top))",
         paddingLeft: "max(1.5rem, env(safe-area-inset-left))",
@@ -25,19 +23,6 @@ export function MobileHeader({ avatarUrl }: { avatarUrl: string | null }) {
         className="font-display text-lg text-sage-dark rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
       >
         Cyclus
-      </Link>
-      <Link
-        href="/profiel"
-        className="flex items-center gap-2 rounded-full transition-[transform] duration-150 touch-manipulation motion-safe:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
-      >
-        <span className="text-sm font-medium text-ink-soft">Mijn profiel</span>
-        <span className="shrink-0 h-11 w-11 rounded-full bg-white border border-line overflow-hidden flex items-center justify-center text-ink-soft active:border-sage/50">
-          {avatarUrl ? (
-            <Image src={avatarUrl} alt="" width={44} height={44} className="h-full w-full object-cover" />
-          ) : (
-            <User className="h-[18px] w-[18px]" strokeWidth={1.75} />
-          )}
-        </span>
       </Link>
     </header>
   )

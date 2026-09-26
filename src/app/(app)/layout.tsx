@@ -45,9 +45,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar name={profile.name} avatarUrl={profile.avatar_url} />
+      <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <MobileHeader avatarUrl={profile.avatar_url} />
+        <MobileHeader />
         <main className="flex-1 pb-24 md:pb-10">
           <PageTransition>{children}</PageTransition>
         </main>

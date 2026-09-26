@@ -1,9 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { User, LogOut } from "lucide-react"
+import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { NAV_ITEMS } from "./nav-items"
 import { logout } from "@/lib/actions/auth"
@@ -11,7 +10,7 @@ import { logout } from "@/lib/actions/auth"
 const navLinkFocus =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset"
 
-export function Sidebar({ name, avatarUrl }: { name: string | null; avatarUrl: string | null }) {
+export function Sidebar() {
   const pathname = usePathname()
 
   return (
@@ -50,26 +49,6 @@ export function Sidebar({ name, avatarUrl }: { name: string | null; avatarUrl: s
       </nav>
 
       <div className="border-t border-line pt-4 mt-4 flex flex-col gap-1">
-        <Link
-          href="/profiel"
-          aria-current={pathname === "/profiel" ? "page" : undefined}
-          className={cn(
-            "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-            navLinkFocus,
-            pathname === "/profiel"
-              ? "bg-sage-soft text-sage-dark"
-              : "text-ink-soft hover:bg-cream-soft hover:text-ink",
-          )}
-        >
-          {avatarUrl ? (
-            <span className="h-6 w-6 rounded-full overflow-hidden shrink-0 bg-sage-soft">
-              <Image src={avatarUrl} alt="" width={24} height={24} className="h-full w-full object-cover" />
-            </span>
-          ) : (
-            <User className="h-4.5 w-4.5" strokeWidth={1.75} />
-          )}
-          <span className="truncate">{name ?? "Mijn profiel"}</span>
-        </Link>
         <form action={logout}>
           <button
             type="submit"
