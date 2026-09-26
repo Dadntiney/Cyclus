@@ -263,7 +263,7 @@ export const BUDDY_STYLE_OPTIONS = [
 // select, empty = show a bit of everything. These are feelings and support
 // needs, never diagnoses — see docs/PRODUCT_VISION.md's contentregels.
 export const MENTAL_WELLBEING_CATEGORY_OPTIONS = [
-  { value: "rust", label: "Rust & ontspanning", emoji: "🧘", description: "Voor wanneer je wilt vertragen en tot rust wilt komen." },
+  { value: "rust", label: "Tot rust komen", emoji: "🧘", description: "Voor wanneer je wilt vertragen, overdag of op elk moment." },
   { value: "angst_spanning", label: "Angst & spanning", emoji: "🌬️", description: "Voor momenten waarop je gespannen, angstig of onrustig bent." },
   { value: "overprikkeling", label: "Overprikkeling", emoji: "🌫️", description: "Voor wanneer alles even te veel voelt." },
   { value: "prikkelbaarheid", label: "Prikkelbaarheid", emoji: "⚡", description: "Voor wanneer je sneller geïrriteerd of emotioneel reageert." },
@@ -271,7 +271,7 @@ export const MENTAL_WELLBEING_CATEGORY_OPTIONS = [
   { value: "eenzaamheid", label: "Eenzaamheid", emoji: "💭", description: "Voor wanneer je behoefte hebt aan verbinding of je alleen voelt." },
   { value: "piekeren", label: "Piekeren", emoji: "🌀", description: "Voor wanneer gedachten blijven rondgaan." },
   { value: "zelfvertrouwen", label: "Zelfvertrouwen", emoji: "✨", description: "Voor positieve ondersteuning en een sterker gevoel van eigenwaarde." },
-  { value: "slaap", label: "Slaap & ontspanning", emoji: "🌙", description: "Voor het tot rust komen richting de avond." },
+  { value: "slaap", label: "Avondrust", emoji: "🌙", description: "Voor het tot rust komen richting de avond, vlak voor het slapen." },
   { value: "positiviteit", label: "Positiviteit", emoji: "🌼", description: "Voor een klein positief moment gedurende de dag." },
   { value: "zelfzorg", label: "Zelfzorg", emoji: "❤️", description: "Voor bewust tijd nemen voor jezelf." },
 ] as const
