@@ -1,9 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { createServiceClient } from "@/lib/supabase/service"
 import { sendPushToUser } from "@/lib/push/send"
-import { getDueReminders, type ReminderLike } from "@/lib/client/reminder-scheduler"
-import { getDueMedicationReminders, type MedicationReminderLike } from "@/lib/client/medication-reminder-scheduler"
-import { isScheduleStartDay, isScheduleStopDay, type MedicationSchedule } from "@/lib/medication/schedule"
+import { isReminderDueToday, isoWeekday, type ReminderLike } from "@/lib/client/reminder-scheduler"
+import { isDosingDay, isScheduleStartDay, isScheduleStopDay, type MedicationSchedule } from "@/lib/medication/schedule"
 import { resolveReminderText } from "@/lib/buddy/reminder-labels"
 import { REMINDER_TYPE_OPTIONS } from "@/lib/constants"
 
@@ -11,32 +10,30 @@ export const dynamic = "force-dynamic"
 export const maxDuration = 60
 
 // Cyclus is a Dutch-market app with no per-profile timezone setting yet, so
-// every user's "now" is computed in Europe/Amsterdam (correctly handling
-// CET/CEST) rather than the server's UTC clock. See the deployment report
-// for the known limitation this implies for users outside that timezone.
+// "today" is computed in Europe/Amsterdam (correctly handling CET/CEST)
+// rather than the server's UTC clock.
+//
+// Important, honest limitation: this project is on Vercel's Hobby plan,
+// which only allows a cron job to run once a day (see vercel.json) — not
+// every few minutes. So unlike the in-app toast (getDueReminders, which
+// still matches her exact chosen time while Cyclus is open), this route
+// can't fire "at 20:00" for an evening reminder. Instead it sends once
+// daily, at this cron's fixed time, for whatever is enabled and scheduled
+// for today — a day-level match, not a time-of-day match. Upgrading to
+// Vercel Pro and tightening vercel.json's schedule (e.g. every 15 minutes)
+// is what would be needed for exact per-user times.
 const TIMEZONE = "Europe/Amsterdam"
 
-function nowInTimezone(): { date: Date; hours: number; minutes: number; dateISO: string } {
+function todayInTimezone(): { date: Date; dateISO: string } {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: TIMEZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
   }).formatToParts(new Date())
-
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00"
   const dateISO = `${get("year")}-${get("month")}-${get("day")}`
-  const hours = Number(get("hour"))
-  const minutes = Number(get("minute"))
-  // A Date built from these local wall-clock parts, purely so the existing
-  // getDueReminders/getDueMedicationReminders (which read getHours/getDay
-  // etc.) see the right weekday and hour without needing to be rewritten
-  // for a specific timezone.
-  const date = new Date(`${dateISO}T${get("hour")}:${get("minute")}:00`)
-  return { date, hours, minutes, dateISO }
+  return { date: new Date(`${dateISO}T00:00:00`), dateISO }
 }
 
 const REMINDER_TYPE_URL: Record<string, string> = {
@@ -62,7 +59,8 @@ export async function GET(request: NextRequest) {
   }
 
   const service = createServiceClient()
-  const { date: now, dateISO } = nowInTimezone()
+  const { date: today, dateISO } = todayInTimezone()
+  const weekday = isoWeekday(today)
 
   const { data: subscribedUserRows } = await service.from("push_subscriptions").select("user_id")
   const userIds = [...new Set((subscribedUserRows ?? []).map((r) => r.user_id))]
@@ -91,8 +89,6 @@ export async function GET(request: NextRequest) {
         ])
 
       const alreadySent = new Set((logRows as LogRow[] | null ?? []).map((l) => `${l.source_type}:${l.source_id}`))
-      const wasShown = (id: string) => alreadySent.has(`reminder:${id}`) || alreadySent.has(`medication_daily:${id}`) || alreadySent.has(`medication_start:${id}`) || alreadySent.has(`medication_stop:${id}`)
-
       const buddyStyles = profile?.buddy_styles ?? []
       let userHasSend = false
 
@@ -105,7 +101,9 @@ export async function GET(request: NextRequest) {
         days: r.days,
         time: r.time,
       }))
-      const dueReminders = getDueReminders(reminders, now, wasShown).filter((r) => {
+      const dueReminders = reminders.filter((r) => {
+        if (!isReminderDueToday(r, weekday)) return false
+        if (alreadySent.has(`reminder:${r.id}`)) return false
         if (r.type === "voeding" && profile?.nutrition_enabled === false) return false
         if (r.type === "beweging" && profile?.movement_enabled === false) return false
         return true
@@ -134,23 +132,32 @@ export async function GET(request: NextRequest) {
       }
 
       // ---- Medication reminders (daily / cyclisch start / cyclisch stop) ----
-      const medications: MedicationReminderLike[] = (medicationRows ?? []).map((m) => ({
-        id: m.id,
-        name: m.name,
-        reminderEnabled: m.reminder_enabled,
-        timeOfDay: m.time_of_day,
-        scheduleType: m.schedule_type as MedicationSchedule["scheduleType"],
-        scheduleDays: m.schedule_days,
-        scheduleDaysOn: m.schedule_days_on,
-        scheduleDaysOff: m.schedule_days_off,
-        startDate: m.start_date,
-        endDate: m.end_date,
-      }))
-      const dueMedications = getDueMedicationReminders(medications, now, wasShown)
+      const dueMedications = (medicationRows ?? []).filter((m) => {
+        const schedule: MedicationSchedule = {
+          scheduleType: m.schedule_type as MedicationSchedule["scheduleType"],
+          scheduleDays: m.schedule_days,
+          scheduleDaysOn: m.schedule_days_on,
+          scheduleDaysOff: m.schedule_days_off,
+          startDate: m.start_date,
+          endDate: m.end_date,
+        }
+        // false = a computed "off" day, stay silent. true or null (e.g.
+        // "eigen schema", not automatically trackable) still remind today.
+        if (isDosingDay(schedule, today) === false) return false
+        return !alreadySent.has(`medication_daily:${m.id}`) && !alreadySent.has(`medication_start:${m.id}`) && !alreadySent.has(`medication_stop:${m.id}`)
+      })
 
-      for (const medication of dueMedications) {
-        const isStart = isScheduleStartDay(medication, now)
-        const isStop = !isStart && isScheduleStopDay(medication, now)
+      for (const m of dueMedications) {
+        const schedule: MedicationSchedule = {
+          scheduleType: m.schedule_type as MedicationSchedule["scheduleType"],
+          scheduleDays: m.schedule_days,
+          scheduleDaysOn: m.schedule_days_on,
+          scheduleDaysOff: m.schedule_days_off,
+          startDate: m.start_date,
+          endDate: m.end_date,
+        }
+        const isStart = isScheduleStartDay(schedule, today)
+        const isStop = !isStart && isScheduleStopDay(schedule, today)
         // Deliberately generic on the lock screen — never the medication's
         // name, hormone or dosage in a push preview (see privacy section of
         // the audit brief). The in-app toast may be specific; this may not.
@@ -163,13 +170,13 @@ export async function GET(request: NextRequest) {
         const { sent } = await sendPushToUser(userId, {
           title,
           body,
-          url: `/medicatie/${medication.id}`,
-          tag: `medication-${medication.id}`,
+          url: `/medicatie/${m.id}`,
+          tag: `medication-${m.id}`,
         })
         if (sent > 0) userHasSend = true
         await service
           .from("push_notification_log")
-          .upsert({ user_id: userId, source_type: sourceType, source_id: medication.id, date: dateISO }, { onConflict: "source_type,source_id,date" })
+          .upsert({ user_id: userId, source_type: sourceType, source_id: m.id, date: dateISO }, { onConflict: "source_type,source_id,date" })
         notificationsSent += sent
       }
 
