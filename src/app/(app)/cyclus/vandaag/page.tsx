@@ -4,7 +4,12 @@ import { ChevronLeft } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { estimateCycle } from "@/lib/cycle/estimate"
-import { computeCycleHistory, computeSymptomFrequency, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
+import {
+  computeCycleHistory,
+  computeSymptomFrequency,
+  getEffectiveLastPeriodStart,
+  withActivePeriod,
+} from "@/lib/cycle/history"
 import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { buildCyclusdagView } from "@/lib/cycle/cyclusdag"
 import { Card } from "@/components/ui/card"
@@ -62,8 +67,13 @@ export default async function CyclusdagPage() {
     )
   }
 
+  const today = format(new Date(), "yyyy-MM-dd")
   const cycleHistory = computeCycleHistory(
-    (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+    withActivePeriod(
+      (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+      cycleProfile.active_period_start,
+      today,
+    ),
   )
   const cycleEstimate = estimateCycle(
     getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory),
@@ -86,7 +96,6 @@ export default async function CyclusdagPage() {
     )
   }
 
-  const today = format(new Date(), "yyyy-MM-dd")
   const showMedication = Boolean(profile?.show_medication_on_dashboard)
   const medicationItems = showMedication ? await getMedicationDashboardItems(user.id, today) : []
   const patterns = computeSymptomFrequency(checkins ?? [])

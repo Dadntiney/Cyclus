@@ -1,34 +1,49 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { addDays, eachDayOfInterval, format, parseISO, subDays } from "date-fns"
+import { eachDayOfInterval, format, parseISO } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
-import { MENSTRUATION_OPEN_GAP_DAYS } from "@/lib/cycle/history"
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10)
 }
 
 /**
- * Quick "menstruatie gestart 🩸" action on Vandaag — marks just today.
- * Uses an upsert (rather than a select-then-insert/update) so a double tap
- * or a retry after a network hiccup can never race into a duplicate-key
- * error: Postgres resolves the conflict atomically, and since `symptoms`/
- * `flow` aren't part of the payload, an existing day's values are left
- * untouched on conflict.
+ * "Menstruatie starten" on Vandaag - sets cycle_profiles.active_period_start
+ * to today (the single, explicit source of truth for "is a period active,
+ * and since when") and marks today in cycle_logs so the calendar has a real
+ * row for day 1 immediately. Refuses if a period is already active: only
+ * one active period can ever exist per user (the column holds one value),
+ * so this structurally rules out double/conflicting registrations rather
+ * than just discouraging them in the UI.
  */
-export async function startMenstruationToday() {
+export async function startMenstruationPeriod() {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return { error: "Je bent niet ingelogd." }
 
+  const { data: cycleProfile } = await supabase
+    .from("cycle_profiles")
+    .select("active_period_start")
+    .eq("user_id", user.id)
+    .maybeSingle()
+  if (cycleProfile?.active_period_start) {
+    return { error: "Er loopt al een menstruatie." }
+  }
+
   const today = todayISO()
-  const { error } = await supabase
+  const { error: profileError } = await supabase
+    .from("cycle_profiles")
+    .update({ active_period_start: today })
+    .eq("user_id", user.id)
+  if (profileError) return { error: "Opslaan is niet gelukt." }
+
+  const { error: logError } = await supabase
     .from("cycle_logs")
     .upsert({ user_id: user.id, date: today, menstruation: true }, { onConflict: "user_id,date" })
-  if (error) return { error: "Opslaan is niet gelukt." }
+  if (logError) return { error: "Opslaan is niet gelukt." }
 
   revalidatePath("/cyclus")
   revalidatePath("/cyclus/vandaag")
@@ -37,46 +52,64 @@ export async function startMenstruationToday() {
 }
 
 /**
- * Quick "menstruatie gestopt" action on Vandaag — closes out the current
- * period through today. Fills any days she didn't open the app for since
- * her last logged day (capped at MENSTRUATION_OPEN_GAP_DAYS, so this never
- * reaches back into an unrelated, much older period) via a single batched
- * upsert, so it can't race into a duplicate-key error and never touches
- * symptoms/flow already logged on any of those days.
+ * "Menstruatie stoppen" on Vandaag - finalizes the active period through
+ * today and clears active_period_start (so it stops reading as active
+ * everywhere, immediately). Fills every day from active_period_start
+ * through today that has NO cycle_logs row yet, so the calendar shows one
+ * continuous period even if she never opened the app in between - but
+ * never overrides a day she explicitly unmarked via the calendar mid-period
+ * (respects that as a deliberate correction, at the cost of a documented
+ * edge case: computeCycleHistory then sees two shorter periods instead of
+ * one, which only affects retrospective pattern insights, not the day
+ * count or calendar dots for the range actually covered).
  */
-export async function stopMenstruationToday() {
+export async function stopMenstruationPeriod() {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return { error: "Je bent niet ingelogd." }
 
-  const today = todayISO()
-  const windowStart = format(subDays(parseISO(today), MENSTRUATION_OPEN_GAP_DAYS), "yyyy-MM-dd")
-
-  const { data: recentLogs } = await supabase
-    .from("cycle_logs")
-    .select("date, menstruation")
+  const { data: cycleProfile } = await supabase
+    .from("cycle_profiles")
+    .select("active_period_start")
     .eq("user_id", user.id)
-    .gte("date", windowStart)
-    .lte("date", today)
+    .maybeSingle()
+  const start = cycleProfile?.active_period_start
+  if (!start) return { error: "Er loopt geen menstruatie om te stoppen." }
 
-  const lastTrueDate = (recentLogs ?? [])
-    .filter((l) => l.menstruation)
-    .map((l) => l.date)
-    .sort()
-    .at(-1)
+  const today = todayISO()
+  const dayDates =
+    start <= today
+      ? eachDayOfInterval({ start: parseISO(start), end: parseISO(today) }).map((d) => format(d, "yyyy-MM-dd"))
+      : []
 
-  const fillFrom = lastTrueDate ? addDays(parseISO(lastTrueDate), 1) : parseISO(today)
-  const daysToFill = eachDayOfInterval({ start: fillFrom, end: parseISO(today) }).map((d) => format(d, "yyyy-MM-dd"))
+  if (dayDates.length) {
+    const { data: existingLogs } = await supabase
+      .from("cycle_logs")
+      .select("date")
+      .eq("user_id", user.id)
+      .gte("date", start)
+      .lte("date", today)
+    const existingDates = new Set((existingLogs ?? []).map((l) => l.date))
+    const missing = dayDates.filter((d) => !existingDates.has(d))
 
-  const { error } = await supabase
-    .from("cycle_logs")
-    .upsert(
-      daysToFill.map((date) => ({ user_id: user.id, date, menstruation: true })),
-      { onConflict: "user_id,date" },
-    )
-  if (error) return { error: "Opslaan is niet gelukt." }
+    if (missing.length) {
+      const { error: logError } = await supabase
+        .from("cycle_logs")
+        .upsert(
+          missing.map((date) => ({ user_id: user.id, date, menstruation: true })),
+          { onConflict: "user_id,date" },
+        )
+      if (logError) return { error: "Opslaan is niet gelukt." }
+    }
+  }
+
+  const { error: profileError } = await supabase
+    .from("cycle_profiles")
+    .update({ active_period_start: null })
+    .eq("user_id", user.id)
+  if (profileError) return { error: "Opslaan is niet gelukt." }
 
   revalidatePath("/cyclus")
   revalidatePath("/cyclus/vandaag")
@@ -98,17 +131,36 @@ export async function toggleMenstruationDay(date: string) {
     .eq("date", date)
     .maybeSingle()
 
+  let unmarked = false
   if (existing) {
-    const { error } = await supabase
-      .from("cycle_logs")
-      .update({ menstruation: !existing.menstruation })
-      .eq("id", existing.id)
+    const nextValue = !existing.menstruation
+    const { error } = await supabase.from("cycle_logs").update({ menstruation: nextValue }).eq("id", existing.id)
     if (error) return { error: "Bijwerken is niet gelukt." }
+    unmarked = !nextValue
   } else {
     const { error } = await supabase
       .from("cycle_logs")
       .insert({ user_id: user.id, date, menstruation: true, symptoms: [] })
     if (error) return { error: "Opslaan is niet gelukt." }
+  }
+
+  // Unmarking the very first day of an active period via the kalender is
+  // her way of undoing an accidental "Menstruatie starten" tap — clear the
+  // active status too, rather than leaving Vandaag stuck showing "Dag N"
+  // for a period whose start day no longer exists.
+  if (unmarked) {
+    const { data: cycleProfile } = await supabase
+      .from("cycle_profiles")
+      .select("active_period_start")
+      .eq("user_id", user.id)
+      .maybeSingle()
+    if (cycleProfile?.active_period_start === date) {
+      const { error } = await supabase
+        .from("cycle_profiles")
+        .update({ active_period_start: null })
+        .eq("user_id", user.id)
+      if (error) return { error: "Bijwerken is niet gelukt." }
+    }
   }
 
   revalidatePath("/cyclus")
@@ -122,7 +174,7 @@ const FLOW_VALUES = ["geen", "licht", "gemiddeld", "hevig"] as const
 /**
  * Sets (or clears) the flow intensity for a menstruation day. Marks the day
  * as menstruation if it wasn't already (so choosing a flow also counts as
- * logging the period day) — passing `null` just clears the flow value
+ * logging the period day) - passing `null` just clears the flow value
  * without unmarking the day; unmarking itself is still `toggleMenstruationDay`.
  */
 export async function setCycleLogFlow(date: string, flow: (typeof FLOW_VALUES)[number] | null) {

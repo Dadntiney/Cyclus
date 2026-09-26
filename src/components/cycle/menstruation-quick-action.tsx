@@ -5,10 +5,16 @@ import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { startMenstruationToday, stopMenstruationToday } from "@/lib/actions/cycle"
+import { startMenstruationPeriod, stopMenstruationPeriod } from "@/lib/actions/cycle"
 
-/** Compact "menstruatie gestart/gestopt" shortcut for the Vandaag-pagina — see getOpenPeriod for the "open" logic. */
-export function MenstruationQuickAction({ isOpen, day }: { isOpen: boolean; day: number | null }) {
+/**
+ * Compact "menstruatie starten/stoppen" shortcut for the Vandaag-pagina.
+ * `isActive`/`day` come straight from cycle_profiles.active_period_start —
+ * the same explicit source of truth the Cyclus-kalender and Cyclusdag
+ * estimate read (see withActivePeriod in lib/cycle/history.ts), so this
+ * card and the calendar can never silently disagree with each other.
+ */
+export function MenstruationQuickAction({ isActive, day }: { isActive: boolean; day: number | null }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -16,7 +22,7 @@ export function MenstruationQuickAction({ isOpen, day }: { isOpen: boolean; day:
   function handleClick() {
     setError(null)
     startTransition(async () => {
-      const result = isOpen ? await stopMenstruationToday() : await startMenstruationToday()
+      const result = isActive ? await stopMenstruationPeriod() : await startMenstruationPeriod()
       if (result.error) {
         setError(result.error)
         return
@@ -28,22 +34,21 @@ export function MenstruationQuickAction({ isOpen, day }: { isOpen: boolean; day:
   return (
     <Card
       className={cn(
-        "p-3.5 flex items-center justify-between gap-3 mb-6 lg:mb-8",
-        isOpen && "bg-peach-soft border-transparent",
+        "p-4 flex items-center justify-between gap-3 mb-6 lg:mb-8 transition-colors",
+        isActive && "bg-peach-soft border-transparent",
       )}
     >
-      <div className="min-w-0">
-        {isOpen ? (
-          <p className="text-sm font-semibold text-ink">
-            🩸 {day === 1 ? "Dag 1 van je menstruatie" : `Dag ${day} van je menstruatie`}
-          </p>
-        ) : (
-          <p className="text-sm text-ink-soft">Ben je vandaag ongesteld geworden?</p>
+      <div className="min-w-0 flex items-center gap-2.5">
+        {isActive && (
+          <span className="shrink-0 h-2 w-2 rounded-full bg-danger motion-safe:animate-pulse" aria-hidden />
         )}
+        <p className={cn("text-base font-semibold", isActive ? "text-ink" : "text-ink-soft font-medium")}>
+          {isActive ? `Menstruatie – dag ${day} 🩸` : "Geen actieve menstruatie"}
+        </p>
       </div>
       <div className="shrink-0 flex flex-col items-end gap-1">
-        <Button size="sm" variant={isOpen ? "secondary" : "primary"} onClick={handleClick} disabled={isPending}>
-          {isPending ? "Bezig..." : isOpen ? "Menstruatie gestopt" : "Menstruatie gestart 🩸"}
+        <Button size="sm" variant={isActive ? "secondary" : "primary"} onClick={handleClick} disabled={isPending}>
+          {isPending ? "Bezig..." : isActive ? "Menstruatie stoppen" : "Menstruatie starten 🩸"}
         </Button>
         {error && <p className="text-xs text-danger">{error}</p>}
       </div>

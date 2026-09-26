@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, parseISO } from "date-fns"
+import { differenceInCalendarDays, eachDayOfInterval, format, parseISO } from "date-fns"
 
 export interface CycleLogEntry {
   date: string
@@ -117,25 +117,36 @@ export function getEffectiveLastPeriodStart(
   return latestLoggedStart > storedStart ? latestLoggedStart : storedStart
 }
 
-export const MENSTRUATION_OPEN_GAP_DAYS = 10
-
 /**
- * Whether her most recently logged period is still "open" — recent enough
- * that a quick "menstruatie gestopt" action on Vandaag should finish it by
- * filling any gap through today, rather than treating it as unrelated old
- * history. A generous cap (real periods rarely exceed ~10 days) keeps this
- * from ever reaching back into a clearly separate, much older cycle.
+ * Merges the currently in-progress period (see cycle_profiles.
+ * active_period_start) into a logs list BEFORE computing history, so every
+ * consumer — Vandaag's quick-action, the Cyclus-kalender, the Cyclusdag
+ * phase estimate, and pattern insights — sees the exact same "she's on day
+ * N of an active period" picture, without needing a real cycle_logs row
+ * for every day in between. This replaces an earlier heuristic that
+ * guessed whether a period was "still open" from a gap in logged days;
+ * "active" is now an explicit, unambiguous flag instead of a guess.
  *
- * @param cycleHistory Completed + current period history, oldest first (see computeCycleHistory).
+ * Days that already have a real cycle_logs row (true OR false) keep that
+ * row as-is — a day she explicitly unmarked via the calendar during an
+ * active period stays unmarked, rather than being silently overridden.
+ * Only days with NO row at all get a synthetic "menstruation: true" entry.
  */
-export function getOpenPeriod(
-  cycleHistory: Pick<CycleHistoryEntry, "start" | "end">[],
+export function withActivePeriod(
+  logs: CycleLogEntry[],
+  activePeriodStart: string | null,
   today: string,
-): { start: string; end: string } | null {
-  const latest = cycleHistory[cycleHistory.length - 1]
-  if (!latest) return null
-  if (differenceInCalendarDays(parseISO(today), parseISO(latest.end)) > MENSTRUATION_OPEN_GAP_DAYS) return null
-  return latest
+): CycleLogEntry[] {
+  if (!activePeriodStart || activePeriodStart > today) return logs
+
+  const knownDates = new Set(logs.map((l) => l.date))
+  const activeDays = eachDayOfInterval({ start: parseISO(activePeriodStart), end: parseISO(today) })
+  const synthesized: CycleLogEntry[] = activeDays
+    .map((d) => format(d, "yyyy-MM-dd"))
+    .filter((date) => !knownDates.has(date))
+    .map((date) => ({ date, menstruation: true, symptoms: [], flow: null }))
+
+  return [...logs, ...synthesized]
 }
 
 export function computeSymptomFrequency(

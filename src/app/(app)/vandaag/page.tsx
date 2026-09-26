@@ -67,7 +67,7 @@ export default async function VandaagPage() {
     profile,
     cycleProfile,
     cycleEstimate,
-    openPeriod,
+    isMenstruationActive,
     menstruationDay,
     recommendation,
     checkin,
@@ -134,7 +134,7 @@ export default async function VandaagPage() {
         )}
 
         {showMenstruationQuickAction && (
-          <MenstruationQuickAction isOpen={openPeriod !== null} day={menstruationDay} />
+          <MenstruationQuickAction isActive={isMenstruationActive} day={menstruationDay} />
         )}
 
         {showBuddyQuote && (

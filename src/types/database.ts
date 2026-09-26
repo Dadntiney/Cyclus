@@ -102,6 +102,7 @@ export type Database = {
       }
       cycle_profiles: {
         Row: {
+          active_period_start: string | null
           average_cycle_length: number | null
           created_at: string
           has_cycle: boolean
@@ -113,6 +114,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          active_period_start?: string | null
           average_cycle_length?: number | null
           created_at?: string
           has_cycle?: boolean
@@ -124,6 +126,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          active_period_start?: string | null
           average_cycle_length?: number | null
           created_at?: string
           has_cycle?: boolean

@@ -2,7 +2,12 @@ import Link from "next/link"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { estimateCycle } from "@/lib/cycle/estimate"
-import { computeCycleHistory, computeSymptomFrequency, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
+import {
+  computeCycleHistory,
+  computeSymptomFrequency,
+  getEffectiveLastPeriodStart,
+  withActivePeriod,
+} from "@/lib/cycle/history"
 import {
   computePhaseSymptomInsights,
   formatPhaseSymptomInsight,
@@ -44,20 +49,27 @@ export default async function CyclusPage() {
   ])
 
   const trackFlowEnabled = profile?.track_flow_intensity ?? false
+  const today = format(new Date(), "yyyy-MM-dd")
 
-  const menstruationDates = new Set(
-    (logs ?? []).filter((l) => l.menstruation).map((l) => l.date),
-  )
-  const flowByDate = new Map((logs ?? []).filter((l) => l.menstruation).map((l) => [l.date, l.flow]))
-
-  const history = computeCycleHistory(
+  // Same explicit source of truth (cycle_profiles.active_period_start) and
+  // merge helper the Vandaag quick-action uses — the calendar shows dots
+  // for the active range automatically, without needing a real cycle_logs
+  // row for every day, so it can never silently disagree with Vandaag.
+  const effectiveLogs = withActivePeriod(
     (logs ?? []).map((l) => ({
       date: l.date,
       menstruation: l.menstruation,
       symptoms: l.symptoms,
       flow: l.flow,
     })),
+    cycleProfile?.active_period_start ?? null,
+    today,
   )
+
+  const menstruationDates = new Set(effectiveLogs.filter((l) => l.menstruation).map((l) => l.date))
+  const flowByDate = new Map(effectiveLogs.filter((l) => l.menstruation).map((l) => [l.date, l.flow ?? null]))
+
+  const history = computeCycleHistory(effectiveLogs)
   const recentHistory = [...history].reverse().slice(0, 6)
 
   const cycleEstimate = cycleProfile

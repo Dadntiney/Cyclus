@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
-import { computeCycleHistory, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
+import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
 import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { symptomLabel } from "@/lib/constants"
 import { startOfWeek, subDays } from "date-fns"
@@ -56,7 +56,11 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
   if (profile?.buddy_styles?.length) lines.push(`Buddy-stijl (toon-voorkeur): ${profile.buddy_styles.join(", ")}`)
 
   const cycleHistory = computeCycleHistory(
-    (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+    withActivePeriod(
+      (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+      cycleProfile?.active_period_start ?? null,
+      today,
+    ),
   )
   const cycleEstimate = cycleProfile
     ? estimateCycle(

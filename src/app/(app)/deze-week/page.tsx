@@ -3,7 +3,7 @@ import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { buildWeekPlan, type WeekPlanRecipe, type MealSlot } from "@/lib/recommendations/week-plan"
 import { buildGroceryList } from "@/lib/nutrition/grocery-list"
-import { computeCycleHistory, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
+import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
 import { WeekView } from "@/components/week/week-view"
 
 const RECIPE_COLUMNS = "id, title, category, preparation_time, ingredients, nutrition_information"
@@ -33,8 +33,13 @@ export default async function DezeWeekPage() {
 
   if (!profile) return null
 
+  const today = new Date().toISOString().slice(0, 10)
   const cycleHistory = computeCycleHistory(
-    (cycleLogs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+    withActivePeriod(
+      (cycleLogs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
+      cycleProfile?.active_period_start ?? null,
+      today,
+    ),
   )
   const effectiveCycleProfile = cycleProfile
     ? { ...cycleProfile, last_period_start: getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory) }
