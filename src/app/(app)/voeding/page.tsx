@@ -72,7 +72,7 @@ export default async function VoedingPage() {
         <Card className="bg-sage-soft border-transparent">
           <p className="text-sm font-medium text-sage-dark mb-1">Voor jou vandaag</p>
           <p className="font-display text-xl text-ink">{todaysPick.recipe.title}</p>
-          <p className="text-sm text-ink-soft mt-2">{todaysPick.reason}</p>
+          <p className="text-base text-ink-soft mt-2">{todaysPick.reason}</p>
           <Link href={`/voeding/${todaysPick.recipe.id}`} className={cn(buttonVariants(), "mt-3")}>
             Bekijk recept
           </Link>
