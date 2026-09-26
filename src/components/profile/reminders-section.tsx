@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Bell, Plus, Trash2, X } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
+import { Switch } from "@/components/ui/switch"
 import { Input, Label, FieldError } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -182,14 +183,12 @@ export function RemindersSection({
                       {formatTime(reminder.time)} · {daysLabel(reminder.days)}
                     </p>
                   </button>
-                  <Chip
-                    selected={reminder.enabled}
-                    onClick={() => handleToggle(reminder)}
+                  <Switch
+                    checked={reminder.enabled}
+                    onChange={() => handleToggle(reminder)}
                     disabled={isPending}
-                    className="shrink-0 min-h-9 px-3 py-1.5 text-xs"
-                  >
-                    {reminder.enabled ? "Aan" : "Uit"}
-                  </Chip>
+                    aria-label={reminder.enabled ? "Herinnering uitzetten" : "Herinnering aanzetten"}
+                  />
                   <button
                     type="button"
                     onClick={() => setConfirmDeleteId(reminder.id)}

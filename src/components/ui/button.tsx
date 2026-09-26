@@ -19,7 +19,10 @@ const variantClasses: Record<Variant, string> = {
 
 const sizeClasses: Record<Size, string> = {
   sm: "text-sm px-3.5 py-2.5 rounded-xl min-h-11",
-  md: "text-[15px] px-5 py-3 rounded-2xl min-h-11",
+  // 16px (not 15px): the size iOS treats as "real" body text and the
+  // threshold that keeps Safari from auto-zooming on focus — this is the
+  // default every primary CTA in the app uses unless it opts into sm/lg.
+  md: "text-base px-5 py-3 rounded-2xl min-h-11",
   lg: "text-base px-6 py-3.5 rounded-2xl min-h-12",
 }
 

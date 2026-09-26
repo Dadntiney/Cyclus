@@ -38,6 +38,11 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: "#faf6f0",
+  // Resizes the visual viewport when the on-screen keyboard opens instead
+  // of the keyboard simply overlaying fixed-position content (the bottom
+  // nav, a sheet's footer) — the browsers that support this (Chrome/
+  // Android; Safari is catching up) stop inputs disappearing behind it.
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
