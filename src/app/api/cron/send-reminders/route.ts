@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
           service
             .from("medications")
             .select(
-              "id, name, reminder_enabled, time_of_day, schedule_type, schedule_days, schedule_days_on, schedule_days_off, start_date, end_date",
+              "id, name, reminder_enabled, time_of_day, schedule_type, schedule_days, schedule_days_on, schedule_days_off, start_date, end_date, remind_on_start, remind_daily, remind_on_stop",
             )
             .eq("user_id", userId)
             .eq("reminder_enabled", true),
@@ -167,6 +167,14 @@ export async function GET(request: NextRequest) {
         }
         const isStart = isScheduleStartDay(schedule, today)
         const isStop = !isStart && isScheduleStopDay(schedule, today)
+
+        // Independently toggleable per "cyclisch" event type (see the
+        // medicatie-instellingen) — skip sending (and logging) entirely
+        // when she turned off this specific moment.
+        if (isStart && !m.remind_on_start) continue
+        if (isStop && !m.remind_on_stop) continue
+        if (!isStart && !isStop && !m.remind_daily) continue
+
         // Deliberately generic on the lock screen — never the medication's
         // name, hormone or dosage in a push preview (see privacy section of
         // the audit brief). The in-app toast may be specific; this may not.

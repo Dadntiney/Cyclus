@@ -19,6 +19,9 @@ function toRow(data: MedicationInput) {
     end_date: data.endDate || null,
     time_of_day: data.timeOfDay || null,
     reminder_enabled: data.reminderEnabled,
+    remind_on_start: data.remindOnStart,
+    remind_daily: data.remindDaily,
+    remind_on_stop: data.remindOnStop,
     notes: data.notes?.trim() || null,
   }
 }

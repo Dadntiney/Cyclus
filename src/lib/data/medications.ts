@@ -17,7 +17,7 @@ export async function getMedicationReminderSources(userId: string) {
   const { data } = await supabase
     .from("medications")
     .select(
-      "id, name, reminder_enabled, time_of_day, schedule_type, schedule_days, schedule_days_on, schedule_days_off, start_date, end_date",
+      "id, name, reminder_enabled, time_of_day, schedule_type, schedule_days, schedule_days_on, schedule_days_off, start_date, end_date, remind_on_start, remind_daily, remind_on_stop",
     )
     .eq("user_id", userId)
     .eq("reminder_enabled", true)

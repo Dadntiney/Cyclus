@@ -442,6 +442,9 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          remind_daily: boolean
+          remind_on_start: boolean
+          remind_on_stop: boolean
           reminder_enabled: boolean
           schedule_days: number[] | null
           schedule_days_off: number | null
@@ -462,6 +465,9 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          remind_daily?: boolean
+          remind_on_start?: boolean
+          remind_on_stop?: boolean
           reminder_enabled?: boolean
           schedule_days?: number[] | null
           schedule_days_off?: number | null
@@ -482,6 +488,9 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          remind_daily?: boolean
+          remind_on_start?: boolean
+          remind_on_stop?: boolean
           reminder_enabled?: boolean
           schedule_days?: number[] | null
           schedule_days_off?: number | null

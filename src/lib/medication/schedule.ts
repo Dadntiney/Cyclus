@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, parseISO } from "date-fns"
+import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns"
 
 /**
  * Pure schedule math for medications — entirely derived from what the user
@@ -91,6 +91,59 @@ export function isScheduleStopDay(schedule: MedicationSchedule, date: Date): boo
   const cycleLength = schedule.scheduleDaysOn + schedule.scheduleDaysOff
   if (cycleLength <= 0) return false
   return daysSince % cycleLength === schedule.scheduleDaysOn - 1
+}
+
+export interface CyclicalPhaseInfo {
+  phase: "wel" | "niet"
+  /** Inclusive, ISO "yyyy-MM-dd". */
+  phaseStartDate: string
+  /** Inclusive, ISO "yyyy-MM-dd" — the last day of the current phase. */
+  phaseEndDate: string
+  nextPhase: "wel" | "niet"
+  nextPhaseStartDate: string
+}
+
+/**
+ * Where she is right now in a doorlopende "cyclisch" schema — the current
+ * phase's own start/end date and the next phase's start date — so this can
+ * be shown plainly in the medication settings ("huidige fase: 2 weken wel,
+ * tot 14 juni · volgende fase: 2 weken niet, vanaf 15 juni") rather than
+ * leaving the recurrence implicit. Purely derived from scheduleDaysOn/
+ * scheduleDaysOff/startDate, same inputs as isDosingDay — nothing new to
+ * keep in sync, and it recurs forever via the same modulo arithmetic.
+ */
+export function getCyclicalPhaseInfo(schedule: MedicationSchedule, date: Date): CyclicalPhaseInfo | null {
+  if (schedule.scheduleType !== "cyclisch") return null
+  if (!schedule.startDate || !schedule.scheduleDaysOn || schedule.scheduleDaysOff === null) return null
+  const daysSince = differenceInCalendarDays(date, parseISO(schedule.startDate))
+  if (daysSince < 0) return null
+  const cycleLength = schedule.scheduleDaysOn + schedule.scheduleDaysOff
+  if (cycleLength <= 0) return null
+
+  const cycleIndex = Math.floor(daysSince / cycleLength)
+  const dayInCycle = daysSince - cycleIndex * cycleLength
+  const cycleStart = addDays(parseISO(schedule.startDate), cycleIndex * cycleLength)
+  const isWel = dayInCycle < schedule.scheduleDaysOn
+  const hasOffPhase = schedule.scheduleDaysOff > 0
+
+  const iso = (d: Date) => format(d, "yyyy-MM-dd")
+
+  if (isWel) {
+    return {
+      phase: "wel",
+      phaseStartDate: iso(cycleStart),
+      phaseEndDate: iso(addDays(cycleStart, schedule.scheduleDaysOn - 1)),
+      nextPhase: hasOffPhase ? "niet" : "wel",
+      nextPhaseStartDate: iso(addDays(cycleStart, schedule.scheduleDaysOn)),
+    }
+  }
+  return {
+    phase: "niet",
+    phaseStartDate: iso(addDays(cycleStart, schedule.scheduleDaysOn)),
+    phaseEndDate: iso(addDays(cycleStart, cycleLength - 1)),
+    nextPhase: "wel",
+    nextPhaseStartDate: iso(addDays(cycleStart, cycleLength)),
+  }
 }
 
 const WEEKDAY_LABELS = ["ma", "di", "wo", "do", "vr", "za", "zo"]

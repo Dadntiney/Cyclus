@@ -18,6 +18,12 @@ export const medicationSchema = z
       .regex(/^\d{2}:\d{2}$/)
       .optional(),
     reminderEnabled: z.boolean(),
+    // Only meaningful for "cyclisch" schedules — independently toggleable
+    // start/daily/stop notifications. Default true reproduces the existing
+    // single reminder_enabled behavior (all three fire together).
+    remindOnStart: z.boolean().default(true),
+    remindDaily: z.boolean().default(true),
+    remindOnStop: z.boolean().default(true),
     notes: z.string().max(500).optional(),
   })
   .superRefine((data, ctx) => {

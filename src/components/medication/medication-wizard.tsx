@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
+import { Switch } from "@/components/ui/switch"
 import { SegmentedControl } from "@/components/ui/segmented-control"
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input"
 import {
@@ -37,6 +38,9 @@ interface WizardData {
   endDate: string
   timeOfDay: string
   reminderEnabled: boolean
+  remindOnStart: boolean
+  remindDaily: boolean
+  remindOnStop: boolean
   notes: string
 }
 
@@ -56,6 +60,9 @@ function emptyData(initialCategory: Category | null): WizardData {
     endDate: "",
     timeOfDay: "",
     reminderEnabled: false,
+    remindOnStart: true,
+    remindDaily: true,
+    remindOnStop: true,
     notes: "",
   }
 }
@@ -160,6 +167,9 @@ export function MedicationWizard({
       endDate: data.endDate || undefined,
       timeOfDay: data.timeOfDay || undefined,
       reminderEnabled: data.reminderEnabled,
+      remindOnStart: data.remindOnStart,
+      remindDaily: data.remindDaily,
+      remindOnStop: data.remindOnStop,
       notes: data.notes.trim() || undefined,
     }
   }
@@ -535,13 +545,54 @@ function ReminderStep({
             className="max-w-[160px]"
           />
           {data.scheduleType === "cyclisch" && (
-            <p className="text-sm text-ink-soft bg-cream-soft rounded-2xl p-3 mt-4 leading-relaxed">
-              Omdat dit een wel/niet-schema is, krijg je hier automatisch nog twee extra
-              momenten bij, zonder dat je dat apart hoeft in te stellen: een melding op de
-              eerste dag dat je weer moet beginnen (&ldquo;je schema start weer&rdquo;), en een
-              melding op de laatste dag vóór je pauze begint (&ldquo;je schema eindigt
-              vandaag&rdquo;).
-            </p>
+            <div className="mt-4 rounded-2xl border border-line p-4">
+              <p className="text-sm text-ink-soft leading-relaxed mb-4">
+                Omdat dit een wel/niet-schema is, herhaalt dit zich vanzelf:
+                elke keer opnieuw start, gaat door, en stopt weer — zonder dat je dit ooit
+                opnieuw hoeft in te stellen. Je kunt hieronder apart aan- of uitzetten welke
+                momenten je wilt ontvangen.
+              </p>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-ink">Startmelding</p>
+                    <p className="text-xs text-ink-soft mt-0.5">Op de eerste dag dat je schema weer begint.</p>
+                  </div>
+                  <Switch
+                    checked={data.remindOnStart}
+                    onChange={(remindOnStart) => setData((d) => ({ ...d, remindOnStart }))}
+                    aria-label="Startmelding aan- of uitzetten"
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-ink">Dagelijkse herinnering</p>
+                    <p className="text-xs text-ink-soft mt-0.5">Alleen tijdens de periode dat je het gebruikt.</p>
+                  </div>
+                  <Switch
+                    checked={data.remindDaily}
+                    onChange={(remindDaily) => setData((d) => ({ ...d, remindDaily }))}
+                    aria-label="Dagelijkse herinnering aan- of uitzetten"
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-ink">Stopmelding</p>
+                    <p className="text-xs text-ink-soft mt-0.5">Op de laatste dag vóór je pauze begint.</p>
+                  </div>
+                  <Switch
+                    checked={data.remindOnStop}
+                    onChange={(remindOnStop) => setData((d) => ({ ...d, remindOnStop }))}
+                    aria-label="Stopmelding aan- of uitzetten"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-ink-soft leading-relaxed mt-4 pt-4 border-t border-line">
+                Cyclus volgt uitsluitend het schema dat jij zelf hebt ingesteld. De app bepaalt
+                niet wanneer je moet starten of stoppen, en geeft geen persoonlijk medisch
+                advies.
+              </p>
+            </div>
           )}
         </div>
       )}
@@ -585,6 +636,17 @@ function ReviewStep({ data }: { data: WizardData }) {
         <p className="text-sm text-ink-soft">
           {data.reminderEnabled ? `Herinnering om ${data.timeOfDay}` : "Geen herinnering"}
         </p>
+        {data.reminderEnabled && data.scheduleType === "cyclisch" && (
+          <p className="text-sm text-ink-soft">
+            {[
+              data.remindOnStart && "startmelding",
+              data.remindDaily && "dagelijkse herinnering",
+              data.remindOnStop && "stopmelding",
+            ]
+              .filter(Boolean)
+              .join(", ") || "geen van de drie momenten aan"}
+          </p>
+        )}
         {data.notes && <p className="text-sm text-ink-soft whitespace-pre-wrap">{data.notes}</p>}
       </div>
     </div>

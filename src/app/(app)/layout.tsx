@@ -38,6 +38,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     scheduleDaysOff: m.schedule_days_off,
     startDate: m.start_date,
     endDate: m.end_date,
+    remindOnStart: m.remind_on_start,
+    remindDaily: m.remind_daily,
+    remindOnStop: m.remind_on_stop,
   }))
 
   return (
