@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Sparkles } from "lucide-react"
+import { Sparkles, PlayCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ExerciseFavoriteButton } from "@/components/training/exercise-favorite-button"
+import { ExerciseDemo } from "@/components/training/exercise-demo"
 import { completeWorkoutSession, fetchAlternativeExercise } from "@/lib/actions/training"
 import type { Tables } from "@/types/database"
 
@@ -35,6 +36,19 @@ export function WorkoutSession({
   const [finished, setFinished] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [isSwapping, setIsSwapping] = useState(false)
+  const [expandedDemoIds, setExpandedDemoIds] = useState<Set<string>>(new Set())
+
+  function toggleDemo(exerciseId: string) {
+    setExpandedDemoIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(exerciseId)) {
+        next.delete(exerciseId)
+      } else {
+        next.add(exerciseId)
+      }
+      return next
+    })
+  }
 
   const current = exercises[index]
 
@@ -86,22 +100,47 @@ export function WorkoutSession({
           <Card>
             <p className="text-sm font-medium text-ink mb-3">Wat ga je doen?</p>
             <ul className="flex flex-col gap-3">
-              {exercises.map((ex, i) => (
-                <li key={ex.id} className="flex items-start gap-3">
-                  <span className="mt-0.5 h-5 w-5 rounded-full bg-sage-soft text-sage-dark text-[11px] font-semibold flex items-center justify-center shrink-0">
-                    {i + 1}
-                  </span>
-                  <div>
-                    <p className="text-sm font-medium text-ink">{ex.name}</p>
-                    <p className="text-xs text-ink-soft">
-                      {ex.muscle_group ? `${ex.muscle_group} · ` : ""}
-                      {ex.sets ? `${ex.sets} sets` : ""}
-                      {ex.sets && ex.reps ? " · " : ""}
-                      {ex.reps ?? ""}
-                    </p>
-                  </div>
-                </li>
-              ))}
+              {exercises.map((ex, i) => {
+                const hasDemo = Boolean(ex.demo_video_url || ex.demo_image_url)
+                const expanded = expandedDemoIds.has(ex.id)
+                return (
+                  <li key={ex.id} className="flex flex-col gap-2">
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 h-5 w-5 rounded-full bg-sage-soft text-sage-dark text-[11px] font-semibold flex items-center justify-center shrink-0">
+                        {i + 1}
+                      </span>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-ink">{ex.name}</p>
+                        <p className="text-xs text-ink-soft">
+                          {ex.muscle_group ? `${ex.muscle_group} · ` : ""}
+                          {ex.sets ? `${ex.sets} sets` : ""}
+                          {ex.sets && ex.reps ? " · " : ""}
+                          {ex.reps ?? ""}
+                        </p>
+                        {hasDemo && (
+                          <button
+                            type="button"
+                            onClick={() => toggleDemo(ex.id)}
+                            className="mt-1 flex items-center gap-1 text-xs text-sage-dark font-medium"
+                          >
+                            <PlayCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
+                            {expanded ? "Verberg uitvoering" : "Bekijk uitvoering"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {hasDemo && expanded && (
+                      <ExerciseDemo
+                        name={ex.name}
+                        muscleGroup={ex.muscle_group}
+                        videoUrl={ex.demo_video_url}
+                        imageUrl={ex.demo_image_url}
+                        className="ml-8 aspect-video w-[calc(100%-2rem)] rounded-2xl"
+                      />
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           </Card>
         )}
@@ -138,6 +177,13 @@ export function WorkoutSession({
         Oefening {index + 1} van {exercises.length}
         {current.muscle_group ? ` · ${current.muscle_group}` : ""}
       </p>
+      <ExerciseDemo
+        name={current.name}
+        muscleGroup={current.muscle_group}
+        videoUrl={current.demo_video_url}
+        imageUrl={current.demo_image_url}
+        className="aspect-video w-full rounded-2xl mb-3"
+      />
       <div className="flex items-start justify-between gap-3 mb-2">
         <p className="font-display text-xl text-ink">{current.name}</p>
         <ExerciseFavoriteButton

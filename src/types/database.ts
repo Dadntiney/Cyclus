@@ -215,6 +215,8 @@ export type Database = {
       exercises: {
         Row: {
           common_mistakes: string | null
+          demo_image_url: string | null
+          demo_video_url: string | null
           fun_fact: string | null
           id: string
           instructions: string | null
@@ -229,6 +231,8 @@ export type Database = {
         }
         Insert: {
           common_mistakes?: string | null
+          demo_image_url?: string | null
+          demo_video_url?: string | null
           fun_fact?: string | null
           id?: string
           instructions?: string | null
@@ -243,6 +247,8 @@ export type Database = {
         }
         Update: {
           common_mistakes?: string | null
+          demo_image_url?: string | null
+          demo_video_url?: string | null
           fun_fact?: string | null
           id?: string
           instructions?: string | null
