@@ -9,7 +9,14 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10)
 }
 
-/** Quick "menstruatie gestart 🩸" action on Vandaag — marks just today. */
+/**
+ * Quick "menstruatie gestart 🩸" action on Vandaag — marks just today.
+ * Uses an upsert (rather than a select-then-insert/update) so a double tap
+ * or a retry after a network hiccup can never race into a duplicate-key
+ * error: Postgres resolves the conflict atomically, and since `symptoms`/
+ * `flow` aren't part of the payload, an existing day's values are left
+ * untouched on conflict.
+ */
 export async function startMenstruationToday() {
   const supabase = await createClient()
   const {
@@ -18,24 +25,10 @@ export async function startMenstruationToday() {
   if (!user) return { error: "Je bent niet ingelogd." }
 
   const today = todayISO()
-  const { data: existing } = await supabase
+  const { error } = await supabase
     .from("cycle_logs")
-    .select("id, menstruation")
-    .eq("user_id", user.id)
-    .eq("date", today)
-    .maybeSingle()
-
-  if (existing) {
-    if (!existing.menstruation) {
-      const { error } = await supabase.from("cycle_logs").update({ menstruation: true }).eq("id", existing.id)
-      if (error) return { error: "Opslaan is niet gelukt." }
-    }
-  } else {
-    const { error } = await supabase
-      .from("cycle_logs")
-      .insert({ user_id: user.id, date: today, menstruation: true, symptoms: [] })
-    if (error) return { error: "Opslaan is niet gelukt." }
-  }
+    .upsert({ user_id: user.id, date: today, menstruation: true }, { onConflict: "user_id,date" })
+  if (error) return { error: "Opslaan is niet gelukt." }
 
   revalidatePath("/cyclus")
   revalidatePath("/cyclus/vandaag")
@@ -47,7 +40,8 @@ export async function startMenstruationToday() {
  * Quick "menstruatie gestopt" action on Vandaag — closes out the current
  * period through today. Fills any days she didn't open the app for since
  * her last logged day (capped at MENSTRUATION_OPEN_GAP_DAYS, so this never
- * reaches back into an unrelated, much older period), without touching
+ * reaches back into an unrelated, much older period) via a single batched
+ * upsert, so it can't race into a duplicate-key error and never touches
  * symptoms/flow already logged on any of those days.
  */
 export async function stopMenstruationToday() {
@@ -62,12 +56,11 @@ export async function stopMenstruationToday() {
 
   const { data: recentLogs } = await supabase
     .from("cycle_logs")
-    .select("id, date, menstruation")
+    .select("date, menstruation")
     .eq("user_id", user.id)
     .gte("date", windowStart)
     .lte("date", today)
 
-  const byDate = new Map((recentLogs ?? []).map((l) => [l.date, l]))
   const lastTrueDate = (recentLogs ?? [])
     .filter((l) => l.menstruation)
     .map((l) => l.date)
@@ -77,20 +70,13 @@ export async function stopMenstruationToday() {
   const fillFrom = lastTrueDate ? addDays(parseISO(lastTrueDate), 1) : parseISO(today)
   const daysToFill = eachDayOfInterval({ start: fillFrom, end: parseISO(today) }).map((d) => format(d, "yyyy-MM-dd"))
 
-  for (const date of daysToFill) {
-    const existing = byDate.get(date)
-    if (existing) {
-      if (!existing.menstruation) {
-        const { error } = await supabase.from("cycle_logs").update({ menstruation: true }).eq("id", existing.id)
-        if (error) return { error: "Opslaan is niet gelukt." }
-      }
-    } else {
-      const { error } = await supabase
-        .from("cycle_logs")
-        .insert({ user_id: user.id, date, menstruation: true, symptoms: [] })
-      if (error) return { error: "Opslaan is niet gelukt." }
-    }
-  }
+  const { error } = await supabase
+    .from("cycle_logs")
+    .upsert(
+      daysToFill.map((date) => ({ user_id: user.id, date, menstruation: true })),
+      { onConflict: "user_id,date" },
+    )
+  if (error) return { error: "Opslaan is niet gelukt." }
 
   revalidatePath("/cyclus")
   revalidatePath("/cyclus/vandaag")
