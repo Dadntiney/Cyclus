@@ -129,8 +129,8 @@ export default async function CyclusdagPage() {
         <section>
           <h2 className="font-display text-lg text-ink mb-2.5">Wat gebeurt er in je lichaam?</h2>
           <Card>
-            <p className="text-sm text-ink-soft leading-relaxed">{view.knowledge.bodySummary}</p>
-            <p className="text-sm text-ink-soft leading-relaxed mt-3">{view.knowledge.hormonalSummary}</p>
+            <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.bodySummary}</p>
+            <p className="text-base text-ink-soft leading-relaxed mt-3">{view.knowledge.hormonalSummary}</p>
           </Card>
         </section>
 
@@ -145,7 +145,7 @@ export default async function CyclusdagPage() {
             )}
             <div className="mt-4 pt-4 border-t border-line">
               <p className="text-sm font-medium text-ink mb-2">Waarom?</p>
-              <p className="text-sm text-ink-soft leading-relaxed">{view.knowledge.whyExplainer}</p>
+              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.whyExplainer}</p>
             </div>
           </Card>
         </section>
@@ -164,7 +164,7 @@ export default async function CyclusdagPage() {
           <section>
             <Card className="bg-sage-soft border-transparent">
               <p className="text-xs font-medium text-sage-dark mb-1">Wist je dat...?</p>
-              <p className="text-sm text-ink leading-relaxed">{view.funFact}</p>
+              <p className="text-base text-ink leading-relaxed">{view.funFact}</p>
             </Card>
           </section>
         )}
@@ -177,11 +177,11 @@ export default async function CyclusdagPage() {
             </Card>
             <Card>
               <p className="text-sm font-medium text-ink mb-2">Wat kan normaal zijn?</p>
-              <p className="text-sm text-ink-soft leading-relaxed">{view.knowledge.normalNote}</p>
+              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.normalNote}</p>
             </Card>
             <Card>
               <p className="text-sm font-medium text-ink mb-2">Waar kun je aandacht aan besteden?</p>
-              <p className="text-sm text-ink-soft leading-relaxed">{view.knowledge.attentionNote}</p>
+              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.attentionNote}</p>
             </Card>
           </div>
         </Expandable>
@@ -195,7 +195,7 @@ export default async function CyclusdagPage() {
                 </span>
                 {view.buddyMoment.title}
               </p>
-              <p className="text-sm text-ink leading-relaxed">{view.buddyMoment.text}</p>
+              <p className="text-base text-ink leading-relaxed">{view.buddyMoment.text}</p>
             </Card>
           </section>
         )}

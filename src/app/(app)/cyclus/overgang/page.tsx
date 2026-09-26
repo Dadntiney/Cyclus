@@ -47,7 +47,7 @@ export default async function OvergangPage() {
       <div className="rounded-3xl p-5 lg:p-6 mb-6 bg-info-soft">
         <p className="text-xs font-semibold uppercase tracking-wide text-info">Cyclus & ouder worden</p>
         <p className="font-display text-2xl text-ink mt-1">De overgang, uitgelegd</p>
-        <p className="text-sm text-ink-soft mt-2 leading-relaxed">{LIFE_STAGE_KNOWLEDGE.intro}</p>
+        <p className="text-base text-ink-soft mt-2 leading-relaxed">{LIFE_STAGE_KNOWLEDGE.intro}</p>
       </div>
 
       <div className="flex flex-col gap-5">
@@ -58,7 +58,7 @@ export default async function OvergangPage() {
               {LIFE_STAGE_KNOWLEDGE.ageChanges.map((section) => (
                 <div key={section.heading}>
                   <p className="text-sm font-medium text-ink mb-1">{section.heading}</p>
-                  <p className="text-sm text-ink-soft leading-relaxed">{section.text}</p>
+                  <p className="text-base text-ink-soft leading-relaxed">{section.text}</p>
                 </div>
               ))}
             </div>
@@ -68,7 +68,7 @@ export default async function OvergangPage() {
         <section>
           <h2 className="font-display text-lg text-ink mb-2.5">Wat is perimenopauze?</h2>
           <Card>
-            <p className="text-sm text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.whatIsPerimenopause}</p>
+            <p className="text-base text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.whatIsPerimenopause}</p>
           </Card>
         </section>
 
@@ -82,7 +82,7 @@ export default async function OvergangPage() {
         <section>
           <Card className="bg-sage-soft border-transparent">
             <p className="text-xs font-medium text-sage-dark mb-1">Wist je dat...?</p>
-            <p className="text-sm text-ink leading-relaxed">{funFact}</p>
+            <p className="text-base text-ink leading-relaxed">{funFact}</p>
           </Card>
         </section>
 
@@ -94,14 +94,14 @@ export default async function OvergangPage() {
             </Card>
             <Card>
               <p className="text-sm font-medium text-ink mb-2">Wat kan normaal zijn?</p>
-              <p className="text-sm text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.normalNote}</p>
+              <p className="text-base text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.normalNote}</p>
             </Card>
             <Card className="bg-cream-soft border-transparent">
               <div className="flex gap-2.5">
                 <Stethoscope className="h-4 w-4 text-ink-soft shrink-0 mt-0.5" strokeWidth={1.75} />
                 <div>
                   <p className="text-sm font-medium text-ink mb-1.5">Wanneer een zorgverlener inschakelen?</p>
-                  <p className="text-sm text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.whenToTalkToDoctor}</p>
+                  <p className="text-base text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.whenToTalkToDoctor}</p>
                 </div>
               </div>
             </Card>

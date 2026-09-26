@@ -88,7 +88,7 @@ export default async function CyclusPage() {
               <p className="font-display text-2xl text-ink">
                 Cyclusdag {cycleEstimate.cycleDay}
               </p>
-              <p className="text-sm text-ink-soft mt-1">{cycleEstimate.phaseLabel} · schatting</p>
+              <p className="text-base text-ink-soft mt-1">{cycleEstimate.phaseLabel} · schatting</p>
             </>
           ) : (
             <p className="text-sm text-ink-soft">
@@ -220,7 +220,7 @@ export default async function CyclusPage() {
               <Card>
                 <ul className="flex flex-col gap-3">
                   {phaseInsights.map((insight) => (
-                    <li key={`${insight.phase}-${insight.symptom}`} className="text-sm text-ink-soft leading-relaxed">
+                    <li key={`${insight.phase}-${insight.symptom}`} className="text-base text-ink-soft leading-relaxed">
                       {formatPhaseSymptomInsight(insight, phaseLabel(insight.phase))}
                     </li>
                   ))}
