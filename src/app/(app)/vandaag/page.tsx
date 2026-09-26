@@ -87,16 +87,11 @@ export default async function VandaagPage() {
   return (
     <PullToRefresh>
       <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <div className="flex items-start justify-between gap-3 mb-5">
+        <div className="mb-5">
           <h1 className="font-display text-2xl lg:text-3xl text-ink">
             {greeting()}
             {profile?.name ? `, ${profile.name}` : ""} 🌿
           </h1>
-          {streak >= 2 && (
-            <div className="shrink-0 flex items-center gap-1 rounded-full bg-sage-soft text-sage-dark text-xs font-semibold px-2.5 py-1.5">
-              🌱 {streak} check-ins op rij
-            </div>
-          )}
         </div>
 
         {cycleEstimate && tone ? (
