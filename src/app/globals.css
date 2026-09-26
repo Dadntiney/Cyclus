@@ -94,6 +94,22 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* iOS Safari renders type="date"/"time" values with their own internal
+   shadow-DOM box, which ignores the input's line-height and bottom-aligns
+   instead of centering — the value ends up sitting low, reading as
+   "overflowing" its rounded border. Disabling the native appearance hands
+   layout back to normal CSS so it centers like any other input. */
+input[type="date"],
+input[type="time"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="date"]::-webkit-date-and-time-value,
+input[type="time"]::-webkit-date-and-time-value {
+  text-align: left;
+}
+
 /* Every interactive element gets a consistent, deliberate tap response;
    this is the one global override so individual components don't have to
    repeat it, and prefers-reduced-motion is respected automatically. */
