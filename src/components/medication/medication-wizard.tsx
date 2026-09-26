@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
+import { SegmentedControl } from "@/components/ui/segmented-control"
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input"
 import {
   MEDICATION_CATEGORY_OPTIONS,
@@ -411,13 +412,16 @@ function ScheduleStep({
 
       {data.scheduleType === "cyclisch" && (
         <div className="mb-5">
-          <div className="flex items-center gap-2 mb-3">
-            <Chip selected={data.cyclUnit === "dagen"} onClick={() => setData((d) => ({ ...d, cyclUnit: "dagen" }))}>
-              dagen
-            </Chip>
-            <Chip selected={data.cyclUnit === "weken"} onClick={() => setData((d) => ({ ...d, cyclUnit: "weken" }))}>
-              weken
-            </Chip>
+          <div className="mb-3">
+            <SegmentedControl
+              aria-label="Eenheid"
+              value={data.cyclUnit}
+              onChange={(cyclUnit) => setData((d) => ({ ...d, cyclUnit }))}
+              options={[
+                { value: "dagen", label: "Dagen" },
+                { value: "weken", label: "Weken" },
+              ]}
+            />
           </div>
           <div className="flex gap-3 mb-3">
             <div className="flex-1">

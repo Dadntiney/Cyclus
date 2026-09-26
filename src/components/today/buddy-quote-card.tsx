@@ -8,7 +8,7 @@ export function BuddyQuoteCard({ quote }: { quote: BuddyQuote }) {
       </span>
       <div className="min-w-0">
         <p className="text-[11px] font-medium text-sage-dark mb-0.5">Van je Buddy</p>
-        <p className="text-sm text-ink leading-relaxed">{quote.text}</p>
+        <p className="text-base text-ink leading-relaxed">{quote.text}</p>
       </div>
     </div>
   )
