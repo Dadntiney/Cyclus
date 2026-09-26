@@ -93,11 +93,8 @@ export default async function VandaagPage() {
             {profile?.name ? `, ${profile.name}` : ""} 🌿
           </h1>
           {streak >= 2 && (
-            <div
-              className="shrink-0 flex items-center gap-1 rounded-full bg-sage-soft text-sage-dark text-xs font-semibold px-2.5 py-1.5"
-              title={`${streak} dagen op rij een check-in ingevuld`}
-            >
-              🔥 {streak}
+            <div className="shrink-0 flex items-center gap-1 rounded-full bg-sage-soft text-sage-dark text-xs font-semibold px-2.5 py-1.5">
+              🌱 {streak} dagen op rij
             </div>
           )}
         </div>
