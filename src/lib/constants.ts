@@ -136,7 +136,10 @@ export const FLOW_OPTIONS = [
 export const REMINDER_TYPE_OPTIONS = [
   { value: "dagelijkse_checkin", label: "Dagelijkse check-in", emoji: "📝", defaultLabel: "Vul je dagelijkse gegevens in" },
   { value: "symptomen", label: "Klachten registreren", emoji: "🩺", defaultLabel: "Klachten bijhouden" },
-  { value: "beweging", label: "Bewegen", emoji: "🏃", defaultLabel: "Tijd om even te bewegen" },
+  { value: "beweging", label: "Bewegen", emoji: "🏃", defaultLabel: "Tijd om even te bewegen", requires: "movement_enabled" },
+  { value: "voeding", label: "Voeding", emoji: "🥗", defaultLabel: "Even denken aan wat je lichaam nodig heeft", requires: "nutrition_enabled" },
+  { value: "cyclus", label: "Cyclus", emoji: "🌙", defaultLabel: "Even kijken wat er in jouw fase speelt" },
+  { value: "herstel", label: "Rust & herstel", emoji: "🛀", defaultLabel: "Even een moment van rust" },
   { value: "routine", label: "Persoonlijke routine", emoji: "🌿", defaultLabel: "Jouw persoonlijke routine" },
   { value: "anders", label: "Iets anders", emoji: "✨", defaultLabel: "" },
 ] as const

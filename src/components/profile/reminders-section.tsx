@@ -43,9 +43,23 @@ function maybeRequestNotificationPermission() {
   }
 }
 
-export function RemindersSection({ initialReminders }: { initialReminders: Reminder[] }) {
+export function RemindersSection({
+  initialReminders,
+  movementEnabled = true,
+  nutritionEnabled = true,
+}: {
+  initialReminders: Reminder[]
+  movementEnabled?: boolean
+  nutritionEnabled?: boolean
+}) {
   const router = useRouter()
   const [reminders, setReminders] = useState(initialReminders)
+  const availableTypeOptions = REMINDER_TYPE_OPTIONS.filter((opt) => {
+    const requires = "requires" in opt ? opt.requires : undefined
+    if (requires === "movement_enabled") return movementEnabled
+    if (requires === "nutrition_enabled") return nutritionEnabled
+    return true
+  })
   const [editingId, setEditingId] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState<ReminderInput>(emptyDraft())
@@ -239,7 +253,7 @@ export function RemindersSection({ initialReminders }: { initialReminders: Remin
           <div>
             <p className="text-sm font-medium text-ink mb-2">Waarvoor?</p>
             <div className="flex flex-wrap gap-2">
-              {REMINDER_TYPE_OPTIONS.map((opt) => (
+              {availableTypeOptions.map((opt) => (
                 <Chip
                   key={opt.value}
                   selected={draft.type === opt.value}

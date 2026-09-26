@@ -10,6 +10,7 @@ import {
 } from "@/lib/client/medication-reminder-scheduler"
 import { wasReminderShownToday, markReminderShownToday } from "@/lib/client/reminder-storage"
 import { resolveReminderText } from "@/lib/buddy/reminder-labels"
+import { isScheduleStartDay, isScheduleStopDay } from "@/lib/medication/schedule"
 import { cn } from "@/lib/utils"
 
 const TYPE_BY_VALUE = new Map<string, (typeof REMINDER_TYPE_OPTIONS)[number]>(
@@ -37,12 +38,15 @@ function reminderToast(reminder: ReminderLike, preferredStyles: string[], todayI
   }
 }
 
-function medicationToast(medication: MedicationReminderLike): Toast {
-  return {
-    id: medication.id,
-    emoji: "💊",
-    text: `Herinnering: je hebt vandaag ${medication.name} ingepland.`,
-  }
+function medicationToast(medication: MedicationReminderLike, now: Date): Toast {
+  const isStart = isScheduleStartDay(medication, now)
+  const isStop = !isStart && isScheduleStopDay(medication, now)
+  const text = isStart
+    ? `Je schema voor ${medication.name} start vandaag weer.`
+    : isStop
+      ? `Je ingestelde periode voor ${medication.name} eindigt vandaag.`
+      : `Herinnering: je hebt vandaag ${medication.name} ingepland.`
+  return { id: medication.id, emoji: "💊", text }
 }
 
 /**
@@ -84,7 +88,7 @@ export function ReminderToastHost({
       }
       for (const medication of dueMedications) {
         markReminderShownToday(medication.id, todayISO)
-        toasts.push(medicationToast(medication))
+        toasts.push(medicationToast(medication, now))
       }
 
       if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {

@@ -61,6 +61,38 @@ export function isDosingDay(schedule: MedicationSchedule, date: Date): boolean |
   }
 }
 
+/**
+ * Whether `date` is the FIRST day of an "on" block in a "cyclisch" schedule
+ * (e.g. day 1 of "2 weken wel") — used to send a start reminder instead of
+ * the plain daily one. Always false for other schedule types: "start" only
+ * means something when the schedule actually repeats on/off.
+ */
+export function isScheduleStartDay(schedule: MedicationSchedule, date: Date): boolean {
+  if (schedule.scheduleType !== "cyclisch") return false
+  if (!schedule.startDate || !schedule.scheduleDaysOn || schedule.scheduleDaysOff === null) return false
+  const daysSince = differenceInCalendarDays(date, parseISO(schedule.startDate))
+  if (daysSince < 0) return false
+  const cycleLength = schedule.scheduleDaysOn + schedule.scheduleDaysOff
+  if (cycleLength <= 0) return false
+  return daysSince % cycleLength === 0
+}
+
+/**
+ * Whether `date` is the LAST day of an "on" block — the day the reminder
+ * should say "your period ends today", fired on the last active day itself
+ * rather than the first "off" day after it.
+ */
+export function isScheduleStopDay(schedule: MedicationSchedule, date: Date): boolean {
+  if (schedule.scheduleType !== "cyclisch") return false
+  if (!schedule.startDate || !schedule.scheduleDaysOn || schedule.scheduleDaysOff === null) return false
+  if (schedule.scheduleDaysOff === 0) return false // never actually turns "off"
+  const daysSince = differenceInCalendarDays(date, parseISO(schedule.startDate))
+  if (daysSince < 0) return false
+  const cycleLength = schedule.scheduleDaysOn + schedule.scheduleDaysOff
+  if (cycleLength <= 0) return false
+  return daysSince % cycleLength === schedule.scheduleDaysOn - 1
+}
+
 const WEEKDAY_LABELS = ["ma", "di", "wo", "do", "vr", "za", "zo"]
 
 /** Short, human-readable summary for lists, e.g. "Iedere dag · sinds 3 jan". */

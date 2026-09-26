@@ -42,3 +42,45 @@ self.addEventListener("fetch", (event) => {
     }),
   )
 })
+
+// ---- Real web push (see src/app/api/cron/send-reminders and src/lib/push) ----
+
+self.addEventListener("push", (event) => {
+  if (!event.data) return
+
+  let payload
+  try {
+    payload = event.data.json()
+  } catch {
+    payload = { title: "Cyclus", body: event.data.text() }
+  }
+
+  const title = payload.title || "Cyclus"
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: payload.body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: payload.tag,
+      data: { url: payload.url || "/vandaag" },
+    }),
+  )
+})
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close()
+  const targetUrl = event.notification.data?.url || "/vandaag"
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        const clientUrl = new URL(client.url)
+        if (clientUrl.origin === self.location.origin && "focus" in client) {
+          client.navigate(targetUrl)
+          return client.focus()
+        }
+      }
+      return self.clients.openWindow(targetUrl)
+    }),
+  )
+})

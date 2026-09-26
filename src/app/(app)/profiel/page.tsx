@@ -4,6 +4,7 @@ import { getReminders } from "@/lib/data/reminders"
 import { ProfileHero } from "@/components/profile/profile-hero"
 import { ProfileForm } from "@/components/profile/profile-form"
 import { RemindersSection } from "@/components/profile/reminders-section"
+import { PushNotificationsCard } from "@/components/notifications/push-notifications-card"
 import { ProgressSection } from "@/components/profile/progress-section"
 import { FavoritesSection } from "@/components/profile/favorites-section"
 import { PrivacySection } from "@/components/profile/privacy-section"
@@ -33,7 +34,12 @@ export default async function ProfielPage() {
       <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
         <div className="lg:col-span-2 flex flex-col gap-5">
           <ProfileForm profile={profile} cycleProfile={cycleProfile} hasMedications={hasMedications} />
-          <RemindersSection initialReminders={reminders} />
+          <PushNotificationsCard />
+          <RemindersSection
+            initialReminders={reminders}
+            movementEnabled={profile.movement_enabled}
+            nutritionEnabled={profile.nutrition_enabled}
+          />
         </div>
 
         <div className="flex flex-col gap-5 mt-6 lg:mt-0">
