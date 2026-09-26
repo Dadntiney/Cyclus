@@ -3,7 +3,12 @@ import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, computeSymptomFrequency, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
-import { computePhaseSymptomInsights, formatPhaseSymptomInsight } from "@/lib/cycle/patterns"
+import {
+  computePhaseSymptomInsights,
+  formatPhaseSymptomInsight,
+  computeCycleLengthTrend,
+  formatCycleLengthTrendInsight,
+} from "@/lib/cycle/patterns"
 import { phaseLabel } from "@/lib/cycle/estimate"
 import { Calendar } from "@/components/cycle/calendar"
 import { PhaseOverview } from "@/components/cycle/phase-overview"
@@ -65,6 +70,7 @@ export default async function CyclusPage() {
 
   const patterns = computeSymptomFrequency(checkins ?? [])
   const phaseInsights = computePhaseSymptomInsights(history, checkins ?? []).slice(0, 3)
+  const cycleLengthTrend = computeCycleLengthTrend(history)
 
   const hasCycle = cycleProfile?.has_cycle ?? true
   const isIrregular = cycleProfile?.regularity === "onregelmatig" || cycleProfile?.regularity === "onbekend"
@@ -228,6 +234,17 @@ export default async function CyclusPage() {
                 <p className="text-xs text-ink-soft mt-4">
                   Gebaseerd op je afgeronde cycli en je check-ins — geen voorspelling, wel een
                   richting die bij jou lijkt te passen.
+                </p>
+              </Card>
+            </div>
+          )}
+
+          {cycleLengthTrend && (
+            <div>
+              <h2 className="font-display text-lg text-ink mb-3">Je cyclusduur door de tijd</h2>
+              <Card>
+                <p className="text-base text-ink-soft leading-relaxed">
+                  {formatCycleLengthTrendInsight(cycleLengthTrend)}
                 </p>
               </Card>
             </div>

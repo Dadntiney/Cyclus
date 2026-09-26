@@ -101,3 +101,65 @@ export function formatPhaseSymptomInsight(insight: PhaseSymptomInsight, phaseLab
   const cycleWord = insight.cyclesWithSymptom === insight.cyclesConsidered ? "al je" : `${insight.cyclesWithSymptom} van je laatste ${insight.cyclesConsidered}`
   return `Je gaf bij ${cycleWord} cycli vaker "${insight.symptom.toLowerCase()}" aan rond de ${phaseLabel.toLowerCase()} — mogelijk een patroon dat bij jou past.`
 }
+
+/**
+ * Whether her cycle length is swinging more or less than before — the
+ * "wordt mijn cyclus onregelmatiger, of juist stabieler?" question, most
+ * relevant for the 30+/perimenopauze-doelgroep this app centers. Rather
+ * than judging any single cycle length against "normal", this compares the
+ * average month-to-month swing in cycle length across the earlier vs. more
+ * recent half of her completed cycles: a genuine shift in variability, not
+ * a guess dressed up as a number. Only reports a direction when that shift
+ * clears MEANINGFUL_SWING_DELTA_DAYS, so ordinary noise (every cycle
+ * varies a little) stays silent rather than reading as a "finding". The
+ * still-ongoing current cycle is excluded, same as the phase/symptom
+ * insights above.
+ */
+export type CycleLengthTrendDirection = "onregelmatiger" | "stabieler"
+
+export interface CycleLengthTrendInsight {
+  direction: CycleLengthTrendDirection
+  cyclesConsidered: number
+}
+
+const TREND_WINDOW = 6
+const MIN_CYCLES_FOR_TREND = 4
+const MEANINGFUL_SWING_DELTA_DAYS = 2
+
+function averageSwing(lengths: number[]): number {
+  if (lengths.length < 2) return 0
+  let total = 0
+  for (let i = 1; i < lengths.length; i++) {
+    total += Math.abs(lengths[i] - lengths[i - 1])
+  }
+  return total / (lengths.length - 1)
+}
+
+/** @param periods Completed-cycle history, oldest first (see computeCycleHistory). */
+export function computeCycleLengthTrend(periods: CycleHistoryEntry[]): CycleLengthTrendInsight | null {
+  const completedLengths = periods
+    .filter((p): p is CycleHistoryEntry & { cycleLength: number } => p.cycleLength !== null)
+    .slice(-TREND_WINDOW)
+    .map((p) => p.cycleLength)
+
+  if (completedLengths.length < MIN_CYCLES_FOR_TREND) return null
+
+  const mid = Math.ceil(completedLengths.length / 2)
+  const earlierSwing = averageSwing(completedLengths.slice(0, mid))
+  const recentSwing = averageSwing(completedLengths.slice(mid))
+  const delta = recentSwing - earlierSwing
+
+  if (Math.abs(delta) < MEANINGFUL_SWING_DELTA_DAYS) return null
+
+  return {
+    direction: delta > 0 ? "onregelmatiger" : "stabieler",
+    cyclesConsidered: completedLengths.length,
+  }
+}
+
+export function formatCycleLengthTrendInsight(insight: CycleLengthTrendInsight): string {
+  if (insight.direction === "onregelmatiger") {
+    return `Op basis van je laatste ${insight.cyclesConsidered} cycli wisselt je cyclusduur de laatste tijd meer dan daarvoor — dit kan erop wijzen dat je cyclus op dit moment wat onregelmatiger is. Dat kan door allerlei dingen komen, zoals stress of je levensfase, en is geen diagnose — wel de moeite waard om in de gaten te houden.`
+  }
+  return `Op basis van je laatste ${insight.cyclesConsidered} cycli wisselt je cyclusduur de laatste tijd minder dan daarvoor — je cyclus lijkt op dit moment wat stabieler te verlopen.`
+}
