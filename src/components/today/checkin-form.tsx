@@ -7,7 +7,7 @@ import { RatingScale } from "@/components/ui/rating-scale"
 import { Chip } from "@/components/ui/chip"
 import { Textarea, Label } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { SYMPTOM_OPTIONS, MENTAL_SYMPTOM_OPTIONS } from "@/lib/constants"
+import { SYMPTOM_OPTIONS, MENTAL_SYMPTOM_OPTIONS, symptomLabel } from "@/lib/constants"
 import { saveCheckin } from "@/lib/actions/checkin"
 import type { CheckinInput } from "@/lib/validations/checkin"
 import type { Tables } from "@/types/database"
@@ -98,7 +98,7 @@ export function CheckinForm({
                     selected={symptoms.includes(symptom)}
                     onClick={() => toggleSymptom(symptom)}
                   >
-                    {symptom}
+                    {symptomLabel(symptom)}
                   </Chip>
                 ))}
               </div>

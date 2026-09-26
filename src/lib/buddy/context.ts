@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, getEffectiveLastPeriodStart } from "@/lib/cycle/history"
 import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
+import { symptomLabel } from "@/lib/constants"
 import { startOfWeek, subDays } from "date-fns"
 
 export async function buildBuddyContext(userId: string): Promise<string[]> {
@@ -73,7 +74,7 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
     )
     if (insight) {
       lines.push(
-        `Herkend patroon: bij ${insight.cyclesWithSymptom} van haar laatste ${insight.cyclesConsidered} cycli gaf ze "${insight.symptom.toLowerCase()}" vaker aan rond de ${cycleEstimate.phaseLabel.toLowerCase()} — je mag hier subtiel naar verwijzen als het gesprek daar natuurlijk toe leidt, maar dring het niet op.`,
+        `Herkend patroon: bij ${insight.cyclesWithSymptom} van haar laatste ${insight.cyclesConsidered} cycli gaf ze "${symptomLabel(insight.symptom).toLowerCase()}" vaker aan rond de ${cycleEstimate.phaseLabel.toLowerCase()} — je mag hier subtiel naar verwijzen als het gesprek daar natuurlijk toe leidt, maar dring het niet op.`,
       )
     }
   } else if (cycleProfile && !cycleProfile.has_cycle) {
@@ -90,7 +91,7 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
     if (checkin.sleep) parts.push(`slaap ${checkin.sleep}/5`)
     if (checkin.stress) parts.push(`stress ${checkin.stress}/5`)
     if (parts.length) lines.push(`Laatste check-in: ${parts.join(", ")}`)
-    if (checkin.symptoms?.length) lines.push(`Klachten: ${checkin.symptoms.join(", ")}`)
+    if (checkin.symptoms?.length) lines.push(`Klachten: ${checkin.symptoms.map(symptomLabel).join(", ")}`)
   }
 
   if (profile?.movement_enabled !== false) {

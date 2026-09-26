@@ -1,6 +1,6 @@
 import type { Tables } from "@/types/database"
 import type { CycleEstimate } from "@/lib/cycle/estimate"
-import { TRAINING_PREFERENCE_TO_TYPE } from "@/lib/constants"
+import { TRAINING_PREFERENCE_TO_TYPE, symptomLabel } from "@/lib/constants"
 
 type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
 type Recipe = Pick<Tables<"recipes">, "id" | "title" | "category" | "preparation_time" | "nutrition_information">
@@ -293,7 +293,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     if (latestCheckin.stress) parts.push(`stress ${latestCheckin.stress}/5`)
     if (parts.length) buddyContext.push(`Laatste check-in: ${parts.join(", ")}`)
     if (latestCheckin.symptoms?.length) {
-      buddyContext.push(`Klachten: ${latestCheckin.symptoms.join(", ")}`)
+      buddyContext.push(`Klachten: ${latestCheckin.symptoms.map(symptomLabel).join(", ")}`)
     }
   }
 

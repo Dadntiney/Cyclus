@@ -77,6 +77,21 @@ export const SYMPTOM_OPTIONS = [
   "Geen klachten",
 ] as const
 
+// Sommige klachtwaarden zijn (nog) in het Engels opgeslagen — bestaande
+// check-in- en cyclusgeschiedenis gebruikt deze exacte strings, dus de
+// waarde zelf verandert niet. Wat de gebruiker ziet, wel: dit is de enige
+// plek die de Nederlandse weergave bepaalt, gebruikt overal waar een
+// opgeslagen klacht wordt getoond (check-in, patronen, inzichten).
+const SYMPTOM_LABELS: Partial<Record<string, string>> = {
+  Bloating: "Opgeblazen gevoel",
+  "Brain fog": "Concentratieproblemen",
+  Cravings: "Trek in eten",
+}
+
+export function symptomLabel(value: string): string {
+  return SYMPTOM_LABELS[value] ?? value
+}
+
 // Extra symptom-checkboxes shown in de dagelijkse check-in only when she
 // heeft aangegeven geestelijke ondersteuning te willen (profiles.mental_
 // wellbeing_enabled) — zo hoeft niemand die dit niet wil er ooit iets van te
@@ -101,7 +116,7 @@ export const RECIPE_CATEGORIES = [
   "Eiwitrijk",
   "Vegetarisch",
   "Veganistisch",
-  "Meal prep",
+  "Voorbereiden",
 ] as const
 
 export const REGULARITY_OPTIONS = [

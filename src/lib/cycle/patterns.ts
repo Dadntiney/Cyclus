@@ -1,6 +1,7 @@
 import { differenceInCalendarDays, parseISO } from "date-fns"
 import { classifyPhase, type CyclePhase } from "@/lib/cycle/estimate"
 import type { CycleHistoryEntry } from "@/lib/cycle/history"
+import { symptomLabel } from "@/lib/constants"
 
 /**
  * Phase-aware symptom patterns: instead of "Hoofdpijn — 5x in je
@@ -99,7 +100,7 @@ export function getTopPhaseSymptomInsight(
 
 export function formatPhaseSymptomInsight(insight: PhaseSymptomInsight, phaseLabel: string): string {
   const cycleWord = insight.cyclesWithSymptom === insight.cyclesConsidered ? "al je" : `${insight.cyclesWithSymptom} van je laatste ${insight.cyclesConsidered}`
-  return `Je gaf bij ${cycleWord} cycli vaker "${insight.symptom.toLowerCase()}" aan rond de ${phaseLabel.toLowerCase()} — mogelijk een patroon dat bij jou past.`
+  return `Je gaf bij ${cycleWord} cycli vaker "${symptomLabel(insight.symptom).toLowerCase()}" aan rond de ${phaseLabel.toLowerCase()} — mogelijk een patroon dat bij jou past.`
 }
 
 /**

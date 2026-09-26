@@ -17,7 +17,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { format, parseISO, subDays } from "date-fns"
 import { nl } from "date-fns/locale"
 import { Droplet, Sparkles, ChevronRight } from "lucide-react"
-import { FLOW_OPTIONS } from "@/lib/constants"
+import { FLOW_OPTIONS, symptomLabel } from "@/lib/constants"
 
 export default async function CyclusPage() {
   const supabase = await createClient()
@@ -257,7 +257,7 @@ export default async function CyclusPage() {
                 <ul className="flex flex-col gap-2.5">
                   {patterns.slice(0, 6).map(({ symptom, count }) => (
                     <li key={symptom} className="flex items-center justify-between text-sm">
-                      <span className="text-ink">{symptom}</span>
+                      <span className="text-ink">{symptomLabel(symptom)}</span>
                       <span className="text-ink-soft">
                         {count}x in je check-ins
                       </span>

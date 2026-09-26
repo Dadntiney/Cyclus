@@ -4,6 +4,7 @@ import { getPhaseContent, type PhaseColorTokens } from "@/lib/cycle/phase-conten
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { formatPhaseSymptomInsight, type PhaseSymptomInsight } from "@/lib/cycle/patterns"
 import type { BuddyStyle } from "@/lib/buddy/styles"
+import { symptomLabel } from "@/lib/constants"
 
 /**
  * Composes the Cyclusdag detail page's content from three sources: the
@@ -108,7 +109,7 @@ function buildSymptomNote(topSymptom: string | null, changes: BodyChangeItem[]):
   const changeLabel = SYMPTOM_TO_CHANGE_LABEL[topSymptom]
   if (!changeLabel) return null
   if (!changes.some((c) => c.label === changeLabel)) return null
-  return `Je gaf eerder bij je check-ins vaker "${topSymptom.toLowerCase()}" aan — dat is iets wat sommige vrouwen in deze fase vaker herkennen.`
+  return `Je gaf eerder bij je check-ins vaker "${symptomLabel(topSymptom).toLowerCase()}" aan — dat is iets wat sommige vrouwen in deze fase vaker herkennen.`
 }
 
 export function buildCyclusdagView(input: BuildCyclusdagViewInput): CyclusdagView {
