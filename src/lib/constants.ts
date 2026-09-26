@@ -169,7 +169,7 @@ export const REMINDER_TYPE_OPTIONS = [
   { value: "beweging", label: "Bewegen", emoji: "🏃", defaultLabel: "Tijd om even te bewegen", requires: "movement_enabled" },
   { value: "voeding", label: "Voeding", emoji: "🥗", defaultLabel: "Even denken aan wat je lichaam nodig heeft", requires: "nutrition_enabled" },
   { value: "cyclus", label: "Cyclus", emoji: "🌙", defaultLabel: "Even kijken wat er in jouw fase speelt" },
-  { value: "herstel", label: "Rust & herstel", emoji: "🛀", defaultLabel: "Even een moment van rust" },
+  { value: "herstel", label: "Zelfzorg & herstel", emoji: "🛀", defaultLabel: "Even een moment van rust" },
   { value: "routine", label: "Persoonlijke routine", emoji: "🌿", defaultLabel: "Jouw persoonlijke routine" },
   {
     value: "mentale_ondersteuning",
