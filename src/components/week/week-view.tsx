@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { format, parseISO } from "date-fns"
 import { nl } from "date-fns/locale"
@@ -45,6 +45,28 @@ export function WeekView({
   )
   const [selectedIndex, setSelectedIndex] = useState(todayIndex)
   const [overrides, setOverrides] = useState<WeekOverrides>({})
+  const dayButtonRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const isFirstScroll = useRef(true)
+
+  useEffect(() => {
+    // The 7-day strip is wider than the screen (min-w-[52px] × 7 + gaps),
+    // so a day near the end — often today, the default selection — opens
+    // with only part of its pill visible, cut off by the right edge, with
+    // no scroll affordance hinting there's more to the right. Bring the
+    // selected pill fully into view instead: instant on first mount (so it
+    // reads as "already positioned there", not a visible jump right after
+    // load), smooth on a later tap.
+    const btn = dayButtonRefs.current[selectedIndex]
+    if (!btn) return
+    const reduceMotion =
+      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    btn.scrollIntoView({
+      behavior: isFirstScroll.current || reduceMotion ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center",
+    })
+    isFirstScroll.current = false
+  }, [selectedIndex])
 
   useEffect(() => {
     // Reads localStorage, which isn't available during SSR — deliberately
@@ -95,6 +117,9 @@ export function WeekView({
           return (
             <button
               key={d.date}
+              ref={(el) => {
+                dayButtonRefs.current[i] = el
+              }}
               type="button"
               onClick={() => setSelectedIndex(i)}
               className={cn(
