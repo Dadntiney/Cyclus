@@ -45,6 +45,13 @@ const DISABLED_HINTS: Record<string, string> = {
   sleep_tracking_enabled: "Slaap bijhouden staat nu uit",
 }
 
+const DISABLED_PROFILE_ANCHORS: Record<string, string> = {
+  movement_enabled: "/profiel#beweging",
+  nutrition_enabled: "/profiel#voeding",
+  mental_wellbeing_enabled: "/profiel#mentale-rust",
+  sleep_tracking_enabled: "/profiel#slaap",
+}
+
 export default async function VoorJouPage() {
   const user = await getAuthedUser()
   if (!user) return null
@@ -115,7 +122,10 @@ export default async function VoorJouPage() {
             {disabledKeys.map((key) => (
               <div key={key} className="flex items-center justify-between gap-4 px-5 py-3.5">
                 <p className="text-sm text-ink-soft">{DISABLED_HINTS[key]}</p>
-                <Link href="/profiel" className="text-xs font-medium text-sage-dark shrink-0 touch-manipulation">
+                <Link
+                  href={DISABLED_PROFILE_ANCHORS[key]}
+                  className="text-xs font-medium text-sage-dark shrink-0 touch-manipulation"
+                >
                   Zet aan
                 </Link>
               </div>

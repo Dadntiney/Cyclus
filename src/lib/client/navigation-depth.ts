@@ -19,3 +19,28 @@ export function markNavigation() {
 export function hasNavigatedInApp(): boolean {
   return navigationCount > 0
 }
+
+/**
+ * Distinguishes a browser back/forward move (popstate — scroll position
+ * should be restored, native-app style) from an in-app Link click or
+ * router.push (a genuinely new screen — should open at the top). The
+ * listener is attached once per tab; popstate fires synchronously before
+ * the resulting pathname change reaches PageTransition's effect, so the
+ * flag is reliably set by the time it's read.
+ */
+let isPopNavigation = false
+let popstateListenerAttached = false
+
+export function ensurePopstateTracking() {
+  if (popstateListenerAttached || typeof window === "undefined") return
+  popstateListenerAttached = true
+  window.addEventListener("popstate", () => {
+    isPopNavigation = true
+  })
+}
+
+export function consumePopNavigationFlag(): boolean {
+  const was = isPopNavigation
+  isPopNavigation = false
+  return was
+}

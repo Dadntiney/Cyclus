@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 import { usePathname } from "next/navigation"
 import type { ReactNode } from "react"
-import { markNavigation } from "@/lib/client/navigation-depth"
+import { markNavigation, ensurePopstateTracking, consumePopNavigationFlag } from "@/lib/client/navigation-depth"
 
 /**
  * Replays a short fade/slide-in whenever the route changes, so navigating
@@ -12,12 +12,20 @@ import { markNavigation } from "@/lib/client/navigation-depth"
  *
  * Also the one place that observes every route change app-wide, so it
  * doubles as the source for BackButton's "has she navigated in-app yet"
- * signal (see lib/client/navigation-depth) — skipping the very first
- * pathname (the page she actually loaded, not something she navigated to).
+ * signal (see lib/client/navigation-depth), and resets scroll to the top
+ * for a genuinely new screen — but only when that's actually appropriate:
+ * a back/forward move (popstate) restores scroll natively, and a link to
+ * a hash (e.g. /profiel#slaap) is left to the browser's own anchor
+ * scrolling (see the scroll-padding-top rule in globals.css for why that
+ * doesn't end up hidden behind the sticky mobile header).
  */
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const isFirstPathname = useRef(true)
+
+  useEffect(() => {
+    ensurePopstateTracking()
+  }, [])
 
   useEffect(() => {
     if (isFirstPathname.current) {
@@ -25,6 +33,9 @@ export function PageTransition({ children }: { children: ReactNode }) {
       return
     }
     markNavigation()
+    if (!consumePopNavigationFlag() && !window.location.hash) {
+      window.scrollTo(0, 0)
+    }
   }, [pathname])
 
   return (

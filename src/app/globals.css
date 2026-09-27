@@ -85,6 +85,20 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  /* So a deep link like /profiel#slaap lands with its target fully in
+     view instead of tucked under the sticky mobile header (which
+     next/link's hash scrolling otherwise ignores, since it's a
+     sticky/fixed element — see MobileHeader). Matches its measured real
+     height; the fallback matches its typical rendered height before that
+     is published. No sticky top header above the md breakpoint, where
+     the sidebar layout takes over. */
+  scroll-padding-top: var(--mobile-header-h, 77px);
+}
+
+@media (min-width: 768px) {
+  html {
+    scroll-padding-top: 0px;
+  }
 }
 
 body {
