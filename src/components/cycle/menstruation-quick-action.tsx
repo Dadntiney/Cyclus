@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
+import { Droplet } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -34,21 +35,48 @@ export function MenstruationQuickAction({ isActive, day }: { isActive: boolean; 
   return (
     <Card
       className={cn(
-        "p-4 flex items-center justify-between gap-3 mb-6 lg:mb-8 transition-colors",
+        "p-4 flex items-center gap-3.5 mb-6 lg:mb-8 transition-colors",
         isActive && "bg-peach-soft border-transparent",
       )}
     >
-      <div className="min-w-0 flex items-center gap-2.5">
+      <div className="relative shrink-0">
+        <span
+          className={cn(
+            "flex h-11 w-11 items-center justify-center rounded-full",
+            isActive ? "bg-white/70" : "bg-sage-soft",
+          )}
+          aria-hidden
+        >
+          <Droplet
+            className={cn("h-5 w-5", isActive ? "text-danger" : "text-sage-dark")}
+            fill={isActive ? "currentColor" : "none"}
+            strokeWidth={1.75}
+          />
+        </span>
         {isActive && (
-          <span className="shrink-0 h-2 w-2 rounded-full bg-danger motion-safe:animate-pulse" aria-hidden />
+          <span
+            className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-danger ring-2 ring-peach-soft motion-safe:animate-pulse"
+            aria-hidden
+          />
         )}
-        <p className={cn("text-base font-semibold", isActive ? "text-ink" : "text-ink-soft font-medium")}>
-          {isActive ? `Menstruatie – dag ${day} 🩸` : "Geen actieve menstruatie"}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-ink-soft">{isActive ? "Menstruatie actief" : "Cyclus"}</p>
+        <p className={cn("font-display text-lg leading-tight", isActive ? "text-ink" : "text-ink-soft")}>
+          {isActive ? `Dag ${day}` : "Geen actieve menstruatie"}
         </p>
       </div>
+
       <div className="shrink-0 flex flex-col items-end gap-1">
-        <Button size="sm" variant={isActive ? "secondary" : "primary"} onClick={handleClick} disabled={isPending}>
-          {isPending ? "Bezig..." : isActive ? "Menstruatie stoppen" : "Menstruatie starten 🩸"}
+        <Button
+          size="sm"
+          variant={isActive ? "secondary" : "primary"}
+          onClick={handleClick}
+          disabled={isPending}
+          aria-label={isActive ? "Menstruatie stoppen" : "Menstruatie starten"}
+        >
+          {isPending ? "Bezig..." : isActive ? "Stoppen" : "Starten"}
         </Button>
         {error && <p className="text-xs text-danger">{error}</p>}
       </div>
