@@ -7,6 +7,8 @@ import { FavoritesSection } from "@/components/profile/favorites-section"
 import { PrivacySection } from "@/components/profile/privacy-section"
 import { logout } from "@/lib/actions/auth"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import Link from "next/link"
 
 export default async function ProfielPage() {
   const user = await getAuthedUser()
@@ -32,6 +34,31 @@ export default async function ProfielPage() {
         </div>
 
         <div className="flex flex-col gap-5 mt-6 lg:mt-0">
+          <Card>
+            <h2 className="font-display text-lg text-ink mb-2">Snel naar</h2>
+            <ul className="flex flex-col gap-2 text-sm">
+              <li>
+                <Link href="/hulpmiddelen" className="text-sage-dark font-medium">
+                  Hulpmiddelen & herinneringen
+                </Link>
+              </li>
+              <li>
+                <Link href="/dagboek" className="text-sage-dark font-medium">
+                  Dagboek
+                </Link>
+              </li>
+              <li>
+                <Link href="/kennis" className="text-sage-dark font-medium">
+                  Kennis
+                </Link>
+              </li>
+              <li>
+                <Link href="/cyclus/samenvatting" className="text-sage-dark font-medium">
+                  Samenvatting voor je arts
+                </Link>
+              </li>
+            </ul>
+          </Card>
           <ProgressSection
             totalWorkoutsCompleted={stats.totalWorkoutsCompleted}
             totalCheckins={stats.totalCheckins}

@@ -55,6 +55,14 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
           <p className="font-display text-lg text-ink">{recovery.title}</p>
           <p className="text-sm text-ink-soft mt-0.5">{recovery.duration} minuten</p>
           <p className="text-sm text-ink-soft mt-2">{recovery.description}</p>
+          {recovery.workoutId && (
+            <Link
+              href={`/training/${recovery.workoutId}`}
+              className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
+            >
+              Start oefening
+            </Link>
+          )}
         </Card>
       </div>
     </div>

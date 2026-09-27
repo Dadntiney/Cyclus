@@ -62,6 +62,8 @@ export interface RecoveryRecommendation {
   title: string
   duration: number
   description: string
+  /** Optional linked short workout (mental/sleep/mobility). */
+  workoutId?: string | null
 }
 
 export interface Recommendation {
@@ -438,61 +440,99 @@ function buildRecovery(
   latestCheckin: RecommendationInput["latestCheckin"],
   cycleEstimate: CycleEstimate | null,
   lowerIntensity: boolean,
+  workouts: Workout[],
+  seed: string,
 ): RecoveryRecommendation {
   const need = latestCheckin?.need ?? null
   const wantsSelfCare = need === "mezelf"
   const phase = cycleEstimate?.phase
   const wellness = profile.wellness_preference
+  const poorSleep =
+    latestCheckin?.sleep !== null &&
+    latestCheckin?.sleep !== undefined &&
+    latestCheckin.sleep <= 2
+
+  const mentalTitlesPrefer = poorSleep
+    ? ["Slaapritueel 8 minuten", "Ademreset 4 minuten", "Body scan 6 minuten", "Ademhaling & Ontspanning"]
+    : need === "mezelf" || lowerIntensity
+      ? [
+          "Kort lontje reset 5 minuten",
+          "Ademreset 4 minuten",
+          "Body scan 6 minuten",
+          "Ademhaling & Ontspanning",
+          "Wandeling met aandacht 10 minuten",
+        ]
+      : ["Ademhaling & Ontspanning", "Ademreset 4 minuten", "Nek & Schouders Reset"]
+
+  const byTitle = mentalTitlesPrefer
+    .map((title) => workouts.find((w) => w.title === title))
+    .filter((w): w is Workout => Boolean(w))
+  const gentleShort = workouts.filter(
+    (w) =>
+      (w.type === "mobiliteit" || w.type === "yoga" || w.type === "wandelen") &&
+      w.difficulty === "makkelijk" &&
+      w.duration <= 10,
+  )
+  const recoveryPool = byTitle.length ? byTitle : gentleShort
+  const recoveryWorkout = recoveryPool.length
+    ? recoveryPool[seededIndex(`${seed}-recovery`, recoveryPool.length)]
+    : null
 
   if (wantsSelfCare) {
     return {
-      title: "Tijd voor jezelf",
-      duration: 15,
+      title: recoveryWorkout?.title ?? "Tijd voor jezelf",
+      duration: recoveryWorkout?.duration ?? 15,
       description:
         "Je gaf aan dat je daar vandaag behoefte aan hebt. Neem een moment zonder schuldgevoel — een bad, een boek, of gewoon niets.",
+      workoutId: recoveryWorkout?.id ?? null,
     }
   }
 
-  if (phase === "menstruatie" || lowerIntensity) {
+  if (phase === "menstruatie" || lowerIntensity || poorSleep) {
     if (wellness === "natuurlijk") {
       return {
-        title: "Ademhaling & zachte rust",
-        duration: 10,
+        title: recoveryWorkout?.title ?? "Ademhaling & zachte rust",
+        duration: recoveryWorkout?.duration ?? 10,
         description:
           "Een paar minuten bewuste ademhaling of een korte wandeling buiten helpt je lichaam vandaag het tempo te kiezen dat bij je past.",
+        workoutId: recoveryWorkout?.id ?? null,
       }
     }
     return {
-      title: "Zachte mobiliteit",
-      duration: 10,
+      title: recoveryWorkout?.title ?? "Zachte mobiliteit",
+      duration: recoveryWorkout?.duration ?? 10,
       description:
         "Neem vandaag de tijd voor rustige mobiliteit en ademhaling. Luister naar wat je lichaam nodig heeft.",
+      workoutId: recoveryWorkout?.id ?? null,
     }
   }
 
   if (wellness === "fitness") {
     return {
-      title: "Actief herstel",
-      duration: 10,
+      title: recoveryWorkout?.title ?? "Actief herstel",
+      duration: recoveryWorkout?.duration ?? 10,
       description:
         "Lichte mobiliteit of een korte stretch houdt je soepel zonder je training te belasten.",
+      workoutId: recoveryWorkout?.id ?? null,
     }
   }
 
   if (wellness === "natuurlijk") {
     return {
-      title: "Korte ontspanning",
-      duration: 10,
+      title: recoveryWorkout?.title ?? "Korte ontspanning",
+      duration: recoveryWorkout?.duration ?? 10,
       description:
         "Even stilzitten, ademen, of naar buiten — kleine rustmomenten ondersteunen je ritme.",
+      workoutId: recoveryWorkout?.id ?? null,
     }
   }
 
   return {
-    title: "Korte ontspanning",
-    duration: 10,
+    title: recoveryWorkout?.title ?? "Korte ontspanning",
+    duration: recoveryWorkout?.duration ?? 10,
     description:
       "Een paar minuten bewust ontspannen helpt je lichaam herstellen, ook op een goede dag.",
+    workoutId: recoveryWorkout?.id ?? null,
   }
 }
 
@@ -520,7 +560,14 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     seed,
   })
 
-  const recovery = buildRecovery(profile, latestCheckin, cycleEstimate, lowerIntensity)
+  const recovery = buildRecovery(
+    profile,
+    latestCheckin,
+    cycleEstimate,
+    lowerIntensity,
+    workouts,
+    seed,
+  )
 
   const namePart = profile.name ? `, ${profile.name}` : ""
   let dayFocus = `Luister vandaag naar hoe je je voelt en pas je tempo daarop aan${namePart}.`

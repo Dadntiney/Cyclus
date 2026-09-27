@@ -1,22 +1,42 @@
 import { Suspense } from "react"
+import Link from "next/link"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { getDailyTip } from "@/lib/data/daily-tip"
+import { getMedicationsForUser } from "@/lib/data/medications"
+import { getFeaturedKnowledge } from "@/lib/data/knowledge"
 import { TodayCards } from "@/components/today/today-cards"
 import { CheckinForm } from "@/components/today/checkin-form"
 import { NeedPicker } from "@/components/today/need-picker"
 import { DailyTipCard } from "@/components/today/daily-tip-card"
 import { ProgressCard } from "@/components/today/progress-card"
+import { Card } from "@/components/ui/card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { cn } from "@/lib/utils"
 import { greeting } from "@/lib/greeting"
+import { BookOpen, NotebookPen, Pill } from "lucide-react"
 
-async function DailyTip({ promise }: { promise: ReturnType<typeof getDailyTip> }) {
-  const dailyTip = await promise
+async function DailyTipBlock({
+  today,
+  userId,
+  goals,
+  recentSymptoms,
+}: {
+  today: string
+  userId: string
+  goals: string[] | null | undefined
+  recentSymptoms: string[] | null | undefined
+}) {
+  const dailyTip = await getDailyTip(today, { userId, goals, recentSymptoms })
   if (!dailyTip) return null
   return (
     <div>
-      <h2 className="font-display text-lg text-ink mb-3">Kennis</h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-display text-lg text-ink">Kennis</h2>
+        <Link href="/kennis" className="text-xs font-medium text-sage-dark">
+          Alles
+        </Link>
+      </div>
       <DailyTipCard tip={dailyTip} />
     </div>
   )
@@ -47,15 +67,19 @@ const PHASE_TAGLINE: Record<CyclePhase, string> = {
 
 export default async function VandaagPage() {
   const user = await getAuthedUser()
-
   if (!user) return null
 
   const today = new Date().toISOString().slice(0, 10)
-  const dailyTipPromise = getDailyTip(today)
-
   const { profile, cycleEstimate, recommendation, checkin, streak, completedThisWeek } =
     await getVandaagData(user.id)
+
+  const [medications, featuredKnowledge] = await Promise.all([
+    getMedicationsForUser(user.id),
+    getFeaturedKnowledge(2),
+  ])
+
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
+  const dueMeds = medications.filter((m) => !m.takenToday)
 
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
@@ -115,9 +139,72 @@ export default async function VandaagPage() {
             streak={streak}
           />
 
+          {dueMeds.length > 0 && (
+            <Card>
+              <div className="flex items-center justify-between mb-2">
+                <p className="font-display text-lg text-ink">Medicijndoosje</p>
+                <Link href="/hulpmiddelen" className="text-xs font-medium text-sage-dark">
+                  Beheer
+                </Link>
+              </div>
+              <ul className="flex flex-col gap-1.5">
+                {dueMeds.slice(0, 4).map((m) => (
+                  <li key={m.id} className="text-sm text-ink-soft">
+                    • {m.name}
+                    {m.reminder_time ? ` · ${m.reminder_time.slice(0, 5)}` : ""}
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
           <Suspense fallback={<DailyTipSkeleton />}>
-            <DailyTip promise={dailyTipPromise} />
+            <DailyTipBlock
+              today={today}
+              userId={user.id}
+              goals={profile?.goals}
+              recentSymptoms={checkin?.symptoms}
+            />
           </Suspense>
+
+          {featuredKnowledge.length > 0 && (
+            <Card>
+              <p className="font-display text-lg text-ink mb-2">Uitgelicht</p>
+              <ul className="flex flex-col gap-2">
+                {featuredKnowledge.map((a) => (
+                  <li key={a.id}>
+                    <Link href={`/kennis/${a.slug}`} className="text-sm text-sage-dark font-medium">
+                      {a.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          <div className="grid grid-cols-3 gap-2">
+            <Link
+              href="/kennis"
+              className="rounded-2xl bg-cream-soft px-2 py-3 text-center text-xs font-medium text-ink"
+            >
+              <BookOpen className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
+              Kennis
+            </Link>
+            <Link
+              href="/dagboek"
+              className="rounded-2xl bg-cream-soft px-2 py-3 text-center text-xs font-medium text-ink"
+            >
+              <NotebookPen className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
+              Dagboek
+            </Link>
+            <Link
+              href="/hulpmiddelen"
+              className="rounded-2xl bg-cream-soft px-2 py-3 text-center text-xs font-medium text-ink"
+            >
+              <Pill className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
+              Tools
+            </Link>
+          </div>
         </div>
       </div>
     </div>

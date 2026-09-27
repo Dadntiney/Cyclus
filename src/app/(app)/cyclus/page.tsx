@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { format, parseISO, subDays } from "date-fns"
 import { nl } from "date-fns/locale"
 import { Droplet, Sparkles } from "lucide-react"
+import Link from "next/link"
 
 export default async function CyclusPage() {
   const supabase = await createClient()
@@ -78,7 +79,10 @@ export default async function CyclusPage() {
       <div>
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Mijn cyclus</h1>
         <p className="text-sm text-ink-soft mt-1">
-          Een overzicht van je cyclus, patronen en klachten.
+          Een overzicht van je cyclus, patronen en klachten.{" "}
+          <Link href="/cyclus/samenvatting" className="text-sage-dark font-medium underline">
+            Samenvatting voor je arts
+          </Link>
         </p>
       </div>
 
