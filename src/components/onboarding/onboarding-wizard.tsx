@@ -253,7 +253,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
       {step > 0 && (
         <div className="w-full h-1.5 rounded-full bg-cream-soft mb-8 overflow-hidden">
           <div
-            className="h-full bg-sage-dark rounded-full transition-all duration-300"
+            className="h-full bg-sage-fill rounded-full transition-all duration-300"
             style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
           />
         </div>
@@ -807,7 +807,7 @@ function NutritionStyleStep({
               "flex flex-col gap-1 rounded-2xl border px-4 py-3.5 text-left transition-colors",
               value === opt.value
                 ? "bg-sage-soft border-sage"
-                : "bg-white border-line hover:border-sage/60",
+                : "bg-surface border-line hover:border-sage/60",
             )}
           >
             <span className="font-medium text-ink">{opt.label}</span>
@@ -899,7 +899,7 @@ function StyleStep({
               "flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-colors",
               value === opt.value
                 ? "bg-sage-soft border-sage"
-                : "bg-white border-line hover:border-sage/60",
+                : "bg-surface border-line hover:border-sage/60",
             )}
           >
             <span className="text-xl">{opt.emoji}</span>

@@ -236,7 +236,7 @@ export function Calendar({
             <button
               type="button"
               onClick={() => setFlowPickerDate(null)}
-              className="h-7 w-7 rounded-full flex items-center justify-center text-ink-soft hover:bg-white touch-manipulation"
+              className="h-7 w-7 rounded-full flex items-center justify-center text-ink-soft hover:bg-surface touch-manipulation"
               aria-label="Sluiten"
             >
               <X className="h-4 w-4" />
@@ -253,8 +253,8 @@ export function Calendar({
                 className={cn(
                   "rounded-full border px-3.5 py-2 text-sm font-medium touch-manipulation transition-colors",
                   flowByDate.get(flowPickerDate) === opt.value
-                    ? "bg-sage-dark text-white border-sage-dark"
-                    : "bg-white text-ink border-line hover:border-sage/60",
+                    ? "bg-sage-fill text-white border-sage-dark"
+                    : "bg-surface text-ink border-line hover:border-sage/60",
                 )}
               >
                 <span className="mr-1" aria-hidden>

@@ -162,7 +162,7 @@ export function ReminderToastHost({
         <div
           key={toast.id}
           className={cn(
-            "pointer-events-auto w-full max-w-sm bg-white border border-line rounded-2xl shadow-lg px-4 py-3 flex items-center gap-3 animate-pop-in",
+            "pointer-events-auto w-full max-w-sm bg-surface border border-line rounded-2xl shadow-lg px-4 py-3 flex items-center gap-3 animate-pop-in",
           )}
         >
           <span className="text-xl shrink-0" aria-hidden>

@@ -91,8 +91,8 @@ export function ChatWindow({
               className={cn(
                 "max-w-[80%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed",
                 m.role === "user"
-                  ? "bg-sage-dark text-white rounded-br-md"
-                  : "bg-white border border-line text-ink rounded-bl-md",
+                  ? "bg-sage-fill text-white rounded-br-md"
+                  : "bg-surface border border-line text-ink rounded-bl-md",
               )}
             >
               {m.message}
@@ -101,7 +101,7 @@ export function ChatWindow({
         ))}
         {isPending && (
           <div className="flex justify-start">
-            <div className="bg-white border border-line rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-ink-soft">
+            <div className="bg-surface border border-line rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-ink-soft">
               Aan het typen...
             </div>
           </div>
@@ -112,7 +112,7 @@ export function ChatWindow({
 
       <form
         onSubmit={handleSubmit}
-        className="shrink-0 flex items-center gap-2 px-5 lg:px-8 py-3 border-t border-line bg-white"
+        className="shrink-0 flex items-center gap-2 px-5 lg:px-8 py-3 border-t border-line bg-surface"
       >
         <Input
           value={input}
@@ -127,9 +127,9 @@ export function ChatWindow({
           disabled={isPending || !input.trim()}
           aria-label="Verstuur bericht"
           className={cn(
-            "h-11 w-11 shrink-0 rounded-full bg-sage-dark text-white flex items-center justify-center",
+            "h-11 w-11 shrink-0 rounded-full bg-sage-fill text-white flex items-center justify-center",
             "transition-[background-color,transform] duration-150 touch-manipulation motion-safe:active:scale-[0.94]",
-            "hover:bg-sage-darker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+            "hover:bg-sage-fill-darker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
             "disabled:opacity-50 disabled:pointer-events-none",
           )}
         >

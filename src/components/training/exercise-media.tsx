@@ -4,12 +4,12 @@ import { cn } from "@/lib/utils"
 const TONE_CLASSES: Record<ExerciseTone, { bg: string; ring: string; icon: string }> = {
   sage: {
     bg: "bg-[linear-gradient(135deg,var(--color-sage-soft)_0%,var(--color-cream)_100%)]",
-    ring: "bg-white/70",
+    ring: "bg-surface/70",
     icon: "text-sage-dark",
   },
   peach: {
     bg: "bg-[linear-gradient(135deg,var(--color-peach-soft)_0%,var(--color-cream)_100%)]",
-    ring: "bg-white/70",
+    ring: "bg-surface/70",
     icon: "text-peach",
   },
 }

@@ -39,8 +39,8 @@ export function SegmentedControl<T extends string>({
             "min-h-9 min-w-[64px] rounded-lg px-3 text-sm font-medium touch-manipulation transition-[background-color,color,box-shadow] duration-150",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
             value === opt.value
-              ? "bg-white text-ink shadow-sm"
-              : "text-ink-soft active:bg-white/50",
+              ? "bg-surface text-ink shadow-sm"
+              : "text-ink-soft active:bg-surface/50",
           )}
         >
           {opt.label}

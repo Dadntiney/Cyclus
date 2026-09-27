@@ -188,7 +188,7 @@ export default async function CyclusdagPage() {
 
         {showAmbientBuddyContent && (
           <section>
-            <Card className="bg-white">
+            <Card className="bg-surface">
               <p className="text-xs font-medium text-sage-dark mb-1">
                 <span className="mr-1" aria-hidden>
                   {view.buddyMoment.emoji}

@@ -62,7 +62,7 @@ export function GroceryList({
       {categories.map((cat) => (
         <div key={cat.category}>
           <h2 className="font-display text-base text-ink mb-2">{cat.category}</h2>
-          <div className="rounded-3xl bg-white border border-line/70 divide-y divide-line overflow-hidden">
+          <div className="rounded-3xl bg-surface border border-line/70 divide-y divide-line overflow-hidden">
             {cat.items.map((item) => {
               const isChecked = checked.has(item.id)
               const subtitle = groceryItemSubtitle(item)
@@ -76,7 +76,7 @@ export function GroceryList({
                   <span
                     className={cn(
                       "shrink-0 h-5 w-5 rounded-md border flex items-center justify-center transition-colors",
-                      isChecked ? "bg-sage-dark border-sage-dark" : "border-line",
+                      isChecked ? "bg-sage-fill border-sage-dark" : "border-line",
                     )}
                   >
                     {isChecked && <Check className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />}

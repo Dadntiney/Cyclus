@@ -99,7 +99,7 @@ export function WeekView({
               onClick={() => setSelectedIndex(i)}
               className={cn(
                 "flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 touch-manipulation transition-colors",
-                selected ? "bg-sage-dark text-white" : "bg-white border border-line text-ink",
+                selected ? "bg-sage-fill text-white" : "bg-surface border border-line text-ink",
               )}
             >
               <span className="text-[10px] font-medium uppercase opacity-80">{d.weekdayShort}</span>
@@ -108,7 +108,7 @@ export function WeekView({
                 <span
                   className={cn(
                     "h-1.5 w-1.5 rounded-full",
-                    selected ? "bg-white/80" : dPhase.colors.dot,
+                    selected ? "bg-surface/80" : dPhase.colors.dot,
                   )}
                 />
               )}
@@ -187,7 +187,7 @@ export function WeekView({
       {nutritionEnabled && (
         <Link
           href="/deze-week/boodschappen"
-          className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3.5 touch-manipulation"
+          className="flex items-center justify-between rounded-2xl bg-surface border border-line/70 px-4 py-3.5 touch-manipulation"
         >
           <span className="inline-flex items-center gap-2.5 text-sm font-medium text-ink">
             <ShoppingCart className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />

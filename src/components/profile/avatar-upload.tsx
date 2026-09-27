@@ -112,9 +112,9 @@ export function AvatarUpload({
           disabled={busy}
           aria-label="Profielfoto wijzigen"
           className={cn(
-            "absolute -bottom-1.5 -right-1.5 h-11 w-11 rounded-full bg-sage-dark text-white flex items-center justify-center border-2 border-cream",
+            "absolute -bottom-1.5 -right-1.5 h-11 w-11 rounded-full bg-sage-fill text-white flex items-center justify-center border-2 border-cream",
             "transition-[background-color,transform] duration-150 touch-manipulation motion-safe:active:scale-[0.94]",
-            "hover:bg-sage-darker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream",
+            "hover:bg-sage-fill-darker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream",
             "disabled:opacity-60",
           )}
         >

@@ -28,7 +28,7 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative w-full max-w-sm bg-white rounded-3xl shadow-[var(--shadow-card)] p-5 motion-safe:animate-pop-in"
+        className="relative w-full max-w-sm bg-surface rounded-3xl shadow-[var(--shadow-card)] p-5 motion-safe:animate-pop-in"
       >
         <p className="font-display text-lg text-ink mb-3">{title}</p>
         {children}

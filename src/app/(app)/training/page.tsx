@@ -103,7 +103,7 @@ export default async function TrainingPage() {
 
       <Link
         href="/deze-week"
-        className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3.5 touch-manipulation"
+        className="flex items-center justify-between rounded-2xl bg-surface border border-line/70 px-4 py-3.5 touch-manipulation"
       >
         <span className="text-sm font-medium text-ink">📆 Bekijk je weekplanning</span>
         <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />

@@ -246,7 +246,7 @@ export function ListenMode({
       {hasAudioFile && (
         <div className="mx-auto mb-6 h-1.5 w-full max-w-[220px] rounded-full bg-cream-soft overflow-hidden">
           <div
-            className="h-full rounded-full bg-sage-dark transition-all duration-300"
+            className="h-full rounded-full bg-sage-fill transition-all duration-300"
             style={{ width: `${Math.round(progress * 100)}%` }}
           />
         </div>
@@ -275,7 +275,7 @@ export function ListenMode({
           type="button"
           onClick={handlePlayPause}
           aria-label={playing ? "Pauzeren" : "Afspelen"}
-          className="h-16 w-16 rounded-full flex items-center justify-center bg-sage-dark text-white touch-manipulation motion-safe:active:scale-[0.94] transition-transform"
+          className="h-16 w-16 rounded-full flex items-center justify-center bg-sage-fill text-white touch-manipulation motion-safe:active:scale-[0.94] transition-transform"
         >
           {playing ? (
             <Pause className="h-6 w-6" strokeWidth={2} />

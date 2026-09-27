@@ -196,7 +196,7 @@ export function MedicationWizard({
       {totalSteps > 1 && (
         <div className="w-full h-1.5 rounded-full bg-cream-soft mb-7 overflow-hidden">
           <div
-            className="h-full bg-sage-dark rounded-full transition-all duration-300"
+            className="h-full bg-sage-fill rounded-full transition-all duration-300"
             style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
           />
         </div>
@@ -272,7 +272,7 @@ function CategoryStep({
             className={cn(
               "flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left touch-manipulation transition-[background-color,border-color,transform] duration-150 motion-safe:active:scale-[0.98]",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
-              value === opt.value ? "bg-sage-soft border-sage" : "bg-white border-line hover:border-sage/60",
+              value === opt.value ? "bg-sage-soft border-sage" : "bg-surface border-line hover:border-sage/60",
             )}
           >
             <span className="text-xl" aria-hidden>

@@ -28,7 +28,7 @@ export function PhaseOverview({ currentPhase }: { currentPhase: CyclePhase | nul
               className={cn(
                 "flex flex-col items-center gap-1.5 rounded-2xl px-1.5 py-3 min-h-11 touch-manipulation transition-[background-color,transform] duration-150 motion-safe:active:scale-[0.96]",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
-                isSelected ? PHASE_CONTENT[phase].colors.bg : "bg-white border border-line",
+                isSelected ? PHASE_CONTENT[phase].colors.bg : "bg-surface border border-line",
               )}
             >
               <span
@@ -63,7 +63,7 @@ export function PhaseOverview({ currentPhase }: { currentPhase: CyclePhase | nul
               {content.nutrition.exampleFoods.map((food) => (
                 <span
                   key={food}
-                  className="text-[11px] font-medium text-ink bg-white/70 rounded-full px-2.5 py-1"
+                  className="text-[11px] font-medium text-ink bg-surface/70 rounded-full px-2.5 py-1"
                 >
                   {food}
                 </span>

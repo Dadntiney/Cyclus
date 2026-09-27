@@ -27,7 +27,7 @@ export function AutosaveStatusPill({
     <div className="fixed bottom-20 md:bottom-6 inset-x-0 z-40 flex justify-center px-4 pointer-events-none">
       <div
         className={cn(
-          "pointer-events-auto max-w-sm bg-white border rounded-full shadow-lg px-4 py-2 flex items-center gap-2 text-sm animate-pop-in",
+          "pointer-events-auto max-w-sm bg-surface border rounded-full shadow-lg px-4 py-2 flex items-center gap-2 text-sm animate-pop-in",
           status === "error" ? "border-danger/30" : "border-line",
         )}
       >

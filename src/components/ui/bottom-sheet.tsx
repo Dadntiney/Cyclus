@@ -30,7 +30,7 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-[0_-8px_30px_rgba(44,42,38,0.12)] motion-safe:animate-[sheet-in_0.25s_cubic-bezier(0.32,0.72,0,1)] max-h-[85vh] flex flex-col"
+        className="relative w-full sm:max-w-sm bg-surface rounded-t-3xl sm:rounded-3xl shadow-[0_-8px_30px_rgba(44,42,38,0.12)] motion-safe:animate-[sheet-in_0.25s_cubic-bezier(0.32,0.72,0,1)] max-h-[85vh] flex flex-col"
         style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
       >
         <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-line shrink-0 sm:hidden" aria-hidden="true" />

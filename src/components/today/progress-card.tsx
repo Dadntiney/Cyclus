@@ -27,7 +27,7 @@ export function ProgressCard({
           </div>
           <div className="w-full h-2 rounded-full bg-cream-soft overflow-hidden mb-2">
             <div
-              className={cn("h-full rounded-full transition-all duration-500", "bg-sage-dark")}
+              className={cn("h-full rounded-full transition-all duration-500", "bg-sage-fill")}
               style={{ width: `${pct}%` }}
             />
           </div>

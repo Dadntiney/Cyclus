@@ -30,8 +30,8 @@ export function RatingScale({
               "h-11 w-11 rounded-full border text-sm font-semibold flex items-center justify-center touch-manipulation transition-[background-color,border-color,transform] duration-150 motion-safe:active:scale-[0.92]",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream",
               value === n
-                ? "bg-sage-dark text-white border-sage-dark"
-                : "bg-white text-ink-soft border-line hover:border-sage/60 active:border-sage/60",
+                ? "bg-sage-fill text-white border-sage-dark"
+                : "bg-surface text-ink-soft border-line hover:border-sage/60 active:border-sage/60",
             )}
           >
             {n}

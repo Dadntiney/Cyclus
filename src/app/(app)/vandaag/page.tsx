@@ -57,10 +57,10 @@ function DailyTipSkeleton() {
 }
 
 const PHASE_TONE: Record<CyclePhase, { bg: string; text: string; ring: string }> = {
-  menstruatie: { bg: "bg-peach-soft", text: "text-ink", ring: "bg-white/70" },
-  folliculair: { bg: "bg-sage-soft", text: "text-sage-dark", ring: "bg-white/70" },
-  ovulatie: { bg: "bg-sage-soft", text: "text-sage-dark", ring: "bg-white/70" },
-  luteaal: { bg: "bg-peach-soft", text: "text-ink", ring: "bg-white/70" },
+  menstruatie: { bg: "bg-peach-soft", text: "text-ink", ring: "bg-surface/70" },
+  folliculair: { bg: "bg-sage-soft", text: "text-sage-dark", ring: "bg-surface/70" },
+  ovulatie: { bg: "bg-sage-soft", text: "text-sage-dark", ring: "bg-surface/70" },
+  luteaal: { bg: "bg-peach-soft", text: "text-ink", ring: "bg-surface/70" },
 }
 
 const PHASE_TAGLINE: Record<CyclePhase, string> = {
@@ -158,7 +158,7 @@ export default async function VandaagPage() {
 
           <Link
             href="/deze-week"
-            className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3.5 touch-manipulation"
+            className="flex items-center justify-between rounded-2xl bg-surface border border-line/70 px-4 py-3.5 touch-manipulation"
           >
             <span className="text-sm font-medium text-ink">📆 Bekijk je hele week</span>
             <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />

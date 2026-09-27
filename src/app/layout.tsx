@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import { ClientBootstrap } from "@/components/bootstrap/client-bootstrap";
+import { getAuthedUser } from "@/lib/supabase/server";
+import { getProfile } from "@/lib/data/profile";
 import "./globals.css";
 
 const bodyFont = Plus_Jakarta_Sans({
@@ -37,7 +39,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#faf6f0",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf6f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#1d1b18" },
+  ],
   // Resizes the visual viewport when the on-screen keyboard opens instead
   // of the keyboard simply overlaying fixed-position content (the bottom
   // nav, a sheet's footer) — the browsers that support this (Chrome/
@@ -45,10 +50,23 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // "auto" (or logged out) intentionally sets no attribute: the dark CSS
+  // block in globals.css then applies purely via @media
+  // (prefers-color-scheme: dark), which the browser re-evaluates live if
+  // the device theme changes — no client script needed for that case, and
+  // nothing to get wrong on the very first paint (no flash either way).
+  // "licht"/"donker" force data-theme explicitly, read here server-side so
+  // the very first response already has it — also no flash.
+  const user = await getAuthedUser();
+  const profile = user ? await getProfile(user.id) : null;
+  const theme = profile?.theme_preference;
+  const themeAttr = theme === "light" || theme === "dark" ? theme : undefined;
+
   return (
     <html
       lang="nl"
+      data-theme={themeAttr}
       className={`${bodyFont.variable} ${displayFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-cream text-ink font-sans">

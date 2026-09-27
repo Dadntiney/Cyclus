@@ -599,6 +599,7 @@ export type Database = {
           personal_note: string | null
           show_medication_on_dashboard: boolean
           sleep_tracking_enabled: boolean | null
+          theme_preference: string
           track_flow_intensity: boolean
           training_frequency: number | null
           training_preferences: string[]
@@ -635,6 +636,7 @@ export type Database = {
           personal_note?: string | null
           show_medication_on_dashboard?: boolean
           sleep_tracking_enabled?: boolean | null
+          theme_preference?: string
           track_flow_intensity?: boolean
           training_frequency?: number | null
           training_preferences?: string[]
@@ -671,6 +673,7 @@ export type Database = {
           personal_note?: string | null
           show_medication_on_dashboard?: boolean
           sleep_tracking_enabled?: boolean | null
+          theme_preference?: string
           track_flow_intensity?: boolean
           training_frequency?: number | null
           training_preferences?: string[]

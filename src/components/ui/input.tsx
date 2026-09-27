@@ -8,7 +8,7 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
       ref={ref}
       className={cn(
         // text-base (16px) prevents iOS Safari from auto-zooming the page on focus
-        "w-full min-h-12 rounded-2xl border border-line bg-white px-4 py-3 text-base text-ink placeholder:text-ink-soft/70 outline-none transition-shadow focus:ring-2 focus:ring-sage/40 focus:border-sage",
+        "w-full min-h-12 rounded-2xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-soft/70 outline-none transition-shadow focus:ring-2 focus:ring-sage/40 focus:border-sage",
         className,
       )}
       {...props}
@@ -24,7 +24,7 @@ export const Textarea = forwardRef<
   <textarea
     ref={ref}
     className={cn(
-      "w-full rounded-2xl border border-line bg-white px-4 py-3 text-base text-ink placeholder:text-ink-soft/70 outline-none transition-shadow focus:ring-2 focus:ring-sage/40 focus:border-sage resize-none",
+      "w-full rounded-2xl border border-line bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-soft/70 outline-none transition-shadow focus:ring-2 focus:ring-sage/40 focus:border-sage resize-none",
       className,
     )}
     {...props}

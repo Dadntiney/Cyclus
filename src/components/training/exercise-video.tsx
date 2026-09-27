@@ -51,7 +51,7 @@ export function ExerciseVideoPlayer({ video, exerciseName }: ExerciseVideoPlayer
                 "motion-safe:group-active:scale-95 transition-transform",
               )}
             >
-              <span className="h-14 w-14 rounded-full bg-white/95 flex items-center justify-center shadow-lg">
+              <span className="h-14 w-14 rounded-full bg-surface/95 flex items-center justify-center shadow-lg">
                 <Play className="h-6 w-6 text-ink ml-0.5" fill="currentColor" />
               </span>
             </span>

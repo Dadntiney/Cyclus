@@ -18,7 +18,7 @@ export default function GlobalError({
           </p>
           <button
             onClick={reset}
-            className="inline-flex items-center justify-center gap-2 font-medium bg-sage-dark text-white rounded-2xl px-5 py-3 text-base"
+            className="inline-flex items-center justify-center gap-2 font-medium bg-sage-fill text-white rounded-2xl px-5 py-3 text-base"
           >
             Probeer opnieuw
           </button>

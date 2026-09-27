@@ -42,7 +42,7 @@ export function MenstruationQuickAction({ isActive, day }: { isActive: boolean; 
         <span
           className={cn(
             "flex h-11 w-11 items-center justify-center rounded-full",
-            isActive ? "bg-white/70" : "bg-sage-soft",
+            isActive ? "bg-surface/70" : "bg-sage-soft",
           )}
           aria-hidden
         >

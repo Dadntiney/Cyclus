@@ -15,7 +15,7 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
   const pathname = usePathname()
 
   return (
-    <aside className="hidden md:flex md:flex-col md:w-64 xl:w-72 md:shrink-0 border-r border-line bg-white/60 px-4 py-6">
+    <aside className="hidden md:flex md:flex-col md:w-64 xl:w-72 md:shrink-0 border-r border-line bg-surface/60 px-4 py-6">
       <Link
         href="/vandaag"
         className="font-display text-xl text-sage-dark px-2 mb-8 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"

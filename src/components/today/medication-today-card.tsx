@@ -51,7 +51,7 @@ export function MedicationTodayCard({ items, date }: { items: MedicationDashboar
                     paused
                       ? "border-line/60 text-ink-soft/40"
                       : taken
-                        ? "bg-sage-dark border-sage-dark text-white"
+                        ? "bg-sage-fill border-sage-dark text-white"
                         : "border-line text-transparent hover:border-sage/60",
                   )}
                   aria-label={taken ? "Gemarkeerd als ingenomen" : "Markeer als ingenomen"}

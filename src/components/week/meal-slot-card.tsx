@@ -170,7 +170,7 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
                 onOverride({ type: "custom-meal", slot, text: customText.trim() })
                 reset()
               }}
-              className="inline-flex items-center gap-1 text-xs font-medium text-white bg-sage-dark rounded-full px-3 py-1.5 disabled:opacity-40 touch-manipulation"
+              className="inline-flex items-center gap-1 text-xs font-medium text-white bg-sage-fill rounded-full px-3 py-1.5 disabled:opacity-40 touch-manipulation"
             >
               <Check className="h-3 w-3" />
               Opslaan

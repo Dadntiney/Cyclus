@@ -15,7 +15,7 @@ export function ProfileHero({
   memberSince: string | null
 }) {
   return (
-    <div className="rounded-3xl bg-white border border-line/70 shadow-[var(--shadow-card)] p-6 lg:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-5 lg:gap-7 text-center sm:text-left">
+    <div className="rounded-3xl bg-surface border border-line/70 shadow-[var(--shadow-card)] p-6 lg:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-5 lg:gap-7 text-center sm:text-left">
       <AvatarUpload userId={userId} name={name} initialAvatarUrl={avatarUrl} />
       <div className="flex-1 min-w-0">
         <p className="text-sage-dark text-sm font-medium mb-1">

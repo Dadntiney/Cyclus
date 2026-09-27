@@ -2,7 +2,9 @@ import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfileOverview } from "@/lib/data/profile"
 import { getReminders } from "@/lib/data/reminders"
 import { ProfileHero } from "@/components/profile/profile-hero"
+import { ThemeSection } from "@/components/profile/theme-section"
 import { ProfileForm } from "@/components/profile/profile-form"
+import type { ThemePreference } from "@/lib/actions/profile"
 import { RemindersSection } from "@/components/profile/reminders-section"
 import { PushNotificationsCard } from "@/components/notifications/push-notifications-card"
 import { ProgressSection } from "@/components/profile/progress-section"
@@ -24,6 +26,11 @@ export default async function ProfielPage() {
 
   if (!profile) return null
 
+  const themePreference: ThemePreference =
+    profile.theme_preference === "light" || profile.theme_preference === "dark"
+      ? profile.theme_preference
+      : "auto"
+
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
       <ProfileHero
@@ -32,6 +39,8 @@ export default async function ProfielPage() {
         avatarUrl={profile.avatar_url}
         memberSince={stats.memberSince}
       />
+
+      <ThemeSection initial={themePreference} />
 
       <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
         <div className="lg:col-span-2 flex flex-col gap-5">
