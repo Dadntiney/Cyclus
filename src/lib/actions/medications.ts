@@ -36,15 +36,28 @@ export async function addMedication(input: z.infer<typeof medicationSchema>) {
   } = await supabase.auth.getUser()
   if (!user) return { error: "Je bent niet ingelogd." }
 
+  // Compatible with the richer live medications schema.
   const { error } = await supabase.from("medications").insert({
     user_id: user.id,
     name: parsed.data.name,
     notes: parsed.data.notes || null,
-    reminder_time: normalizeTime(parsed.data.reminderTime ?? null),
+    time_of_day: normalizeTime(parsed.data.reminderTime ?? null),
     reminder_enabled: parsed.data.reminderEnabled,
+    category: "overig",
+    schedule_type: "dagelijks",
   })
 
-  if (error) return { error: "Toevoegen is niet gelukt." }
+  if (error) {
+    // Fallback for simpler local/dev schema.
+    const fallback = await supabase.from("medications").insert({
+      user_id: user.id,
+      name: parsed.data.name,
+      notes: parsed.data.notes || null,
+      reminder_time: normalizeTime(parsed.data.reminderTime ?? null),
+      reminder_enabled: parsed.data.reminderEnabled,
+    })
+    if (fallback.error) return { error: "Toevoegen is niet gelukt." }
+  }
 
   revalidatePath("/hulpmiddelen")
   revalidatePath("/vandaag")
@@ -65,15 +78,16 @@ export async function updateMedication(
     updated_at: string
     name?: string
     notes?: string | null
-    reminder_time?: string | null
+    time_of_day?: string | null
     reminder_enabled?: boolean
-    active?: boolean
+    end_date?: string | null
   } = { updated_at: new Date().toISOString() }
   if (input.name !== undefined) patch.name = input.name
   if (input.notes !== undefined) patch.notes = input.notes || null
-  if (input.reminderTime !== undefined) patch.reminder_time = normalizeTime(input.reminderTime)
+  if (input.reminderTime !== undefined) patch.time_of_day = normalizeTime(input.reminderTime)
   if (input.reminderEnabled !== undefined) patch.reminder_enabled = input.reminderEnabled
-  if (input.active !== undefined) patch.active = input.active
+  if (input.active === false) patch.end_date = todayISO()
+  if (input.active === true) patch.end_date = null
 
   const { error } = await supabase
     .from("medications")
@@ -95,8 +109,17 @@ export async function deleteMedication(id: string) {
   } = await supabase.auth.getUser()
   if (!user) return { error: "Je bent niet ingelogd." }
 
-  const { error } = await supabase.from("medications").delete().eq("id", id).eq("user_id", user.id)
-  if (error) return { error: "Verwijderen is niet gelukt." }
+  // Soft-end when possible so history/logs stay intact; hard delete as fallback.
+  const soft = await supabase
+    .from("medications")
+    .update({ end_date: todayISO(), updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", user.id)
+
+  if (soft.error) {
+    const hard = await supabase.from("medications").delete().eq("id", id).eq("user_id", user.id)
+    if (hard.error) return { error: "Verwijderen is niet gelukt." }
+  }
 
   revalidatePath("/hulpmiddelen")
   revalidatePath("/vandaag")
@@ -112,24 +135,37 @@ export async function toggleMedicationTaken(medicationId: string, taken: boolean
 
   const date = todayISO()
 
-  if (taken) {
-    const { error } = await supabase.from("medication_intakes").upsert(
-      {
-        user_id: user.id,
-        medication_id: medicationId,
-        date,
-      },
-      { onConflict: "user_id,medication_id,date" },
-    )
-    if (error) return { error: "Markeren is niet gelukt." }
-  } else {
-    const { error } = await supabase
-      .from("medication_intakes")
-      .delete()
-      .eq("user_id", user.id)
-      .eq("medication_id", medicationId)
-      .eq("date", date)
-    if (error) return { error: "Ongedaan maken is niet gelukt." }
+  // Prefer live medication_logs schema.
+  const upsertLog = await supabase.from("medication_logs").upsert(
+    {
+      user_id: user.id,
+      medication_id: medicationId,
+      date,
+      taken,
+    },
+    { onConflict: "user_id,medication_id,date" },
+  )
+
+  if (upsertLog.error) {
+    if (taken) {
+      const { error } = await supabase.from("medication_intakes").upsert(
+        {
+          user_id: user.id,
+          medication_id: medicationId,
+          date,
+        },
+        { onConflict: "user_id,medication_id,date" },
+      )
+      if (error) return { error: "Markeren is niet gelukt." }
+    } else {
+      const { error } = await supabase
+        .from("medication_intakes")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("medication_id", medicationId)
+        .eq("date", date)
+      if (error) return { error: "Ongedaan maken is niet gelukt." }
+    }
   }
 
   revalidatePath("/hulpmiddelen")
