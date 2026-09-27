@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { ChefHat, Repeat, X, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { RecipeImage } from "@/components/nutrition/recipe-image"
 import type { WeekPlanRecipe } from "@/lib/recommendations/week-plan"
 import type { DayOverride, MealSlotKey } from "@/lib/client/week-plan-storage"
 
@@ -30,6 +31,10 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
   const skipped = override?.type === "skip-meal"
   const swapped = override?.type === "swap-meal" ? override : null
   const custom = override?.type === "custom-meal" ? override : null
+  // Alternatives are computed against the original suggestion's id (see
+  // week-view's alternativesFor), so once swapped, the picked recipe is
+  // still in this list — reuse it here to keep the photo after swapping.
+  const swappedRecipe = swapped ? (alternatives.find((a) => a.id === swapped.recipeId) ?? null) : null
 
   function reset() {
     setMode("idle")
@@ -56,18 +61,34 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
       ) : custom ? (
         <p className="text-sm font-medium text-ink">{custom.text}</p>
       ) : swapped ? (
-        <p className="text-sm font-medium text-ink">{swapped.title}</p>
+        <div className="flex items-center gap-3">
+          <RecipeImage
+            title={swapped.title}
+            imageUrl={swappedRecipe?.image_url ?? null}
+            className="h-14 w-14 rounded-xl shrink-0"
+            sizes="56px"
+          />
+          <p className="text-sm font-medium text-ink">{swapped.title}</p>
+        </div>
       ) : recipe ? (
-        <Link href={`/voeding/${recipe.id}`} className="block group touch-manipulation">
-          <p className="text-sm font-medium text-ink group-hover:text-sage-dark transition-colors">
-            {recipe.title}
-          </p>
-          {recipe.preparation_time && (
-            <p className="text-xs text-ink-soft mt-0.5 inline-flex items-center gap-1">
-              <ChefHat className="h-3 w-3" strokeWidth={1.75} />
-              {recipe.preparation_time} min
+        <Link href={`/voeding/${recipe.id}`} className="flex items-center gap-3 group touch-manipulation">
+          <RecipeImage
+            title={recipe.title}
+            imageUrl={recipe.image_url}
+            className="h-14 w-14 rounded-xl shrink-0"
+            sizes="56px"
+          />
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-ink group-hover:text-sage-dark transition-colors">
+              {recipe.title}
             </p>
-          )}
+            {recipe.preparation_time && (
+              <p className="text-xs text-ink-soft mt-0.5 inline-flex items-center gap-1">
+                <ChefHat className="h-3 w-3" strokeWidth={1.75} />
+                {recipe.preparation_time} min
+              </p>
+            )}
+          </div>
         </Link>
       ) : (
         <p className="text-sm text-ink-soft">Geen suggestie beschikbaar.</p>

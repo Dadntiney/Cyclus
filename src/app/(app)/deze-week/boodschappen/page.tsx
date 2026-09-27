@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
 
-const RECIPE_COLUMNS = "id, title, category, preparation_time, ingredients, nutrition_information"
+const RECIPE_COLUMNS = "id, title, category, preparation_time, ingredients, nutrition_information, image_url"
 
 export default async function BoodschappenPage() {
   const supabase = await createClient()

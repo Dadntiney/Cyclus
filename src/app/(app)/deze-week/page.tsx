@@ -6,7 +6,7 @@ import { buildGroceryList } from "@/lib/nutrition/grocery-list"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
 import { WeekView } from "@/components/week/week-view"
 
-const RECIPE_COLUMNS = "id, title, category, preparation_time, ingredients, nutrition_information"
+const RECIPE_COLUMNS = "id, title, category, preparation_time, ingredients, nutrition_information, image_url"
 const WORKOUT_COLUMNS = "id, title, type, duration, difficulty"
 
 export default async function DezeWeekPage() {

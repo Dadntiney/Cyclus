@@ -8,7 +8,7 @@ import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-
 export type WeekPlanWorkout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
 export type WeekPlanRecipe = Pick<
   Tables<"recipes">,
-  "id" | "title" | "category" | "preparation_time" | "ingredients" | "nutrition_information"
+  "id" | "title" | "category" | "preparation_time" | "ingredients" | "nutrition_information" | "image_url"
 >
 type Workout = WeekPlanWorkout
 type Recipe = WeekPlanRecipe
