@@ -52,8 +52,9 @@ export default async function MedicatiePage() {
             if (items.length === 0) return null
             return (
               <section key={cat.value}>
-                <h2 className="font-display text-lg text-ink mb-2.5">
-                  <span aria-hidden>{cat.emoji}</span> {cat.label}
+                <h2 className="font-display text-lg text-ink mb-2.5 inline-flex items-center gap-1.5">
+                  <cat.icon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} aria-hidden />
+                  {cat.label}
                 </h2>
                 <MedicationList medications={items} />
               </section>

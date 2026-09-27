@@ -52,7 +52,7 @@ export function IngredientList({
       <BottomSheet
         open={Boolean(open?.info)}
         onClose={() => setOpenIndex(null)}
-        title={open?.info ? `${open.info.emoji} ${open.info.label}` : undefined}
+        title={open?.info?.label}
       >
         {open?.info && (
           <>

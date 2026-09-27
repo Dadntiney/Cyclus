@@ -3,19 +3,20 @@
 import { useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Camera, Loader2 } from "lucide-react"
+import { Camera, Loader2, Leaf } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { updateAvatar } from "@/lib/actions/profile"
 import { cn } from "@/lib/utils"
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024
 
-function initials(name: string | null): string {
-  if (!name) return "🌿"
+/** Null when there's no name to derive initials from — render falls back to a Leaf icon. */
+function initials(name: string | null): string | null {
+  if (!name) return null
   const parts = name.trim().split(/\s+/)
   const first = parts[0]?.[0] ?? ""
   const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : ""
-  return (first + last).toUpperCase() || "🌿"
+  return (first + last).toUpperCase() || null
 }
 
 export function AvatarUpload({
@@ -103,7 +104,9 @@ export function AvatarUpload({
               className="h-full w-full object-cover"
             />
           ) : (
-            <span className="font-display text-2xl text-sage-dark">{initials(name)}</span>
+            <span className="font-display text-2xl text-sage-dark">
+              {initials(name) ?? <Leaf className="h-6 w-6" strokeWidth={1.75} />}
+            </span>
           )}
         </div>
         <button

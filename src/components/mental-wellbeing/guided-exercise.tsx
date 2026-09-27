@@ -92,7 +92,7 @@ export function GuidedExercise({ exercise }: { exercise: MindfulExercise }) {
               <Headphones className="h-4.5 w-4.5 text-sage-dark" strokeWidth={1.75} />
             </span>
             <span className="min-w-0">
-              <span className="block text-sm font-medium text-ink">🎧 Luisteren</span>
+              <span className="block text-sm font-medium text-ink">Luisteren</span>
               <span className="block text-xs text-ink-soft mt-0.5">Ogen dicht, telefoon neerleggen</span>
             </span>
           </button>
@@ -105,7 +105,7 @@ export function GuidedExercise({ exercise }: { exercise: MindfulExercise }) {
               <BookOpen className="h-4.5 w-4.5 text-ink-soft" strokeWidth={1.75} />
             </span>
             <span className="min-w-0">
-              <span className="block text-sm font-medium text-ink">📖 Lezen</span>
+              <span className="block text-sm font-medium text-ink">Lezen</span>
               <span className="block text-xs text-ink-soft mt-0.5">Stap voor stap meelezen</span>
             </span>
           </button>

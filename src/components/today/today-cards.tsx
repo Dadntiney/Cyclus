@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Dumbbell, Salad, Sparkles } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { Recommendation } from "@/lib/recommendations/engine"
@@ -13,7 +14,10 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
       <div className="flex flex-col gap-3">
         {movementEnabled && (
           <div className="rounded-2xl border border-line/70 p-3.5">
-            <p className="text-xs font-medium text-sage-dark mb-1">🏋️ Beweging</p>
+            <p className="text-xs font-medium text-sage-dark mb-1 inline-flex items-center gap-1">
+              <Dumbbell className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Beweging
+            </p>
             {training.workout ? (
               <>
                 <p className="font-display text-lg text-ink">{training.workout.title}</p>
@@ -31,7 +35,10 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
 
         {nutritionEnabled && (
           <div className="rounded-2xl border border-line/70 p-3.5">
-            <p className="text-xs font-medium text-sage-dark mb-1">🥗 Voeding</p>
+            <p className="text-xs font-medium text-sage-dark mb-1 inline-flex items-center gap-1">
+              <Salad className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Voeding
+            </p>
             {nutrition.recipe ? (
               <>
                 <p className="font-display text-lg text-ink">{nutrition.recipe.title}</p>
@@ -52,7 +59,10 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
         )}
 
         <div className="rounded-2xl border border-line/70 p-3.5">
-          <p className="text-xs font-medium text-sage-dark mb-1">🧘 Herstel</p>
+          <p className="text-xs font-medium text-sage-dark mb-1 inline-flex items-center gap-1">
+            <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
+            Herstel
+          </p>
           <p className="font-display text-lg text-ink">{recovery.title}</p>
           <p className="text-sm text-ink-soft mt-0.5">{recovery.duration} minuten</p>
           <p className="text-sm text-ink-soft mt-1.5">{recovery.description}</p>

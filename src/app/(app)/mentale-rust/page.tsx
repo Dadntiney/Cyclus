@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Brain } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { createClient } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
@@ -26,7 +27,7 @@ export default async function MentaleRustPage() {
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Mijn mentale rust</h1>
         <p className="text-sm text-ink-soft mb-6">Korte meditaties, mindfulness en affirmaties.</p>
         <Card className="text-center py-8">
-          <p className="text-3xl mb-3">🧘</p>
+          <Brain className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
           <p className="font-display text-lg text-ink mb-2">Mentale rust staat nu uit</p>
           <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
             Je gaf aan dat dit op dit moment niet relevant voor je is. Dat is helemaal prima — je

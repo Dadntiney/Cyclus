@@ -38,11 +38,11 @@ const REMINDER_MESSAGES: MorningMessage[] = [
       liefdevol: "Een nieuwe dag hoeft niet perfect te beginnen. Luister vandaag vooral naar wat jij nodig hebt.",
       motiverend: "Nieuwe dag, nieuwe kans om goed voor jezelf te zorgen. Eén kleine stap is genoeg.",
       rustig: "Neem rustig de tijd om even te voelen hoe je vandaag wakker wordt.",
-      humor: "Goedemorgen! Je koffie kan wachten, je check-in duurt maar tien seconden. 😉",
+      humor: "Goedemorgen! Je koffie kan wachten, je check-in duurt maar tien seconden.",
       spiritueel: "Een moment van aandacht voordat de dag begint: hoe voelt je lichaam vandaag?",
       informatief: "Je dagelijkse check-in staat klaar — zo bouw je een duidelijker beeld van je patronen op.",
       direct: "Goedemorgen. Check-in tijd.",
-      luchtig: "Goedemorgen! Tijd voor je check-in. 😊",
+      luchtig: "Goedemorgen! Tijd voor je check-in.",
     },
   },
   { text: "Een nieuwe dag. Hoe wil jij hem beginnen?" },
@@ -78,33 +78,33 @@ const BUDDY_MESSAGES: MorningMessage[] = [
       informatief: "Goedemorgen. Wist je dat de eerste minuten van je dag vaak de toon zetten voor de rest?",
       rustig: "Goedemorgen. Neem rustig de tijd om wakker te worden, er is geen haast.",
       direct: "Goedemorgen. Nieuwe dag, nieuwe kansen.",
-      luchtig: "Goedemorgen! Klaar voor vandaag? 😊",
+      luchtig: "Goedemorgen! Klaar voor vandaag?",
     },
   },
   {
     text: "Goedemorgen. Even een momentje voor jezelf voordat de dag begint.",
     styles: {
-      liefdevol: "Goedemorgen. Gun jezelf een klein momentje voordat de drukte begint. 💛",
-      humor: "Goedemorgen! Je bed mist je nu al, maar de dag wacht niet. 😄",
+      liefdevol: "Goedemorgen. Gun jezelf een klein momentje voordat de drukte begint.",
+      humor: "Goedemorgen! Je bed mist je nu al, maar de dag wacht niet.",
       spiritueel: "Goedemorgen. Adem eens rustig in voordat je de dag instapt.",
       motiverend: "Goedemorgen! Jij bepaalt hoe deze dag voelt — begin sterk.",
       informatief: "Goedemorgen. Een rustig ochtendmoment kan bijdragen aan hoe je de rest van de dag ervaart.",
-      rustig: "Goedemorgen. Even een moment voor jezelf voordat alles begint. 🌿",
+      rustig: "Goedemorgen. Even een moment voor jezelf voordat alles begint.",
       direct: "Goedemorgen. Neem een moment, dan ga je verder.",
-      luchtig: "Goedemorgen! Eerst even bijkomen, dan de dag in. 😊",
+      luchtig: "Goedemorgen! Eerst even bijkomen, dan de dag in.",
     },
   },
   {
     text: "Goedemorgen. Vandaag mag het gewoon een gewone dag zijn.",
     styles: {
-      liefdevol: "Goedemorgen. Je hoeft vandaag niets bijzonders te presteren — gewoon jezelf zijn is genoeg. 💛",
-      humor: "Goedemorgen! Geen druk vandaag — tenzij die druk 'nog vijf minuten' heet. 😉",
+      liefdevol: "Goedemorgen. Je hoeft vandaag niets bijzonders te presteren — gewoon jezelf zijn is genoeg.",
+      humor: "Goedemorgen! Geen druk vandaag — tenzij die druk 'nog vijf minuten' heet.",
       spiritueel: "Goedemorgen. Elke dag, ook een gewone, is de moeite van het aanwezig zijn waard.",
       motiverend: "Goedemorgen! Ook een gewone dag is een kans om iets goeds voor jezelf te doen.",
       informatief: "Goedemorgen. Niet elke dag hoeft bijzonder te zijn om waardevol te zijn.",
       rustig: "Goedemorgen. Een gewone, rustige dag mag er ook gewoon zijn.",
       direct: "Goedemorgen. Gewone dag. Ga ervoor.",
-      luchtig: "Goedemorgen! Lekker gewoontjes vandaag? Ook prima. 😊",
+      luchtig: "Goedemorgen! Lekker gewoontjes vandaag? Ook prima.",
     },
   },
 ]
@@ -129,7 +129,7 @@ export function getMorningMessage({
 
   if (contentType === "quote") {
     const quote = getDailyBuddyQuote(`${seed}-morning-quote`, phase, preferredStyles)
-    return { title, body: `${quote.emoji} ${quote.text}` }
+    return { title, body: quote.text }
   }
 
   if (contentType === "affirmation") {

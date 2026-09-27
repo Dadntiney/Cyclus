@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Play, X } from "lucide-react"
+import { Play, X, Languages } from "lucide-react"
 import type { ExerciseVideo } from "@/lib/data/exercise-videos"
 import { cn } from "@/lib/utils"
 
@@ -59,8 +59,9 @@ export function ExerciseVideoPlayer({ video, exerciseName }: ExerciseVideoPlayer
         )}
       </div>
       {video.language !== "nl" && (
-        <p className="px-3 py-2 text-[11px] text-white/60 bg-ink">
-          🇬🇧 Deze video heeft Engelstalige uitleg — de uitvoering die je ziet klopt, lees de
+        <p className="px-3 py-2 text-[11px] text-white/60 bg-ink inline-flex items-center gap-1.5">
+          <Languages className="h-3 w-3 shrink-0" strokeWidth={1.75} />
+          Deze video heeft Engelstalige uitleg — de uitvoering die je ziet klopt, lees de
           Nederlandse instructies hieronder mee.
         </p>
       )}

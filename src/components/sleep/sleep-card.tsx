@@ -33,8 +33,11 @@ export function SleepCard({ date, entry }: { date: string; entry: SleepEntry | n
               <>
                 <p className="font-medium text-ink text-sm">{formatSleepDuration(durationMinutes!)} geslapen</p>
                 {entry?.wake_feeling && WAKE_FEELING_BY_VALUE.has(entry.wake_feeling) && (
-                  <p className="text-xs text-ink-soft mt-0.5">
-                    {WAKE_FEELING_BY_VALUE.get(entry.wake_feeling)!.emoji}{" "}
+                  <p className="text-xs text-ink-soft mt-0.5 inline-flex items-center gap-1">
+                    {(() => {
+                      const FeelingIcon = WAKE_FEELING_BY_VALUE.get(entry.wake_feeling)!.icon
+                      return <FeelingIcon className="h-3 w-3" strokeWidth={1.75} />
+                    })()}
                     {WAKE_FEELING_BY_VALUE.get(entry.wake_feeling)!.label}
                   </p>
                 )}

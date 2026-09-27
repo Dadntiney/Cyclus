@@ -1,3 +1,35 @@
+import {
+  Leaf,
+  Scale,
+  Dumbbell,
+  Footprints,
+  Salad,
+  Zap,
+  Heart,
+  NotebookPen,
+  Stethoscope,
+  Moon,
+  Sparkles,
+  MoreHorizontal,
+  Pill,
+  Shield,
+  FlaskConical,
+  ClipboardList,
+  Smile,
+  Brain,
+  Flame,
+  Sun,
+  Wind,
+  CloudFog,
+  CloudRain,
+  UserRound,
+  CircleDashed,
+  BatteryFull,
+  BatteryMedium,
+  BatteryLow,
+  BatteryWarning,
+} from "lucide-react"
+
 export const GOAL_OPTIONS = [
   "Meer energie",
   "Beter slapen",
@@ -50,17 +82,17 @@ export const NUTRITION_OPTIONS = [
 export const TRAINING_FREQUENCY_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const
 
 export const STYLE_OPTIONS = [
-  { value: "natuurlijk", label: "Natuurlijk & holistisch", emoji: "\u{1F33F}" },
-  { value: "gebalanceerd", label: "Gebalanceerd", emoji: "⚖️" },
-  { value: "fitness", label: "Fitness & kracht", emoji: "\u{1F3CB}️" },
+  { value: "natuurlijk", label: "Natuurlijk & holistisch", icon: Leaf },
+  { value: "gebalanceerd", label: "Gebalanceerd", icon: Scale },
+  { value: "fitness", label: "Fitness & kracht", icon: Dumbbell },
 ] as const
 
 export const NEED_OPTIONS = [
-  { value: "rust", emoji: "🌿", label: "Rust" },
-  { value: "beweging", emoji: "🏃", label: "Beweging" },
-  { value: "voeding", emoji: "🥗", label: "Gezond eten" },
-  { value: "energie", emoji: "⚡", label: "Energie" },
-  { value: "mezelf", emoji: "❤️", label: "Tijd voor mezelf" },
+  { value: "rust", icon: Leaf, label: "Rust" },
+  { value: "beweging", icon: Footprints, label: "Beweging" },
+  { value: "voeding", icon: Salad, label: "Gezond eten" },
+  { value: "energie", icon: Zap, label: "Energie" },
+  { value: "mezelf", icon: Heart, label: "Tijd voor mezelf" },
 ] as const
 
 export const SYMPTOM_OPTIONS = [
@@ -162,31 +194,33 @@ export const MOVEMENT_LIMITATION_OPTIONS = [
   "Anders",
 ] as const
 
-// Optional period flow-intensity tracking (see cycle_logs.flow).
+// Optional period flow-intensity tracking (see cycle_logs.flow). `intensity`
+// (0-3) replaces what used to be a repeated droplet emoji character — render
+// sites now draw that many Droplet icons instead.
 export const FLOW_OPTIONS = [
-  { value: "geen", label: "Geen", emoji: "⚪" },
-  { value: "licht", label: "Licht", emoji: "🩸" },
-  { value: "gemiddeld", label: "Gemiddeld", emoji: "🩸🩸" },
-  { value: "hevig", label: "Hevig", emoji: "🩸🩸🩸" },
+  { value: "geen", label: "Geen", intensity: 0 },
+  { value: "licht", label: "Licht", intensity: 1 },
+  { value: "gemiddeld", label: "Gemiddeld", intensity: 2 },
+  { value: "hevig", label: "Hevig", intensity: 3 },
 ] as const
 
 // Optional reminders (see the `reminders` table).
 export const REMINDER_TYPE_OPTIONS = [
-  { value: "dagelijkse_checkin", label: "Dagelijkse check-in", emoji: "📝", defaultLabel: "Vul je dagelijkse gegevens in" },
-  { value: "symptomen", label: "Klachten registreren", emoji: "🩺", defaultLabel: "Klachten bijhouden" },
-  { value: "beweging", label: "Bewegen", emoji: "🏃", defaultLabel: "Tijd om even te bewegen", requires: "movement_enabled" },
-  { value: "voeding", label: "Voeding", emoji: "🥗", defaultLabel: "Even denken aan wat je lichaam nodig heeft", requires: "nutrition_enabled" },
-  { value: "cyclus", label: "Cyclus", emoji: "🌙", defaultLabel: "Even kijken wat er in jouw fase speelt" },
-  { value: "herstel", label: "Zelfzorg & herstel", emoji: "🛀", defaultLabel: "Even een moment van rust" },
-  { value: "routine", label: "Persoonlijke routine", emoji: "🌿", defaultLabel: "Jouw persoonlijke routine" },
+  { value: "dagelijkse_checkin", label: "Dagelijkse check-in", icon: NotebookPen, defaultLabel: "Vul je dagelijkse gegevens in" },
+  { value: "symptomen", label: "Klachten registreren", icon: Stethoscope, defaultLabel: "Klachten bijhouden" },
+  { value: "beweging", label: "Bewegen", icon: Footprints, defaultLabel: "Tijd om even te bewegen", requires: "movement_enabled" },
+  { value: "voeding", label: "Voeding", icon: Salad, defaultLabel: "Even denken aan wat je lichaam nodig heeft", requires: "nutrition_enabled" },
+  { value: "cyclus", label: "Cyclus", icon: Moon, defaultLabel: "Even kijken wat er in jouw fase speelt" },
+  { value: "herstel", label: "Zelfzorg & herstel", icon: Sparkles, defaultLabel: "Even een moment van rust" },
+  { value: "routine", label: "Persoonlijke routine", icon: Leaf, defaultLabel: "Jouw persoonlijke routine" },
   {
     value: "mentale_ondersteuning",
     label: "Mentale rust",
-    emoji: "🧘",
+    icon: Brain,
     defaultLabel: "Even een moment voor je mentale rust",
     requires: "mental_wellbeing_enabled",
   },
-  { value: "anders", label: "Iets anders", emoji: "✨", defaultLabel: "" },
+  { value: "anders", label: "Iets anders", icon: MoreHorizontal, defaultLabel: "" },
 ] as const
 
 export const REMINDER_DAY_OPTIONS = [
@@ -213,10 +247,10 @@ export const HORMONAL_MEDICATION_STATUS_OPTIONS = [
 ] as const
 
 export const MEDICATION_CATEGORY_OPTIONS = [
-  { value: "ht", label: "Hormoontherapie (HT)", emoji: "💊" },
-  { value: "anticonceptie", label: "Anticonceptie", emoji: "🛡️" },
-  { value: "andere_hormonaal", label: "Andere hormonale medicatie", emoji: "🧪" },
-  { value: "andere_medicatie", label: "Niet-hormonale medicatie", emoji: "📋" },
+  { value: "ht", label: "Hormoontherapie (HT)", icon: Pill },
+  { value: "anticonceptie", label: "Anticonceptie", icon: Shield },
+  { value: "andere_hormonaal", label: "Andere hormonale medicatie", icon: FlaskConical },
+  { value: "andere_medicatie", label: "Niet-hormonale medicatie", icon: ClipboardList },
 ] as const
 
 // Quick-pick chips for step 1 of the wizard, per category — always with a
@@ -256,14 +290,14 @@ export const MEDICATION_SCHEDULE_TYPE_OPTIONS = [
 // Multi-select, empty = "geen voorkeur" — the app then uses a warm, neutral
 // default tone everywhere a Buddy message appears.
 export const BUDDY_STYLE_OPTIONS = [
-  { value: "liefdevol", label: "Liefdevol", emoji: "💛", description: "warm, zacht en bemoedigend" },
-  { value: "humor", label: "Humor", emoji: "😄", description: "luchtig, grappig en soms een knipoog" },
-  { value: "spiritueel", label: "Spiritueel", emoji: "✨", description: "rust, bewustwording en verbinding" },
-  { value: "motiverend", label: "Motiverend", emoji: "💪", description: "actief, positief en stimulerend" },
-  { value: "informatief", label: "Informatief", emoji: "🧠", description: "interessante weetjes en uitleg" },
-  { value: "rustig", label: "Rustig", emoji: "🌿", description: "kalm, ontspannen en mindful" },
-  { value: "direct", label: "Direct", emoji: "🔥", description: "eerlijk, duidelijk en zonder omwegen" },
-  { value: "luchtig", label: "Luchtig", emoji: "😊", description: "vrolijk, speels en positief" },
+  { value: "liefdevol", label: "Liefdevol", icon: Heart, description: "warm, zacht en bemoedigend" },
+  { value: "humor", label: "Humor", icon: Smile, description: "luchtig, grappig en soms een knipoog" },
+  { value: "spiritueel", label: "Spiritueel", icon: Sparkles, description: "rust, bewustwording en verbinding" },
+  { value: "motiverend", label: "Motiverend", icon: Zap, description: "actief, positief en stimulerend" },
+  { value: "informatief", label: "Informatief", icon: Brain, description: "interessante weetjes en uitleg" },
+  { value: "rustig", label: "Rustig", icon: Leaf, description: "kalm, ontspannen en mindful" },
+  { value: "direct", label: "Direct", icon: Flame, description: "eerlijk, duidelijk en zonder omwegen" },
+  { value: "luchtig", label: "Luchtig", icon: Sun, description: "vrolijk, speels en positief" },
 ] as const
 
 // Optional "geestelijke ondersteuning" preferences (see
@@ -271,17 +305,17 @@ export const BUDDY_STYLE_OPTIONS = [
 // select, empty = show a bit of everything. These are feelings and support
 // needs, never diagnoses — see docs/PRODUCT_VISION.md's contentregels.
 export const MENTAL_WELLBEING_CATEGORY_OPTIONS = [
-  { value: "rust", label: "Tot rust komen", emoji: "🧘", description: "Voor wanneer je wilt vertragen, overdag of op elk moment." },
-  { value: "angst_spanning", label: "Angst & spanning", emoji: "🌬️", description: "Voor momenten waarop je gespannen, angstig of onrustig bent." },
-  { value: "overprikkeling", label: "Overprikkeling", emoji: "🌫️", description: "Voor wanneer alles even te veel voelt." },
-  { value: "prikkelbaarheid", label: "Prikkelbaarheid", emoji: "⚡", description: "Voor wanneer je sneller geïrriteerd of emotioneel reageert." },
-  { value: "somberheid", label: "Somberheid", emoji: "🌧️", description: "Voor momenten waarop je je minder vrolijk of zwaar voelt." },
-  { value: "eenzaamheid", label: "Eenzaamheid", emoji: "💭", description: "Voor wanneer je behoefte hebt aan verbinding of je alleen voelt." },
-  { value: "piekeren", label: "Piekeren", emoji: "🌀", description: "Voor wanneer gedachten blijven rondgaan." },
-  { value: "zelfvertrouwen", label: "Zelfvertrouwen", emoji: "✨", description: "Voor positieve ondersteuning en een sterker gevoel van eigenwaarde." },
-  { value: "slaap", label: "Avondrust", emoji: "🌙", description: "Voor het tot rust komen richting de avond, vlak voor het slapen." },
-  { value: "positiviteit", label: "Positiviteit", emoji: "🌼", description: "Voor een klein positief moment gedurende de dag." },
-  { value: "zelfzorg", label: "Zelfzorg", emoji: "❤️", description: "Voor bewust tijd nemen voor jezelf." },
+  { value: "rust", label: "Tot rust komen", icon: Leaf, description: "Voor wanneer je wilt vertragen, overdag of op elk moment." },
+  { value: "angst_spanning", label: "Angst & spanning", icon: Wind, description: "Voor momenten waarop je gespannen, angstig of onrustig bent." },
+  { value: "overprikkeling", label: "Overprikkeling", icon: CloudFog, description: "Voor wanneer alles even te veel voelt." },
+  { value: "prikkelbaarheid", label: "Prikkelbaarheid", icon: Zap, description: "Voor wanneer je sneller geïrriteerd of emotioneel reageert." },
+  { value: "somberheid", label: "Somberheid", icon: CloudRain, description: "Voor momenten waarop je je minder vrolijk of zwaar voelt." },
+  { value: "eenzaamheid", label: "Eenzaamheid", icon: UserRound, description: "Voor wanneer je behoefte hebt aan verbinding of je alleen voelt." },
+  { value: "piekeren", label: "Piekeren", icon: CircleDashed, description: "Voor wanneer gedachten blijven rondgaan." },
+  { value: "zelfvertrouwen", label: "Zelfvertrouwen", icon: Sparkles, description: "Voor positieve ondersteuning en een sterker gevoel van eigenwaarde." },
+  { value: "slaap", label: "Avondrust", icon: Moon, description: "Voor het tot rust komen richting de avond, vlak voor het slapen." },
+  { value: "positiviteit", label: "Positiviteit", icon: Sun, description: "Voor een klein positief moment gedurende de dag." },
+  { value: "zelfzorg", label: "Zelfzorg", icon: Heart, description: "Voor bewust tijd nemen voor jezelf." },
 ] as const
 
 export type MentalWellbeingCategory = (typeof MENTAL_WELLBEING_CATEGORY_OPTIONS)[number]["value"]
@@ -308,10 +342,10 @@ export type MorningReminderContentType = (typeof MORNING_REMINDER_CONTENT_TYPE_O
 
 // Optioneel, eenvoudig slaappatroon bijhouden (zie sleep_entries).
 export const WAKE_FEELING_OPTIONS = [
-  { value: "uitgerust", label: "Uitgerust", emoji: "😊" },
-  { value: "redelijk_uitgerust", label: "Redelijk uitgerust", emoji: "🙂" },
-  { value: "moe", label: "Moe", emoji: "😐" },
-  { value: "erg_moe", label: "Erg moe", emoji: "😴" },
+  { value: "uitgerust", label: "Uitgerust", icon: BatteryFull },
+  { value: "redelijk_uitgerust", label: "Redelijk uitgerust", icon: BatteryMedium },
+  { value: "moe", label: "Moe", icon: BatteryLow },
+  { value: "erg_moe", label: "Erg moe", icon: BatteryWarning },
 ] as const
 
 export const SLEEP_QUALITY_OPTIONS = [

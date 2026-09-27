@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Salad } from "lucide-react"
 import { startOfWeek, subDays } from "date-fns"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
@@ -41,7 +42,7 @@ export default async function BoodschappenPage() {
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         <BackButton href="/deze-week" label="Deze week" />
         <Card className="text-center py-8">
-          <p className="text-3xl mb-3">🌿</p>
+          <Salad className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
           <p className="font-display text-lg text-ink mb-2">Voeding staat nu uit</p>
           <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
             Er is geen boodschappenlijst omdat voeding niet aanstaat in je profiel.

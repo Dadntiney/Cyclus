@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Heart } from "lucide-react"
+import { Heart, Salad } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getRecipeLibrary } from "@/lib/data/nutrition"
@@ -30,7 +30,7 @@ export default async function VoedingPage() {
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Voeding</h1>
         <p className="text-sm text-ink-soft mb-6">Recepten die passen bij jouw voorkeuren.</p>
         <Card className="text-center py-8">
-          <p className="text-3xl mb-3">🌿</p>
+          <Salad className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
           <p className="font-display text-lg text-ink mb-2">Voeding staat nu uit</p>
           <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
             Je gaf aan dat voeding op dit moment niet relevant voor je is. Dat is helemaal prima —

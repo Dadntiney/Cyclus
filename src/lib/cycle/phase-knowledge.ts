@@ -25,7 +25,6 @@ import type { CyclePhase } from "@/lib/cycle/estimate"
  */
 
 export interface BodyChangeItem {
-  emoji: string
   /** e.g. "Energie", "Stemming", "Buikgevoel" — one of the categories from the brief. */
   label: string
   /** Always hedged phrasing — never presented as a certainty. */
@@ -65,16 +64,16 @@ export const PHASE_KNOWLEDGE: Record<CyclePhase, PhaseKnowledge> = {
     whyExplainer:
       "Doordat beide hormonen op hun laagst staan, is dit voor veel vrouwen de fase waarin ze zich wat rustiger, naar binnen gekeerd of minder energiek voelen dan in de rest van de cyclus.",
     changes: [
-      { emoji: "🔋", label: "Energie", text: "Je kunt merken dat je energie wat lager ligt dan in andere fases — dat is voor veel vrouwen heel gewoon.", highlight: true },
-      { emoji: "🌀", label: "Buikgevoel", text: "Lichte tot stevigere buikkrampen komen vaak voor doordat je baarmoeder samentrekt.", highlight: true },
-      { emoji: "💭", label: "Stemming", text: "Sommige vrouwen voelen zich rustiger of gevoeliger dan anders; voor anderen verandert er weinig.", highlight: true },
-      { emoji: "🎯", label: "Concentratie", text: "Focus vasthouden kan soms wat meer moeite kosten, zeker op de eerste dagen.", highlight: true },
-      { emoji: "😴", label: "Slaap", text: "Je slaap kan net iets onrustiger aanvoelen, al ervaart niet iedereen dit." },
-      { emoji: "🤕", label: "Hoofdpijn", text: "Hoofdpijn komt bij sommige vrouwen aan het begin van de menstruatie vaker voor." },
-      { emoji: "🌡️", label: "Lichaamstemperatuur", text: "Je basale lichaamstemperatuur is in deze fase doorgaans op zijn laagst." },
-      { emoji: "🛌", label: "Vermoeidheid", text: "Een grotere behoefte aan rust is een veelvoorkomende ervaring in deze fase." },
-      { emoji: "✨", label: "Huid", text: "Sommige vrouwen merken weinig verandering in hun huid in deze fase, anderen wel." },
-      { emoji: "⚡", label: "Stressgevoeligheid", text: "Kleine dingen kunnen soms net iets zwaarder aanvoelen dan normaal." },
+      { label: "Energie", text: "Je kunt merken dat je energie wat lager ligt dan in andere fases — dat is voor veel vrouwen heel gewoon.", highlight: true },
+      { label: "Buikgevoel", text: "Lichte tot stevigere buikkrampen komen vaak voor doordat je baarmoeder samentrekt.", highlight: true },
+      { label: "Stemming", text: "Sommige vrouwen voelen zich rustiger of gevoeliger dan anders; voor anderen verandert er weinig.", highlight: true },
+      { label: "Concentratie", text: "Focus vasthouden kan soms wat meer moeite kosten, zeker op de eerste dagen.", highlight: true },
+      { label: "Slaap", text: "Je slaap kan net iets onrustiger aanvoelen, al ervaart niet iedereen dit." },
+      { label: "Hoofdpijn", text: "Hoofdpijn komt bij sommige vrouwen aan het begin van de menstruatie vaker voor." },
+      { label: "Lichaamstemperatuur", text: "Je basale lichaamstemperatuur is in deze fase doorgaans op zijn laagst." },
+      { label: "Vermoeidheid", text: "Een grotere behoefte aan rust is een veelvoorkomende ervaring in deze fase." },
+      { label: "Huid", text: "Sommige vrouwen merken weinig verandering in hun huid in deze fase, anderen wel." },
+      { label: "Stressgevoeligheid", text: "Kleine dingen kunnen soms net iets zwaarder aanvoelen dan normaal." },
     ],
     normalNote:
       "Cyclusduur, hoeveelheid bloedverlies en klachten verschillen enorm van vrouw tot vrouw — en zelfs van cyclus tot cyclus bij dezelfde vrouw. Er bestaat geen 'standaard' menstruatie.",
@@ -95,16 +94,16 @@ export const PHASE_KNOWLEDGE: Record<CyclePhase, PhaseKnowledge> = {
     whyExplainer:
       "De geleidelijk stijgende oestrogeenspiegel wordt door veel vrouwen in verband gebracht met meer energie en een opgewekter gevoel — al is dit geen vaste regel en verschilt de timing per vrouw.",
     changes: [
-      { emoji: "🔋", label: "Energie", text: "Je kunt merken dat je energie geleidelijk toeneemt naarmate deze fase vordert.", highlight: true },
-      { emoji: "💭", label: "Stemming", text: "Veel vrouwen voelen zich in deze fase wat opgewekter of optimistischer.", highlight: true },
-      { emoji: "🎯", label: "Concentratie", text: "Focus en helderheid van denken voelen voor sommige vrouwen wat makkelijker in deze fase.", highlight: true },
-      { emoji: "❤️", label: "Libido", text: "Interesse in intimiteit kan geleidelijk toenemen naarmate deze fase vordert.", highlight: true },
-      { emoji: "✨", label: "Huid", text: "Je huid kan er wat frisser uitzien naarmate oestrogeen stijgt." },
-      { emoji: "😴", label: "Slaap", text: "Slaap verloopt voor veel vrouwen in deze fase relatief stabiel." },
-      { emoji: "🍽️", label: "Honger/eetlust", text: "Eetlust is voor veel vrouwen in deze fase wat stabieler dan vlak voor of tijdens de menstruatie." },
-      { emoji: "🌡️", label: "Lichaamstemperatuur", text: "Je basale temperatuur blijft doorgaans laag, tot vlak voor de eisprong." },
-      { emoji: "⚡", label: "Stressgevoeligheid", text: "Sommige vrouwen voelen zich in deze fase veerkrachtiger tegen stress." },
-      { emoji: "🛌", label: "Vermoeidheid", text: "Vermoeidheid speelt voor veel vrouwen een kleinere rol dan rond de menstruatie of later in de cyclus." },
+      { label: "Energie", text: "Je kunt merken dat je energie geleidelijk toeneemt naarmate deze fase vordert.", highlight: true },
+      { label: "Stemming", text: "Veel vrouwen voelen zich in deze fase wat opgewekter of optimistischer.", highlight: true },
+      { label: "Concentratie", text: "Focus en helderheid van denken voelen voor sommige vrouwen wat makkelijker in deze fase.", highlight: true },
+      { label: "Libido", text: "Interesse in intimiteit kan geleidelijk toenemen naarmate deze fase vordert.", highlight: true },
+      { label: "Huid", text: "Je huid kan er wat frisser uitzien naarmate oestrogeen stijgt." },
+      { label: "Slaap", text: "Slaap verloopt voor veel vrouwen in deze fase relatief stabiel." },
+      { label: "Honger/eetlust", text: "Eetlust is voor veel vrouwen in deze fase wat stabieler dan vlak voor of tijdens de menstruatie." },
+      { label: "Lichaamstemperatuur", text: "Je basale temperatuur blijft doorgaans laag, tot vlak voor de eisprong." },
+      { label: "Stressgevoeligheid", text: "Sommige vrouwen voelen zich in deze fase veerkrachtiger tegen stress." },
+      { label: "Vermoeidheid", text: "Vermoeidheid speelt voor veel vrouwen een kleinere rol dan rond de menstruatie of later in de cyclus." },
     ],
     normalNote:
       "Hoe snel je energie 'terugkomt' na je menstruatie verschilt sterk per vrouw. Bij sommigen is dat al na een dag merkbaar, bij anderen duurt het langer — allebei is normaal.",
@@ -125,16 +124,16 @@ export const PHASE_KNOWLEDGE: Record<CyclePhase, PhaseKnowledge> = {
     whyExplainer:
       "De piek in oestrogeen rond de eisprong wordt door veel vrouwen in verband gebracht met een kort gevoel van meer energie of zelfvertrouwen — al verschilt de intensiteit hiervan sterk per persoon.",
     changes: [
-      { emoji: "🔋", label: "Energie", text: "Veel vrouwen voelen zich rond de eisprong tijdelijk energieker.", highlight: true },
-      { emoji: "🌀", label: "Buikgevoel", text: "Een lichte, kortdurende steek aan één kant van je onderbuik komt bij sommige vrouwen voor rond de eisprong.", highlight: true },
-      { emoji: "💭", label: "Stemming", text: "Zelfvertrouwen en sociale energie kunnen voor sommige vrouwen rond dit moment toenemen.", highlight: true },
-      { emoji: "❤️", label: "Libido", text: "Interesse in intimiteit piekt voor veel vrouwen rond de eisprong.", highlight: true },
-      { emoji: "🌡️", label: "Lichaamstemperatuur", text: "Je basale lichaamstemperatuur stijgt met een fractie van een graad vlak na de eisprong." },
-      { emoji: "✨", label: "Huid", text: "Je huid kan er rond dit moment stralender uitzien." },
-      { emoji: "🎯", label: "Concentratie", text: "Sommige vrouwen ervaren rond dit moment extra alertheid of scherpte." },
-      { emoji: "🤍", label: "Borsten", text: "Lichte gevoeligheid van de borsten komt bij sommige vrouwen rond de eisprong voor." },
-      { emoji: "😴", label: "Slaap", text: "Slaap blijft voor de meeste vrouwen in deze korte fase redelijk stabiel." },
-      { emoji: "⚡", label: "Stressgevoeligheid", text: "Veel vrouwen voelen zich in deze fase veerkrachtig, al is dit persoonlijk." },
+      { label: "Energie", text: "Veel vrouwen voelen zich rond de eisprong tijdelijk energieker.", highlight: true },
+      { label: "Buikgevoel", text: "Een lichte, kortdurende steek aan één kant van je onderbuik komt bij sommige vrouwen voor rond de eisprong.", highlight: true },
+      { label: "Stemming", text: "Zelfvertrouwen en sociale energie kunnen voor sommige vrouwen rond dit moment toenemen.", highlight: true },
+      { label: "Libido", text: "Interesse in intimiteit piekt voor veel vrouwen rond de eisprong.", highlight: true },
+      { label: "Lichaamstemperatuur", text: "Je basale lichaamstemperatuur stijgt met een fractie van een graad vlak na de eisprong." },
+      { label: "Huid", text: "Je huid kan er rond dit moment stralender uitzien." },
+      { label: "Concentratie", text: "Sommige vrouwen ervaren rond dit moment extra alertheid of scherpte." },
+      { label: "Borsten", text: "Lichte gevoeligheid van de borsten komt bij sommige vrouwen rond de eisprong voor." },
+      { label: "Slaap", text: "Slaap blijft voor de meeste vrouwen in deze korte fase redelijk stabiel." },
+      { label: "Stressgevoeligheid", text: "Veel vrouwen voelen zich in deze fase veerkrachtig, al is dit persoonlijk." },
     ],
     normalNote:
       "Niet iedere vrouw merkt haar eisprong fysiek op. Sommige vrouwen voelen een lichte steek aan één kant (in de volksmond ook wel 'mittelschmerz', Duits voor 'middenpijn'), anderen merken helemaal niets — beide is normaal.",
@@ -155,16 +154,16 @@ export const PHASE_KNOWLEDGE: Record<CyclePhase, PhaseKnowledge> = {
     whyExplainer:
       "De stijging van progesteron, gevolgd door de daling ervan richting het einde van deze fase, hangt bij sommige vrouwen samen met wisselingen in energie, stemming en slaap — vaak aangeduid als PMS-achtige gevoelens.",
     changes: [
-      { emoji: "🔋", label: "Energie", text: "Richting het einde van deze fase kan je energie geleidelijk afnemen.", highlight: true },
-      { emoji: "💭", label: "Stemming", text: "Stemmingswisselingen komen bij sommige vrouwen vaker voor in de dagen voor de menstruatie.", highlight: true },
-      { emoji: "🍽️", label: "Honger/eetlust", text: "Meer trek, met name in zoet of hartig eten, is een veelvoorkomende ervaring in deze fase.", highlight: true },
-      { emoji: "😴", label: "Slaap", text: "Slaap kan wat wisselender aanvoelen naarmate deze fase vordert.", highlight: true },
-      { emoji: "🌀", label: "Buikgevoel", text: "Een opgeblazen gevoel komt bij sommige vrouwen voor, vaak door vochtretentie." },
-      { emoji: "🤍", label: "Borsten", text: "Gevoelige of gespannen borsten komen bij sommige vrouwen voor in deze fase." },
-      { emoji: "🤕", label: "Hoofdpijn", text: "Hoofdpijn wordt door sommige vrouwen vaker gemeld in de dagen voor de menstruatie." },
-      { emoji: "⚡", label: "Stressgevoeligheid", text: "Kleine stressoren kunnen in deze fase soms zwaarder aanvoelen dan anders." },
-      { emoji: "✨", label: "Huid", text: "Onzuiverheden komen bij sommige vrouwen vaker voor richting het einde van deze fase." },
-      { emoji: "🎯", label: "Concentratie", text: "Focus vasthouden kan voor sommige vrouwen wat meer moeite kosten richting het einde van deze fase." },
+      { label: "Energie", text: "Richting het einde van deze fase kan je energie geleidelijk afnemen.", highlight: true },
+      { label: "Stemming", text: "Stemmingswisselingen komen bij sommige vrouwen vaker voor in de dagen voor de menstruatie.", highlight: true },
+      { label: "Honger/eetlust", text: "Meer trek, met name in zoet of hartig eten, is een veelvoorkomende ervaring in deze fase.", highlight: true },
+      { label: "Slaap", text: "Slaap kan wat wisselender aanvoelen naarmate deze fase vordert.", highlight: true },
+      { label: "Buikgevoel", text: "Een opgeblazen gevoel komt bij sommige vrouwen voor, vaak door vochtretentie." },
+      { label: "Borsten", text: "Gevoelige of gespannen borsten komen bij sommige vrouwen voor in deze fase." },
+      { label: "Hoofdpijn", text: "Hoofdpijn wordt door sommige vrouwen vaker gemeld in de dagen voor de menstruatie." },
+      { label: "Stressgevoeligheid", text: "Kleine stressoren kunnen in deze fase soms zwaarder aanvoelen dan anders." },
+      { label: "Huid", text: "Onzuiverheden komen bij sommige vrouwen vaker voor richting het einde van deze fase." },
+      { label: "Concentratie", text: "Focus vasthouden kan voor sommige vrouwen wat meer moeite kosten richting het einde van deze fase." },
     ],
     normalNote:
       "Niet iedere vrouw ervaart klachten in deze fase, en de mate waarin verschilt sterk. Aanhoudende, zware klachten die je dagelijks leven flink beïnvloeden zijn het overleggen met een arts of zorgverlener waard.",

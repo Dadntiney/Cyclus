@@ -1,12 +1,13 @@
 import Link from "next/link"
-import { ChevronRight, Heart } from "lucide-react"
+import { ChevronRight, Heart, Dumbbell, Salad, Brain, Moon, BookOpen, NotebookPen, Stethoscope } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { Card } from "@/components/ui/card"
 
 interface ModuleTile {
   href: string
-  emoji: string
+  icon: LucideIcon
   title: string
   description: string
 }
@@ -14,25 +15,25 @@ interface ModuleTile {
 const ENABLED_MODULES: Record<string, ModuleTile> = {
   movement_enabled: {
     href: "/training",
-    emoji: "🏋️",
+    icon: Dumbbell,
     title: "Beweging",
     description: "Je weekprogramma en trainingsbibliotheek.",
   },
   nutrition_enabled: {
     href: "/voeding",
-    emoji: "🥗",
+    icon: Salad,
     title: "Voeding",
     description: "Recepten die passen bij jouw voorkeuren.",
   },
   mental_wellbeing_enabled: {
     href: "/mentale-rust",
-    emoji: "🧘",
+    icon: Brain,
     title: "Mentale rust",
     description: "Korte meditaties, mindfulness en affirmaties.",
   },
   sleep_tracking_enabled: {
     href: "/slaap",
-    emoji: "🌙",
+    icon: Moon,
     title: "Slaap",
     description: "Je slaapduur en eenvoudige inzichten.",
   },
@@ -86,10 +87,8 @@ export default async function VoorJouPage() {
               <Link key={key} href={tile.href}>
                 <Card interactive className="flex items-center justify-between gap-4 touch-manipulation">
                   <div className="min-w-0">
-                    <p className="text-base font-medium text-ink">
-                      <span className="mr-1.5" aria-hidden>
-                        {tile.emoji}
-                      </span>
+                    <p className="text-base font-medium text-ink inline-flex items-center gap-1.5">
+                      <tile.icon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} aria-hidden />
                       {tile.title}
                     </p>
                     <p className="text-sm text-ink-soft mt-0.5">{tile.description}</p>
@@ -122,19 +121,19 @@ export default async function VoorJouPage() {
             [
               {
                 href: "/kennis",
-                emoji: "📚",
+                icon: BookOpen,
                 title: "Kennis",
                 description: "Uitleg over hormonen, overgang en leefstijl.",
               },
               {
                 href: "/dagboek",
-                emoji: "✍️",
+                icon: NotebookPen,
                 title: "Dagboek",
                 description: "Schrijf van je af — alleen jij ziet dit.",
               },
               {
                 href: "/cyclus/samenvatting",
-                emoji: "🩺",
+                icon: Stethoscope,
                 title: "Voor je arts",
                 description: "Samenvatting van je check-ins om mee te nemen.",
               },
@@ -143,10 +142,8 @@ export default async function VoorJouPage() {
             <Link key={tile.href} href={tile.href}>
               <Card interactive className="flex items-center justify-between gap-4 touch-manipulation">
                 <div className="min-w-0">
-                  <p className="text-base font-medium text-ink">
-                    <span className="mr-1.5" aria-hidden>
-                      {tile.emoji}
-                    </span>
+                  <p className="text-base font-medium text-ink inline-flex items-center gap-1.5">
+                    <tile.icon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} aria-hidden />
                     {tile.title}
                   </p>
                   <p className="text-sm text-ink-soft mt-0.5">{tile.description}</p>

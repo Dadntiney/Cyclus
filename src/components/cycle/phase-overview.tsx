@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Salad, Footprints, Lightbulb } from "lucide-react"
 import { PHASE_CONTENT, PHASE_ORDER } from "@/lib/cycle/phase-content"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { cn } from "@/lib/utils"
@@ -57,7 +58,10 @@ export function PhaseOverview({ currentPhase }: { currentPhase: CyclePhase | nul
 
         <div className="flex flex-col gap-3">
           <div>
-            <p className="text-xs font-medium text-ink mb-1">🥗 Voeding — {content.nutrition.focusLabel}</p>
+            <p className="text-xs font-medium text-ink mb-1 inline-flex items-center gap-1">
+              <Salad className="h-3.5 w-3.5 text-sage-dark" strokeWidth={1.75} />
+              Voeding — {content.nutrition.focusLabel}
+            </p>
             <p className="text-sm text-ink-soft leading-relaxed">{content.nutrition.focusText}</p>
             <div className="flex flex-wrap gap-1.5 mt-2">
               {content.nutrition.exampleFoods.map((food) => (
@@ -72,12 +76,18 @@ export function PhaseOverview({ currentPhase }: { currentPhase: CyclePhase | nul
           </div>
 
           <div>
-            <p className="text-xs font-medium text-ink mb-1">🏃 Beweging — {content.movement.intensityLabel}</p>
+            <p className="text-xs font-medium text-ink mb-1 inline-flex items-center gap-1">
+              <Footprints className="h-3.5 w-3.5 text-sage-dark" strokeWidth={1.75} />
+              Beweging — {content.movement.intensityLabel}
+            </p>
             <p className="text-sm text-ink-soft leading-relaxed">{content.movement.focusText}</p>
           </div>
 
           <div>
-            <p className="text-xs font-medium text-ink mb-1">💡 Aandachtspunt</p>
+            <p className="text-xs font-medium text-ink mb-1 inline-flex items-center gap-1">
+              <Lightbulb className="h-3.5 w-3.5 text-sage-dark" strokeWidth={1.75} />
+              Aandachtspunt
+            </p>
             <p className="text-sm text-ink-soft leading-relaxed">{content.lifestyleTips[0]?.text}</p>
           </div>
         </div>

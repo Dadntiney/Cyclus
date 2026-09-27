@@ -38,7 +38,7 @@ export default async function SlaapPage() {
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Slaap</h1>
         <p className="text-sm text-ink-soft mb-6">Je slaapduur en eenvoudige inzichten.</p>
         <Card className="text-center py-8">
-          <p className="text-3xl mb-3">🌙</p>
+          <Moon className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
           <p className="font-display text-lg text-ink mb-2">Slaap bijhouden staat nu uit</p>
           <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
             Je gaf aan dat je dit op dit moment niet wilt bijhouden. Dat is helemaal prima — je ziet
@@ -119,7 +119,7 @@ export default async function SlaapPage() {
                 </p>
                 <div className="flex items-center gap-2 text-sm text-ink-soft">
                   {hasDuration && <span>{formatSleepDuration(computeSleepDurationMinutes(entry.bedtime!, entry.wake_time!))}</span>}
-                  {feeling && <span aria-hidden>{feeling.emoji}</span>}
+                  {feeling && <feeling.icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />}
                 </div>
               </div>
             )

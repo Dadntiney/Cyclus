@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { format } from "date-fns"
-import { ChevronRight, Settings2 } from "lucide-react"
+import { ChevronRight, Settings2, Dumbbell, Calendar } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getWorkoutLibrary } from "@/lib/data/training"
@@ -38,7 +38,7 @@ export default async function TrainingPage() {
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Beweging</h1>
         <p className="text-sm text-ink-soft mb-6">Jouw weekplanning en trainingsbibliotheek.</p>
         <Card className="text-center py-8">
-          <p className="text-3xl mb-3">🌿</p>
+          <Dumbbell className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
           <p className="font-display text-lg text-ink mb-2">Beweging staat nu uit</p>
           <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
             Je gaf aan dat beweging op dit moment niet relevant voor je is. Dat is helemaal prima —
@@ -105,7 +105,10 @@ export default async function TrainingPage() {
         href="/deze-week"
         className="flex items-center justify-between rounded-2xl bg-surface border border-line/70 px-4 py-3.5 touch-manipulation"
       >
-        <span className="text-sm font-medium text-ink">📆 Bekijk je weekplanning</span>
+        <span className="text-sm font-medium text-ink inline-flex items-center gap-1.5">
+          <Calendar className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
+          Bekijk je weekplanning
+        </span>
         <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
       </Link>
 

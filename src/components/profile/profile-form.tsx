@@ -601,9 +601,7 @@ export function ProfileForm({
                     )
                   }
                 >
-                  <span className="mr-1" aria-hidden>
-                    {opt.emoji}
-                  </span>
+                  <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
                   {opt.label}
                 </Chip>
               ))}
@@ -803,9 +801,7 @@ export function ProfileForm({
                 applyUpdate((s) => ({ ...s, buddyStyles: toggle(s.buddyStyles, opt.value) }), "immediate")
               }
             >
-              <span className="mr-1" aria-hidden>
-                {opt.emoji}
-              </span>
+              <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
               {opt.label}
             </Chip>
           ))}

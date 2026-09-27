@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Sparkles, PlayCircle } from "lucide-react"
+import { Sparkles, PlayCircle, PartyPopper } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ExerciseFavoriteButton } from "@/components/training/exercise-favorite-button"
@@ -162,7 +162,7 @@ export function WorkoutSession({
     const doneCount = doneIds.size
     return (
       <Card className="text-center">
-        <p className="text-3xl mb-2">🎉</p>
+        <PartyPopper className="h-8 w-8 mx-auto mb-2 text-sage-dark" strokeWidth={1.5} />
         <p className="font-display text-xl text-ink mb-1">
           Mooi gedaan{name ? `, ${name}` : ""}.
         </p>

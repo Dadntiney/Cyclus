@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import Link from "next/link"
-import { BookOpen, ChevronRight, ClipboardList, NotebookPen } from "lucide-react"
+import { BookOpen, Calendar, ChevronRight, ClipboardList, NotebookPen } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { getDailyTip } from "@/lib/data/daily-tip"
@@ -108,7 +108,7 @@ export default async function VandaagPage() {
       <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-4">
           {greeting()}
-          {profile?.name ? `, ${profile.name}` : ""} 🌿
+          {profile?.name ? `, ${profile.name}` : ""}
         </h1>
 
         <div className="flex flex-col gap-4 mb-6 lg:mb-8">
@@ -160,7 +160,10 @@ export default async function VandaagPage() {
             href="/deze-week"
             className="flex items-center justify-between rounded-2xl bg-surface border border-line/70 px-4 py-3.5 touch-manipulation"
           >
-            <span className="text-sm font-medium text-ink">📆 Bekijk je hele week</span>
+            <span className="text-sm font-medium text-ink inline-flex items-center gap-1.5">
+              <Calendar className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
+              Bekijk je hele week
+            </span>
             <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
           </Link>
 

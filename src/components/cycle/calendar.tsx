@@ -13,7 +13,7 @@ import {
   subMonths,
 } from "date-fns"
 import { nl } from "date-fns/locale"
-import { ChevronLeft, ChevronRight, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, X, Droplet, Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toggleMenstruationDay, setCycleLogFlow } from "@/lib/actions/cycle"
 import { FLOW_OPTIONS } from "@/lib/constants"
@@ -257,8 +257,14 @@ export function Calendar({
                     : "bg-surface text-ink border-line hover:border-sage/60",
                 )}
               >
-                <span className="mr-1" aria-hidden>
-                  {opt.emoji}
+                <span className="mr-1 inline-flex items-center" aria-hidden>
+                  {opt.intensity === 0 ? (
+                    <Circle className="h-3 w-3" strokeWidth={1.75} />
+                  ) : (
+                    Array.from({ length: opt.intensity }).map((_, i) => (
+                      <Droplet key={i} className="h-3 w-3" strokeWidth={1.75} fill="currentColor" />
+                    ))
+                  )}
                 </span>
                 {opt.label}
               </button>

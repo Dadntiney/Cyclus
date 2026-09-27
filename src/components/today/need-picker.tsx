@@ -39,9 +39,7 @@ export function NeedPicker({ initialNeed }: { initialNeed: string | null }) {
             disabled={isPending}
             onClick={() => handleSelect(opt.value)}
           >
-            <span className="mr-1" aria-hidden>
-              {opt.emoji}
-            </span>
+            <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
             {opt.label}
           </Chip>
         ))}

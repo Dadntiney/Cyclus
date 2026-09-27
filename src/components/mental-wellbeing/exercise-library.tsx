@@ -55,9 +55,7 @@ export function ExerciseLibrary({
             selected={categoryFilter === opt.value}
             onClick={() => setCategoryFilter(opt.value)}
           >
-            <span className="mr-1" aria-hidden>
-              {opt.emoji}
-            </span>
+            <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
             {opt.label}
           </Chip>
         ))}

@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X } from "lucide-react"
+import { X, Bell, Pill, Sun } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { REMINDER_TYPE_OPTIONS } from "@/lib/constants"
 import { getDueReminders, type ReminderLike } from "@/lib/client/reminder-scheduler"
 import {
@@ -29,7 +30,7 @@ const TYPE_BY_VALUE = new Map<string, (typeof REMINDER_TYPE_OPTIONS)[number]>(
 
 interface Toast {
   id: string
-  emoji: string
+  icon: LucideIcon
   text: string
 }
 
@@ -37,7 +38,7 @@ function reminderToast(reminder: ReminderLike, preferredStyles: string[], todayI
   const typeOption = TYPE_BY_VALUE.get(reminder.type)
   return {
     id: reminder.id,
-    emoji: typeOption?.emoji ?? "🔔",
+    icon: typeOption?.icon ?? Bell,
     text: resolveReminderText(
       reminder.type,
       reminder.label,
@@ -56,7 +57,7 @@ function medicationToast(medication: MedicationReminderLike, now: Date): Toast {
     : isStop
       ? `Je ingestelde periode voor ${medication.name} eindigt vandaag.`
       : `Herinnering: je hebt vandaag ${medication.name} ingepland.`
-  return { id: medication.id, emoji: "💊", text }
+  return { id: medication.id, icon: Pill, text }
 }
 
 /**
@@ -129,7 +130,7 @@ export function ReminderToastHost({
           phase: null,
           preferredStyles: morningReminder!.preferredStyles as Parameters<typeof getMorningMessage>[0]["preferredStyles"],
         })
-        toasts.push({ id: reminder.id, emoji: "☀️", text: message.body })
+        toasts.push({ id: reminder.id, icon: Sun, text: message.body })
       }
 
       if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
@@ -165,9 +166,7 @@ export function ReminderToastHost({
             "pointer-events-auto w-full max-w-sm bg-surface border border-line rounded-2xl shadow-lg px-4 py-3 flex items-center gap-3 animate-pop-in",
           )}
         >
-          <span className="text-xl shrink-0" aria-hidden>
-            {toast.emoji}
-          </span>
+          <toast.icon className="h-5 w-5 shrink-0 text-sage-dark" strokeWidth={1.75} aria-hidden />
           <p className="flex-1 text-sm text-ink">{toast.text}</p>
           <button
             type="button"

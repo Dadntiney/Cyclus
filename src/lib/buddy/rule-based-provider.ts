@@ -32,14 +32,14 @@ function pickCycleLine(context: string[]): string | null {
 // since this scripted fallback isn't meant to carry the full personality,
 // just not feel jarringly generic when a style preference is set.
 const CLOSING_BY_STYLE: Record<string, string> = {
-  liefdevol: "Ik ben er voor je. Kijk voor concrete suggesties op Vandaag, of vertel me gerust meer over hoe je je voelt. 💛",
-  humor: "Voor meer tips: kijk op Vandaag. Of vertel me gewoon meer — ik luister, zonder oordeel (en zonder koffie nodig). 😄",
-  spiritueel: "Kijk voor meer op Vandaag, of neem een moment om te voelen wat je nu nodig hebt. ✨",
-  motiverend: "Kijk voor concrete suggesties op Vandaag — of vertel me meer, dan denken we samen verder. 💪",
+  liefdevol: "Ik ben er voor je. Kijk voor concrete suggesties op Vandaag, of vertel me gerust meer over hoe je je voelt.",
+  humor: "Voor meer tips: kijk op Vandaag. Of vertel me gewoon meer — ik luister, zonder oordeel (en zonder koffie nodig).",
+  spiritueel: "Kijk voor meer op Vandaag, of neem een moment om te voelen wat je nu nodig hebt.",
+  motiverend: "Kijk voor concrete suggesties op Vandaag — of vertel me meer, dan denken we samen verder.",
   informatief: "Op Vandaag vind je meer achtergrondinformatie die aansluit bij wat je nu deelt.",
-  rustig: "Kijk rustig verder op Vandaag, of vertel me op je gemak meer over hoe je je voelt. 🌿",
+  rustig: "Kijk rustig verder op Vandaag, of vertel me op je gemak meer over hoe je je voelt.",
   direct: "Meer suggesties vind je op Vandaag. Of vertel me gewoon wat er speelt.",
-  luchtig: "Voor meer tips: kijk even op Vandaag. Of vertel me gerust meer! 😊",
+  luchtig: "Voor meer tips: kijk even op Vandaag. Of vertel me gerust meer!",
 }
 
 function pickClosing(context: string[]): string {

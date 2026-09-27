@@ -8,7 +8,6 @@
  */
 
 export interface IngredientInfo {
-  emoji: string
   /** Display name for the explainer sheet header. */
   label: string
   nutrients: string[]
@@ -21,7 +20,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "zoete aardappel",
     {
-      emoji: "🍠",
       label: "Zoete aardappel",
       nutrients: ["Vezels", "Bètacaroteen", "Kalium", "Complexe koolhydraten"],
       explanation:
@@ -31,7 +29,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "zalm",
     {
-      emoji: "🐟",
       label: "Zalm",
       nutrients: ["Omega-3 vetzuren", "Eiwitten", "Vitamine D"],
       explanation:
@@ -41,7 +38,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "spinazie",
     {
-      emoji: "🥬",
       label: "Spinazie",
       nutrients: ["Foliumzuur", "Vitamine K", "Vitamine C", "Magnesium", "IJzer"],
       explanation:
@@ -51,7 +47,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "broccoli",
     {
-      emoji: "🥦",
       label: "Broccoli",
       nutrients: ["Vitamine C", "Vitamine K", "Vezels", "Foliumzuur"],
       explanation:
@@ -61,7 +56,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "olijfolie",
     {
-      emoji: "🫒",
       label: "Olijfolie",
       nutrients: ["Onverzadigde vetten", "Vitamine E"],
       explanation:
@@ -71,7 +65,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "havermout",
     {
-      emoji: "🥣",
       label: "Havermout",
       nutrients: ["Vezels (bèta-glucanen)", "Complexe koolhydraten", "Eiwitten"],
       explanation:
@@ -81,7 +74,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "chiazaad",
     {
-      emoji: "🌱",
       label: "Chiazaad",
       nutrients: ["Vezels", "Omega-3 vetzuren (plantaardig)", "Eiwitten"],
       explanation:
@@ -91,7 +83,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "bes",
     {
-      emoji: "🫐",
       label: "Bessen",
       nutrients: ["Vitamine C", "Antioxidanten", "Vezels"],
       explanation:
@@ -101,7 +92,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "honing",
     {
-      emoji: "🍯",
       label: "Honing",
       nutrients: ["Snelle koolhydraten"],
       explanation:
@@ -111,7 +101,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "linz",
     {
-      emoji: "🫘",
       label: "Linzen",
       nutrients: ["Plantaardige eiwitten", "Vezels", "IJzer", "Foliumzuur"],
       explanation:
@@ -121,7 +110,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "feta",
     {
-      emoji: "🧀",
       label: "Feta",
       nutrients: ["Eiwitten", "Calcium", "Verzadigd vet"],
       explanation:
@@ -131,7 +119,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "rucola",
     {
-      emoji: "🥬",
       label: "Rucola",
       nutrients: ["Vitamine K", "Vitamine C", "Nitraat"],
       explanation: "Rucola is een bladgroente die vitamine K en C levert, en van nature laag in calorieën is.",
@@ -140,7 +127,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "cherrytomaat",
     {
-      emoji: "🍅",
       label: "Cherrytomaatjes",
       nutrients: ["Vitamine C", "Lycopeen"],
       explanation:
@@ -150,7 +136,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "tomaat",
     {
-      emoji: "🍅",
       label: "Tomaat",
       nutrients: ["Vitamine C", "Lycopeen"],
       explanation: "Tomaten leveren vitamine C en lycopeen, een antioxidant die de rode kleur geeft.",
@@ -159,7 +144,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "kikkererwt",
     {
-      emoji: "🧆",
       label: "Kikkererwten",
       nutrients: ["Plantaardige eiwitten", "Vezels", "Foliumzuur"],
       explanation:
@@ -169,7 +153,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "kokosmelk",
     {
-      emoji: "🥥",
       label: "Kokosmelk",
       nutrients: ["Verzadigd vet", "Energie"],
       explanation:
@@ -179,7 +162,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "ui",
     {
-      emoji: "🧅",
       label: "Ui",
       nutrients: ["Vezels", "Antioxidanten"],
       explanation: "Ui levert vezels en diverse plantaardige antioxidanten, en is een basis in veel gerechten.",
@@ -188,7 +170,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "knoflook",
     {
-      emoji: "🧄",
       label: "Knoflook",
       nutrients: ["Zwavelverbindingen"],
       explanation:
@@ -198,7 +179,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "griekse yoghurt",
     {
-      emoji: "🥣",
       label: "Griekse yoghurt",
       nutrients: ["Eiwitten", "Calcium", "Probiotica"],
       explanation:
@@ -208,7 +188,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "kwark",
     {
-      emoji: "🥣",
       label: "Kwark",
       nutrients: ["Eiwitten", "Calcium"],
       explanation: "Kwark is van nature eiwitrijk en laag in vet, en levert daarnaast calcium.",
@@ -217,7 +196,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "walnoot",
     {
-      emoji: "🌰",
       label: "Walnoten",
       nutrients: ["Onverzadigde vetten", "Omega-3 vetzuren (plantaardig)", "Magnesium"],
       explanation:
@@ -227,7 +205,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "amandel",
     {
-      emoji: "🌰",
       label: "Amandelen",
       nutrients: ["Onverzadigde vetten", "Vitamine E", "Magnesium"],
       explanation: "Amandelen leveren onverzadigde vetten, vitamine E en magnesium.",
@@ -236,7 +213,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "pompoenpit",
     {
-      emoji: "🎃",
       label: "Pompoenpitten",
       nutrients: ["Magnesium", "Zink", "Onverzadigde vetten"],
       explanation:
@@ -246,7 +222,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "kaneel",
     {
-      emoji: "🧂",
       label: "Kaneel",
       nutrients: ["Antioxidanten"],
       explanation: "Kaneel wordt vooral gebruikt als smaakmaker en bevat enkele plantaardige antioxidanten.",
@@ -255,7 +230,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "kipfilet",
     {
-      emoji: "🍗",
       label: "Kipfilet",
       nutrients: ["Eiwitten", "Vitamine B6", "Selenium"],
       explanation: "Kipfilet is een magere bron van volwaardige eiwitten en levert vitamine B6.",
@@ -264,7 +238,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "quinoa",
     {
-      emoji: "🌾",
       label: "Quinoa",
       nutrients: ["Complexe koolhydraten", "Plantaardige eiwitten", "Magnesium"],
       explanation:
@@ -274,7 +247,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "banaan",
     {
-      emoji: "🍌",
       label: "Banaan",
       nutrients: ["Kalium", "Vezels", "Koolhydraten"],
       explanation: "Banaan levert kalium, vezels en snel beschikbare energie uit koolhydraten.",
@@ -283,7 +255,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "granola",
     {
-      emoji: "🥣",
       label: "Granola",
       nutrients: ["Vezels", "Koolhydraten"],
       explanation:
@@ -293,7 +264,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "kokosrasp",
     {
-      emoji: "🥥",
       label: "Kokosrasp",
       nutrients: ["Vezels", "Verzadigd vet"],
       explanation: "Kokosrasp geeft crunch en smaak, en bevat met name verzadigd vet — een toevoeging in kleine hoeveelheden.",
@@ -302,7 +272,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "pompoen",
     {
-      emoji: "🎃",
       label: "Pompoen",
       nutrients: ["Bètacaroteen", "Vezels", "Kalium"],
       explanation: "Pompoen levert bètacaroteen, vezels en is van nature laag in calorieën.",
@@ -311,7 +280,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "bouillon",
     {
-      emoji: "🥣",
       label: "Bouillon",
       nutrients: ["Vocht", "Natrium"],
       explanation: "Bouillon draagt vooral bij aan smaak en vochtinname; let op het zoutgehalte bij kant-en-klare varianten.",
@@ -320,7 +288,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "rijst",
     {
-      emoji: "🍚",
       label: "Rijst",
       nutrients: ["Koolhydraten"],
       explanation: "Rijst is vooral een bron van koolhydraten; volkoren rijst levert daarnaast meer vezels dan witte rijst.",
@@ -329,7 +296,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "diepvriesgroente",
     {
-      emoji: "🥦",
       label: "Diepvriesgroenten",
       nutrients: ["Vezels", "Vitamines (variëren per groente)"],
       explanation:
@@ -339,7 +305,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "tonijn",
     {
-      emoji: "🐟",
       label: "Tonijn",
       nutrients: ["Eiwitten", "Omega-3 vetzuren", "Vitamine D"],
       explanation: "Tonijn is een magere bron van eiwitten en levert omega-3 vetzuren en vitamine D.",
@@ -348,7 +313,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "eieren",
     {
-      emoji: "🥚",
       label: "Ei",
       nutrients: ["Eiwitten", "Vitamine B12", "Choline"],
       explanation: "Eieren leveren volwaardige eiwitten en een breed pakket aan vitamines en mineralen, waaronder B12.",
@@ -357,7 +321,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "ei",
     {
-      emoji: "🥚",
       label: "Ei",
       nutrients: ["Eiwitten", "Vitamine B12", "Choline"],
       explanation: "Eieren leveren volwaardige eiwitten en een breed pakket aan vitamines en mineralen, waaronder B12.",
@@ -366,7 +329,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "aardappel",
     {
-      emoji: "🥔",
       label: "Aardappel",
       nutrients: ["Koolhydraten", "Kalium", "Vitamine C"],
       explanation: "Aardappelen leveren vooral koolhydraten, en daarnaast kalium en een beetje vitamine C.",
@@ -375,7 +337,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "appel",
     {
-      emoji: "🍎",
       label: "Appel",
       nutrients: ["Vezels", "Vitamine C"],
       explanation: "Een appel levert vezels (zeker met schil) en vitamine C.",
@@ -384,7 +345,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "bruine bon",
     {
-      emoji: "🫘",
       label: "Bruine bonen",
       nutrients: ["Plantaardige eiwitten", "Vezels", "IJzer"],
       explanation: "Bruine bonen zijn een goede plantaardige eiwit- en vezelbron, en leveren ook ijzer.",
@@ -393,7 +353,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "witte bon",
     {
-      emoji: "🫘",
       label: "Witte bonen",
       nutrients: ["Plantaardige eiwitten", "Vezels", "IJzer"],
       explanation: "Witte bonen zijn een goede plantaardige eiwit- en vezelbron, en leveren ook ijzer.",
@@ -402,7 +361,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "tomatenblokjes",
     {
-      emoji: "🍅",
       label: "Tomatenblokjes",
       nutrients: ["Vitamine C", "Lycopeen"],
       explanation: "Tomaten uit blik leveren, net als verse tomaten, vitamine C en lycopeen.",
@@ -411,7 +369,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "volkoren brood",
     {
-      emoji: "🍞",
       label: "Volkoren brood",
       nutrients: ["Vezels", "Complexe koolhydraten"],
       explanation:
@@ -421,7 +378,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "komkommer",
     {
-      emoji: "🥒",
       label: "Komkommer",
       nutrients: ["Vocht", "Vitamine K"],
       explanation: "Komkommer bestaat grotendeels uit water en levert wat vitamine K, en is laag in calorieën.",
@@ -430,7 +386,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "avocado",
     {
-      emoji: "🥑",
       label: "Avocado",
       nutrients: ["Onverzadigde vetten", "Vezels", "Kalium"],
       explanation: "Avocado is rijk aan onverzadigde vetten en vezels, en levert ook kalium.",
@@ -439,7 +394,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "kaas",
     {
-      emoji: "🧀",
       label: "Kaas",
       nutrients: ["Eiwitten", "Calcium", "Verzadigd vet"],
       explanation: "Kaas levert eiwitten en calcium, en bevat ook verzadigd vet en zout — vooral lekker in beperkte hoeveelheden.",
@@ -448,7 +402,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "rode linzen",
     {
-      emoji: "🫘",
       label: "Rode linzen",
       nutrients: ["Plantaardige eiwitten", "Vezels", "IJzer"],
       explanation: "Rode linzen zijn een goede plantaardige eiwit- en vezelbron en leveren ijzer.",
@@ -457,7 +410,6 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
   [
     "kipfile",
     {
-      emoji: "🍗",
       label: "Kip",
       nutrients: ["Eiwitten", "Vitamine B6"],
       explanation: "Kip is een magere bron van volwaardige eiwitten.",

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { format, parseISO } from "date-fns"
 import { nl } from "date-fns/locale"
-import { ShoppingCart, ChevronRight } from "lucide-react"
+import { ShoppingCart, ChevronRight, Salad, Footprints, Lightbulb } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
@@ -131,7 +131,8 @@ export function WeekView({
           {nutritionEnabled && (
             <section>
               <p className="text-xs font-medium text-ink-soft mb-2 inline-flex items-center gap-1.5">
-                🥗 Voeding
+                <Salad className="h-3.5 w-3.5" strokeWidth={1.75} />
+                Voeding
               </p>
               <div className="flex flex-col gap-2">
                 {day.meals.map((meal) => (
@@ -152,7 +153,8 @@ export function WeekView({
           {movementEnabled && (
             <section>
               <p className="text-xs font-medium text-ink-soft mb-2 inline-flex items-center gap-1.5">
-                🏃 Beweging
+                <Footprints className="h-3.5 w-3.5" strokeWidth={1.75} />
+                Beweging
               </p>
               <WorkoutSlotCard
                 focus={day.workout.focus}
@@ -168,7 +170,8 @@ export function WeekView({
           {day.focusTips.length > 0 && (
             <section>
               <p className="text-xs font-medium text-ink-soft mb-2 inline-flex items-center gap-1.5">
-                💡 Focus
+                <Lightbulb className="h-3.5 w-3.5" strokeWidth={1.75} />
+                Focus
               </p>
               <Card className="p-3.5">
                 <ul className="flex flex-col gap-1.5">

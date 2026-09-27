@@ -23,7 +23,7 @@ import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { format, parseISO, subDays } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Droplet, Sparkles, ChevronRight } from "lucide-react"
+import { Droplet, Sparkles, ChevronRight, Sunset } from "lucide-react"
 import { FLOW_OPTIONS, symptomLabel } from "@/lib/constants"
 
 export default async function CyclusPage() {
@@ -203,7 +203,10 @@ export default async function CyclusPage() {
         className="flex items-center justify-between rounded-2xl bg-info-soft border border-transparent px-4 py-3.5 touch-manipulation"
       >
         <span className="min-w-0">
-          <span className="block text-sm font-medium text-ink">🌤️ Cyclus & ouder worden</span>
+          <span className="block text-sm font-medium text-ink inline-flex items-center gap-1.5">
+            <Sunset className="h-4 w-4 text-info" strokeWidth={1.75} />
+            Cyclus & ouder worden
+          </span>
           <span className="block text-xs text-ink-soft mt-0.5">
             {lifeStageLikelyRelevant
               ? "Herkenbaar voor jou? Lees hoe je cyclus kan veranderen."

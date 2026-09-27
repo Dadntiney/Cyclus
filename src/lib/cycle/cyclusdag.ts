@@ -1,7 +1,9 @@
+import { Lightbulb, type LucideIcon } from "lucide-react"
 import type { CycleEstimate, CyclePhase } from "@/lib/cycle/estimate"
 import { getPhaseKnowledge, type BodyChangeItem, type PhaseKnowledge } from "@/lib/cycle/phase-knowledge"
 import { getPhaseContent, type PhaseColorTokens } from "@/lib/cycle/phase-content"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
+import { BUDDY_QUOTE_CATEGORY_ICON } from "@/lib/data/buddy-quote-icons"
 import { formatPhaseSymptomInsight, type PhaseSymptomInsight } from "@/lib/cycle/patterns"
 import type { BuddyStyle } from "@/lib/buddy/styles"
 import { symptomLabel } from "@/lib/constants"
@@ -54,7 +56,7 @@ const SYMPTOM_TO_CHANGE_LABEL: Record<string, string> = {
 export interface BuddyMoment {
   kind: "tip" | "quote"
   title: string
-  emoji: string
+  icon: LucideIcon
   text: string
 }
 
@@ -134,19 +136,24 @@ export function buildCyclusdagView(input: BuildCyclusdagViewInput): CyclusdagVie
       ? buildPersonalizedMovementTip(trainingPreferences, phaseContent.movement.preferGentler)
       : null
     if (personalTip) {
-      buddyMoment = { kind: "tip", title: "Kleine tip voor vandaag", emoji: "💡", text: personalTip }
+      buddyMoment = { kind: "tip", title: "Kleine tip voor vandaag", icon: Lightbulb, text: personalTip }
     } else {
       const phaseTip = phaseContent.lifestyleTips[seededIndex(`${seed}-phasetip`, phaseContent.lifestyleTips.length)]
       buddyMoment = {
         kind: "tip",
         title: "Kleine tip voor vandaag",
-        emoji: "💡",
+        icon: Lightbulb,
         text: `${phaseTip.title}: ${phaseTip.text}`,
       }
     }
   } else {
     const quote = getDailyBuddyQuote(`${seed}-cyclusdag`, phase, preferredStyles)
-    buddyMoment = { kind: "quote", title: "Even onthouden 💛", emoji: quote.emoji, text: quote.text }
+    buddyMoment = {
+      kind: "quote",
+      title: "Even onthouden",
+      icon: BUDDY_QUOTE_CATEGORY_ICON[quote.category],
+      text: quote.text,
+    }
   }
 
   return {

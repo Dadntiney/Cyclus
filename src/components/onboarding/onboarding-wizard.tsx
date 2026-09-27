@@ -1,6 +1,8 @@
 "use client"
 
 import { useMemo, useState, useTransition } from "react"
+import { Footprints, Salad, Brain, Leaf } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input"
@@ -279,7 +281,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         {stepId === "health" && <HealthStep data={data} setData={setData} />}
         {stepId === "movement-toggle" && (
           <OptionalModuleToggleStep
-            emoji="🏃"
+            icon={Footprints}
             title="Wil je beweging gebruiken?"
             subtitle="Sommige vrouwen willen liever geen trainingsadvies zien. Helemaal jouw keuze — dit kun je later altijd aanpassen in je profiel."
             value={data.movementEnabled}
@@ -309,7 +311,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         )}
         {stepId === "nutrition-toggle" && (
           <OptionalModuleToggleStep
-            emoji="🥗"
+            icon={Salad}
             title="Wil je voeding gebruiken?"
             subtitle="Als voeding nu niet relevant voor je is, sla je dit gerust over. Ook dit pas je later altijd aan in je profiel."
             value={data.nutritionEnabled}
@@ -689,7 +691,7 @@ function HealthStep({
 }
 
 function OptionalModuleToggleStep({
-  emoji,
+  icon: Icon,
   title,
   subtitle,
   value,
@@ -697,7 +699,7 @@ function OptionalModuleToggleStep({
   yesLabel,
   noLabel,
 }: {
-  emoji: string
+  icon: LucideIcon
   title: string
   subtitle: string
   value: boolean | null
@@ -707,8 +709,8 @@ function OptionalModuleToggleStep({
 }) {
   return (
     <div className="text-center">
-      <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center text-2xl">
-        {emoji}
+      <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center">
+        <Icon className="h-6 w-6 text-sage-dark" strokeWidth={1.75} />
       </div>
       <h2 className="font-display text-2xl text-ink mb-2">{title}</h2>
       <p className="text-ink-soft text-sm mb-6">{subtitle}</p>
@@ -733,8 +735,8 @@ function MentalWellbeingToggleStep({
 }) {
   return (
     <div className="text-center">
-      <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center text-2xl">
-        🧘
+      <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center">
+        <Brain className="h-6 w-6 text-sage-dark" strokeWidth={1.75} />
       </div>
       <h2 className="font-display text-2xl text-ink mb-2">Wil je ook ondersteuning voor je mentale rust?</h2>
       <p className="text-ink-soft text-sm mb-6">
@@ -773,9 +775,7 @@ function MentalWellbeingPreferencesStep({
       <div className="flex flex-wrap gap-2">
         {MENTAL_WELLBEING_CATEGORY_OPTIONS.map((opt) => (
           <Chip key={opt.value} selected={selected.includes(opt.value)} onClick={() => onToggle(opt.value)}>
-            <span className="mr-1" aria-hidden>
-              {opt.emoji}
-            </span>
+            <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
             {opt.label}
           </Chip>
         ))}
@@ -902,7 +902,7 @@ function StyleStep({
                 : "bg-surface border-line hover:border-sage/60",
             )}
           >
-            <span className="text-xl">{opt.emoji}</span>
+            <opt.icon className="h-5 w-5 text-sage-dark" strokeWidth={1.75} />
             <span className="font-medium text-ink">{opt.label}</span>
           </button>
         ))}
@@ -937,9 +937,7 @@ function BuddyStyleStep({
         </Chip>
         {BUDDY_STYLE_OPTIONS.map((opt) => (
           <Chip key={opt.value} selected={styles.includes(opt.value)} onClick={() => onToggleStyle(opt.value)}>
-            <span className="mr-1" aria-hidden>
-              {opt.emoji}
-            </span>
+            <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
             {opt.label}
           </Chip>
         ))}
@@ -961,8 +959,8 @@ function BuddyIntroStep({ name, styles }: { name: string; styles: string[] }) {
   const styleLabel = BUDDY_STYLE_OPTIONS.find((opt) => opt.value === styles[0])?.label
   return (
     <div className="text-center">
-      <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-sage-soft flex items-center justify-center text-2xl">
-        🌿
+      <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-sage-soft flex items-center justify-center">
+        <Leaf className="h-7 w-7 text-sage-dark" strokeWidth={1.75} />
       </div>
       <h2 className="font-display text-2xl text-ink mb-2">Maak kennis met je Buddy</h2>
       <p className="text-ink-soft text-sm">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { Leaf } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function ErrorBoundary({
@@ -17,7 +18,7 @@ export default function ErrorBoundary({
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream text-ink px-6">
       <div className="text-center max-w-sm">
-        <p className="text-4xl mb-4">🌿</p>
+        <Leaf className="h-9 w-9 mx-auto mb-4 text-sage-dark" strokeWidth={1.5} />
         <h1 className="font-display text-2xl text-ink mb-2">Er ging iets mis</h1>
         <p className="text-sm text-ink-soft mb-6">
           Sorry, dat hadden we niet verwacht. Probeer het opnieuw — als het blijft gebeuren, sluit

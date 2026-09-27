@@ -193,9 +193,10 @@ export function RemindersSection({
                 className="flex flex-col gap-2 rounded-2xl border border-line px-3.5 py-3"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-lg shrink-0" aria-hidden>
-                    {typeOption?.emoji ?? "🔔"}
-                  </span>
+                  {(() => {
+                    const Icon = typeOption?.icon ?? Bell
+                    return <Icon className="h-5 w-5 shrink-0 text-sage-dark" strokeWidth={1.75} aria-hidden />
+                  })()}
                   <button
                     type="button"
                     onClick={() => startEdit(reminder)}
@@ -283,9 +284,7 @@ export function RemindersSection({
                   selected={draft.type === opt.value}
                   onClick={() => setDraft((d) => ({ ...d, type: opt.value }))}
                 >
-                  <span className="mr-1" aria-hidden>
-                    {opt.emoji}
-                  </span>
+                  <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
                   {opt.label}
                 </Chip>
               ))}
