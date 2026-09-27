@@ -1,8 +1,6 @@
 import Link from "next/link"
 import { Dumbbell, Salad, Sparkles } from "lucide-react"
 import { buttonVariants } from "@/components/ui/button"
-import { RecipeImage } from "@/components/nutrition/recipe-image"
-import { WorkoutImage } from "@/components/training/workout-image"
 import { cn } from "@/lib/utils"
 import type { Recommendation } from "@/lib/recommendations/engine"
 
@@ -21,22 +19,14 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
               Beweging
             </p>
             {training.workout ? (
-              <div className="flex items-start gap-3">
-                <WorkoutImage
-                  type={training.workout.type}
-                  imageUrl={training.workout.image_url}
-                  className="h-14 w-14 rounded-xl shrink-0"
-                  sizes="56px"
-                />
-                <div className="min-w-0">
-                  <p className="font-display text-lg text-ink">{training.workout.title}</p>
-                  <p className="text-sm text-ink-soft mt-0.5">{training.workout.duration} minuten</p>
-                  <p className="text-sm text-ink-soft mt-1.5">{training.reason}</p>
-                  <Link href={`/training/${training.workout.id}`} className={cn(buttonVariants(), "mt-3")}>
-                    Start training
-                  </Link>
-                </div>
-              </div>
+              <>
+                <p className="font-display text-lg text-ink">{training.workout.title}</p>
+                <p className="text-sm text-ink-soft mt-0.5">{training.workout.duration} minuten</p>
+                <p className="text-sm text-ink-soft mt-1.5">{training.reason}</p>
+                <Link href={`/training/${training.workout.id}`} className={cn(buttonVariants(), "mt-3")}>
+                  Start training
+                </Link>
+              </>
             ) : (
               <p className="text-sm text-ink-soft mt-1">{training.reason}</p>
             )}
@@ -50,24 +40,16 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
               Voeding
             </p>
             {nutrition.recipe ? (
-              <div className="flex items-start gap-3">
-                <RecipeImage
-                  title={nutrition.recipe.title}
-                  imageUrl={nutrition.recipe.image_url}
-                  className="h-14 w-14 rounded-xl shrink-0"
-                  sizes="56px"
-                />
-                <div className="min-w-0">
-                  <p className="font-display text-lg text-ink">{nutrition.recipe.title}</p>
-                  <p className="text-sm text-ink-soft mt-1.5">{nutrition.reason}</p>
-                  <Link
-                    href={`/voeding/${nutrition.recipe.id}`}
-                    className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
-                  >
-                    Bekijk recept
-                  </Link>
-                </div>
-              </div>
+              <>
+                <p className="font-display text-lg text-ink">{nutrition.recipe.title}</p>
+                <p className="text-sm text-ink-soft mt-1.5">{nutrition.reason}</p>
+                <Link
+                  href={`/voeding/${nutrition.recipe.id}`}
+                  className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
+                >
+                  Bekijk recept
+                </Link>
+              </>
             ) : (
               <p className="text-sm text-ink-soft mt-1">
                 Nog geen recepten beschikbaar. Kijk later nog eens terug.

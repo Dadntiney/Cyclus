@@ -4,7 +4,6 @@ import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getWorkoutDetail, getFavoriteExerciseIds } from "@/lib/data/training"
 import { ensureWorkoutImage } from "@/lib/images/ensure-workout-image"
-import { PHOTOS_ENABLED } from "@/lib/images/photos-enabled"
 import { WorkoutSession } from "@/components/training/workout-session"
 import { BackButton } from "@/components/ui/back-button"
 
@@ -27,8 +26,7 @@ export default async function WorkoutDetailPage({
 
   // Same pattern as the recipe detail page: never block this render on
   // fetching a photo, just warm the cache in the background for next time.
-  // Skipped while PHOTOS_ENABLED is off.
-  if (PHOTOS_ENABLED && !workout.image_url) {
+  if (!workout.image_url) {
     after(() => {
       void ensureWorkoutImage(workout)
     })

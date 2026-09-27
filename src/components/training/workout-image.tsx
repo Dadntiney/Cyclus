@@ -1,6 +1,5 @@
 import Image from "next/image"
 import { WorkoutMedia } from "@/components/training/workout-media"
-import { PHOTOS_ENABLED } from "@/lib/images/photos-enabled"
 import { cn } from "@/lib/utils"
 
 interface WorkoutImageProps {
@@ -21,7 +20,7 @@ export function WorkoutImage({
   sizes,
   priority,
 }: WorkoutImageProps) {
-  if (!PHOTOS_ENABLED || !imageUrl) {
+  if (!imageUrl) {
     return <WorkoutMedia type={type} className={className} iconClassName={iconClassName} />
   }
 
