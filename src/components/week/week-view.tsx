@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { format, parseISO } from "date-fns"
 import { nl } from "date-fns/locale"
@@ -45,28 +45,6 @@ export function WeekView({
   )
   const [selectedIndex, setSelectedIndex] = useState(todayIndex)
   const [overrides, setOverrides] = useState<WeekOverrides>({})
-  const dayButtonRefs = useRef<(HTMLButtonElement | null)[]>([])
-  const isFirstScroll = useRef(true)
-
-  useEffect(() => {
-    // The 7-day strip is wider than the screen (min-w-[52px] × 7 + gaps),
-    // so a day near the end — often today, the default selection — opens
-    // with only part of its pill visible, cut off by the right edge, with
-    // no scroll affordance hinting there's more to the right. Bring the
-    // selected pill fully into view instead: instant on first mount (so it
-    // reads as "already positioned there", not a visible jump right after
-    // load), smooth on a later tap.
-    const btn = dayButtonRefs.current[selectedIndex]
-    if (!btn) return
-    const reduceMotion =
-      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    btn.scrollIntoView({
-      behavior: isFirstScroll.current || reduceMotion ? "auto" : "smooth",
-      block: "nearest",
-      inline: "center",
-    })
-    isFirstScroll.current = false
-  }, [selectedIndex])
 
   useEffect(() => {
     // Reads localStorage, which isn't available during SSR — deliberately
@@ -110,20 +88,17 @@ export function WeekView({
         </div>
       )}
 
-      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 snap-x">
+      <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
         {days.map((d, i) => {
           const dPhase = d.cycleEstimate ? getPhaseContent(d.cycleEstimate.phase) : null
           const selected = i === selectedIndex
           return (
             <button
               key={d.date}
-              ref={(el) => {
-                dayButtonRefs.current[i] = el
-              }}
               type="button"
               onClick={() => setSelectedIndex(i)}
               className={cn(
-                "shrink-0 snap-start flex flex-col items-center gap-1.5 rounded-2xl px-3.5 py-2.5 min-w-[52px] touch-manipulation transition-colors",
+                "flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 touch-manipulation transition-colors",
                 selected ? "bg-sage-dark text-white" : "bg-white border border-line text-ink",
               )}
             >
