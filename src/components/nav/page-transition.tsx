@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react"
 import { usePathname } from "next/navigation"
 import type { ReactNode } from "react"
 import { markNavigation, ensurePopstateTracking, consumePopNavigationFlag } from "@/lib/client/navigation-depth"
+import { scrollToHash } from "@/lib/client/hash-scroll"
 
 /**
  * Replays a short fade/slide-in whenever the route changes, so navigating
@@ -12,20 +13,37 @@ import { markNavigation, ensurePopstateTracking, consumePopNavigationFlag } from
  *
  * Also the one place that observes every route change app-wide, so it
  * doubles as the source for BackButton's "has she navigated in-app yet"
- * signal (see lib/client/navigation-depth), and resets scroll to the top
- * for a genuinely new screen — but only when that's actually appropriate:
- * a back/forward move (popstate) restores scroll natively, and a link to
- * a hash (e.g. /profiel#slaap) is left to the browser's own anchor
- * scrolling (see the scroll-padding-top rule in globals.css for why that
- * doesn't end up hidden behind the sticky mobile header).
+ * signal (see lib/client/navigation-depth), resets scroll to the top for a
+ * genuinely new screen, and drives every #hash deep link (see hash-scroll):
+ * - a back/forward move (popstate) restores scroll natively, so neither
+ *   the top-reset nor the hash-scroll below run for it;
+ * - a link to a hash (e.g. /profiel#slaap) skips the top-reset and instead
+ *   polls for that element and scrolls to it once it exists — several
+ *   routes render a loading.tsx skeleton first, so the real target often
+ *   isn't in the DOM yet at the moment the navigation "completes".
  */
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const isFirstPathname = useRef(true)
+  const cancelHashScroll = useRef<(() => void) | undefined>(undefined)
 
   useEffect(() => {
     ensurePopstateTracking()
   }, [])
+
+  useEffect(() => {
+    function handleHashChange() {
+      cancelHashScroll.current?.()
+      cancelHashScroll.current = scrollToHash(window.location.hash)
+    }
+
+    handleHashChange()
+    window.addEventListener("hashchange", handleHashChange)
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange)
+      cancelHashScroll.current?.()
+    }
+  }, [pathname])
 
   useEffect(() => {
     if (isFirstPathname.current) {
