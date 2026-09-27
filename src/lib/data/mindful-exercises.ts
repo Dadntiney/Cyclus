@@ -6,10 +6,11 @@ import type { MentalWellbeingCategory } from "@/lib/constants"
  * buddy-quotes.ts and phase-content.ts) rather than a database table: this
  * is editorial copy the app ships with, not user data.
  *
- * There's no audio here — each exercise is a small sequence of short,
- * guided text prompts meant to be read one at a time at your own pace (see
- * the step-timer UI on the exercise detail page). Deliberately laagdrempelig:
- * no elaborate spiritual language, no long paragraphs.
+ * Each exercise is a small sequence of short, guided text prompts. She can
+ * follow it two ways (see GuidedExercise): "Bekijken" reads them one at a
+ * time at her own pace, "Luisteren" plays them audio-only so she can close
+ * her eyes and put her phone down. Deliberately laagdrempelig: no elaborate
+ * spiritual language, no long paragraphs.
  */
 
 export type MindfulExerciseKind = "meditatie" | "mindfulness"
@@ -24,6 +25,16 @@ export interface MindfulExercise {
   intro: string
   steps: string[]
   closing: string
+  /**
+   * A real narrated recording of this exercise (intro + steps + closing, as
+   * one continuous track), if one has been produced. Optional and unset for
+   * every exercise today — "Luisteren" falls back to the browser's built-in
+   * text-to-speech reading the same intro/steps/closing. Add a URL here
+   * (e.g. a Supabase Storage public URL, same pattern as avatars/recipe
+   * images) to give any exercise a real recording with no other changes:
+   * ListenMode plays it automatically whenever it's set.
+   */
+  audioUrl?: string | null
 }
 
 export const MINDFUL_EXERCISES: MindfulExercise[] = [
