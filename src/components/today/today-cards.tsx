@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
+import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { cn } from "@/lib/utils"
 import type { Recommendation } from "@/lib/recommendations/engine"
 
@@ -33,16 +34,24 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
         <Card>
           <p className="text-sm font-medium text-sage-dark mb-1">🥗 Voeding</p>
           {nutrition.recipe ? (
-            <>
-              <p className="font-display text-lg text-ink">{nutrition.recipe.title}</p>
-              <p className="text-sm text-ink-soft mt-2">{nutrition.reason}</p>
-              <Link
-                href={`/voeding/${nutrition.recipe.id}`}
-                className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
-              >
-                Bekijk recept
-              </Link>
-            </>
+            <div className="flex items-start gap-3 mt-1">
+              <RecipeImage
+                title={nutrition.recipe.title}
+                imageUrl={nutrition.recipe.image_url}
+                className="h-16 w-16 rounded-2xl shrink-0"
+                sizes="64px"
+              />
+              <div className="min-w-0">
+                <p className="font-display text-lg text-ink">{nutrition.recipe.title}</p>
+                <p className="text-sm text-ink-soft mt-2">{nutrition.reason}</p>
+                <Link
+                  href={`/voeding/${nutrition.recipe.id}`}
+                  className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
+                >
+                  Bekijk recept
+                </Link>
+              </div>
+            </div>
           ) : (
             <p className="text-sm text-ink-soft mt-1">
               Nog geen recepten beschikbaar. Kijk later nog eens terug.

@@ -2,7 +2,10 @@ import type { Tables } from "@/types/database"
 import type { CycleEstimate, CyclePhase } from "@/lib/cycle/estimate"
 
 type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
-type Recipe = Pick<Tables<"recipes">, "id" | "title" | "category" | "preparation_time" | "nutrition_information">
+type Recipe = Pick<
+  Tables<"recipes">,
+  "id" | "title" | "category" | "preparation_time" | "nutrition_information" | "image_url"
+>
 type Profile = Tables<"profiles">
 type Checkin = Tables<"daily_checkins">
 

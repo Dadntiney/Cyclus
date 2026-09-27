@@ -26,7 +26,9 @@ export async function getVandaagData(userId: string) {
     supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
     supabase.from("daily_checkins").select("*").eq("user_id", userId).eq("date", today).maybeSingle(),
     supabase.from("workouts").select("id, title, type, duration, difficulty"),
-    supabase.from("recipes").select("id, title, category, preparation_time, nutrition_information"),
+    supabase
+      .from("recipes")
+      .select("id, title, category, preparation_time, nutrition_information, image_url"),
     supabase
       .from("daily_checkins")
       .select("date")

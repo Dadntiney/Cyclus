@@ -27,6 +27,7 @@ const recipes = [
     category: ["Snel", "Lunch"],
     preparation_time: 10,
     nutrition_information: { koolhydraten: "30g" },
+    image_url: null,
   },
   {
     id: "r2",
@@ -34,6 +35,7 @@ const recipes = [
     category: ["Diner", "Eiwitrijk"],
     preparation_time: 45,
     nutrition_information: { koolhydraten: "40g" },
+    image_url: null,
   },
 ]
 
