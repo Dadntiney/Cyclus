@@ -138,6 +138,12 @@ export function ProfileForm({
   const savingRef = useRef(false)
   const dirtyRef = useRef(false)
   const retryCountRef = useRef(0)
+  // Which kind of change triggered the save currently in flight (or about
+  // to run) — chips/toggles already show their new state instantly, so a
+  // save that came from one of those skips the "Opgeslagen" confirmation.
+  // Text fields (debounced) keep it, since there's a real delay between
+  // typing and the save actually firing. Errors always show either way.
+  const lastModeRef = useRef<"immediate" | "debounced">("immediate")
 
   function buildPayload(s: FormState): UpdateProfileInput {
     return {
@@ -188,7 +194,7 @@ export function ProfileForm({
     }
     savingRef.current = true
     dirtyRef.current = false
-    if (mountedRef.current) setStatus("saving")
+    if (mountedRef.current && lastModeRef.current === "debounced") setStatus("saving")
 
     const payload = buildPayload(stateRef.current)
     let result: Awaited<ReturnType<typeof updateProfile>> | undefined
@@ -219,11 +225,15 @@ export function ProfileForm({
     retryCountRef.current = 0
     if (mountedRef.current) {
       setErrorMessage(null)
-      setStatus("saved")
-      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
-      savedTimerRef.current = setTimeout(() => {
-        if (mountedRef.current) setStatus((current) => (current === "saved" ? "idle" : current))
-      }, SAVED_FLASH_MS)
+      if (lastModeRef.current === "debounced") {
+        setStatus("saved")
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+        savedTimerRef.current = setTimeout(() => {
+          if (mountedRef.current) setStatus((current) => (current === "saved" ? "idle" : current))
+        }, SAVED_FLASH_MS)
+      } else {
+        setStatus("idle")
+      }
     }
 
     if (dirtyRef.current) {
@@ -237,6 +247,7 @@ export function ProfileForm({
       clearTimeout(debounceTimerRef.current)
       debounceTimerRef.current = null
     }
+    lastModeRef.current = immediate ? "immediate" : "debounced"
     if (immediate) {
       void performSave()
     } else {
