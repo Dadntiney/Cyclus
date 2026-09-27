@@ -533,39 +533,109 @@ export type Database = {
           },
         ]
       }
-      medications: {
+
+      medication_logs: {
         Row: {
-          active: boolean
-          created_at: string
           id: string
-          name: string
-          notes: string | null
-          reminder_enabled: boolean
-          reminder_time: string | null
-          updated_at: string
           user_id: string
+          medication_id: string
+          date: string
+          taken: boolean
+          created_at: string
         }
         Insert: {
-          active?: boolean
-          created_at?: string
           id?: string
-          name: string
-          notes?: string | null
-          reminder_enabled?: boolean
-          reminder_time?: string | null
-          updated_at?: string
           user_id: string
+          medication_id: string
+          date: string
+          taken?: boolean
+          created_at?: string
         }
         Update: {
-          active?: boolean
-          created_at?: string
           id?: string
-          name?: string
-          notes?: string | null
-          reminder_enabled?: boolean
-          reminder_time?: string | null
-          updated_at?: string
           user_id?: string
+          medication_id?: string
+          date?: string
+          taken?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      medications: {
+        Row: {
+          id: string
+          user_id: string
+          category: string | null
+          name: string
+          hormone_type: string | null
+          form: string | null
+          dosage: string | null
+          schedule_type: string | null
+          schedule_days: string[] | null
+          schedule_days_on: number | null
+          schedule_days_off: number | null
+          start_date: string | null
+          end_date: string | null
+          time_of_day: string | null
+          reminder_enabled: boolean
+          notes: string | null
+          created_at: string
+          updated_at: string
+          remind_on_start: boolean | null
+          remind_daily: boolean | null
+          remind_on_stop: boolean | null
+          active: boolean | null
+          reminder_time: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          category?: string | null
+          name: string
+          hormone_type?: string | null
+          form?: string | null
+          dosage?: string | null
+          schedule_type?: string | null
+          schedule_days?: string[] | null
+          schedule_days_on?: number | null
+          schedule_days_off?: number | null
+          start_date?: string | null
+          end_date?: string | null
+          time_of_day?: string | null
+          reminder_enabled?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          remind_on_start?: boolean | null
+          remind_daily?: boolean | null
+          remind_on_stop?: boolean | null
+          active?: boolean | null
+          reminder_time?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          category?: string | null
+          name?: string
+          hormone_type?: string | null
+          form?: string | null
+          dosage?: string | null
+          schedule_type?: string | null
+          schedule_days?: string[] | null
+          schedule_days_on?: number | null
+          schedule_days_off?: number | null
+          start_date?: string | null
+          end_date?: string | null
+          time_of_day?: string | null
+          reminder_enabled?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+          remind_on_start?: boolean | null
+          remind_daily?: boolean | null
+          remind_on_stop?: boolean | null
+          active?: boolean | null
+          reminder_time?: string | null
         }
         Relationships: []
       }
