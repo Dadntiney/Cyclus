@@ -10,6 +10,7 @@ import { ExerciseDemo } from "@/components/training/exercise-demo"
 import { ExerciseVideoPlayer } from "@/components/training/exercise-video"
 import { completeWorkoutSession, fetchAlternativeExercise } from "@/lib/actions/training"
 import { lookupExerciseVideo } from "@/lib/data/exercise-videos"
+import { formatExercisePrescription } from "@/lib/training/prescription"
 import { triggerHaptic } from "@/lib/platform"
 import type { Tables } from "@/types/database"
 
@@ -119,9 +120,7 @@ export function WorkoutSession({
                         <p className="text-sm font-medium text-ink">{ex.name}</p>
                         <p className="text-xs text-ink-soft">
                           {ex.muscle_group ? `${ex.muscle_group} · ` : ""}
-                          {ex.sets ? `${ex.sets} sets` : ""}
-                          {ex.sets && ex.reps ? " · " : ""}
-                          {ex.reps ?? ""}
+                          {formatExercisePrescription(workout.type, ex.sets, ex.reps)}
                         </p>
                         {hasPreview && (
                           <button
@@ -213,9 +212,7 @@ export function WorkoutSession({
       </div>
       {(current.sets || current.reps) && (
         <p className="text-sm text-sage-dark font-medium mb-4">
-          {current.sets ? `${current.sets} sets` : ""}
-          {current.sets && current.reps ? " · " : ""}
-          {current.reps ?? ""}
+          {formatExercisePrescription(workout.type, current.sets, current.reps)}
         </p>
       )}
 

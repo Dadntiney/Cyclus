@@ -58,6 +58,12 @@ export function ExerciseVideoPlayer({ video, exerciseName }: ExerciseVideoPlayer
           </button>
         )}
       </div>
+      {video.language !== "nl" && (
+        <p className="px-3 py-2 text-[11px] text-white/60 bg-ink">
+          🇬🇧 Deze video heeft Engelstalige uitleg — de uitvoering die je ziet klopt, lees de
+          Nederlandse instructies hieronder mee.
+        </p>
+      )}
       {playing && (
         <div className="flex items-center justify-between px-3 py-2 bg-ink">
           <p className="text-[11px] text-white/60 truncate">{video.title}</p>
