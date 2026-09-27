@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -10,7 +11,7 @@ import { logout } from "@/lib/actions/auth"
 const navLinkFocus =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset"
 
-export function Sidebar() {
+export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
   const pathname = usePathname()
 
   return (
@@ -26,6 +27,7 @@ export function Sidebar() {
         <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`)
+            const isProfile = href === "/profiel"
             return (
               <li key={href}>
                 <Link
@@ -39,7 +41,13 @@ export function Sidebar() {
                       : "text-ink-soft hover:bg-cream-soft hover:text-ink",
                   )}
                 >
-                  <Icon className="h-4.5 w-4.5" strokeWidth={active ? 2.25 : 1.75} />
+                  {isProfile && avatarUrl ? (
+                    <span className="h-4.5 w-4.5 rounded-full overflow-hidden shrink-0">
+                      <Image src={avatarUrl} alt="" width={18} height={18} className="h-full w-full object-cover" />
+                    </span>
+                  ) : (
+                    <Icon className="h-4.5 w-4.5" strokeWidth={active ? 2.25 : 1.75} />
+                  )}
                   {label}
                 </Link>
               </li>

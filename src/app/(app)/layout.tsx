@@ -45,13 +45,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <Sidebar avatarUrl={profile.avatar_url} />
       <div className="flex-1 flex flex-col min-w-0">
         <MobileHeader />
         <main className="flex-1 pb-24 md:pb-10">
           <PageTransition>{children}</PageTransition>
         </main>
-        <BottomNav />
+        <BottomNav avatarUrl={profile.avatar_url} />
         <ReminderToastHost
           reminders={reminders}
           medications={medicationReminders}

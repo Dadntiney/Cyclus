@@ -2,12 +2,13 @@
 
 import { useRef } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
 import { NAV_ITEMS } from "./nav-items"
 
-export function BottomNav() {
+export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
   const pathname = usePathname()
   const ref = useRef<HTMLElement>(null)
   useMeasuredHeightVar(ref, "--bottom-nav-h")
@@ -20,6 +21,7 @@ export function BottomNav() {
       <ul className="flex items-stretch justify-between px-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`)
+          const isProfile = href === "/profiel"
           return (
             <li key={href} className="flex-1">
               <Link
@@ -37,7 +39,18 @@ export function BottomNav() {
                     active && "bg-sage-soft",
                   )}
                 >
-                  <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
+                  {isProfile && avatarUrl ? (
+                    <span
+                      className={cn(
+                        "h-5 w-5 rounded-full overflow-hidden shrink-0",
+                        active && "ring-2 ring-white",
+                      )}
+                    >
+                      <Image src={avatarUrl} alt="" width={20} height={20} className="h-full w-full object-cover" />
+                    </span>
+                  ) : (
+                    <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
+                  )}
                 </span>
                 {label}
               </Link>
