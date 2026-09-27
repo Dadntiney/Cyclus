@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronLeft, Plus, Pill } from "lucide-react"
+import { Plus, Pill } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getMedications } from "@/lib/data/medications"
 import { MEDICATION_CATEGORY_OPTIONS } from "@/lib/constants"
@@ -7,6 +7,7 @@ import { MedicationList } from "@/components/medication/medication-list"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
 
 export default async function MedicatiePage() {
   const user = await getAuthedUser()
@@ -16,13 +17,7 @@ export default async function MedicatiePage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <Link
-        href="/profiel"
-        className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-4 touch-manipulation"
-      >
-        <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-        Mijn profiel
-      </Link>
+      <BackButton href="/profiel" label="Mijn profiel" />
 
       <div className="flex items-center justify-between mb-1">
         <h1 className="font-display text-2xl text-ink">Mijn medicatie</h1>

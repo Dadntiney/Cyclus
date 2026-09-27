@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation"
 import { after } from "next/server"
-import Link from "next/link"
-import { Users, ChefHat, Snowflake, PackageOpen, ChevronLeft } from "lucide-react"
+import { Users, ChefHat, Snowflake, PackageOpen } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getRecipeDetail, getFavoriteRecipeIds } from "@/lib/data/nutrition"
 import { ensureRecipeImage } from "@/lib/images/ensure-recipe-image"
@@ -9,6 +8,7 @@ import { FavoriteButton } from "@/components/nutrition/favorite-button"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { IngredientList } from "@/components/nutrition/ingredient-info-sheet"
 import { Card } from "@/components/ui/card"
+import { BackButton } from "@/components/ui/back-button"
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   makkelijk: "Makkelijk",
@@ -58,13 +58,7 @@ export default async function RecipeDetailPage({
 
   return (
     <div className="w-full max-w-5xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <Link
-        href="/voeding"
-        className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-4 touch-manipulation"
-      >
-        <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-        Voeding
-      </Link>
+      <BackButton href="/voeding" label="Voeding" />
 
       <RecipeImage
         title={recipe.title}

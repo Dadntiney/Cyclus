@@ -1,6 +1,4 @@
-import Link from "next/link"
 import { format, subDays } from "date-fns"
-import { ChevronLeft } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { estimateCycle } from "@/lib/cycle/estimate"
@@ -14,6 +12,7 @@ import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cy
 import { buildCyclusdagView } from "@/lib/cycle/cyclusdag"
 import { Card } from "@/components/ui/card"
 import { Expandable } from "@/components/ui/expandable"
+import { BackButton } from "@/components/ui/back-button"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
@@ -43,15 +42,7 @@ export default async function CyclusdagPage() {
       .order("date", { ascending: true }),
   ])
 
-  const backLink = (
-    <Link
-      href="/cyclus"
-      className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-4 touch-manipulation"
-    >
-      <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-      Mijn cyclus
-    </Link>
-  )
+  const backLink = <BackButton href="/cyclus" label="Mijn cyclus" />
 
   if (!cycleProfile?.has_cycle) {
     return (

@@ -7,6 +7,7 @@ import { pickTodaysRecipe } from "@/lib/recommendations/engine"
 import { RecipeLibrary } from "@/components/nutrition/recipe-library"
 import { Card } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
 import { cn } from "@/lib/utils"
 
 export default async function VoedingPage() {
@@ -25,6 +26,7 @@ export default async function VoedingPage() {
   if (profile && !profile.nutrition_enabled) {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+        <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Voeding</h1>
         <p className="text-sm text-ink-soft mb-6">Recepten die passen bij jouw voorkeuren.</p>
         <Card className="text-center py-8">
@@ -54,18 +56,21 @@ export default async function VoedingPage() {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="font-display text-2xl lg:text-3xl text-ink">Voeding</h1>
-          <p className="text-sm text-ink-soft mt-1">Recepten die passen bij jouw voorkeuren.</p>
+      <div>
+        <BackButton href="/voor-jou" label="Voor jou" />
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="font-display text-2xl lg:text-3xl text-ink">Voeding</h1>
+            <p className="text-sm text-ink-soft mt-1">Recepten die passen bij jouw voorkeuren.</p>
+          </div>
+          <Link
+            href="/voeding/favorieten"
+            className="flex items-center gap-1.5 text-sm font-medium text-sage-dark"
+          >
+            <Heart className="h-4 w-4" />
+            Favorieten
+          </Link>
         </div>
-        <Link
-          href="/voeding/favorieten"
-          className="flex items-center gap-1.5 text-sm font-medium text-sage-dark"
-        >
-          <Heart className="h-4 w-4" />
-          Favorieten
-        </Link>
       </div>
 
       {todaysPick.recipe && (

@@ -9,6 +9,7 @@ import { pickTodaysWorkout } from "@/lib/recommendations/engine"
 import { WorkoutLibrary } from "@/components/training/workout-library"
 import { Card } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
 import { TRAINING_PREFERENCE_TO_TYPE } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 
@@ -33,6 +34,7 @@ export default async function TrainingPage() {
   if (profile && !profile.movement_enabled) {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+        <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Beweging</h1>
         <p className="text-sm text-ink-soft mb-6">Jouw weekplanning en trainingsbibliotheek.</p>
         <Card className="text-center py-8">
@@ -82,6 +84,7 @@ export default async function TrainingPage() {
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
+        <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Beweging</h1>
         <p className="text-sm text-ink-soft mt-1">Jouw trainingsbibliotheek, afgestemd op jouw voorkeuren.</p>
       </div>

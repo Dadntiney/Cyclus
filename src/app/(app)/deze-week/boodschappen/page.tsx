@@ -1,6 +1,5 @@
 import Link from "next/link"
 import { startOfWeek, subDays } from "date-fns"
-import { ChevronLeft } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { buildWeekPlan, type WeekPlanRecipe } from "@/lib/recommendations/week-plan"
@@ -9,6 +8,7 @@ import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } fr
 import { GroceryList } from "@/components/week/grocery-list"
 import { Card } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
 
 const RECIPE_COLUMNS = "id, title, category, preparation_time, ingredients, nutrition_information"
 
@@ -39,13 +39,7 @@ export default async function BoodschappenPage() {
   if (!profile.nutrition_enabled) {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <Link
-          href="/deze-week"
-          className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-4 touch-manipulation"
-        >
-          <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-          Deze week
-        </Link>
+        <BackButton href="/deze-week" label="Deze week" />
         <Card className="text-center py-8">
           <p className="text-3xl mb-3">🌿</p>
           <p className="font-display text-lg text-ink mb-2">Voeding staat nu uit</p>
@@ -91,13 +85,7 @@ export default async function BoodschappenPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <Link
-        href="/deze-week"
-        className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-4 touch-manipulation"
-      >
-        <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-        Deze week
-      </Link>
+      <BackButton href="/deze-week" label="Deze week" />
       <div className="mb-5">
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Boodschappen</h1>
         <p className="text-sm text-ink-soft mt-1">

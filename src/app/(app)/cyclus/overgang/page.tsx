@@ -1,10 +1,11 @@
 import Link from "next/link"
-import { ChevronLeft, Stethoscope } from "lucide-react"
+import { Stethoscope } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { LIFE_STAGE_KNOWLEDGE } from "@/lib/cycle/life-stage-knowledge"
 import { Card } from "@/components/ui/card"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { Expandable } from "@/components/ui/expandable"
+import { BackButton } from "@/components/ui/back-button"
 
 function seededIndex(seed: string, length: number): number {
   if (length <= 0) return 0
@@ -36,13 +37,7 @@ export default async function OvergangPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <Link
-        href="/cyclus"
-        className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-4 touch-manipulation"
-      >
-        <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-        Mijn cyclus
-      </Link>
+      <BackButton href="/cyclus" label="Mijn cyclus" />
 
       <div className="rounded-3xl p-5 lg:p-6 mb-6 bg-info-soft">
         <p className="text-xs font-semibold uppercase tracking-wide text-info">Cyclus & ouder worden</p>

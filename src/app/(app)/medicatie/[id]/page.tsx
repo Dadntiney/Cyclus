@@ -1,11 +1,10 @@
-import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ChevronLeft } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getMedication } from "@/lib/data/medications"
 import { MedicationWizard } from "@/components/medication/medication-wizard"
 import { getCyclicalPhaseInfo, type MedicationSchedule } from "@/lib/medication/schedule"
 import { Card } from "@/components/ui/card"
+import { BackButton } from "@/components/ui/back-button"
 import { format, parseISO } from "date-fns"
 import { nl } from "date-fns/locale"
 import type { MedicationInput } from "@/lib/validations/medication"
@@ -45,13 +44,7 @@ export default async function EditMedicationPage({
   return (
     <div className="w-full">
       <div className="max-w-md mx-auto px-5 pt-6">
-        <Link
-          href="/medicatie"
-          className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft touch-manipulation"
-        >
-          <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-          Mijn medicatie
-        </Link>
+        <BackButton href="/medicatie" label="Mijn medicatie" className="mb-0" />
         {phaseInfo && (
           <Card className="mt-4 bg-sage-soft border-transparent">
             <p className="text-sm text-ink">

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronLeft, Moon } from "lucide-react"
+import { Moon } from "lucide-react"
 import { format, parseISO, subDays } from "date-fns"
 import { nl } from "date-fns/locale"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
@@ -16,6 +16,7 @@ import { WAKE_FEELING_OPTIONS } from "@/lib/constants"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
 
 const PATTERN_WINDOW_DAYS = 60
 const DISPLAYED_NIGHTS = 14
@@ -33,6 +34,7 @@ export default async function SlaapPage() {
   if (!profile || profile.sleep_tracking_enabled !== true) {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+        <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Slaap</h1>
         <p className="text-sm text-ink-soft mb-6">Je slaapduur en eenvoudige inzichten.</p>
         <Card className="text-center py-8">
@@ -69,13 +71,7 @@ export default async function SlaapPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <Link
-        href="/vandaag"
-        className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-4 touch-manipulation"
-      >
-        <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-        Vandaag
-      </Link>
+      <BackButton href="/voor-jou" label="Voor jou" />
 
       <h1 className="font-display text-2xl text-ink mb-1">Slaap</h1>
       <p className="text-sm text-ink-soft mb-6">Je slaapduur en eenvoudige inzichten, puur voor jezelf.</p>

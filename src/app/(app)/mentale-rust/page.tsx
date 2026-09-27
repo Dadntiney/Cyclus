@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { createClient } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
@@ -10,6 +9,7 @@ import { ExerciseLibrary } from "@/components/mental-wellbeing/exercise-library"
 import { AffirmationViewer } from "@/components/mental-wellbeing/affirmation-viewer"
 import { Card } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
 import type { BuddyStyle } from "@/lib/buddy/styles"
 import type { MentalWellbeingCategory } from "@/lib/constants"
 
@@ -22,13 +22,7 @@ export default async function MentaleRustPage() {
   if (!profile || profile.mental_wellbeing_enabled !== true) {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <Link
-          href="/vandaag"
-          className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-4 touch-manipulation"
-        >
-          <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-          Vandaag
-        </Link>
+        <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Mijn mentale rust</h1>
         <p className="text-sm text-ink-soft mb-6">Korte meditaties, mindfulness en affirmaties.</p>
         <Card className="text-center py-8">
@@ -70,13 +64,7 @@ export default async function MentaleRustPage() {
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
-        <Link
-          href="/vandaag"
-          className="inline-flex items-center gap-1 text-sm font-medium text-ink-soft mb-3 touch-manipulation"
-        >
-          <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-          Vandaag
-        </Link>
+        <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Mijn mentale rust</h1>
         <p className="text-sm text-ink-soft mt-1">Korte meditaties, mindfulness-oefeningen en affirmaties.</p>
       </div>
