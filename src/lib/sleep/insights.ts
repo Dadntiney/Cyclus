@@ -1,4 +1,5 @@
 import { computeSleepDurationMinutes } from "@/lib/sleep/duration"
+import { symptomLabel } from "@/lib/constants"
 
 /**
  * Simple, hedged personal insights from her own sleep log — never a
@@ -22,6 +23,10 @@ const MEANINGFUL_DIFFERENCE_MINUTES = 30
 
 const GOOD_FEELINGS = new Set(["uitgerust", "redelijk_uitgerust"])
 const BAD_FEELINGS = new Set(["moe", "erg_moe"])
+
+/** A night under this counts as "kort" everywhere sleep/symptom patterns and
+ * today's recommendation logic need that same cutoff. */
+export const SHORT_NIGHT_MINUTES = 6 * 60
 
 function withDuration(entries: SleepEntryLike[]): (SleepEntryLike & { durationMinutes: number })[] {
   return entries
@@ -74,7 +79,7 @@ export function pickSleepObservation({
   wakeFeeling: string | null
   energy: number | null
 }): string | null {
-  const isShortNight = durationMinutes !== null && durationMinutes < 6 * 60
+  const isShortNight = durationMinutes !== null && durationMinutes < SHORT_NIGHT_MINUTES
   const isTiredWaking = wakeFeeling === "moe" || wakeFeeling === "erg_moe"
   const isLowEnergy = energy !== null && energy <= 2
 
@@ -92,4 +97,91 @@ export function pickSleepObservation({
   }
 
   return null
+}
+
+/**
+ * Cross-references her sleep log with her check-in symptoms over the same
+ * dates (a sleep_entries row and a daily_checkins row on the same date both
+ * describe "last night + today") to surface things like "je gaf vaker
+ * hoofdpijn aan na een korte nacht dan na een langere nacht" — the sleep
+ * equivalent of the phase/symptom cycle insight. Requires enough nights in
+ * BOTH the short and normal-length groups before comparing, so a single
+ * rough night can never look like a "pattern".
+ */
+export interface SleepSymptomCheckinLike {
+  date: string
+  symptoms: string[]
+}
+
+export interface SleepSymptomInsight {
+  symptom: string
+  shortSleepOccurrences: number
+  shortSleepNights: number
+  normalSleepOccurrences: number
+  normalSleepNights: number
+}
+
+const MIN_NIGHTS_PER_SLEEP_GROUP = 4
+const MEANINGFUL_RATE_DIFFERENCE = 0.25
+const IGNORED_SYMPTOMS = new Set(["Geen klachten", "Anders"])
+
+/**
+ * @param entries Sleep log entries, any order.
+ * @param checkins Daily check-ins with logged symptoms, any order.
+ */
+export function computeSleepSymptomInsights(
+  entries: SleepEntryLike[],
+  checkins: SleepSymptomCheckinLike[],
+): SleepSymptomInsight[] {
+  const durationByDate = new Map<string, number>()
+  for (const e of withDuration(entries)) durationByDate.set(e.date, e.durationMinutes)
+
+  const shortNights = new Set<string>()
+  const normalNights = new Set<string>()
+  for (const [date, minutes] of durationByDate) {
+    if (minutes < SHORT_NIGHT_MINUTES) shortNights.add(date)
+    else normalNights.add(date)
+  }
+
+  if (shortNights.size < MIN_NIGHTS_PER_SLEEP_GROUP || normalNights.size < MIN_NIGHTS_PER_SLEEP_GROUP) {
+    return []
+  }
+
+  const shortCounts = new Map<string, number>()
+  const normalCounts = new Map<string, number>()
+  for (const checkin of checkins) {
+    const inShortGroup = shortNights.has(checkin.date)
+    const inNormalGroup = normalNights.has(checkin.date)
+    if (!inShortGroup && !inNormalGroup) continue
+    const counts = inShortGroup ? shortCounts : normalCounts
+    for (const symptom of checkin.symptoms) {
+      if (IGNORED_SYMPTOMS.has(symptom)) continue
+      counts.set(symptom, (counts.get(symptom) ?? 0) + 1)
+    }
+  }
+
+  const allSymptoms = new Set([...shortCounts.keys(), ...normalCounts.keys()])
+  const insights: SleepSymptomInsight[] = []
+  for (const symptom of allSymptoms) {
+    const shortSleepOccurrences = shortCounts.get(symptom) ?? 0
+    const normalSleepOccurrences = normalCounts.get(symptom) ?? 0
+    const shortRate = shortSleepOccurrences / shortNights.size
+    const normalRate = normalSleepOccurrences / normalNights.size
+    if (shortRate - normalRate < MEANINGFUL_RATE_DIFFERENCE) continue
+    insights.push({
+      symptom,
+      shortSleepOccurrences,
+      shortSleepNights: shortNights.size,
+      normalSleepOccurrences,
+      normalSleepNights: normalNights.size,
+    })
+  }
+
+  return insights.sort(
+    (a, b) => b.shortSleepOccurrences / b.shortSleepNights - a.shortSleepOccurrences / a.shortSleepNights,
+  )
+}
+
+export function formatSleepSymptomInsight(insight: SleepSymptomInsight): string {
+  return `In jouw gegevens gaf je "${symptomLabel(insight.symptom).toLowerCase()}" vaker aan na een korte nacht (${insight.shortSleepOccurrences} van ${insight.shortSleepNights} korte nachten) dan na een langere nacht (${insight.normalSleepOccurrences} van ${insight.normalSleepNights}) — mogelijk een patroon dat bij jou past.`
 }

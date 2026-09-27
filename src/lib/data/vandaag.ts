@@ -9,6 +9,7 @@ import { getProfile } from "@/lib/data/profile"
 import { pickMentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
 import { computeSleepDurationMinutes } from "@/lib/sleep/duration"
 import { pickSleepObservation } from "@/lib/sleep/insights"
+import { getPersonalSleepContext } from "@/lib/data/sleep"
 import type { BuddyStyle } from "@/lib/buddy/styles"
 
 function todayISO() {
@@ -64,6 +65,24 @@ export async function getVandaagData(userId: string) {
   const streak = computeStreak((recentCheckins ?? []).map((c) => c.date), today)
   const completedThisWeek = (weekSessions ?? []).length
 
+  // Only meaningful when she opted into sleep tracking — otherwise there's
+  // no sleep_entries row to speak of, and no observation or pattern to show.
+  const sleepDurationMinutes =
+    sleepEntry?.bedtime && sleepEntry?.wake_time
+      ? computeSleepDurationMinutes(sleepEntry.bedtime, sleepEntry.wake_time)
+      : null
+
+  // The one place a multi-day pattern (not just today's data) can steer
+  // today's advice: if her history shows a symptom that reliably follows a
+  // short night, and last night was short, that personalizes today's
+  // training pick, recovery block, and "Vandaag voor jou" text. Shared with
+  // the Beweging page (see getPersonalSleepContext) so both agree on why —
+  // and, since it can shift which workout gets picked, on what.
+  const { personalSleepPattern } =
+    profile?.sleep_tracking_enabled === true
+      ? await getPersonalSleepContext(userId, today)
+      : { personalSleepPattern: null }
+
   const activePeriodStart = cycleProfile?.active_period_start ?? null
   const cycleHistory = computeCycleHistory(
     withActivePeriod(
@@ -91,6 +110,8 @@ export async function getVandaagData(userId: string) {
         profile,
         cycleEstimate,
         latestCheckin: checkin ?? null,
+        todaySleepDurationMinutes: sleepDurationMinutes,
+        personalSleepPattern,
         workouts: workouts ?? [],
         recipes: recipes ?? [],
         seed: `${userId}-${today}`,
@@ -111,12 +132,6 @@ export async function getVandaagData(userId: string) {
         })
       : null
 
-  // Only meaningful when she opted into sleep tracking — otherwise there's
-  // no sleep_entries row to speak of, and no observation to show.
-  const sleepDurationMinutes =
-    sleepEntry?.bedtime && sleepEntry?.wake_time
-      ? computeSleepDurationMinutes(sleepEntry.bedtime, sleepEntry.wake_time)
-      : null
   const sleepObservation =
     profile?.sleep_tracking_enabled === true
       ? pickSleepObservation({

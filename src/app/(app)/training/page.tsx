@@ -4,6 +4,7 @@ import { ChevronRight, Settings2 } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getWorkoutLibrary } from "@/lib/data/training"
+import { getPersonalSleepContext } from "@/lib/data/sleep"
 import { pickTodaysWorkout } from "@/lib/recommendations/engine"
 import { WorkoutLibrary } from "@/components/training/workout-library"
 import { Card } from "@/components/ui/card"
@@ -57,6 +58,14 @@ export default async function TrainingPage() {
     ? workouts.filter((w) => preferredTypes.includes(w.type))
     : workouts
 
+  // Same personal sleep/symptom pattern Vandaag uses, and same seed — so
+  // this page never picks a different workout than Vandaag on a day the
+  // pattern applies.
+  const { todaySleepDurationMinutes, personalSleepPattern } =
+    profile?.sleep_tracking_enabled === true
+      ? await getPersonalSleepContext(user.id, todayISO)
+      : { todaySleepDurationMinutes: null, personalSleepPattern: null }
+
   const todaysPick = pickTodaysWorkout({
     profile: {
       training_preferences: profile?.training_preferences ?? [],
@@ -64,6 +73,8 @@ export default async function TrainingPage() {
       movement_limitations: profile?.movement_limitations ?? [],
     },
     latestCheckin: checkin ?? null,
+    todaySleepDurationMinutes,
+    personalSleepPattern,
     workouts,
     seed: `${user.id}-${todayISO}`,
   })

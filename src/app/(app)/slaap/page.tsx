@@ -1,16 +1,24 @@
 import Link from "next/link"
 import { ChevronLeft, Moon } from "lucide-react"
-import { format, parseISO } from "date-fns"
+import { format, parseISO, subDays } from "date-fns"
 import { nl } from "date-fns/locale"
-import { getAuthedUser } from "@/lib/supabase/server"
+import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getSleepHistory } from "@/lib/data/sleep"
 import { computeSleepDurationMinutes, formatSleepDuration } from "@/lib/sleep/duration"
-import { computeAverageSleepDuration, computeSleepWakeFeelingInsight } from "@/lib/sleep/insights"
+import {
+  computeAverageSleepDuration,
+  computeSleepWakeFeelingInsight,
+  computeSleepSymptomInsights,
+  formatSleepSymptomInsight,
+} from "@/lib/sleep/insights"
 import { WAKE_FEELING_OPTIONS } from "@/lib/constants"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
+
+const PATTERN_WINDOW_DAYS = 60
+const DISPLAYED_NIGHTS = 14
 
 const WAKE_FEELING_BY_VALUE = new Map<string, (typeof WAKE_FEELING_OPTIONS)[number]>(
   WAKE_FEELING_OPTIONS.map((o) => [o.value, o]),
@@ -42,10 +50,22 @@ export default async function SlaapPage() {
     )
   }
 
-  const entries = await getSleepHistory(user.id, 14)
+  const supabase = await createClient()
+  const since = format(subDays(new Date(), PATTERN_WINDOW_DAYS - 1), "yyyy-MM-dd")
+
+  const [entries, { data: checkins }] = await Promise.all([
+    getSleepHistory(user.id, PATTERN_WINDOW_DAYS),
+    supabase
+      .from("daily_checkins")
+      .select("date, symptoms")
+      .eq("user_id", user.id)
+      .gte("date", since),
+  ])
+
   const average = computeAverageSleepDuration(entries)
   const wakeFeelingInsight = computeSleepWakeFeelingInsight(entries)
-  const recentEntries = [...entries].reverse() // newest first for the list
+  const sleepSymptomInsights = computeSleepSymptomInsights(entries, checkins ?? []).slice(0, 2)
+  const recentEntries = [...entries].reverse().slice(0, DISPLAYED_NIGHTS) // newest first for the list
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
@@ -60,7 +80,7 @@ export default async function SlaapPage() {
       <h1 className="font-display text-2xl text-ink mb-1">Slaap</h1>
       <p className="text-sm text-ink-soft mb-6">Je slaapduur en eenvoudige inzichten, puur voor jezelf.</p>
 
-      {(average || wakeFeelingInsight) && (
+      {(average || wakeFeelingInsight || sleepSymptomInsights.length > 0) && (
         <div className="flex flex-col gap-3 mb-6">
           {average && (
             <Card className="bg-sage-soft border-transparent">
@@ -74,6 +94,18 @@ export default async function SlaapPage() {
             <Card>
               <p className="text-base text-ink-soft leading-relaxed">{wakeFeelingInsight}</p>
             </Card>
+          )}
+          {sleepSymptomInsights.length > 0 && (
+            <div>
+              <h2 className="font-display text-lg text-ink mb-3">Slaap & klachten</h2>
+              <Card className="p-0 divide-y divide-line">
+                {sleepSymptomInsights.map((insight) => (
+                  <p key={insight.symptom} className="text-base text-ink-soft leading-relaxed px-5 py-3.5">
+                    {formatSleepSymptomInsight(insight)}
+                  </p>
+                ))}
+              </Card>
+            </div>
           )}
         </div>
       )}
