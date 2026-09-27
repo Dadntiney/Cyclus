@@ -923,6 +923,7 @@ export type Database = {
           difficulty: string
           duration: number
           id: string
+          image_url: string | null
           title: string
           type: string
         }
@@ -932,6 +933,7 @@ export type Database = {
           difficulty: string
           duration: number
           id?: string
+          image_url?: string | null
           title: string
           type: string
         }
@@ -941,6 +943,7 @@ export type Database = {
           difficulty?: string
           duration?: number
           id?: string
+          image_url?: string | null
           title?: string
           type?: string
         }

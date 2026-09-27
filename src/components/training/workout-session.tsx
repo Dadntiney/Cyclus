@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { ExerciseFavoriteButton } from "@/components/training/exercise-favorite-button"
 import { ExerciseDemo } from "@/components/training/exercise-demo"
 import { ExerciseVideoPlayer } from "@/components/training/exercise-video"
+import { WorkoutImage } from "@/components/training/workout-image"
 import { completeWorkoutSession, fetchAlternativeExercise } from "@/lib/actions/training"
 import { lookupExerciseVideo } from "@/lib/data/exercise-videos"
 import { formatExercisePrescription } from "@/lib/training/prescription"
@@ -92,6 +93,14 @@ export function WorkoutSession({
   if (!started) {
     return (
       <div className="flex flex-col gap-4">
+        <WorkoutImage
+          type={workout.type}
+          imageUrl={workout.image_url}
+          className="aspect-[16/9] lg:aspect-[21/9] w-full rounded-3xl"
+          iconClassName="h-20 w-20"
+          sizes="(min-width: 1024px) 768px, 100vw"
+          priority
+        />
         <Card>
           <p className="font-display text-xl text-ink mb-1">{workout.title}</p>
           <p className="text-sm text-ink-soft mb-4">

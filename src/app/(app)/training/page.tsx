@@ -7,6 +7,7 @@ import { getWorkoutLibrary } from "@/lib/data/training"
 import { getPersonalSleepContext } from "@/lib/data/sleep"
 import { pickTodaysWorkout } from "@/lib/recommendations/engine"
 import { WorkoutLibrary } from "@/components/training/workout-library"
+import { WorkoutImage } from "@/components/training/workout-image"
 import { Card } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
@@ -92,12 +93,22 @@ export default async function TrainingPage() {
       {todaysPick.workout && (
         <Card className="bg-sage-soft border-transparent">
           <p className="text-sm font-medium text-sage-dark mb-1">Voor jou vandaag</p>
-          <p className="font-display text-xl text-ink">{todaysPick.workout.title}</p>
-          <p className="text-sm text-ink-soft mt-0.5">{todaysPick.workout.duration} minuten</p>
-          <p className="text-base text-ink-soft mt-2">{todaysPick.reason}</p>
-          <Link href={`/training/${todaysPick.workout.id}`} className={cn(buttonVariants(), "mt-3")}>
-            Start training
-          </Link>
+          <div className="flex items-start gap-3">
+            <WorkoutImage
+              type={todaysPick.workout.type}
+              imageUrl={todaysPick.workout.image_url}
+              className="h-16 w-16 rounded-xl shrink-0"
+              sizes="64px"
+            />
+            <div className="min-w-0">
+              <p className="font-display text-xl text-ink">{todaysPick.workout.title}</p>
+              <p className="text-sm text-ink-soft mt-0.5">{todaysPick.workout.duration} minuten</p>
+              <p className="text-base text-ink-soft mt-2">{todaysPick.reason}</p>
+              <Link href={`/training/${todaysPick.workout.id}`} className={cn(buttonVariants(), "mt-3")}>
+                Start training
+              </Link>
+            </div>
+          </div>
         </Card>
       )}
 

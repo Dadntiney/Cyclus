@@ -1,7 +1,7 @@
 import type { Tables } from "@/types/database"
 import { TRAINING_PREFERENCE_TO_TYPE } from "@/lib/constants"
 
-type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
+type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty" | "image_url">
 
 export type DayFocus = "kracht" | "cardio" | "mobiliteit" | "herstel" | "rust"
 

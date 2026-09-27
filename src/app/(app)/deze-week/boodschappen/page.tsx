@@ -25,7 +25,7 @@ export default async function BoodschappenPage() {
     await Promise.all([
       getProfile(user.id),
       supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
-      supabase.from("workouts").select("id, title, type, duration, difficulty"),
+      supabase.from("workouts").select("id, title, type, duration, difficulty, image_url"),
       supabase.from("recipes").select(RECIPE_COLUMNS),
       supabase
         .from("cycle_logs")

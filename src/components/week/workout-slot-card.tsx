@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Moon, Repeat, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { WorkoutImage } from "@/components/training/workout-image"
 import type { DayFocus } from "@/lib/recommendations/weekly-program"
 import type { WeekPlanWorkout } from "@/lib/recommendations/week-plan"
 import type { DayOverride } from "@/lib/client/week-plan-storage"
@@ -41,6 +42,10 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
   }
 
   const effectiveWorkout = swapped ? { id: swapped.workoutId, title: swapped.title, duration: swapped.duration } : workout
+  // Alternatives are computed against the original suggestion's id (see
+  // week-view's workoutAlternatives), so once swapped, the picked workout
+  // is still in this list — reuse it here to keep the photo after swapping.
+  const swappedWorkout = swapped ? (alternatives.find((a) => a.id === swapped.workoutId) ?? null) : null
 
   return (
     <div className="rounded-2xl border border-line/70 p-3.5">
@@ -60,21 +65,29 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
       {skipped ? (
         <p className="text-sm text-ink-soft italic">Overgeslagen</p>
       ) : effectiveWorkout ? (
-        <>
-          {swapped || !workout ? (
-            <p className="text-sm font-medium text-ink">{effectiveWorkout.title}</p>
-          ) : (
-            <Link href={`/training/${workout.id}`} className="block group touch-manipulation">
-              <p className="text-sm font-medium text-ink group-hover:text-sage-dark transition-colors">
-                {workout.title}
-              </p>
-            </Link>
-          )}
-          <p className="text-xs text-ink-soft mt-0.5">
-            {effectiveWorkout.duration} min
-            {!swapped && ` · ${reason}`}
-          </p>
-        </>
+        <div className="flex items-center gap-3">
+          <WorkoutImage
+            type={swapped ? (swappedWorkout?.type ?? "mobiliteit") : (workout?.type ?? "mobiliteit")}
+            imageUrl={swapped ? (swappedWorkout?.image_url ?? null) : (workout?.image_url ?? null)}
+            className="h-12 w-12 rounded-xl shrink-0"
+            sizes="48px"
+          />
+          <div className="min-w-0">
+            {swapped || !workout ? (
+              <p className="text-sm font-medium text-ink">{effectiveWorkout.title}</p>
+            ) : (
+              <Link href={`/training/${workout.id}`} className="block group touch-manipulation">
+                <p className="text-sm font-medium text-ink group-hover:text-sage-dark transition-colors">
+                  {workout.title}
+                </p>
+              </Link>
+            )}
+            <p className="text-xs text-ink-soft mt-0.5">
+              {effectiveWorkout.duration} min
+              {!swapped && ` · ${reason}`}
+            </p>
+          </div>
+        </div>
       ) : (
         <p className="text-sm text-ink-soft">Geen training gevonden voor deze focus.</p>
       )}

@@ -5,7 +5,10 @@ import { estimateCycle, type CycleEstimate } from "@/lib/cycle/estimate"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
 
-export type WeekPlanWorkout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
+export type WeekPlanWorkout = Pick<
+  Tables<"workouts">,
+  "id" | "title" | "type" | "duration" | "difficulty" | "image_url"
+>
 export type WeekPlanRecipe = Pick<
   Tables<"recipes">,
   "id" | "title" | "category" | "preparation_time" | "ingredients" | "nutrition_information" | "image_url"
