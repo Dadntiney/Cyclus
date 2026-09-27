@@ -15,7 +15,36 @@ function formatElapsed(seconds: number): string {
 /** Pause between spoken segments — long enough to actually breathe before
  * the next line starts, short enough that it doesn't feel like it stalled. */
 const INTER_SEGMENT_PAUSE_MS = 1400
-const SPEECH_RATE = 0.85
+const SPEECH_RATE = 0.92
+
+/**
+ * Known Dutch female system/browser voices, most natural-sounding first —
+ * there's no standard "gender" field on SpeechSynthesisVoice, so this is a
+ * name-based best guess across the platforms real visitors use. "Fenna" is
+ * Windows 11's newer natural/neural Dutch voice (clearly the least robotic
+ * option where available); the rest are the longstanding female voices on
+ * Windows, macOS/iOS, and Chrome/Android respectively.
+ */
+const PREFERRED_FEMALE_VOICE_NAMES = [
+  "fenna",
+  "colette",
+  "lotte",
+  "ellen",
+  "claire",
+  "google nederlands",
+  "femke",
+  "saskia",
+]
+
+function pickDutchVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+  const dutchVoices = voices.filter((v) => v.lang.toLowerCase().startsWith("nl"))
+  if (!dutchVoices.length) return null
+  for (const name of PREFERRED_FEMALE_VOICE_NAMES) {
+    const match = dutchVoices.find((v) => v.name.toLowerCase().includes(name))
+    if (match) return match
+  }
+  return dutchVoices[0]
+}
 
 interface Segment {
   label: string
@@ -109,7 +138,7 @@ export function ListenMode({
     const utterance = new SpeechSynthesisUtterance(segments[index].text)
     utterance.lang = "nl-NL"
     utterance.rate = SPEECH_RATE
-    const dutchVoice = voicesRef.current.find((v) => v.lang.toLowerCase().startsWith("nl"))
+    const dutchVoice = pickDutchVoice(voicesRef.current)
     if (dutchVoice) utterance.voice = dutchVoice
     utterance.onend = () => {
       pauseTimerRef.current = setTimeout(() => speakFrom(index + 1), INTER_SEGMENT_PAUSE_MS)
