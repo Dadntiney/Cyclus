@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Moon } from "lucide-react"
-import { Card } from "@/components/ui/card"
 import { SleepEntrySheet } from "@/components/sleep/sleep-entry-sheet"
 import { computeSleepDurationMinutes, formatSleepDuration } from "@/lib/sleep/duration"
 import { WAKE_FEELING_OPTIONS } from "@/lib/constants"
@@ -21,7 +20,10 @@ export function SleepCard({ date, entry }: { date: string; entry: SleepEntry | n
 
   return (
     <>
-      <Card interactive className="p-4 cursor-pointer touch-manipulation" onClick={() => setOpen(true)}>
+      <div
+        className="rounded-2xl border border-line/70 p-4 cursor-pointer touch-manipulation transition-colors duration-150 motion-safe:active:scale-[0.985] hover:border-sage/50 active:border-sage/50"
+        onClick={() => setOpen(true)}
+      >
         <div className="flex items-center gap-3">
           <span className="shrink-0 h-10 w-10 rounded-full bg-sage-soft flex items-center justify-center">
             <Moon className="h-4.5 w-4.5 text-sage-dark" strokeWidth={1.75} />
@@ -45,7 +47,7 @@ export function SleepCard({ date, entry }: { date: string; entry: SleepEntry | n
             )}
           </div>
         </div>
-      </Card>
+      </div>
       <SleepEntrySheet open={open} onClose={() => setOpen(false)} date={date} initial={entry} />
     </>
   )

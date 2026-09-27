@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { Card } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { Recommendation } from "@/lib/recommendations/engine"
@@ -13,7 +12,7 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
       {dayFocus && <p className="text-sm text-ink-soft mb-3">{dayFocus}</p>}
       <div className="flex flex-col gap-3">
         {movementEnabled && (
-          <Card className="p-4">
+          <div className="rounded-2xl border border-line/70 p-3.5">
             <p className="text-xs font-medium text-sage-dark mb-1">🏋️ Beweging</p>
             {training.workout ? (
               <>
@@ -27,11 +26,11 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
             ) : (
               <p className="text-sm text-ink-soft mt-1">{training.reason}</p>
             )}
-          </Card>
+          </div>
         )}
 
         {nutritionEnabled && (
-          <Card className="p-4">
+          <div className="rounded-2xl border border-line/70 p-3.5">
             <p className="text-xs font-medium text-sage-dark mb-1">🥗 Voeding</p>
             {nutrition.recipe ? (
               <>
@@ -49,15 +48,15 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
                 Nog geen recepten beschikbaar. Kijk later nog eens terug.
               </p>
             )}
-          </Card>
+          </div>
         )}
 
-        <Card className="p-4">
+        <div className="rounded-2xl border border-line/70 p-3.5">
           <p className="text-xs font-medium text-sage-dark mb-1">🧘 Herstel</p>
           <p className="font-display text-lg text-ink">{recovery.title}</p>
           <p className="text-sm text-ink-soft mt-0.5">{recovery.duration} minuten</p>
           <p className="text-sm text-ink-soft mt-1.5">{recovery.description}</p>
-        </Card>
+        </div>
       </div>
     </div>
   )

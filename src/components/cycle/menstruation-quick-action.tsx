@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Droplet } from "lucide-react"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { startMenstruationPeriod, stopMenstruationPeriod } from "@/lib/actions/cycle"
@@ -33,9 +32,9 @@ export function MenstruationQuickAction({ isActive, day }: { isActive: boolean; 
   }
 
   return (
-    <Card
+    <div
       className={cn(
-        "p-4 flex items-center gap-3.5 transition-colors",
+        "rounded-2xl border border-line/70 p-4 flex items-center gap-3.5 transition-colors",
         isActive && "bg-peach-soft border-transparent",
       )}
     >
@@ -80,6 +79,6 @@ export function MenstruationQuickAction({ isActive, day }: { isActive: boolean; 
         </Button>
         {error && <p className="text-xs text-danger">{error}</p>}
       </div>
-    </Card>
+    </div>
   )
 }

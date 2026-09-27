@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react"
 import Link from "next/link"
-import { Card } from "@/components/ui/card"
 import { toggleMedicationTaken } from "@/lib/actions/medications"
 import type { MedicationDashboardItem } from "@/lib/data/medications"
 import { cn } from "@/lib/utils"
@@ -36,7 +35,7 @@ export function MedicationTodayCard({ items, date }: { items: MedicationDashboar
   return (
     <div>
       <h2 className="font-display text-lg text-ink mb-2.5">Mijn medicatie vandaag</h2>
-      <Card className="p-4">
+      <div className="rounded-2xl border border-line/70 p-4">
         <div className="flex flex-col gap-2.5">
           {items.map((item) => {
             const paused = item.status === false
@@ -77,7 +76,7 @@ export function MedicationTodayCard({ items, date }: { items: MedicationDashboar
         <Link href="/medicatie" className="inline-block text-xs font-medium text-sage-dark mt-3.5">
           Beheer mijn medicatie
         </Link>
-      </Card>
+      </div>
     </div>
   )
 }

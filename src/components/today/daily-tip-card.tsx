@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Lightbulb, Check, X } from "lucide-react"
-import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import type { Tables } from "@/types/database"
 
@@ -27,7 +26,7 @@ export function DailyTipCard({ tip }: { tip: Tables<"daily_tips"> }) {
   const options = parseQuizOptions(tip.quiz_options)
 
   return (
-    <Card className="p-4">
+    <div className="rounded-2xl border border-line/70 p-4">
       <div className="flex items-center gap-1.5 mb-1">
         <Lightbulb className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
         <p className="text-sm font-medium text-sage-dark">Wist je dat?</p>
@@ -78,6 +77,6 @@ export function DailyTipCard({ tip }: { tip: Tables<"daily_tips"> }) {
           )}
         </div>
       )}
-    </Card>
+    </div>
   )
 }

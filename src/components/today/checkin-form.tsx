@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useTransition } from "react"
 import { Check, ChevronDown } from "lucide-react"
-import { Card } from "@/components/ui/card"
 import { RatingScale } from "@/components/ui/rating-scale"
 import { Chip } from "@/components/ui/chip"
 import { Textarea, Label } from "@/components/ui/input"
@@ -76,7 +75,7 @@ export function CheckinForm({
   }, [status])
 
   return (
-    <Card className="p-4">
+    <div className="rounded-2xl border border-line/70 p-4">
       <h3 className="font-display text-lg text-ink mb-1">Hoe voel je je vandaag?</h3>
       <p className="text-ink-soft text-sm mb-3.5">Helemaal optioneel — vul in wat je wilt bijhouden.</p>
 
@@ -141,6 +140,6 @@ export function CheckinForm({
           {status === "error" && <span className="text-sm text-danger">{errorMsg}</span>}
         </div>
       </div>
-    </Card>
+    </div>
   )
 }
