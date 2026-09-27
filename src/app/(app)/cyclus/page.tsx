@@ -14,9 +14,11 @@ import {
   computeCycleLengthTrend,
   formatCycleLengthTrendInsight,
 } from "@/lib/cycle/patterns"
+import { computePersonalInsights } from "@/lib/cycle/insights"
 import { phaseLabel } from "@/lib/cycle/estimate"
 import { Calendar } from "@/components/cycle/calendar"
 import { PhaseOverview } from "@/components/cycle/phase-overview"
+import { PersonalInsights } from "@/components/cycle/personal-insights"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { format, parseISO, subDays } from "date-fns"
@@ -42,7 +44,7 @@ export default async function CyclusPage() {
       .order("date", { ascending: true }),
     supabase
       .from("daily_checkins")
-      .select("date, symptoms")
+      .select("date, energy, mood, sleep, stress, symptoms")
       .eq("user_id", user.id)
       .gte("date", sixMonthsAgo)
       .order("date", { ascending: false }),
@@ -50,6 +52,24 @@ export default async function CyclusPage() {
 
   const trackFlowEnabled = profile?.track_flow_intensity ?? false
   const today = format(new Date(), "yyyy-MM-dd")
+  const insightCheckins = (checkins ?? []).map((c) => ({
+    date: c.date,
+    energy: c.energy,
+    mood: c.mood,
+    sleep: c.sleep,
+    stress: c.stress,
+    symptoms: c.symptoms ?? [],
+  }))
+  const personalInsights = computePersonalInsights(
+    insightCheckins,
+    cycleProfile
+      ? {
+          has_cycle: cycleProfile.has_cycle,
+          last_period_start: cycleProfile.last_period_start,
+          average_cycle_length: cycleProfile.average_cycle_length,
+        }
+      : null,
+  )
 
   // Same explicit source of truth (cycle_profiles.active_period_start) and
   // merge helper the Vandaag quick-action uses — the calendar shows dots
@@ -80,8 +100,12 @@ export default async function CyclusPage() {
       )
     : null
 
-  const patterns = computeSymptomFrequency(checkins ?? [])
-  const phaseInsights = computePhaseSymptomInsights(history, checkins ?? []).slice(0, 3)
+  const checkinsForPatterns = (checkins ?? []).map((c) => ({
+    date: c.date,
+    symptoms: c.symptoms ?? [],
+  }))
+  const patterns = computeSymptomFrequency(checkinsForPatterns)
+  const phaseInsights = computePhaseSymptomInsights(history, checkinsForPatterns).slice(0, 3)
   const cycleLengthTrend = computeCycleLengthTrend(history)
 
   const hasCycle = cycleProfile?.has_cycle ?? true
@@ -95,6 +119,11 @@ export default async function CyclusPage() {
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Mijn cyclus</h1>
         <p className="text-sm text-ink-soft mt-1">
           Een overzicht van je cyclus, patronen en klachten.
+        </p>
+        <p className="text-sm text-ink-soft mt-2">
+          <Link href="/cyclus/samenvatting" className="text-sage-dark font-medium underline touch-manipulation">
+            Samenvatting voor je arts
+          </Link>
         </p>
       </div>
 
@@ -232,6 +261,8 @@ export default async function CyclusPage() {
         </div>
 
         <div className="mt-6 lg:mt-0 flex flex-col gap-6">
+          <PersonalInsights insights={personalInsights} checkinCount={insightCheckins.length} />
+
           {phaseInsights.length > 0 && (
             <div>
               <h2 className="font-display text-lg text-ink mb-3">Wat je cycli laten zien</h2>

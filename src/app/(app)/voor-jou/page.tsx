@@ -115,6 +115,49 @@ export default async function VoorJouPage() {
         </div>
       )}
 
+      <div>
+        <h2 className="font-display text-base text-ink mb-2.5">Meer voor jou</h2>
+        <div className="flex flex-col gap-3">
+          {(
+            [
+              {
+                href: "/kennis",
+                emoji: "📚",
+                title: "Kennis",
+                description: "Uitleg over hormonen, overgang en leefstijl.",
+              },
+              {
+                href: "/dagboek",
+                emoji: "✍️",
+                title: "Dagboek",
+                description: "Schrijf van je af — alleen jij ziet dit.",
+              },
+              {
+                href: "/cyclus/samenvatting",
+                emoji: "🩺",
+                title: "Voor je arts",
+                description: "Samenvatting van je check-ins om mee te nemen.",
+              },
+            ] as const
+          ).map((tile) => (
+            <Link key={tile.href} href={tile.href}>
+              <Card interactive className="flex items-center justify-between gap-4 touch-manipulation">
+                <div className="min-w-0">
+                  <p className="text-base font-medium text-ink">
+                    <span className="mr-1.5" aria-hidden>
+                      {tile.emoji}
+                    </span>
+                    {tile.title}
+                  </p>
+                  <p className="text-sm text-ink-soft mt-0.5">{tile.description}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {disabledKeys.length > 0 && (
         <div>
           <h2 className="font-display text-base text-ink mb-2.5">Nog niet aanstaan voor jou</h2>

@@ -220,6 +220,69 @@ export type Database = {
         }
         Relationships: []
       }
+      diary_entries: {
+        Row: {
+          body: string
+          created_at: string
+          date: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          date?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          date?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      knowledge_articles: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          id: string
+          slug: string
+          sort_order: number
+          summary: string
+          tags: string[]
+          title: string
+        }
+        Insert: {
+          body: string
+          category: string
+          created_at?: string
+          id?: string
+          slug: string
+          sort_order?: number
+          summary: string
+          tags?: string[]
+          title: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          slug?: string
+          sort_order?: number
+          summary?: string
+          tags?: string[]
+          title?: string
+        }
+        Relationships: []
+      }
       exercise_favorites: {
         Row: {
           created_at: string

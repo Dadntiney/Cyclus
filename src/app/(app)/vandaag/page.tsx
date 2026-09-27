@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import { BookOpen, ChevronRight, ClipboardList, NotebookPen } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { getDailyTip } from "@/lib/data/daily-tip"
@@ -21,12 +21,27 @@ import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { cn } from "@/lib/utils"
 import { greeting } from "@/lib/greeting"
 
-async function DailyTip({ promise }: { promise: ReturnType<typeof getDailyTip> }) {
-  const dailyTip = await promise
+async function DailyTip({
+  today,
+  userId,
+  goals,
+  recentSymptoms,
+}: {
+  today: string
+  userId: string
+  goals: string[] | null | undefined
+  recentSymptoms: string[] | null | undefined
+}) {
+  const dailyTip = await getDailyTip(today, { userId, goals, recentSymptoms })
   if (!dailyTip) return null
   return (
     <div>
-      <h2 className="font-display text-lg text-ink mb-3">Kennis</h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="font-display text-lg text-ink">Kennis</h2>
+        <Link href="/kennis" className="text-xs font-medium text-sage-dark touch-manipulation">
+          Alles
+        </Link>
+      </div>
       <DailyTipCard tip={dailyTip} />
     </div>
   )
@@ -61,7 +76,6 @@ export default async function VandaagPage() {
   if (!user) return null
 
   const today = new Date().toISOString().slice(0, 10)
-  const dailyTipPromise = getDailyTip(today)
 
   const {
     profile,
@@ -188,8 +202,37 @@ export default async function VandaagPage() {
             {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
 
             <Suspense fallback={<DailyTipSkeleton />}>
-              <DailyTip promise={dailyTipPromise} />
+              <DailyTip
+                today={today}
+                userId={user.id}
+                goals={profile?.goals}
+                recentSymptoms={checkin?.symptoms}
+              />
             </Suspense>
+
+            <div className="grid grid-cols-3 gap-2">
+              <Link
+                href="/kennis"
+                className="rounded-2xl bg-cream-soft px-2 py-3 text-center text-xs font-medium text-ink touch-manipulation"
+              >
+                <BookOpen className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
+                Kennis
+              </Link>
+              <Link
+                href="/dagboek"
+                className="rounded-2xl bg-cream-soft px-2 py-3 text-center text-xs font-medium text-ink touch-manipulation"
+              >
+                <NotebookPen className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
+                Dagboek
+              </Link>
+              <Link
+                href="/cyclus/samenvatting"
+                className="rounded-2xl bg-cream-soft px-2 py-3 text-center text-xs font-medium text-ink touch-manipulation"
+              >
+                <ClipboardList className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
+                Voor arts
+              </Link>
+            </div>
           </div>
         </div>
       </div>
