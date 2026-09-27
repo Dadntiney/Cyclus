@@ -1,12 +1,15 @@
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, computeSymptomFrequency } from "@/lib/cycle/history"
+import { computePersonalInsights } from "@/lib/cycle/insights"
 import { Calendar } from "@/components/cycle/calendar"
+import { PersonalInsights } from "@/components/cycle/personal-insights"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { format, parseISO, subDays } from "date-fns"
 import { nl } from "date-fns/locale"
 import { Droplet, Sparkles } from "lucide-react"
+import Link from "next/link"
 
 export default async function CyclusPage() {
   const supabase = await createClient()
@@ -25,7 +28,7 @@ export default async function CyclusPage() {
       .order("date", { ascending: true }),
     supabase
       .from("daily_checkins")
-      .select("date, symptoms")
+      .select("date, symptoms, sleep, energy, mood, stress")
       .eq("user_id", user.id)
       .gte("date", sixMonthsAgo)
       .order("date", { ascending: false }),
@@ -48,7 +51,25 @@ export default async function CyclusPage() {
   )
   const recentHistory = [...history].reverse().slice(0, 6)
 
-  const patterns = computeSymptomFrequency(checkins ?? [])
+  const checkinRows = checkins ?? []
+  const patterns = computeSymptomFrequency(checkinRows)
+  const insights = computePersonalInsights(
+    checkinRows.map((c) => ({
+      date: c.date,
+      sleep: c.sleep,
+      energy: c.energy,
+      mood: c.mood,
+      stress: c.stress,
+      symptoms: c.symptoms,
+    })),
+    cycleProfile
+      ? {
+          has_cycle: cycleProfile.has_cycle,
+          last_period_start: cycleProfile.last_period_start,
+          average_cycle_length: cycleProfile.average_cycle_length,
+        }
+      : null,
+  )
 
   const hasCycle = cycleProfile?.has_cycle ?? true
   const isIrregular = cycleProfile?.regularity === "onregelmatig" || cycleProfile?.regularity === "onbekend"
@@ -58,7 +79,10 @@ export default async function CyclusPage() {
       <div>
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Mijn cyclus</h1>
         <p className="text-sm text-ink-soft mt-1">
-          Een overzicht van je cyclus, patronen en klachten.
+          Een overzicht van je cyclus, patronen en klachten.{" "}
+          <Link href="/cyclus/samenvatting" className="text-sage-dark font-medium underline">
+            Samenvatting voor je arts
+          </Link>
         </p>
       </div>
 
@@ -147,33 +171,37 @@ export default async function CyclusPage() {
           </div>
         </div>
 
-        <div className="mt-6 lg:mt-0">
-          <h2 className="font-display text-lg text-ink mb-3">Persoonlijke patronen</h2>
-          {patterns.length ? (
-            <Card>
-              <ul className="flex flex-col gap-2.5">
-                {patterns.slice(0, 6).map(({ symptom, count }) => (
-                  <li key={symptom} className="flex items-center justify-between text-sm">
-                    <span className="text-ink">{symptom}</span>
-                    <span className="text-ink-soft">
-                      {count}x in je check-ins
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <p className="text-xs text-ink-soft mt-4">
-                Gebaseerd op de klachten die je bij je dagelijkse check-ins hebt aangevinkt.
-              </p>
-            </Card>
-          ) : (
-            <Card>
-              <EmptyState
-                icon={<Sparkles className="h-6 w-6" />}
-                title="Nog geen patronen zichtbaar."
-                description="Vul een paar dagelijkse check-ins in op Vandaag om je persoonlijke patronen te zien."
-              />
-            </Card>
-          )}
+        <div className="mt-6 lg:mt-0 flex flex-col gap-6">
+          <PersonalInsights insights={insights} checkinCount={checkinRows.length} />
+
+          <div>
+            <h2 className="font-display text-lg text-ink mb-3">Meest genoteerd</h2>
+            {patterns.length ? (
+              <Card>
+                <ul className="flex flex-col gap-2.5">
+                  {patterns.slice(0, 6).map(({ symptom, count }) => (
+                    <li key={symptom} className="flex items-center justify-between text-sm">
+                      <span className="text-ink">{symptom}</span>
+                      <span className="text-ink-soft">
+                        {count}x in je check-ins
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-ink-soft mt-4">
+                  Gebaseerd op de klachten die je bij je dagelijkse check-ins hebt aangevinkt.
+                </p>
+              </Card>
+            ) : (
+              <Card>
+                <EmptyState
+                  icon={<Sparkles className="h-6 w-6" />}
+                  title="Nog geen patronen zichtbaar."
+                  description="Vul een paar dagelijkse check-ins in op Vandaag om je persoonlijke patronen te zien."
+                />
+              </Card>
+            )}
+          </div>
         </div>
       </div>
     </div>

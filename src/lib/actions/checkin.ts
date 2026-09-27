@@ -42,6 +42,9 @@ export async function saveCheckin(input: CheckinInput) {
   }
 
   revalidatePath("/vandaag")
+  revalidatePath("/cyclus")
+  revalidatePath("/training")
+  revalidatePath("/voeding")
   return { success: true }
 }
 
@@ -75,5 +78,8 @@ export async function setTodayNeed(need: string | null) {
   }
 
   revalidatePath("/vandaag")
+  revalidatePath("/cyclus")
+  revalidatePath("/training")
+  revalidatePath("/voeding")
   return { success: true }
 }
