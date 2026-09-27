@@ -4,6 +4,7 @@ import { Users, ChefHat, Snowflake, PackageOpen } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getRecipeDetail, getFavoriteRecipeIds } from "@/lib/data/nutrition"
 import { ensureRecipeImage } from "@/lib/images/ensure-recipe-image"
+import { PHOTOS_ENABLED } from "@/lib/images/photos-enabled"
 import { FavoriteButton } from "@/components/nutrition/favorite-button"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { IngredientList } from "@/components/nutrition/ingredient-info-sheet"
@@ -40,9 +41,10 @@ export default async function RecipeDetailPage({
   // (or the illustrated placeholder) immediately, and let a missing photo
   // warm up in the background via after() so the *next* visit has it,
   // instead of stalling this request for however long the AI/stock-photo
-  // provider takes.
+  // provider takes. Skipped entirely while PHOTOS_ENABLED is off — no point
+  // spending paid OpenAI/Pexels calls on photos nothing will render.
   const imageUrl = recipe.image_url
-  if (!imageUrl) {
+  if (PHOTOS_ENABLED && !imageUrl) {
     after(() => {
       void ensureRecipeImage(recipe)
     })

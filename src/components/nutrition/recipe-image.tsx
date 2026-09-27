@@ -1,5 +1,6 @@
 import Image from "next/image"
 import { RecipeMedia } from "@/components/nutrition/recipe-media"
+import { PHOTOS_ENABLED } from "@/lib/images/photos-enabled"
 import { cn } from "@/lib/utils"
 
 interface RecipeImageProps {
@@ -20,7 +21,7 @@ export function RecipeImage({
   sizes,
   priority,
 }: RecipeImageProps) {
-  if (!imageUrl) {
+  if (!PHOTOS_ENABLED || !imageUrl) {
     return <RecipeMedia title={title} className={className} iconClassName={iconClassName} />
   }
 
