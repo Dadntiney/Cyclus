@@ -106,82 +106,74 @@ export default async function VandaagPage() {
   return (
     <PullToRefresh>
       <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <div className="mb-5">
-          <h1 className="font-display text-2xl lg:text-3xl text-ink">
-            {greeting()}
-            {profile?.name ? `, ${profile.name}` : ""} 🌿
-          </h1>
-        </div>
+        <h1 className="font-display text-2xl lg:text-3xl text-ink mb-4">
+          {greeting()}
+          {profile?.name ? `, ${profile.name}` : ""} 🌿
+        </h1>
 
-        {cycleEstimate && tone ? (
-          <Link
-            href="/cyclus/vandaag"
-            className={cn(
-              "rounded-3xl p-5 lg:p-6 flex items-center gap-4 lg:gap-5 mb-6 lg:mb-8 touch-manipulation motion-safe:active:scale-[0.99] transition-transform",
-              tone.bg,
-            )}
-          >
-            <div
+        <div className="flex flex-col gap-4 mb-6 lg:mb-8">
+          {cycleEstimate && tone ? (
+            <Link
+              href="/cyclus/vandaag"
               className={cn(
-                "shrink-0 h-20 w-20 lg:h-24 lg:w-24 rounded-full flex flex-col items-center justify-center",
-                tone.ring,
+                "rounded-3xl p-5 lg:p-6 flex items-center gap-4 lg:gap-5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform",
+                tone.bg,
               )}
             >
-              <span className={cn("font-display text-3xl lg:text-4xl leading-none", tone.text)}>
-                {cycleEstimate.cycleDay}
-              </span>
-              <span className="text-[10px] text-ink-soft mt-1">cyclusdag</span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className={cn("text-base font-semibold", tone.text)}>
-                {cycleEstimate.phaseLabel} · schatting
-              </p>
-              <p className="text-base text-ink-soft mt-0.5">{PHASE_TAGLINE[cycleEstimate.phase]}</p>
-              <p className={cn("text-xs font-medium mt-2 inline-flex items-center gap-0.5", tone.text)}>
-                Wat betekent dit voor jou?
-                <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
-              </p>
-            </div>
-          </Link>
-        ) : (
-          <p className="text-sm text-ink-soft mb-6 lg:mb-8">Fijn dat je er bent.</p>
-        )}
+              <div
+                className={cn(
+                  "shrink-0 h-20 w-20 lg:h-24 lg:w-24 rounded-full flex flex-col items-center justify-center",
+                  tone.ring,
+                )}
+              >
+                <span className={cn("font-display text-3xl lg:text-4xl leading-none", tone.text)}>
+                  {cycleEstimate.cycleDay}
+                </span>
+                <span className="text-[10px] text-ink-soft mt-1">cyclusdag</span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className={cn("text-sm font-semibold", tone.text)}>
+                  {cycleEstimate.phaseLabel} · schatting
+                </p>
+                <p className="text-sm text-ink-soft mt-0.5">{PHASE_TAGLINE[cycleEstimate.phase]}</p>
+                <p className={cn("text-xs font-medium mt-1.5 inline-flex items-center gap-0.5", tone.text)}>
+                  Wat betekent dit voor jou?
+                  <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+                </p>
+              </div>
+            </Link>
+          ) : (
+            <p className="text-sm text-ink-soft">Fijn dat je er bent.</p>
+          )}
 
-        {showMenstruationQuickAction && (
-          <MenstruationQuickAction isActive={isMenstruationActive} day={menstruationDay} />
-        )}
+          {showMenstruationQuickAction && (
+            <MenstruationQuickAction isActive={isMenstruationActive} day={menstruationDay} />
+          )}
 
-        {showBuddyQuote && (
-          <div className="mb-6 lg:mb-8">
-            <BuddyQuoteCard quote={buddyQuote} />
-          </div>
-        )}
+          {showBuddyQuote && <BuddyQuoteCard quote={buddyQuote} />}
 
-        {mentalWellbeingSuggestion && (
-          <div className="mb-6 lg:mb-8">
+          {mentalWellbeingSuggestion && (
             <MentalWellbeingSuggestionCard suggestion={mentalWellbeingSuggestion} />
-          </div>
-        )}
+          )}
 
-        <Link
-          href="/deze-week"
-          className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3 mb-6 lg:mb-8 touch-manipulation"
-        >
-          <span className="text-base font-medium text-ink">📆 Bekijk je hele week</span>
-          <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
-        </Link>
+          <Link
+            href="/deze-week"
+            className="flex items-center justify-between rounded-2xl bg-white border border-line/70 px-4 py-3.5 touch-manipulation"
+          >
+            <span className="text-sm font-medium text-ink">📆 Bekijk je hele week</span>
+            <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
+          </Link>
 
-        <div className="mb-6 lg:mb-8">
           <NeedPicker initialNeed={checkin?.need ?? null} />
         </div>
 
-        <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
-          <div className="flex flex-col gap-6 lg:col-span-2">
+        <div className="lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
+          <div className="flex flex-col gap-5 lg:col-span-2">
             {recommendation && <TodayCards recommendation={recommendation} />}
             <CheckinForm initial={checkin ?? null} mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true} />
           </div>
 
-          <div className="flex flex-col gap-6 mt-6 lg:mt-0">
+          <div className="flex flex-col gap-5 mt-5 lg:mt-0">
             {profile?.sleep_tracking_enabled === true && (
               <div>
                 <SleepCard date={today} entry={sleepEntry} />
@@ -213,21 +205,21 @@ export default async function VandaagPage() {
             <div className="grid grid-cols-3 gap-2">
               <Link
                 href="/kennis"
-                className="rounded-2xl bg-cream-soft px-2 py-3 text-center text-xs font-medium text-ink touch-manipulation"
+                className="rounded-2xl bg-cream-soft px-2 py-2.5 text-center text-xs font-medium text-ink touch-manipulation"
               >
                 <BookOpen className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
                 Kennis
               </Link>
               <Link
                 href="/dagboek"
-                className="rounded-2xl bg-cream-soft px-2 py-3 text-center text-xs font-medium text-ink touch-manipulation"
+                className="rounded-2xl bg-cream-soft px-2 py-2.5 text-center text-xs font-medium text-ink touch-manipulation"
               >
                 <NotebookPen className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
                 Dagboek
               </Link>
               <Link
                 href="/cyclus/samenvatting"
-                className="rounded-2xl bg-cream-soft px-2 py-3 text-center text-xs font-medium text-ink touch-manipulation"
+                className="rounded-2xl bg-cream-soft px-2 py-2.5 text-center text-xs font-medium text-ink touch-manipulation"
               >
                 <ClipboardList className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
                 Voor arts

@@ -27,7 +27,7 @@ export function DailyTipCard({ tip }: { tip: Tables<"daily_tips"> }) {
   const options = parseQuizOptions(tip.quiz_options)
 
   return (
-    <Card>
+    <Card className="p-4">
       <div className="flex items-center gap-1.5 mb-1">
         <Lightbulb className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
         <p className="text-sm font-medium text-sage-dark">Wist je dat?</p>
@@ -43,7 +43,7 @@ export function DailyTipCard({ tip }: { tip: Tables<"daily_tips"> }) {
       )}
 
       {tip.quiz_question && options.length > 0 && (
-        <div className="mt-5 pt-5 border-t border-line">
+        <div className="mt-4 pt-4 border-t border-line">
           <p className="text-sm font-medium text-ink mb-3">{tip.quiz_question}</p>
           <div className="flex flex-wrap gap-2 mb-3">
             {options.map((opt, i) => {

@@ -16,8 +16,8 @@ export function ProgressCard({
   const pct = Math.min(100, Math.round((completedThisWeek / Math.max(1, goal)) * 100))
 
   return (
-    <Card>
-      <h2 className="font-display text-lg text-ink mb-3">Mijn voortgang</h2>
+    <Card className="p-4">
+      <h2 className="font-display text-lg text-ink mb-2.5">Mijn voortgang</h2>
       {movementEnabled && (
         <>
           <div className="flex items-center justify-between mb-1.5">
@@ -32,7 +32,7 @@ export function ProgressCard({
               style={{ width: `${pct}%` }}
             />
           </div>
-          <p className="text-sm text-ink-soft mb-4">
+          <p className="text-sm text-ink-soft mb-3">
             {completedThisWeek === 0
               ? "Nog niets deze week? Geen probleem — elk moment is een goed moment om te beginnen."
               : "Dit heb je zelf opgebouwd."}

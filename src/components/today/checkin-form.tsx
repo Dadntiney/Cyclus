@@ -76,11 +76,11 @@ export function CheckinForm({
   }, [status])
 
   return (
-    <Card>
+    <Card className="p-4">
       <h3 className="font-display text-lg text-ink mb-1">Hoe voel je je vandaag?</h3>
-      <p className="text-ink-soft text-sm mb-4">Helemaal optioneel — vul in wat je wilt bijhouden.</p>
+      <p className="text-ink-soft text-sm mb-3.5">Helemaal optioneel — vul in wat je wilt bijhouden.</p>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         <RatingScale label="Energie" value={energy} onChange={setEnergy} lowLabel="Laag" highLabel="Hoog" />
 
         {showMore ? (

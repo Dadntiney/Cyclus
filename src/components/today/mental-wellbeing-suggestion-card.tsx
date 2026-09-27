@@ -13,11 +13,11 @@ export function MentalWellbeingSuggestionCard({ suggestion }: { suggestion: Ment
   return (
     <Link
       href={`/mentale-rust/${suggestion.exercise.id}`}
-      className="block rounded-3xl bg-info-soft px-5 py-4 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
+      className="block rounded-3xl bg-info-soft px-4 py-3.5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
     >
       <p className="text-[11px] font-medium text-info mb-0.5">Voor je hoofd, vandaag</p>
-      <p className="text-base text-ink leading-relaxed">{suggestion.text}</p>
-      <p className="text-sm font-medium text-info mt-2.5 inline-flex items-center gap-0.5">
+      <p className="text-sm text-ink leading-relaxed">{suggestion.text}</p>
+      <p className="text-sm font-medium text-info mt-2 inline-flex items-center gap-0.5">
         {suggestion.exercise.title} · {suggestion.exercise.durationMinutes} min
         <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
       </p>

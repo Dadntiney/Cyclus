@@ -35,7 +35,7 @@ export function MenstruationQuickAction({ isActive, day }: { isActive: boolean; 
   return (
     <Card
       className={cn(
-        "p-4 flex items-center gap-3.5 mb-6 lg:mb-8 transition-colors",
+        "p-4 flex items-center gap-3.5 transition-colors",
         isActive && "bg-peach-soft border-transparent",
       )}
     >
