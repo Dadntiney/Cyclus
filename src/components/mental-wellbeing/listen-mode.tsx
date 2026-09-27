@@ -192,7 +192,7 @@ export function ListenMode({
     return (
       <Card className="text-center py-8">
         <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
-          Luisteren wordt op dit apparaat niet ondersteund. Kies hierboven voor Bekijken.
+          Luisteren wordt op dit apparaat niet ondersteund. Kies hierboven voor Lezen.
         </p>
         <button
           type="button"

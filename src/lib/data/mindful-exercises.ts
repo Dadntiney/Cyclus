@@ -7,7 +7,7 @@ import type { MentalWellbeingCategory } from "@/lib/constants"
  * is editorial copy the app ships with, not user data.
  *
  * Each exercise is a small sequence of short, guided text prompts. She can
- * follow it two ways (see GuidedExercise): "Bekijken" reads them one at a
+ * follow it two ways (see GuidedExercise): "Lezen" reads them one at a
  * time at her own pace, "Luisteren" plays them audio-only so she can close
  * her eyes and put her phone down. Deliberately laagdrempelig: no elaborate
  * spiritual language, no long paragraphs.

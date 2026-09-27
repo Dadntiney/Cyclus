@@ -17,7 +17,7 @@ function formatElapsed(seconds: number): string {
 type Mode = "choice" | "listen" | "read"
 
 /**
- * Two ways to follow one exercise: "Bekijken" is the original step-by-step
+ * Two ways to follow one exercise: "Lezen" is the original step-by-step
  * reading flow (self-paced, no forced per-step countdown), "Luisteren" is
  * audio-only via ListenMode, meant to be started and then left alone with
  * her eyes closed. Both end on the same finished screen regardless of which
@@ -105,7 +105,7 @@ export function GuidedExercise({ exercise }: { exercise: MindfulExercise }) {
               <BookOpen className="h-4.5 w-4.5 text-ink-soft" strokeWidth={1.75} />
             </span>
             <span className="min-w-0">
-              <span className="block text-sm font-medium text-ink">▶️ Bekijken</span>
+              <span className="block text-sm font-medium text-ink">📖 Lezen</span>
               <span className="block text-xs text-ink-soft mt-0.5">Stap voor stap meelezen</span>
             </span>
           </button>
