@@ -4,8 +4,12 @@ import { nl } from "date-fns/locale"
 import { Check, Moon } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getWorkoutLibrary, getWeekSessions } from "@/lib/data/training"
+import { estimateCycle } from "@/lib/cycle/estimate"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
-import { pickTodaysWorkout } from "@/lib/recommendations/engine"
+import {
+  pickTodaysWorkout,
+  shouldPreferShort,
+} from "@/lib/recommendations/engine"
 import { WorkoutLibrary } from "@/components/training/workout-library"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
@@ -25,21 +29,37 @@ export default async function TrainingPage() {
 
   const todayISO = format(new Date(), "yyyy-MM-dd")
 
-  const [workouts, week, { data: profile }, { data: checkin }] = await Promise.all([
-    getWorkoutLibrary(),
-    getWeekSessions(user.id),
-    supabase
-      .from("profiles")
-      .select("training_frequency, health_conditions, movement_limitations, training_preferences")
-      .eq("id", user.id)
-      .single(),
-    supabase
-      .from("daily_checkins")
-      .select("energy, mood, sleep, stress, symptoms, need")
-      .eq("user_id", user.id)
-      .eq("date", todayISO)
-      .maybeSingle(),
-  ])
+  const [workouts, week, { data: profile }, { data: checkin }, { data: cycleProfile }] =
+    await Promise.all([
+      getWorkoutLibrary(),
+      getWeekSessions(user.id),
+      supabase
+        .from("profiles")
+        .select(
+          "training_frequency, health_conditions, movement_limitations, training_preferences, wellness_preference",
+        )
+        .eq("id", user.id)
+        .single(),
+      supabase
+        .from("daily_checkins")
+        .select("energy, mood, sleep, stress, symptoms, need")
+        .eq("user_id", user.id)
+        .eq("date", todayISO)
+        .maybeSingle(),
+      supabase
+        .from("cycle_profiles")
+        .select("has_cycle, last_period_start, average_cycle_length")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ])
+
+  const cycleEstimate = cycleProfile
+    ? estimateCycle(
+        cycleProfile.last_period_start,
+        cycleProfile.average_cycle_length,
+        cycleProfile.has_cycle,
+      )
+    : null
 
   const program = buildWeeklyProgram({
     frequency: profile?.training_frequency ?? 3,
@@ -47,6 +67,7 @@ export default async function TrainingPage() {
     movementLimitations: profile?.movement_limitations ?? [],
     workouts,
     seed: `${user.id}-weekprogram`,
+    preferShort: shouldPreferShort(checkin ?? null, cycleEstimate),
   })
 
   // Today's slot in the week plan is replaced with the same, check-in-aware
@@ -59,8 +80,10 @@ export default async function TrainingPage() {
       training_preferences: profile?.training_preferences ?? [],
       health_conditions: profile?.health_conditions ?? [],
       movement_limitations: profile?.movement_limitations ?? [],
+      wellness_preference: profile?.wellness_preference ?? null,
     },
     latestCheckin: checkin ?? null,
+    cycleEstimate,
     workouts,
     seed: `${user.id}-${todayISO}`,
   })

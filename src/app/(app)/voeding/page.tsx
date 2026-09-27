@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Heart } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
+import { estimateCycle } from "@/lib/cycle/estimate"
 import { getRecipeLibrary } from "@/lib/data/nutrition"
 import { pickTodaysRecipe } from "@/lib/recommendations/engine"
 import { RecipeLibrary } from "@/components/nutrition/recipe-library"
@@ -15,18 +16,42 @@ export default async function VoedingPage() {
 
   const today = new Date().toISOString().slice(0, 10)
 
-  const [recipes, { data: profile }, { data: checkin }] = await Promise.all([
-    getRecipeLibrary(),
-    supabase.from("profiles").select("nutrition_preferences, nutrition_style").eq("id", user.id).single(),
-    supabase.from("daily_checkins").select("need").eq("user_id", user.id).eq("date", today).maybeSingle(),
-  ])
+  const [recipes, { data: profile }, { data: checkin }, { data: cycleProfile }] =
+    await Promise.all([
+      getRecipeLibrary(),
+      supabase
+        .from("profiles")
+        .select("nutrition_preferences, nutrition_style")
+        .eq("id", user.id)
+        .single(),
+      supabase
+        .from("daily_checkins")
+        .select("need, energy, sleep, symptoms")
+        .eq("user_id", user.id)
+        .eq("date", today)
+        .maybeSingle(),
+      supabase
+        .from("cycle_profiles")
+        .select("has_cycle, last_period_start, average_cycle_length")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ])
+
+  const cycleEstimate = cycleProfile
+    ? estimateCycle(
+        cycleProfile.last_period_start,
+        cycleProfile.average_cycle_length,
+        cycleProfile.has_cycle,
+      )
+    : null
 
   const todaysPick = pickTodaysRecipe({
     profile: {
       nutrition_preferences: profile?.nutrition_preferences ?? [],
-      nutrition_style: profile?.nutrition_style ?? "gebalanceerd",
+      nutrition_style: profile?.nutrition_style ?? "normaal",
     },
     latestCheckin: checkin ?? null,
+    cycleEstimate,
     recipes,
     seed: `${user.id}-${today}`,
   })
