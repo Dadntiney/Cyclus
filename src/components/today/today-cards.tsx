@@ -23,6 +23,7 @@ export function TodayCards({
   mentalSuggestion = null,
   focusLine = null,
   prioritizeRest = false,
+  showRecovery = false,
 }: {
   recommendation: Recommendation
   userId: string
@@ -34,12 +35,14 @@ export function TodayCards({
   focusLine?: string | null
   /** Soft day: lead with rest/mental, not a hard workout CTA. */
   prioritizeRest?: boolean
+  /** When false, hide the generic recovery row (mental suggestion stays). */
+  showRecovery?: boolean
 }) {
   const { training, nutrition, recovery, movementEnabled, nutritionEnabled } = recommendation
 
   const showNutrition = nutritionEnabled && Boolean(nutrition.recipe)
   const showMental = Boolean(mentalSuggestion)
-  const showRecoveryRow = !showMental && Boolean(recovery.title)
+  const showRecoveryRow = showRecovery && !showMental && Boolean(recovery.title)
   const hasRestPrimary = prioritizeRest && (showMental || showRecoveryRow)
 
   return (
@@ -58,7 +61,7 @@ export function TodayCards({
           <>
             {showMental && mentalSuggestion ? (
               <div className="px-4 pt-4 pb-3">
-                <p className="text-[11px] font-medium text-info mb-1">Voor je hoofd</p>
+                <p className="text-xs font-medium text-info mb-1">Voor je hoofd</p>
                 <p className="font-display text-lg text-ink leading-snug">
                   {mentalSuggestion.text}
                 </p>
@@ -72,7 +75,7 @@ export function TodayCards({
               </div>
             ) : (
               <div className="px-4 pt-4 pb-3">
-                <p className="text-[11px] font-medium text-sage-dark mb-1">Even voor jezelf</p>
+                <p className="text-xs font-medium text-sage-dark mb-1">Even voor jezelf</p>
                 <p className="font-display text-lg text-ink leading-snug">{recovery.title}</p>
                 <p className="text-sm text-ink-soft mt-1 leading-relaxed">{recovery.description}</p>
                 {recovery.href ? (
@@ -126,7 +129,7 @@ export function TodayCards({
               <div className="px-4 py-4">
                 {showMental && mentalSuggestion ? (
                   <>
-                    <p className="text-[11px] font-medium text-info mb-1">Voor je hoofd</p>
+                    <p className="text-xs font-medium text-info mb-1">Voor je hoofd</p>
                     <p className="font-display text-lg text-ink leading-snug">
                       {mentalSuggestion.text}
                     </p>
@@ -140,7 +143,7 @@ export function TodayCards({
                   </>
                 ) : showRecoveryRow ? (
                   <>
-                    <p className="text-[11px] font-medium text-sage-dark mb-1">Even voor jezelf</p>
+                    <p className="text-xs font-medium text-sage-dark mb-1">Even voor jezelf</p>
                     <p className="font-display text-lg text-ink leading-snug">{recovery.title}</p>
                     {recovery.href ? (
                       <Link href={recovery.href} className={cn(buttonVariants(), "mt-3")}>
@@ -171,7 +174,7 @@ export function TodayCards({
                     href={`/mentale-rust/${mentalSuggestion.exercise.id}`}
                     className="block px-4 py-3.5 touch-manipulation motion-safe:active:bg-sage-soft/80 transition-colors"
                   >
-                    <p className="text-[11px] font-medium text-info mb-0.5">Voor je hoofd</p>
+                    <p className="text-xs font-medium text-info mb-0.5">Voor je hoofd</p>
                     <p className="text-sm text-ink leading-snug">{mentalSuggestion.text}</p>
                     <p className="text-sm font-medium text-info mt-1 inline-flex items-center gap-0.5">
                       {mentalSuggestion.exercise.title} ·{" "}
@@ -188,7 +191,7 @@ export function TodayCards({
                       className="flex items-center justify-between gap-3 px-4 py-3.5 touch-manipulation motion-safe:active:bg-sage-soft/80 transition-colors"
                     >
                       <div className="min-w-0">
-                        <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
+                        <p className="text-xs font-medium text-sage-dark">Even voor jezelf</p>
                         <p className="text-sm font-medium text-ink truncate">
                           {recovery.title}
                           <span className="font-normal text-ink-soft">
@@ -205,7 +208,7 @@ export function TodayCards({
                     </Link>
                   ) : (
                     <div className="px-4 py-3.5">
-                      <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
+                      <p className="text-xs font-medium text-sage-dark">Even voor jezelf</p>
                       <p className="text-sm font-medium text-ink">
                         {recovery.title}
                         <span className="font-normal text-ink-soft">
@@ -245,7 +248,7 @@ function NutritionRow({
         sizes="44px"
       />
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium text-sage-dark">Voeding</p>
+        <p className="text-xs font-medium text-sage-dark">Voeding</p>
         <p className="text-sm font-medium text-ink leading-snug truncate">{title}</p>
       </div>
       <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />

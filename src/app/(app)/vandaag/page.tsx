@@ -60,6 +60,12 @@ export default async function VandaagPage() {
     checkin?.need !== "beweging" &&
     (checkin?.need === "rust" || checkin?.need === "mezelf" || energyLow || moodLow || stressHigh)
 
+  // Generic recovery only when it earns a place — not on every good day.
+  const showRecovery =
+    prioritizeRest ||
+    checkin?.need === "mezelf" ||
+    !(profile?.movement_enabled ?? true)
+
   return (
     <PullToRefresh>
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
@@ -94,6 +100,7 @@ export default async function VandaagPage() {
               mentalSuggestion={mentalWellbeingSuggestion}
               focusLine={personalizedFocus}
               prioritizeRest={prioritizeRest}
+              showRecovery={showRecovery}
             />
           )}
 

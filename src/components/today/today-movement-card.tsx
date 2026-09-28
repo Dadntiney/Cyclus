@@ -79,7 +79,7 @@ export function TodayMovementCard({
             <Check className="h-5 w-5 text-sage-dark" strokeWidth={2} />
           </span>
           <div className="min-w-0">
-            <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
+            <p className="text-xs font-medium text-sage-dark mb-0.5">Beweging</p>
             <p className="text-sm font-medium text-ink">Afgerond: {completed.title}</p>
             <p className="text-xs text-ink-soft mt-0.5">{completed.duration} minuten</p>
           </div>
@@ -104,7 +104,7 @@ export function TodayMovementCard({
     <div className={shell}>
       {skipped ? (
         <div>
-          <p className="text-[11px] font-medium text-sage-dark mb-1">Beweging</p>
+          <p className="text-xs font-medium text-sage-dark mb-1">Beweging</p>
           <p className="text-sm text-ink-soft italic">Vandaag overgeslagen</p>
           <button
             type="button"
@@ -126,7 +126,7 @@ export function TodayMovementCard({
                 sizes="44px"
               />
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
+                <p className="text-xs font-medium text-sage-dark mb-0.5">Beweging</p>
                 <Link
                   href={`/training/${effective.id}`}
                   className="text-sm font-medium text-ink leading-snug touch-manipulation inline-flex items-center gap-1"
@@ -153,7 +153,7 @@ export function TodayMovementCard({
                   priority
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
+                  <p className="text-xs font-medium text-sage-dark mb-0.5">Beweging</p>
                   <p className="font-display text-lg text-ink leading-snug">{effective.title}</p>
                   <p className="text-sm text-ink-soft mt-0.5">{effective.duration} minuten</p>
                   {swapped && suggested && (
