@@ -167,13 +167,13 @@ export default async function VandaagPage() {
             <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
           </Link>
 
-          <NeedPicker initialNeed={checkin?.need ?? null} />
+          <CheckinForm initial={checkin ?? null} mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true} />
         </div>
 
         <div className="lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
           <div className="flex flex-col gap-5 lg:col-span-2">
+            <NeedPicker initialNeed={checkin?.need ?? null} />
             {recommendation && <TodayCards recommendation={recommendation} />}
-            <CheckinForm initial={checkin ?? null} mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true} />
           </div>
 
           <div className="flex flex-col gap-5 mt-5 lg:mt-0">
