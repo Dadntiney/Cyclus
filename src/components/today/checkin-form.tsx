@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useState, useTransition } from "react"
-import { Check, ChevronDown, ChevronUp, Pin, Plus } from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { Check, ChevronDown, ChevronUp, Loader2, Plus } from "lucide-react"
 import { RatingScale } from "@/components/ui/rating-scale"
 import { Chip } from "@/components/ui/chip"
 import { Input, Textarea, Label } from "@/components/ui/input"
@@ -9,17 +9,28 @@ import { Button } from "@/components/ui/button"
 import {
   SYMPTOM_OPTIONS,
   MENTAL_SYMPTOM_OPTIONS,
-  SYMPTOMS_WITH_SEVERITY,
-  SYMPTOMS_WITH_COUNT,
-  SEVERITY_OPTIONS,
   symptomLabel,
 } from "@/lib/constants"
-import { saveCheckin, updatePreferredSymptoms } from "@/lib/actions/checkin"
+import { saveCheckin } from "@/lib/actions/checkin"
 import { parseSymptomDetails } from "@/lib/symptom-details"
 import type { CheckinInput, SymptomDetail } from "@/lib/validations/checkin"
 import type { Tables } from "@/types/database"
+import { cn } from "@/lib/utils"
 
 type Checkin = Tables<"daily_checkins">
+
+type FormState = {
+  energy: number | null
+  mood: number | null
+  sleep: number | null
+  stress: number | null
+  symptoms: string[]
+  symptomDetails: Record<string, SymptomDetail>
+  notes: string
+}
+
+const DEBOUNCE_MS = 700
+const SAVED_FLASH_MS = 2000
 
 function checkinHasContent(checkin: Checkin | null): boolean {
   if (!checkin) return false
@@ -29,23 +40,42 @@ function checkinHasContent(checkin: Checkin | null): boolean {
       checkin.sleep ||
       checkin.stress ||
       (checkin.symptoms?.length ?? 0) > 0 ||
-      (checkin.notes?.trim()?.length ?? 0) > 0 ||
-      Object.keys(parseSymptomDetails(checkin.symptom_details)).length > 0,
+      (checkin.notes?.trim()?.length ?? 0) > 0,
   )
 }
 
+function stateFromCheckin(initial: Checkin | null): FormState {
+  return {
+    energy: initial?.energy ?? null,
+    mood: initial?.mood ?? null,
+    sleep: initial?.sleep ?? null,
+    stress: initial?.stress ?? null,
+    symptoms: initial?.symptoms ?? [],
+    symptomDetails: parseSymptomDetails(initial?.symptom_details),
+    notes: initial?.notes ?? "",
+  }
+}
+
+/**
+ * Daily check-in — tap to save, like Profiel.
+ *
+ * UX choices (intentional):
+ * - No separate Opslaan button: every choice persists immediately.
+ * - No “vastzetten” of symptoms: rarely used, added clutter for little value.
+ * - No severity/count per symptom: not used by insights/Buddy/arts-samenvatting;
+ *   presence of a symptom is enough for daily tracking.
+ * - Compact summary when already filled; expand via Aanpassen.
+ */
 export function CheckinForm({
   initial,
   mentalWellbeingEnabled = false,
   sleepTrackingEnabled = false,
   customSymptoms = [],
-  preferredSymptoms = [],
 }: {
   initial: Checkin | null
   mentalWellbeingEnabled?: boolean
   sleepTrackingEnabled?: boolean
   customSymptoms?: string[]
-  preferredSymptoms?: string[]
 }) {
   const [extraCustoms, setExtraCustoms] = useState<string[]>([])
   const allCustoms = useMemo(
@@ -58,96 +88,167 @@ export function CheckinForm({
       ? [...SYMPTOM_OPTIONS, ...MENTAL_SYMPTOM_OPTIONS]
       : [...SYMPTOM_OPTIONS]
     const base = builtIn.filter((s) => s !== "Anders" && s !== "Geen klachten")
-    const preferred = preferredSymptoms.filter(
-      (s) => base.includes(s as (typeof base)[number]) || allCustoms.includes(s),
-    )
-    const rest = [
-      ...base.filter((s) => !preferred.includes(s)),
-      ...allCustoms.filter((s) => !preferred.includes(s)),
-    ]
-    return [...preferred, ...rest, "Anders", "Geen klachten"]
-  }, [mentalWellbeingEnabled, allCustoms, preferredSymptoms])
+    const customs = allCustoms.filter((s) => !base.includes(s as (typeof base)[number]))
+    return [...base, ...customs, "Anders", "Geen klachten"]
+  }, [mentalWellbeingEnabled, allCustoms])
 
-  const [energy, setEnergy] = useState<number | null>(initial?.energy ?? null)
-  const [mood, setMood] = useState<number | null>(initial?.mood ?? null)
-  const [sleep, setSleep] = useState<number | null>(initial?.sleep ?? null)
-  const [stress, setStress] = useState<number | null>(initial?.stress ?? null)
-  const [symptoms, setSymptoms] = useState<string[]>(initial?.symptoms ?? [])
-  const [symptomDetails, setSymptomDetails] = useState<Record<string, SymptomDetail>>(() =>
-    parseSymptomDetails(initial?.symptom_details),
-  )
-  const [notes, setNotes] = useState(initial?.notes ?? "")
-  const [customDraft, setCustomDraft] = useState("")
-  const [pinned, setPinned] = useState<string[]>(preferredSymptoms)
+  const [state, setState] = useState<FormState>(() => stateFromCheckin(initial))
+  const stateRef = useRef(state)
+  stateRef.current = state
 
-  // Compact summary when she already checked in; editor otherwise.
   const [editing, setEditing] = useState(!checkinHasContent(initial))
-  // Within the editor: show mood/symptoms/notes (true when opening via Aanpassen).
   const [showDetails, setShowDetails] = useState(checkinHasContent(initial))
+  const [customDraft, setCustomDraft] = useState("")
 
-  const [status, setStatus] = useState<"idle" | "saved" | "error">("idle")
+  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savingRef = useRef(false)
+  const dirtyRef = useRef(false)
+  const mountedRef = useRef(true)
+  const needRef = useRef((initial?.need ?? null) as CheckinInput["need"])
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+    }
+  }, [])
 
   const hasAnyInput = Boolean(
-    energy ||
-      mood ||
-      sleep ||
-      stress ||
-      symptoms.length ||
-      notes.trim() ||
-      Object.keys(symptomDetails).length,
+    state.energy ||
+      state.mood ||
+      state.sleep ||
+      state.stress ||
+      state.symptoms.length ||
+      state.notes.trim(),
   )
 
   const summaryChips = useMemo(() => {
     const chips: string[] = []
-    if (energy != null) chips.push(`Energie ${energy}/5`)
-    if (mood != null) chips.push(`Stemming ${mood}/5`)
-    if (sleep != null) chips.push(`Slaap ${sleep}/5`)
-    if (stress != null) chips.push(`Stress ${stress}/5`)
-    for (const s of symptoms) {
+    if (state.energy != null) chips.push(`Energie ${state.energy}/5`)
+    if (state.mood != null) chips.push(`Stemming ${state.mood}/5`)
+    if (state.sleep != null) chips.push(`Slaap ${state.sleep}/5`)
+    if (state.stress != null) chips.push(`Stress ${state.stress}/5`)
+    for (const s of state.symptoms) {
       if (s === "Anders") continue
       chips.push(symptomLabel(s))
     }
-    if (notes.trim()) chips.push("Notitie")
+    if (state.notes.trim()) chips.push("Notitie")
     return chips
-  }, [energy, mood, sleep, stress, symptoms, notes])
+  }, [state])
 
-  function openEditor({ withDetails }: { withDetails: boolean }) {
-    setShowDetails(withDetails)
-    setEditing(true)
+  async function performSave() {
+    if (savingRef.current) {
+      dirtyRef.current = true
+      return
+    }
+    savingRef.current = true
+    dirtyRef.current = false
+    if (mountedRef.current) setStatus("saving")
+
+    const snapshot = stateRef.current
+    const newCustomSymptoms = snapshot.symptoms.filter(
+      (s) =>
+        !SYMPTOM_OPTIONS.includes(s as (typeof SYMPTOM_OPTIONS)[number]) &&
+        !MENTAL_SYMPTOM_OPTIONS.includes(s as (typeof MENTAL_SYMPTOM_OPTIONS)[number]) &&
+        s !== "Anders" &&
+        s !== "Geen klachten",
+    )
+
+    let result: Awaited<ReturnType<typeof saveCheckin>> | undefined
+    try {
+      result = await saveCheckin({
+        energy: snapshot.energy,
+        mood: snapshot.mood,
+        sleep: snapshot.sleep,
+        stress: snapshot.stress,
+        symptoms: snapshot.symptoms,
+        // Preserve any historically stored details; UI no longer edits them.
+        symptomDetails: snapshot.symptomDetails,
+        notes: snapshot.notes,
+        need: needRef.current,
+        newCustomSymptoms,
+      })
+    } catch {
+      result = { error: "Opslaan is niet gelukt. Controleer je verbinding." }
+    }
+
+    savingRef.current = false
+
+    if (result?.error) {
+      if (mountedRef.current) {
+        setErrorMsg(result.error)
+        setStatus("error")
+      }
+      return
+    }
+
+    if (mountedRef.current) {
+      setErrorMsg(null)
+      setStatus("saved")
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+      savedTimerRef.current = setTimeout(() => {
+        if (mountedRef.current) setStatus((current) => (current === "saved" ? "idle" : current))
+      }, SAVED_FLASH_MS)
+    }
+
+    if (dirtyRef.current) {
+      dirtyRef.current = false
+      void performSave()
+    }
+  }
+
+  function scheduleSave(immediate: boolean) {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+    if (immediate) {
+      void performSave()
+    } else {
+      debounceTimerRef.current = setTimeout(() => {
+        debounceTimerRef.current = null
+        void performSave()
+      }, DEBOUNCE_MS)
+    }
+  }
+
+  function applyUpdate(updater: (prev: FormState) => FormState, mode: "immediate" | "debounced" = "immediate") {
+    let changed = true
+    setState((prev) => {
+      const next = updater(prev)
+      changed = JSON.stringify(next) !== JSON.stringify(prev)
+      stateRef.current = next
+      return next
+    })
+    if (changed) scheduleSave(mode === "immediate")
   }
 
   function toggleSymptom(value: string) {
-    setSymptoms((prev) => {
+    applyUpdate((prev) => {
       if (value === "Geen klachten") {
-        setSymptomDetails({})
-        return prev.includes("Geen klachten") ? [] : ["Geen klachten"]
+        return {
+          ...prev,
+          symptoms: prev.symptoms.includes("Geen klachten") ? [] : ["Geen klachten"],
+          symptomDetails: {},
+        }
       }
-      const withoutNone = prev.filter((s) => s !== "Geen klachten")
+      const withoutNone = prev.symptoms.filter((s) => s !== "Geen klachten")
       if (withoutNone.includes(value)) {
-        setSymptomDetails((details) => {
-          const next = { ...details }
-          delete next[value]
-          return next
-        })
-        return withoutNone.filter((s) => s !== value)
+        const nextDetails = { ...prev.symptomDetails }
+        delete nextDetails[value]
+        return {
+          ...prev,
+          symptoms: withoutNone.filter((s) => s !== value),
+          symptomDetails: nextDetails,
+        }
       }
-      return [...withoutNone, value]
-    })
-  }
-
-  function setDetail(symptom: string, patch: Partial<SymptomDetail>) {
-    setSymptomDetails((prev) => {
-      const current = { ...(prev[symptom] ?? {}), ...patch }
-      if (!current.severity) delete current.severity
-      if (!current.count) delete current.count
-      if (!current.severity && !current.count) {
-        const next = { ...prev }
-        delete next[symptom]
-        return next
-      }
-      return { ...prev, [symptom]: current }
+      return { ...prev, symptoms: [...withoutNone, value] }
     })
   }
 
@@ -156,71 +257,44 @@ export function CheckinForm({
     if (!value || value.length > 40) return
     if (value === "Anders" || value === "Geen klachten") return
     setExtraCustoms((prev) => (prev.includes(value) ? prev : [...prev, value]))
-    setSymptoms((prev) => {
-      const withoutNone = prev.filter((s) => s !== "Geen klachten")
-      return withoutNone.includes(value) ? withoutNone : [...withoutNone, value]
+    applyUpdate((prev) => {
+      const withoutNone = prev.symptoms.filter((s) => s !== "Geen klachten")
+      return {
+        ...prev,
+        symptoms: withoutNone.includes(value) ? withoutNone : [...withoutNone, value],
+      }
     })
     setCustomDraft("")
   }
 
-  function togglePin(symptom: string) {
-    if (symptom === "Anders" || symptom === "Geen klachten") return
-    const next = pinned.includes(symptom)
-      ? pinned.filter((s) => s !== symptom)
-      : [...pinned, symptom].slice(0, 12)
-    setPinned(next)
-    startTransition(async () => {
-      await updatePreferredSymptoms(next)
-    })
+  function StatusHint({ className }: { className?: string }) {
+    if (status === "idle") return null
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-1 text-xs font-medium shrink-0 animate-pop-in",
+          status === "error" ? "text-danger" : "text-sage-dark",
+          className,
+        )}
+      >
+        {status === "saving" && (
+          <>
+            <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} />
+            Opslaan…
+          </>
+        )}
+        {status === "saved" && (
+          <>
+            <Check className="h-3 w-3" strokeWidth={3} />
+            Opgeslagen
+          </>
+        )}
+        {status === "error" && (errorMsg ?? "Niet opgeslagen")}
+      </span>
+    )
   }
 
-  function handleSave() {
-    setStatus("idle")
-    setErrorMsg(null)
-    startTransition(async () => {
-      const newCustomSymptoms = symptoms.filter(
-        (s) =>
-          !SYMPTOM_OPTIONS.includes(s as (typeof SYMPTOM_OPTIONS)[number]) &&
-          !MENTAL_SYMPTOM_OPTIONS.includes(s as (typeof MENTAL_SYMPTOM_OPTIONS)[number]) &&
-          s !== "Anders" &&
-          s !== "Geen klachten",
-      )
-      const result = await saveCheckin({
-        energy,
-        mood,
-        sleep,
-        stress,
-        symptoms,
-        symptomDetails,
-        notes,
-        need: (initial?.need ?? null) as CheckinInput["need"],
-        newCustomSymptoms,
-      })
-      if (result?.error) {
-        setStatus("error")
-        setErrorMsg(result.error)
-      } else {
-        setStatus("saved")
-        setEditing(false)
-        setShowDetails(false)
-      }
-    })
-  }
-
-  useEffect(() => {
-    if (status !== "saved") return
-    const timer = setTimeout(() => setStatus("idle"), 2500)
-    return () => clearTimeout(timer)
-  }, [status])
-
-  const detailSymptoms = symptoms.filter(
-    (s) =>
-      s !== "Geen klachten" &&
-      s !== "Anders" &&
-      (SYMPTOMS_WITH_SEVERITY.has(s) || SYMPTOMS_WITH_COUNT.has(s) || allCustoms.includes(s)),
-  )
-
-  // ── Compact summary after check-in ─────────────────────────────────────
+  // ── Compact summary ────────────────────────────────────────────────────
   if (hasAnyInput && !editing) {
     const visible = summaryChips.slice(0, 5)
     const overflow = summaryChips.length - visible.length
@@ -229,14 +303,9 @@ export function CheckinForm({
       <div className="rounded-2xl border border-line/70 px-4 py-3.5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <h3 className="font-display text-base text-ink leading-tight">Hoe voel je je vandaag?</h3>
-              {status === "saved" && (
-                <span className="animate-pop-in inline-flex items-center gap-1 text-xs font-medium text-sage-dark shrink-0">
-                  <Check className="h-3 w-3" strokeWidth={3} />
-                  Opgeslagen
-                </span>
-              )}
+              <StatusHint />
             </div>
             <div className="flex flex-wrap gap-1.5">
               {visible.map((chip) => (
@@ -251,7 +320,10 @@ export function CheckinForm({
           </div>
           <button
             type="button"
-            onClick={() => openEditor({ withDetails: true })}
+            onClick={() => {
+              setShowDetails(true)
+              setEditing(true)
+            }}
             className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-sage-dark min-h-11 px-1 touch-manipulation rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
             aria-expanded={false}
           >
@@ -267,32 +339,58 @@ export function CheckinForm({
   return (
     <div className="rounded-2xl border border-line/70 p-4">
       <div className="flex items-start justify-between gap-3 mb-1">
-        <h3 className="font-display text-lg text-ink">Hoe voel je je vandaag?</h3>
+        <div className="flex items-center gap-2 flex-wrap min-w-0">
+          <h3 className="font-display text-lg text-ink">Hoe voel je je vandaag?</h3>
+          <StatusHint />
+        </div>
         {hasAnyInput && (
           <button
             type="button"
             onClick={() => {
+              if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current)
+                debounceTimerRef.current = null
+                void performSave()
+              }
               setEditing(false)
               setShowDetails(false)
             }}
             className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-ink-soft min-h-11 px-1 touch-manipulation"
             aria-expanded={true}
           >
-            Inklappen
+            Klaar
             <ChevronUp className="h-4 w-4" strokeWidth={2} />
           </button>
         )}
       </div>
-      <p className="text-ink-soft text-sm mb-3">Helemaal optioneel — vul in wat je wilt bijhouden.</p>
+      <p className="text-ink-soft text-sm mb-3">Tik om aan te geven — wordt automatisch bewaard.</p>
 
       <div className="flex flex-col gap-3.5">
-        <RatingScale label="Energie" value={energy} onChange={setEnergy} lowLabel="Laag" highLabel="Hoog" />
+        <RatingScale
+          label="Energie"
+          value={state.energy}
+          onChange={(value) => applyUpdate((prev) => ({ ...prev, energy: value }))}
+          lowLabel="Laag"
+          highLabel="Hoog"
+        />
 
         {showDetails ? (
           <>
-            <RatingScale label="Stemming" value={mood} onChange={setMood} lowLabel="Somber" highLabel="Blij" />
+            <RatingScale
+              label="Stemming"
+              value={state.mood}
+              onChange={(value) => applyUpdate((prev) => ({ ...prev, mood: value }))}
+              lowLabel="Somber"
+              highLabel="Blij"
+            />
             <div>
-              <RatingScale label="Slaap" value={sleep} onChange={setSleep} lowLabel="Slecht" highLabel="Goed" />
+              <RatingScale
+                label="Slaap"
+                value={state.sleep}
+                onChange={(value) => applyUpdate((prev) => ({ ...prev, sleep: value }))}
+                lowLabel="Slecht"
+                highLabel="Goed"
+              />
               {sleepTrackingEnabled && (
                 <p className="text-xs text-ink-soft mt-1.5 px-1">
                   Je algemene gevoel — voor je exacte slaapduur en hoe je wakker werd, gebruik je de
@@ -300,24 +398,29 @@ export function CheckinForm({
                 </p>
               )}
             </div>
-            <RatingScale label="Stress" value={stress} onChange={setStress} lowLabel="Rustig" highLabel="Gespannen" />
+            <RatingScale
+              label="Stress"
+              value={state.stress}
+              onChange={(value) => applyUpdate((prev) => ({ ...prev, stress: value }))}
+              lowLabel="Rustig"
+              highLabel="Gespannen"
+            />
 
             <div>
               <p className="text-sm font-medium text-ink mb-2">Klachten</p>
               <div className="flex flex-wrap gap-2">
                 {symptomOptions.map((symptom) => (
-                  <div key={symptom} className="relative">
-                    <Chip selected={symptoms.includes(symptom)} onClick={() => toggleSymptom(symptom)}>
-                      {symptomLabel(symptom)}
-                      {pinned.includes(symptom) && symptom !== "Anders" && symptom !== "Geen klachten" ? (
-                        <Pin className="inline h-3 w-3 ml-1 opacity-70" strokeWidth={2} />
-                      ) : null}
-                    </Chip>
-                  </div>
+                  <Chip
+                    key={symptom}
+                    selected={state.symptoms.includes(symptom)}
+                    onClick={() => toggleSymptom(symptom)}
+                  >
+                    {symptomLabel(symptom)}
+                  </Chip>
                 ))}
               </div>
 
-              {symptoms.includes("Anders") && (
+              {state.symptoms.includes("Anders") && (
                 <div className="mt-3 flex gap-2">
                   <Input
                     value={customDraft}
@@ -326,71 +429,15 @@ export function CheckinForm({
                     maxLength={40}
                     aria-label="Eigen klacht"
                   />
-                  <Button type="button" variant="secondary" onClick={addCustomSymptom} disabled={!customDraft.trim()}>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={addCustomSymptom}
+                    disabled={!customDraft.trim()}
+                  >
                     <Plus className="h-4 w-4" strokeWidth={2} />
                     Toevoegen
                   </Button>
-                </div>
-              )}
-
-              {detailSymptoms.length > 0 && (
-                <div className="mt-3 flex flex-col gap-3 rounded-xl bg-cream-soft/80 px-3 py-3">
-                  <p className="text-xs text-ink-soft">Optioneel: intensiteit of aantal voor vandaag</p>
-                  {detailSymptoms.map((symptom) => (
-                    <div key={symptom} className="flex flex-col gap-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-medium text-ink">{symptomLabel(symptom)}</p>
-                        <button
-                          type="button"
-                          onClick={() => togglePin(symptom)}
-                          className="text-xs text-sage-dark inline-flex items-center gap-1 touch-manipulation"
-                        >
-                          <Pin className="h-3 w-3" strokeWidth={2} />
-                          {pinned.includes(symptom) ? "Vastgezet" : "Vastzetten"}
-                        </button>
-                      </div>
-                      {(SYMPTOMS_WITH_SEVERITY.has(symptom) || allCustoms.includes(symptom)) && (
-                        <div className="flex flex-wrap gap-1.5">
-                          {SEVERITY_OPTIONS.map((opt) => (
-                            <Chip
-                              key={opt.value}
-                              selected={symptomDetails[symptom]?.severity === opt.value}
-                              onClick={() =>
-                                setDetail(symptom, {
-                                  severity:
-                                    symptomDetails[symptom]?.severity === opt.value ? undefined : opt.value,
-                                })
-                              }
-                            >
-                              {opt.label}
-                            </Chip>
-                          ))}
-                        </div>
-                      )}
-                      {SYMPTOMS_WITH_COUNT.has(symptom) && (
-                        <div className="flex items-center gap-2">
-                          <Label htmlFor={`count-${symptom}`} className="text-xs text-ink-soft shrink-0">
-                            Aantal vandaag
-                          </Label>
-                          <Input
-                            id={`count-${symptom}`}
-                            type="number"
-                            inputMode="numeric"
-                            min={1}
-                            max={30}
-                            className="w-20"
-                            value={symptomDetails[symptom]?.count ?? ""}
-                            onChange={(e) => {
-                              const n = Number(e.target.value)
-                              setDetail(symptom, {
-                                count: Number.isFinite(n) && n >= 1 ? Math.min(30, Math.round(n)) : undefined,
-                              })
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
                 </div>
               )}
             </div>
@@ -399,10 +446,12 @@ export function CheckinForm({
               <Label htmlFor="notes">Notities (optioneel)</Label>
               <Textarea
                 id="notes"
-                rows={3}
+                rows={2}
                 placeholder="Wil je verder nog iets kwijt over vandaag?"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                value={state.notes}
+                onChange={(e) =>
+                  applyUpdate((prev) => ({ ...prev, notes: e.target.value }), "debounced")
+                }
               />
             </div>
           </>
@@ -417,12 +466,14 @@ export function CheckinForm({
           </button>
         )}
 
-        <div className="flex items-center gap-3">
-          <Button onClick={handleSave} disabled={isPending}>
-            {isPending ? "Bezig met opslaan..." : "Check-in opslaan"}
-          </Button>
-          {status === "error" && <span className="text-sm text-danger">{errorMsg}</span>}
-        </div>
+        {status === "error" && (
+          <p className="text-sm text-danger">
+            {errorMsg}{" "}
+            <button type="button" onClick={() => void performSave()} className="underline font-medium">
+              Opnieuw
+            </button>
+          </p>
+        )}
       </div>
     </div>
   )

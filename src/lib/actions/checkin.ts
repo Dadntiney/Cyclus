@@ -115,21 +115,3 @@ export async function setTodayNeed(need: string | null) {
   revalidatePath("/vandaag")
   return { success: true }
 }
-
-export async function updatePreferredSymptoms(symptoms: string[]) {
-  const cleaned = symptoms.map((s) => s.trim()).filter(Boolean).slice(0, 12)
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { error: "Je bent niet ingelogd." }
-
-  const { error } = await supabase
-    .from("profiles")
-    .update({ preferred_symptoms: cleaned })
-    .eq("id", user.id)
-
-  if (error) return { error: "Opslaan is niet gelukt." }
-  revalidatePath("/vandaag")
-  return { success: true }
-}

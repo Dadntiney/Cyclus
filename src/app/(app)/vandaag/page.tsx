@@ -179,7 +179,6 @@ export default async function VandaagPage() {
             mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
             sleepTrackingEnabled={profile?.sleep_tracking_enabled === true}
             customSymptoms={profile?.custom_symptoms ?? []}
-            preferredSymptoms={profile?.preferred_symptoms ?? []}
           />
 
           {mentalWellbeingSuggestion && (
