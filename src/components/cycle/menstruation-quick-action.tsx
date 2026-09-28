@@ -8,8 +8,11 @@ import { cn } from "@/lib/utils"
 import { startMenstruationPeriod, stopMenstruationPeriod } from "@/lib/actions/cycle"
 
 /**
- * Compact menstruatie shortcut for Vandaag.
- * Active period: full row. Idle: quiet text action so it doesn't steal the hero.
+ * Menstruatie shortcut for Vandaag.
+ *
+ * - quiet: text action under phase context (idle) — discoverable, not loud
+ * - inline: compact active-period row under phase (no big dashboard card)
+ * - card: fuller row (legacy / elsewhere)
  */
 export function MenstruationQuickAction({
   isActive,
@@ -18,7 +21,7 @@ export function MenstruationQuickAction({
 }: {
   isActive: boolean
   day: number | null
-  variant?: "card" | "quiet"
+  variant?: "card" | "quiet" | "inline"
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -43,12 +46,39 @@ export function MenstruationQuickAction({
           type="button"
           onClick={handleClick}
           disabled={isPending}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-sage-dark min-h-11 touch-manipulation"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark min-h-11 touch-manipulation"
         >
           <Droplet className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
           {isPending ? "Bezig…" : "Menstruatie starten"}
         </button>
         {error && <p className="text-xs text-danger mt-1">{error}</p>}
+      </div>
+    )
+  }
+
+  if (variant === "inline" && isActive) {
+    return (
+      <div className="flex items-center gap-3 rounded-2xl bg-phase-menstruatie-soft px-3.5 py-2.5">
+        <Droplet
+          className="h-4 w-4 text-danger shrink-0"
+          fill="currentColor"
+          strokeWidth={1.75}
+          aria-hidden
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-ink">
+            Menstruatie · dag {day}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleClick}
+          disabled={isPending}
+          className="shrink-0 text-sm font-medium text-sage-dark min-h-11 px-1 touch-manipulation"
+        >
+          {isPending ? "Bezig…" : "Stoppen"}
+        </button>
+        {error && <p className="text-xs text-danger sr-only">{error}</p>}
       </div>
     )
   }

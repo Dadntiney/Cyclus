@@ -6,8 +6,8 @@ import type { Recommendation } from "@/lib/recommendations/engine"
 import type { MentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
 
 /**
- * Today’s plan — one primary action, secondary rows underneath.
- * Not a stack of equal “dashboard cards”.
+ * One composition for today’s plan — primary action + secondary rows
+ * inside a single surface. Not a stack of equal dashboard cards.
  */
 export function TodayCards({
   recommendation,
@@ -18,6 +18,7 @@ export function TodayCards({
   completedWorkout,
   mentalSuggestion = null,
   focusLine = null,
+  showRecovery = true,
 }: {
   recommendation: Recommendation
   userId: string
@@ -26,15 +27,16 @@ export function TodayCards({
   workoutAlternatives: TodayWorkoutOption[]
   completedWorkout: { workoutId: string; title: string; duration: number } | null
   mentalSuggestion?: MentalWellbeingSuggestion | null
-  /** Optional personalized one-liner (only when check-in actually shaped today). */
   focusLine?: string | null
+  /** When false, hide the generic recovery row (keeps mental suggestion). */
+  showRecovery?: boolean
 }) {
   const { training, nutrition, recovery, movementEnabled, nutritionEnabled } = recommendation
 
   const showNutrition = nutritionEnabled && Boolean(nutrition.recipe)
-  // Mental suggestion replaces the generic recovery row when check-in signals it.
   const showMental = Boolean(mentalSuggestion)
-  const showRecovery = !showMental && Boolean(recovery.title)
+  const showRecoveryRow = showRecovery && !showMental && Boolean(recovery.title)
+  const hasSecondary = showNutrition || showMental || showRecoveryRow
 
   return (
     <section aria-labelledby="voor-vandaag-heading">
@@ -47,8 +49,8 @@ export function TodayCards({
         <div className="mb-3" aria-hidden />
       )}
 
-      <div className="flex flex-col gap-3">
-        {movementEnabled && (
+      <div className="rounded-3xl bg-sage-soft/55 overflow-hidden">
+        {movementEnabled ? (
           <TodayMovementCard
             userId={userId}
             date={date}
@@ -58,74 +60,78 @@ export function TodayCards({
             alternatives={workoutAlternatives}
             completed={completedWorkout}
             emphasis="primary"
+            embedded
           />
-        )}
-
-        {showNutrition && nutrition.recipe && (
-          <Link
-            href={`/voeding/${nutrition.recipe.id}`}
-            className="flex items-center gap-3 rounded-2xl bg-cream-soft/70 px-3.5 py-3 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
-          >
-            <RecipeImage
-              title={nutrition.recipe.title}
-              imageUrl={nutrition.recipe.image_url}
-              className="h-12 w-12 rounded-xl shrink-0"
-              sizes="48px"
-            />
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-sage-dark">Voeding</p>
-              <p className="text-sm font-medium text-ink leading-snug truncate">
-                {nutrition.recipe.title}
-              </p>
-              <p className="text-xs text-ink-soft mt-0.5 line-clamp-1">{nutrition.reason}</p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
-          </Link>
-        )}
-
-        {showMental && mentalSuggestion && (
-          <Link
-            href={`/mentale-rust/${mentalSuggestion.exercise.id}`}
-            className="rounded-2xl bg-info-soft/80 px-3.5 py-3 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
-          >
-            <p className="text-[11px] font-medium text-info mb-0.5">Voor je hoofd</p>
-            <p className="text-sm text-ink leading-snug">{mentalSuggestion.text}</p>
-            <p className="text-xs font-medium text-info mt-1.5 inline-flex items-center gap-0.5">
-              {mentalSuggestion.exercise.title} · {mentalSuggestion.exercise.durationMinutes} min
-              <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+        ) : (
+          <div className="px-4 py-4">
+            <p className="text-sm text-ink-soft">
+              Beweging staat uit. Je kunt dit weer aanzetten in je profiel.
             </p>
-          </Link>
+          </div>
         )}
 
-        {showRecovery &&
-          (recovery.href ? (
-            <Link
-              href={recovery.href}
-              className="flex items-center justify-between gap-3 rounded-2xl bg-cream-soft/70 px-3.5 py-3 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
-            >
-              <div className="min-w-0">
-                <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
-                <p className="text-sm font-medium text-ink truncate">
-                  {recovery.title}
-                  <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
-                </p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
-            </Link>
-          ) : (
-            <div className="rounded-2xl bg-cream-soft/70 px-3.5 py-3">
-              <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
-              <p className="text-sm font-medium text-ink">
-                {recovery.title}
-                <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
-              </p>
-            </div>
-          ))}
+        {hasSecondary && (
+          <div className="border-t border-sage/15 divide-y divide-sage/15">
+            {showNutrition && nutrition.recipe && (
+              <Link
+                href={`/voeding/${nutrition.recipe.id}`}
+                className="flex items-center gap-3 px-4 py-3 touch-manipulation motion-safe:active:bg-sage-soft/80 transition-colors"
+              >
+                <RecipeImage
+                  title={nutrition.recipe.title}
+                  imageUrl={nutrition.recipe.image_url}
+                  className="h-11 w-11 rounded-xl shrink-0"
+                  sizes="44px"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-medium text-sage-dark">Voeding</p>
+                  <p className="text-sm font-medium text-ink leading-snug truncate">
+                    {nutrition.recipe.title}
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
+              </Link>
+            )}
 
-        {!movementEnabled && !showNutrition && !showMental && !showRecovery && (
-          <p className="text-sm text-ink-soft">
-            Zet modules aan in je profiel om hier persoonlijke voorstellen te zien.
-          </p>
+            {showMental && mentalSuggestion && (
+              <Link
+                href={`/mentale-rust/${mentalSuggestion.exercise.id}`}
+                className="block px-4 py-3 touch-manipulation motion-safe:active:bg-sage-soft/80 transition-colors"
+              >
+                <p className="text-[11px] font-medium text-info mb-0.5">Voor je hoofd</p>
+                <p className="text-sm text-ink leading-snug">{mentalSuggestion.text}</p>
+                <p className="text-xs font-medium text-info mt-1 inline-flex items-center gap-0.5">
+                  {mentalSuggestion.exercise.title} · {mentalSuggestion.exercise.durationMinutes} min
+                  <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+                </p>
+              </Link>
+            )}
+
+            {showRecoveryRow &&
+              (recovery.href ? (
+                <Link
+                  href={recovery.href}
+                  className="flex items-center justify-between gap-3 px-4 py-3 touch-manipulation motion-safe:active:bg-sage-soft/80 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
+                    <p className="text-sm font-medium text-ink truncate">
+                      {recovery.title}
+                      <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
+                </Link>
+              ) : (
+                <div className="px-4 py-3">
+                  <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
+                  <p className="text-sm font-medium text-ink">
+                    {recovery.title}
+                    <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
+                  </p>
+                </div>
+              ))}
+          </div>
         )}
       </div>
     </section>

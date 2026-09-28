@@ -12,7 +12,6 @@ import type { CyclePhase } from "@/lib/cycle/estimate"
 import { cn } from "@/lib/utils"
 import { greeting } from "@/lib/greeting"
 
-/** Same phase tokens as Cyclusdag — one coherent map app-wide. */
 const PHASE_TONE: Record<CyclePhase, { bg: string; text: string }> = {
   menstruatie: {
     bg: "bg-phase-menstruatie-soft",
@@ -40,13 +39,12 @@ const PHASE_TAGLINE: Record<CyclePhase, string> = {
 }
 
 /**
- * Vandaag = one job: understand today, do one helpful thing.
+ * Vandaag = one calm composition, not a widget dashboard.
  *
- * Flow (mobile-first):
- * 1. Warm greeting + thin cycle context
- * 2. Today’s plan (primary action)
- * 3. Light check-in (energy + need; details on demand)
- * 4. Quiet utilities (sleep / active period / meds) — never the hero
+ * 1. Hello + cycle context (incl. menstruatie-actie hier — vindbaar, niet luid)
+ * 2. One “voor jou vandaag” surface with a single primary CTA
+ * 3. Light check-in
+ * 4. Optional sleep / meds only
  */
 export default async function VandaagPage() {
   const user = await getAuthedUser()
@@ -74,9 +72,9 @@ export default async function VandaagPage() {
   const showMedicationCard =
     Boolean(profile?.show_medication_on_dashboard) && medicationItems.length > 0
   const sleepEnabled = profile?.sleep_tracking_enabled === true
+  const hasCycle = Boolean(cycleProfile?.has_cycle)
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
-  // Only surface dayFocus when it adds something beyond the phase tagline
-  // (need / low energy / sleep pattern) — skip the generic filler line.
+
   const dayFocus = recommendation?.dayFocus ?? null
   const personalizedFocus =
     dayFocus &&
@@ -88,56 +86,86 @@ export default async function VandaagPage() {
       ? dayFocus
       : null
 
+  // Generic recovery row only when it actually matches a need for rest,
+  // or when movement is off (recovery becomes the soft primary).
+  const wantRecoveryRow =
+    Boolean(mentalWellbeingSuggestion) ||
+    checkin?.need === "rust" ||
+    checkin?.need === "mezelf" ||
+    !(profile?.movement_enabled ?? true)
+
   return (
     <PullToRefresh>
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        {/* ── 1. Hello + thin context ───────────────────────────────────── */}
-        <header className="mb-5">
+        <header className="mb-6">
           <h1 className="font-display text-2xl lg:text-3xl text-ink tracking-tight">
             {greeting()}
             {profile?.name ? `, ${profile.name}` : ""}
           </h1>
 
           {cycleEstimate && tone ? (
-            <Link
-              href="/cyclus/vandaag"
-              className={cn(
-                "mt-3 flex items-center gap-3 rounded-2xl px-3.5 py-2.5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform",
-                tone.bg,
-              )}
-            >
-              <span
+            <div className="mt-3">
+              <Link
+                href="/cyclus/vandaag"
                 className={cn(
-                  "font-display text-xl leading-none tabular-nums shrink-0",
-                  tone.text,
+                  "flex items-center gap-3 rounded-2xl px-3.5 py-2.5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform",
+                  tone.bg,
                 )}
               >
-                {cycleEstimate.cycleDay}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className={cn("block text-sm font-medium", tone.text)}>
-                  {cycleEstimate.phaseLabel}
+                <span
+                  className={cn(
+                    "font-display text-xl leading-none tabular-nums shrink-0",
+                    tone.text,
+                  )}
+                >
+                  {cycleEstimate.cycleDay}
                 </span>
-                <span className="block text-xs text-ink-soft mt-0.5">
-                  {PHASE_TAGLINE[cycleEstimate.phase]}
+                <span className="min-w-0 flex-1">
+                  <span className={cn("block text-sm font-medium", tone.text)}>
+                    {cycleEstimate.phaseLabel}
+                  </span>
+                  <span className="block text-xs text-ink-soft mt-0.5">
+                    {PHASE_TAGLINE[cycleEstimate.phase]}
+                  </span>
                 </span>
-              </span>
-              <ChevronRight
-                className={cn("h-4 w-4 shrink-0 opacity-70", tone.text)}
-                strokeWidth={2}
-                aria-hidden
-              />
-              <span className="sr-only">Open uitleg over deze fase</span>
-            </Link>
+                <ChevronRight
+                  className={cn("h-4 w-4 shrink-0 opacity-70", tone.text)}
+                  strokeWidth={2}
+                  aria-hidden
+                />
+                <span className="sr-only">Open uitleg over deze fase</span>
+              </Link>
+
+              {/* Menstruatie: bij cyclus-context — vindbaar, geen aparte dashboardkaart. */}
+              {hasCycle && (
+                <div className="mt-2">
+                  {isMenstruationActive ? (
+                    <MenstruationQuickAction isActive day={menstruationDay} variant="inline" />
+                  ) : (
+                    <MenstruationQuickAction isActive={false} day={null} variant="quiet" />
+                  )}
+                </div>
+              )}
+            </div>
           ) : (
-            <p className="text-sm text-ink-soft mt-2">
-              Fijn dat je er bent. Kies vandaag wat bij je past.
-            </p>
+            <div className="mt-2">
+              <p className="text-sm text-ink-soft">
+                Fijn dat je er bent. Kies vandaag wat bij je past.
+              </p>
+              {hasCycle && (
+                <div className="mt-2">
+                  {isMenstruationActive ? (
+                    <MenstruationQuickAction isActive day={menstruationDay} variant="inline" />
+                  ) : (
+                    <MenstruationQuickAction isActive={false} day={null} variant="quiet" />
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </header>
 
-        <div className="flex flex-col gap-7">
-          {/* ── 2. Today’s plan (the product promise) ──────────────────── */}
+        <div className="flex flex-col gap-8">
           {recommendation && (
             <TodayCards
               recommendation={recommendation}
@@ -148,10 +176,10 @@ export default async function VandaagPage() {
               completedWorkout={completedWorkout}
               mentalSuggestion={mentalWellbeingSuggestion}
               focusLine={personalizedFocus}
+              showRecovery={wantRecoveryRow}
             />
           )}
 
-          {/* ── 3. Light check-in ──────────────────────────────────────── */}
           <CheckinForm
             initial={checkin ?? null}
             mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
@@ -159,9 +187,8 @@ export default async function VandaagPage() {
             customSymptoms={profile?.custom_symptoms ?? []}
           />
 
-          {/* ── 4. Quiet utilities ─────────────────────────────────────── */}
-          {(sleepEnabled || isMenstruationActive || showMedicationCard) && (
-            <section aria-label="Extra voor vandaag" className="flex flex-col gap-3 pt-1">
+          {(sleepEnabled || showMedicationCard) && (
+            <section aria-label="Extra voor vandaag" className="flex flex-col gap-3">
               {sleepEnabled && (
                 <div id="slaap-vandaag">
                   <SleepCard date={today} entry={sleepEntry} />
@@ -170,26 +197,14 @@ export default async function VandaagPage() {
                   )}
                   <Link
                     href="/slaap"
-                    className="text-xs font-medium text-sage-dark mt-1 px-1 inline-flex items-center min-h-11 touch-manipulation"
+                    className="text-xs font-medium text-sage-dark mt-0.5 px-1 inline-flex items-center min-h-11 touch-manipulation"
                   >
                     Slaapgeschiedenis
                   </Link>
                 </div>
               )}
-
-              {isMenstruationActive && (
-                <MenstruationQuickAction isActive={isMenstruationActive} day={menstruationDay} />
-              )}
-
               {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
             </section>
-          )}
-
-          {/* Period start when not active — one quiet text action, no card. */}
-          {Boolean(cycleProfile?.has_cycle) && !isMenstruationActive && (
-            <div className="pt-1">
-              <MenstruationQuickAction isActive={false} day={null} variant="quiet" />
-            </div>
           )}
         </div>
       </div>
