@@ -267,6 +267,16 @@ export function CheckinForm({
     setCustomDraft("")
   }
 
+  function finishEditing() {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+      void performSave()
+    }
+    setEditing(false)
+    setShowDetails(false)
+  }
+
   function StatusHint({ className }: { className?: string }) {
     if (status === "idle") return null
     return (
@@ -346,15 +356,7 @@ export function CheckinForm({
         {hasAnyInput && (
           <button
             type="button"
-            onClick={() => {
-              if (debounceTimerRef.current) {
-                clearTimeout(debounceTimerRef.current)
-                debounceTimerRef.current = null
-                void performSave()
-              }
-              setEditing(false)
-              setShowDetails(false)
-            }}
+            onClick={finishEditing}
             className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-ink-soft min-h-11 px-1 touch-manipulation"
             aria-expanded={true}
           >
@@ -473,6 +475,18 @@ export function CheckinForm({
               Opnieuw
             </button>
           </p>
+        )}
+
+        {/* Bottom finish — after a long klachtenlijst you shouldn't have to scroll back up. */}
+        {hasAnyInput && (
+          <button
+            type="button"
+            onClick={finishEditing}
+            className="mt-1 w-full inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl border border-line/70 bg-cream-soft/60 text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+          >
+            Klaar
+            <ChevronUp className="h-4 w-4" strokeWidth={2} />
+          </button>
         )}
       </div>
     </div>
