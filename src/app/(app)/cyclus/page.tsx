@@ -253,16 +253,16 @@ export default async function CyclusPage() {
           )}
 
           {nextPeriod && (
-            <div className="mt-4 rounded-xl bg-surface/70 px-3 py-2.5">
-              <p className="text-sm font-medium text-ink">Volgende menstruatie</p>
-              <p className="text-sm text-ink-soft mt-1 leading-relaxed">
+            <div className="mt-4 rounded-xl bg-surface/70 px-3.5 py-3">
+              <p className="text-xs font-medium text-ink-soft">Volgende menstruatie</p>
+              <p className="text-sm font-medium text-ink mt-0.5 leading-snug">
                 {formatNextPeriodEstimate(nextPeriod)}
               </p>
             </div>
           )}
 
           {(isIrregular || nextPeriod?.isIrregularFriendly) && (
-            <p className="text-xs text-ink-soft mt-3">
+            <p className="text-xs text-ink-soft mt-2.5">
               Schattingen zijn een richting — geen exacte voorspelling.
             </p>
           )}

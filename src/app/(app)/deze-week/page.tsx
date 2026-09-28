@@ -17,8 +17,8 @@ export default async function DezeWeekPage() {
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
       <div className="mb-5">
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Deze week</h1>
-        <p className="text-sm text-ink-soft mt-1">
-          Je weekplan voor voeding en beweging — aanpasbaar per dag.
+        <p className="text-sm text-ink-soft mt-1.5 leading-relaxed">
+          Je plan voor voeding en beweging. Pas een dag aan als het niet past.
         </p>
       </div>
 

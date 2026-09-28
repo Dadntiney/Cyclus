@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Moon, Repeat, X } from "lucide-react"
+import { Moon, Repeat, X, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { WorkoutImage } from "@/components/training/workout-image"
 import type { DayFocus } from "@/lib/recommendations/weekly-program"
@@ -28,6 +28,7 @@ interface WorkoutSlotCardProps {
 
 export function WorkoutSlotCard({ focus, workout, reason, alternatives, override, onOverride }: WorkoutSlotCardProps) {
   const [swapping, setSwapping] = useState(false)
+  const [showAdjust, setShowAdjust] = useState(false)
 
   const skipped = override?.type === "skip-workout"
   const swapped = override?.type === "swap-workout" ? override : null
@@ -106,25 +107,44 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
       )}
 
       {!skipped && (
-        <div className="flex flex-wrap gap-1 mt-2">
-          {alternatives.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setSwapping((s) => !s)}
-              className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
-            >
-              <Repeat className="h-3.5 w-3.5" strokeWidth={1.75} />
-              Vervangen
-            </button>
-          )}
+        <div className="mt-1">
           <button
             type="button"
-            onClick={() => onOverride({ type: "skip-workout" })}
-            className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+            onClick={() => {
+              setShowAdjust((s) => !s)
+              if (showAdjust) setSwapping(false)
+            }}
+            className="inline-flex items-center gap-1 min-h-11 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+            aria-expanded={showAdjust}
           >
-            <X className="h-3.5 w-3.5" strokeWidth={1.75} />
-            Overslaan
+            Andere keuze
+            <ChevronDown
+              className={cn("h-3.5 w-3.5 transition-transform", showAdjust && "rotate-180")}
+              strokeWidth={2}
+            />
           </button>
+          {showAdjust && (
+            <div className="flex flex-wrap gap-1 -mt-1">
+              {alternatives.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSwapping((s) => !s)}
+                  className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+                >
+                  <Repeat className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  Vervangen
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => onOverride({ type: "skip-workout" })}
+                className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+                Overslaan
+              </button>
+            </div>
+          )}
         </div>
       )}
 

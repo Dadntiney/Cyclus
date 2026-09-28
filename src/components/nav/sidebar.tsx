@@ -5,7 +5,6 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { BuddyGlyph } from "@/components/buddy/buddy-mark"
 import { NAV_ITEMS } from "./nav-items"
 import { logout } from "@/lib/actions/auth"
 
@@ -27,7 +26,19 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
       <nav className="flex-1" aria-label="Hoofdnavigatie">
         <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || pathname.startsWith(`${href}/`)
+            const active =
+              href === "/voor-jou"
+                ? pathname === href ||
+                  pathname.startsWith("/voor-jou/") ||
+                  pathname.startsWith("/buddy") ||
+                  pathname.startsWith("/training") ||
+                  pathname.startsWith("/voeding") ||
+                  pathname.startsWith("/mentale-rust") ||
+                  pathname.startsWith("/slaap") ||
+                  pathname.startsWith("/kennis") ||
+                  pathname.startsWith("/dagboek") ||
+                  pathname.startsWith("/medicatie")
+                : pathname === href || pathname.startsWith(`${href}/`)
             const isProfile = href === "/profiel"
             return (
               <li key={href}>
@@ -46,8 +57,6 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
                     <span className="h-4.5 w-4.5 rounded-full overflow-hidden shrink-0">
                       <Image src={avatarUrl} alt="" width={18} height={18} className="h-full w-full object-cover" />
                     </span>
-                  ) : href === "/buddy" ? (
-                    <BuddyGlyph className="h-4.5 w-4.5" strokeWidth={active ? 2.25 : 1.75} />
                   ) : (
                     <Icon className="h-4.5 w-4.5" strokeWidth={active ? 2.25 : 1.75} />
                   )}

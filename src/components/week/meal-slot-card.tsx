@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ChefHat, Repeat, X, Check } from "lucide-react"
+import { ChefHat, Repeat, X, Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
@@ -19,14 +19,12 @@ interface MealSlotCardProps {
 }
 
 /**
- * One meal slot (ontbijt/lunch/diner) for a day in the week view. Always
- * shows the suggestion first — this is a plan someone can act on, not a
- * blank form — but "Vervang", "Sla over" and "Eigen maaltijd" are always one
- * tap away, since nobody should feel like the app is prescribing what she
- * has to eat.
+ * One meal slot for a day in the week view.
+ * Suggestion first; adjust actions stay behind one control (less CTA soup).
  */
 export function MealSlotCard({ slot, label, recipe, alternatives, override, onOverride }: MealSlotCardProps) {
   const [mode, setMode] = useState<"idle" | "swap" | "custom">("idle")
+  const [showAdjust, setShowAdjust] = useState(false)
   const [customText, setCustomText] = useState("")
 
   const skipped = override?.type === "skip-meal"
@@ -39,6 +37,7 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
 
   function reset() {
     setMode("idle")
+    setShowAdjust(false)
     setCustomText("")
   }
 
@@ -112,32 +111,48 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
       )}
 
       {mode === "idle" && !skipped && (
-        <div className="flex flex-wrap gap-1 mt-2">
-          {alternatives.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setMode("swap")}
-              className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
-            >
-              <Repeat className="h-3.5 w-3.5" strokeWidth={1.75} />
-              Vervangen
-            </button>
+        <div className="mt-1">
+          <button
+            type="button"
+            onClick={() => setShowAdjust((s) => !s)}
+            className="inline-flex items-center gap-1 min-h-11 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+            aria-expanded={showAdjust}
+          >
+            Andere keuze
+            <ChevronDown
+              className={cn("h-3.5 w-3.5 transition-transform", showAdjust && "rotate-180")}
+              strokeWidth={2}
+            />
+          </button>
+          {showAdjust && (
+            <div className="flex flex-wrap gap-1 -mt-1">
+              {alternatives.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setMode("swap")}
+                  className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+                >
+                  <Repeat className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  Vervangen
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setMode("custom")}
+                className="inline-flex items-center min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+              >
+                Eigen maaltijd
+              </button>
+              <button
+                type="button"
+                onClick={() => onOverride({ type: "skip-meal", slot })}
+                className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+                Overslaan
+              </button>
+            </div>
           )}
-          <button
-            type="button"
-            onClick={() => setMode("custom")}
-            className="inline-flex items-center min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
-          >
-            Eigen maaltijd
-          </button>
-          <button
-            type="button"
-            onClick={() => onOverride({ type: "skip-meal", slot })}
-            className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
-          >
-            <X className="h-3.5 w-3.5" strokeWidth={1.75} />
-            Overslaan
-          </button>
         </div>
       )}
 
