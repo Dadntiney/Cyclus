@@ -34,21 +34,41 @@ export async function triggerHaptic(style: HapticStyle = "light") {
   await Haptics.impact({ style: impactStyle }).catch(() => {})
 }
 
+/** Mirrors the dark-mode resolution in globals.css: an explicit data-theme
+ * wins, "auto" (no attribute) follows the device. */
+function isEffectivelyDark(): boolean {
+  const explicit = document.documentElement.getAttribute("data-theme")
+  if (explicit === "dark") return true
+  if (explicit === "light") return false
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches === true
+}
+
+/**
+ * Matches the native status bar to the app's current light/dark theme.
+ * No-op on the web. Called on startup (initNativeShell) and again whenever
+ * the Dag/Nacht/Automatisch setting changes (see apply-theme.ts) so it
+ * never gets stuck showing the wrong theme after a live switch.
+ */
+export async function syncNativeStatusBar() {
+  if (!isNativeShell()) return
+  const { StatusBar, Style } = await import("@capacitor/status-bar")
+  const dark = isEffectivelyDark()
+  await Promise.all([
+    // Style names the icon/text color, not the background: Dark = light
+    // icons for a dark background, Light = dark icons for a light one.
+    StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light }).catch(() => {}),
+    StatusBar.setBackgroundColor({ color: dark ? "#1d1b18" : "#faf6f0" }).catch(() => {}),
+  ])
+}
+
 /**
  * Native-only startup chores: hide the splash screen once the first real
- * screen has painted, and match the status bar to the cream background.
+ * screen has painted, and match the status bar to the current theme.
  * Called once from RegisterServiceWorker (already the app's one client-only
  * "runs once on mount" component) — a no-op on the web.
  */
 export async function initNativeShell() {
   if (!isNativeShell()) return
-  const [{ SplashScreen }, { StatusBar, Style }] = await Promise.all([
-    import("@capacitor/splash-screen"),
-    import("@capacitor/status-bar"),
-  ])
-  await Promise.all([
-    StatusBar.setStyle({ style: Style.Light }).catch(() => {}),
-    StatusBar.setBackgroundColor({ color: "#faf6f0" }).catch(() => {}),
-    SplashScreen.hide().catch(() => {}),
-  ])
+  const [, { SplashScreen }] = await Promise.all([syncNativeStatusBar(), import("@capacitor/splash-screen")])
+  await SplashScreen.hide().catch(() => {})
 }
