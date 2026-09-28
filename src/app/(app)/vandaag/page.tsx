@@ -49,7 +49,11 @@ export default async function VandaagPage() {
   const energyLow = checkin?.energy != null && checkin.energy <= 2
   const moodLow = checkin?.mood != null && checkin.mood <= 2
   const stressHigh = checkin?.stress != null && checkin.stress >= 4
-  const signalsLow = Boolean(checkin?.need) || energyLow || moodLow || stressHigh
+  const fatigued = Boolean(
+    checkin?.symptoms?.some((s) => s === "Vermoeidheid" || s === "Overprikkeld"),
+  )
+  const signalsLow =
+    Boolean(checkin?.need) || energyLow || moodLow || stressHigh || fatigued
 
   // Only show the personal focus line when check-in actually says something.
   const personalizedFocus = dayFocus && signalsLow ? dayFocus : null
@@ -58,7 +62,12 @@ export default async function VandaagPage() {
   // Explicit “beweging” need keeps movement first.
   const prioritizeRest =
     checkin?.need !== "beweging" &&
-    (checkin?.need === "rust" || checkin?.need === "mezelf" || energyLow || moodLow || stressHigh)
+    (checkin?.need === "rust" ||
+      checkin?.need === "mezelf" ||
+      energyLow ||
+      moodLow ||
+      stressHigh ||
+      fatigued)
 
   // Generic recovery only when it earns a place — not on every good day.
   const showRecovery =

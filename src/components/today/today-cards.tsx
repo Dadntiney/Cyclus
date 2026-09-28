@@ -77,10 +77,13 @@ export function TodayCards({
               <div className="px-4 pt-4 pb-3">
                 <p className="text-xs font-medium text-sage-dark mb-1">Even voor jezelf</p>
                 <p className="font-display text-lg text-ink leading-snug">{recovery.title}</p>
-                <p className="text-sm text-ink-soft mt-1 leading-relaxed">{recovery.description}</p>
+                {recovery.description ? (
+                  <p className="text-sm text-ink-soft mt-1 leading-relaxed">{recovery.description}</p>
+                ) : null}
                 {recovery.href ? (
                   <Link href={recovery.href} className={cn(buttonVariants(), "mt-3")}>
-                    {recovery.ctaLabel ?? "Bekijk voorstel"} · {recovery.duration} min
+                    {recovery.ctaLabel ?? "Bekijk voorstel"}
+                    {recovery.duration ? ` · ${recovery.duration} min` : ""}
                   </Link>
                 ) : (
                   <p className="text-sm text-ink-soft mt-2">{recovery.duration} minuten</p>

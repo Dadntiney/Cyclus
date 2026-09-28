@@ -139,11 +139,15 @@ function wantsLowerIntensityToday(
   const highStress = Boolean(checkin) && checkin!.stress !== null && checkin!.stress >= 4
   const poorSleep = Boolean(checkin) && checkin!.sleep !== null && checkin!.sleep <= 2
   const needsRest = checkin?.need === "rust"
+  // Logged fatigue / overstimulation should soften the day even when energy is OK.
+  const symptoms = checkin?.symptoms ?? []
+  const fatigued = symptoms.some((s) => s === "Vermoeidheid" || s === "Overprikkeld")
   return (
     lowEnergy ||
     highStress ||
     poorSleep ||
     needsRest ||
+    fatigued ||
     shortNightMatchesPersonalPattern(todaySleepDurationMinutes, personalSleepPattern)
   )
 }
@@ -308,6 +312,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     ? { href: "/mentale-rust", ctaLabel: "Naar mentale rust" as const }
     : {}
 
+  // Keep title + CTA in the same lane — never “mobiliteit” with a mentale-rust button.
   const recovery: RecoveryRecommendation = wantsSelfCare
     ? {
         title: "Tijd voor jezelf",
@@ -317,13 +322,19 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
         ...recoveryCta,
       }
     : lowerIntensity
-      ? {
-          title: "Zachte mobiliteit",
-          duration: 10,
-          description:
-            "Neem vandaag de tijd voor rustige mobiliteit en ademhaling. Luister naar wat je lichaam nodig heeft.",
-          ...recoveryCta,
-        }
+      ? mentalEnabled
+        ? {
+            title: "Even tot rust komen",
+            duration: 10,
+            description: "Een kort moment voor je hoofd helpt vandaag meer dan forceren.",
+            ...recoveryCta,
+          }
+        : {
+            title: "Zachte mobiliteit",
+            duration: 10,
+            description:
+              "Neem vandaag de tijd voor rustige mobiliteit en ademhaling. Luister naar wat je lichaam nodig heeft.",
+          }
       : {
           title: "Korte ontspanning",
           duration: 10,
