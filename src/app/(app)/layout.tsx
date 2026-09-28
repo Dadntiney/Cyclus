@@ -69,24 +69,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           }
         />
       </div>
-      <ReminderScheduler
-        enabled={Boolean(profile.browser_notifications_enabled)}
-        checkinReminderEnabled={Boolean(profile.checkin_reminder_enabled)}
-        checkinReminderTime={
-          profile.checkin_reminder_time ? String(profile.checkin_reminder_time) : "09:00"
-        }
-        workoutReminderEnabled={Boolean(profile.workout_reminder_enabled)}
-        hasCheckinToday={Boolean(checkin)}
-        hasWorkoutToday={Boolean(todaySession)}
-        isPlannedWorkoutDay={isPlannedWorkoutDay}
-        medications={medications.map((m) => ({
-          id: m.id,
-          name: m.name,
-          reminder_time: m.reminder_time,
-          reminder_enabled: m.reminder_enabled,
-          takenToday: m.takenToday,
-        }))}
-      />
     </div>
   )
 }

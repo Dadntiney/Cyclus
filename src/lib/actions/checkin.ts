@@ -113,9 +113,6 @@ export async function setTodayNeed(need: string | null) {
   }
 
   revalidatePath("/vandaag")
-  revalidatePath("/cyclus")
-  revalidatePath("/training")
-  revalidatePath("/voeding")
   return { success: true }
 }
 

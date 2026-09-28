@@ -645,10 +645,6 @@ export type Database = {
           updated_at: string
           weight_kg: number | null
           wellness_preference: string | null
-          checkin_reminder_enabled: boolean
-          checkin_reminder_time: string
-          workout_reminder_enabled: boolean
-          browser_notifications_enabled: boolean
         }
         Insert: {
           age?: number | null
@@ -689,10 +685,6 @@ export type Database = {
           updated_at?: string
           weight_kg?: number | null
           wellness_preference?: string | null
-          checkin_reminder_enabled?: boolean
-          checkin_reminder_time?: string
-          workout_reminder_enabled?: boolean
-          browser_notifications_enabled?: boolean
         }
         Update: {
           age?: number | null
@@ -733,142 +725,6 @@ export type Database = {
           updated_at?: string
           weight_kg?: number | null
           wellness_preference?: string | null
-          checkin_reminder_enabled?: boolean
-          checkin_reminder_time?: string
-          workout_reminder_enabled?: boolean
-          browser_notifications_enabled?: boolean
-        }
-        Relationships: []
-      }
-
-      diary_entries: {
-        Row: {
-          body: string
-          created_at: string
-          date: string
-          id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          body: string
-          created_at?: string
-          date?: string
-          id?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          body?: string
-          created_at?: string
-          date?: string
-          id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      knowledge_articles: {
-        Row: {
-          body: string
-          category: string
-          created_at: string
-          id: string
-          slug: string
-          sort_order: number
-          summary: string
-          tags: string[]
-          title: string
-        }
-        Insert: {
-          body: string
-          category: string
-          created_at?: string
-          id?: string
-          slug: string
-          sort_order?: number
-          summary: string
-          tags?: string[]
-          title: string
-        }
-        Update: {
-          body?: string
-          category?: string
-          created_at?: string
-          id?: string
-          slug?: string
-          sort_order?: number
-          summary?: string
-          tags?: string[]
-          title?: string
-        }
-        Relationships: []
-      }
-      medication_intakes: {
-        Row: {
-          date: string
-          id: string
-          medication_id: string
-          taken_at: string
-          user_id: string
-        }
-        Insert: {
-          date: string
-          id?: string
-          medication_id: string
-          taken_at?: string
-          user_id: string
-        }
-        Update: {
-          date?: string
-          id?: string
-          medication_id?: string
-          taken_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "medication_intakes_medication_id_fkey"
-            columns: ["medication_id"]
-            isOneToOne: false
-            referencedRelation: "medications"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      medications: {
-        Row: {
-          active: boolean
-          created_at: string
-          id: string
-          name: string
-          notes: string | null
-          reminder_enabled: boolean
-          reminder_time: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          active?: boolean
-          created_at?: string
-          id?: string
-          name: string
-          notes?: string | null
-          reminder_enabled?: boolean
-          reminder_time?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          active?: boolean
-          created_at?: string
-          id?: string
-          name?: string
-          notes?: string | null
-          reminder_enabled?: boolean
-          reminder_time?: string | null
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }

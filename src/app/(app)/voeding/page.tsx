@@ -51,7 +51,6 @@ export default async function VoedingPage() {
       disliked_foods: profile?.disliked_foods ?? [],
     },
     latestCheckin: checkin ?? null,
-    cycleEstimate,
     recipes,
     seed: `${user.id}-${today}`,
   })

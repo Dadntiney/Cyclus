@@ -4,8 +4,6 @@ import { ChevronRight } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { getDailyTip } from "@/lib/data/daily-tip"
-import { getMedicationsForUser } from "@/lib/data/medications"
-import { getFeaturedKnowledge } from "@/lib/data/knowledge"
 import { TodayCards } from "@/components/today/today-cards"
 import { CheckinForm } from "@/components/today/checkin-form"
 import { NeedPicker } from "@/components/today/need-picker"
@@ -22,7 +20,6 @@ import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { cn } from "@/lib/utils"
 import { greeting } from "@/lib/greeting"
-import { BookOpen, NotebookPen, Pill } from "lucide-react"
 
 async function DailyTip({
   today,
@@ -75,6 +72,7 @@ const PHASE_TAGLINE: Record<CyclePhase, string> = {
 
 export default async function VandaagPage() {
   const user = await getAuthedUser()
+
   if (!user) return null
 
   const today = new Date().toISOString().slice(0, 10)

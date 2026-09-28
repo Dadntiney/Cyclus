@@ -74,7 +74,6 @@ export default async function TrainingPage() {
       training_preferences: profile?.training_preferences ?? [],
       health_conditions: profile?.health_conditions ?? [],
       movement_limitations: profile?.movement_limitations ?? [],
-      wellness_preference: profile?.wellness_preference ?? null,
     },
     latestCheckin: checkin ?? null,
     todaySleepDurationMinutes,
