@@ -298,5 +298,59 @@ begin
   end if;
 end $$;
 
+-- =========================================================
+-- LIFE STAGE / PERI FEATURES (20260928000003)
+-- =========================================================
+alter table public.cycle_profiles
+  add column if not exists life_stage text
+  check (
+    life_stage is null
+    or life_stage in (
+      'regelmatig',
+      'veranderend',
+      'perimenopauze',
+      'menopauze',
+      'onbekend'
+    )
+  );
+
+alter table public.daily_checkins
+  add column if not exists symptom_details jsonb not null default '{}'::jsonb;
+
+alter table public.profiles
+  add column if not exists custom_symptoms text[] not null default '{}';
+
+alter table public.profiles
+  add column if not exists preferred_symptoms text[] not null default '{}';
+
+create table if not exists public.peri_assessments (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  assessed_on date not null default (timezone('utc', now()))::date,
+  answers jsonb not null default '{}'::jsonb,
+  score integer not null check (score >= 0 and score <= 100),
+  notes text,
+  created_at timestamptz not null default timezone('utc', now()),
+  unique (user_id, assessed_on)
+);
+
+create index if not exists peri_assessments_user_id_assessed_on_idx
+  on public.peri_assessments (user_id, assessed_on desc);
+
+alter table public.peri_assessments enable row level security;
+
+do $$ begin
+  create policy "peri_assessments_select_own" on public.peri_assessments for select using (auth.uid() = user_id);
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create policy "peri_assessments_insert_own" on public.peri_assessments for insert with check (auth.uid() = user_id);
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create policy "peri_assessments_update_own" on public.peri_assessments for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create policy "peri_assessments_delete_own" on public.peri_assessments for delete using (auth.uid() = user_id);
+exception when duplicate_object then null; end $$;
+
 -- Notify PostgREST to reload schema cache
 notify pgrst, 'reload schema';

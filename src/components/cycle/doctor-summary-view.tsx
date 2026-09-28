@@ -2,7 +2,12 @@
 
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import type { DoctorSummary } from "@/lib/cycle/doctor-summary"
+import {
+  doctorSummaryToText,
+  type DoctorSummary,
+  type DoctorSummaryWeeks,
+} from "@/lib/cycle/doctor-summary"
+import { symptomLabel } from "@/lib/constants"
 
 function fmt(value: number | null) {
   return value === null ? "—" : `${value}/5`
@@ -14,27 +19,45 @@ export function DoctorSummaryView({
   onWeeksChange,
 }: {
   summary: DoctorSummary
-  weeks: 4 | 8 | 12
-  onWeeksChange: (weeks: 4 | 8 | 12) => void
+  weeks: DoctorSummaryWeeks
+  onWeeksChange: (weeks: DoctorSummaryWeeks) => void
 }) {
+  function downloadText() {
+    const text = doctorSummaryToText(summary)
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `cyclus-arts-samenvatting-${summary.weeks}w.txt`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="flex flex-col gap-4 print:gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
-        <div className="flex gap-2">
-          {([4, 8, 12] as const).map((w) => (
+        <div className="flex flex-wrap gap-2">
+          {([4, 8, 12, 24] as const).map((w) => (
             <Button
               key={w}
               type="button"
               variant={weeks === w ? "primary" : "secondary"}
               onClick={() => onWeeksChange(w)}
             >
-              {w} weken
+              {w === 24 ? "6 mnd" : `${w} weken`}
             </Button>
           ))}
         </div>
-        <Button type="button" variant="secondary" onClick={() => window.print()}>
-          Print / PDF
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="secondary" onClick={downloadText}>
+            Download tekst
+          </Button>
+          <Button type="button" variant="secondary" onClick={() => window.print()}>
+            Print / PDF
+          </Button>
+        </div>
       </div>
 
       <Card className="print:shadow-none print:border print:border-black/10">
@@ -67,12 +90,26 @@ export function DoctorSummaryView({
           <ul className="text-sm text-ink mb-4 list-disc pl-5">
             {summary.topSymptoms.map((s) => (
               <li key={s.symptom}>
-                {s.symptom} ({s.count}×)
+                {symptomLabel(s.symptom)} ({s.count}×)
               </li>
             ))}
           </ul>
         ) : (
           <p className="text-sm text-ink-soft mb-4">Nog geen klachten genoteerd in deze periode.</p>
+        )}
+
+        <h3 className="text-sm font-semibold text-ink mb-1">Gesprekspunten (3 minuten)</h3>
+        <ul className="text-sm text-ink mb-4 list-disc pl-5">
+          {summary.talkingPoints.map((t) => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+
+        {summary.periScoreNote && (
+          <>
+            <h3 className="text-sm font-semibold text-ink mb-1">Klachtenlast</h3>
+            <p className="text-sm text-ink-soft mb-4">{summary.periScoreNote}</p>
+          </>
         )}
 
         {summary.insights.length > 0 && (
@@ -99,7 +136,7 @@ export function DoctorSummaryView({
 
         <p className="text-xs text-ink-soft mt-4 border-t border-line pt-3">
           Gegenereerd met Cyclus. Dit is geen medisch advies. Bespreek klachten altijd met een
-          zorgverlener.
+          zorgverlener. Tip: gebruik Print → “Opslaan als PDF” voor een deelbaar PDF-bestand.
         </p>
       </Card>
     </div>

@@ -1,5 +1,17 @@
 import Link from "next/link"
-import { ChevronRight, Heart, Dumbbell, Salad, Brain, Moon, BookOpen, NotebookPen, Stethoscope } from "lucide-react"
+import {
+  ChevronRight,
+  Heart,
+  Dumbbell,
+  Salad,
+  Brain,
+  Moon,
+  BookOpen,
+  NotebookPen,
+  Stethoscope,
+  ClipboardList,
+  Sunset,
+} from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
@@ -136,6 +148,18 @@ export default async function VoorJouPage() {
                 icon: Stethoscope,
                 title: "Voor je arts",
                 description: "Samenvatting van je check-ins om mee te nemen.",
+              },
+              {
+                href: "/cyclus/klachtenlast",
+                icon: ClipboardList,
+                title: "Klachtenlast",
+                description: "Maandelijkse score om te zien of klachten veranderen.",
+              },
+              {
+                href: "/cyclus/overgang",
+                icon: Sunset,
+                title: "Overgang",
+                description: "Uitleg en tools voor een veranderende cyclus.",
               },
             ] as const
           ).map((tile) => (

@@ -113,9 +113,68 @@ export const SYMPTOM_OPTIONS = [
   "Onrustig gevoel",
   "Brain fog",
   "Cravings",
+  "Libido lager",
+  "Vaginale droogte",
+  "Gewrichtspijn",
+  "Eetlust anders",
+  "Urinewegklachten",
   "Anders",
   "Geen klachten",
 ] as const
+
+/** Symptoms that offer an optional 1–3 severity control when selected. */
+export const SYMPTOMS_WITH_SEVERITY = new Set([
+  "Opvliegers",
+  "Nachtelijk zweten",
+  "Hoofdpijn",
+  "Buikpijn",
+  "Krampen",
+  "Rugpijn",
+  "Vermoeidheid",
+  "Brain fog",
+  "Vaginale droogte",
+  "Gewrichtspijn",
+  "Stemmingswisselingen",
+])
+
+/** Symptoms that offer an optional episode/count control when selected. */
+export const SYMPTOMS_WITH_COUNT = new Set(["Opvliegers", "Nachtelijk zweten"])
+
+export const SEVERITY_OPTIONS = [
+  { value: 1, label: "Mild" },
+  { value: 2, label: "Matig" },
+  { value: 3, label: "Hevig" },
+] as const
+
+export const LIFE_STAGE_OPTIONS = [
+  {
+    value: "regelmatig",
+    label: "Regelmatige cyclus",
+    description: "Je menstruatie is redelijk voorspelbaar.",
+  },
+  {
+    value: "veranderend",
+    label: "Veranderende cyclus",
+    description: "Je merkt dat lengte, flow of regelmaat verschuift.",
+  },
+  {
+    value: "perimenopauze",
+    label: "Perimenopauze / overgang",
+    description: "Je denkt in de overgang te zitten of wilt daarop focussen.",
+  },
+  {
+    value: "menopauze",
+    label: "Na de menopauze",
+    description: "Geen menstruatie meer — focus op klachten, slaap en HT.",
+  },
+  {
+    value: "onbekend",
+    label: "Weet ik nog niet",
+    description: "Je hoeft het niet zeker te weten.",
+  },
+] as const
+
+export type LifeStageValue = (typeof LIFE_STAGE_OPTIONS)[number]["value"]
 
 // Sommige klachtwaarden zijn (nog) in het Engels opgeslagen — bestaande
 // check-in- en cyclusgeschiedenis gebruikt deze exacte strings, dus de

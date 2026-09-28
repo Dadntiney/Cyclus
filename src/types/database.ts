@@ -108,6 +108,7 @@ export type Database = {
           has_cycle: boolean
           id: string
           last_period_start: string | null
+          life_stage: string | null
           perimenopause_information: string | null
           regularity: string | null
           updated_at: string
@@ -120,6 +121,7 @@ export type Database = {
           has_cycle?: boolean
           id?: string
           last_period_start?: string | null
+          life_stage?: string | null
           perimenopause_information?: string | null
           regularity?: string | null
           updated_at?: string
@@ -132,6 +134,7 @@ export type Database = {
           has_cycle?: boolean
           id?: string
           last_period_start?: string | null
+          life_stage?: string | null
           perimenopause_information?: string | null
           regularity?: string | null
           updated_at?: string
@@ -150,6 +153,7 @@ export type Database = {
           notes: string | null
           sleep: number | null
           stress: number | null
+          symptom_details: Json
           symptoms: string[]
           user_id: string
         }
@@ -163,6 +167,7 @@ export type Database = {
           notes?: string | null
           sleep?: number | null
           stress?: number | null
+          symptom_details?: Json
           symptoms?: string[]
           user_id: string
         }
@@ -176,7 +181,38 @@ export type Database = {
           notes?: string | null
           sleep?: number | null
           stress?: number | null
+          symptom_details?: Json
           symptoms?: string[]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      peri_assessments: {
+        Row: {
+          answers: Json
+          assessed_on: string
+          created_at: string
+          id: string
+          notes: string | null
+          score: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          assessed_on?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          score: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          assessed_on?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          score?: number
           user_id?: string
         }
         Relationships: []
@@ -576,6 +612,7 @@ export type Database = {
           buddy_message_frequency: string | null
           buddy_styles: string[]
           created_at: string
+          custom_symptoms: string[]
           disliked_foods: string[]
           goal_weight_kg: number | null
           goals: string[]
@@ -598,6 +635,7 @@ export type Database = {
           nutrition_style: string
           onboarding_completed: boolean
           personal_note: string | null
+          preferred_symptoms: string[]
           show_medication_on_dashboard: boolean
           sleep_tracking_enabled: boolean | null
           theme_preference: string
@@ -610,6 +648,8 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          custom_symptoms?: string[]
+          preferred_symptoms?: string[]
           avatar_url?: string | null
           buddy_message_frequency?: string | null
           buddy_styles?: string[]
@@ -652,6 +692,7 @@ export type Database = {
           buddy_message_frequency?: string | null
           buddy_styles?: string[]
           created_at?: string
+          custom_symptoms?: string[]
           disliked_foods?: string[]
           goal_weight_kg?: number | null
           goals?: string[]
@@ -674,6 +715,7 @@ export type Database = {
           nutrition_style?: string
           onboarding_completed?: boolean
           personal_note?: string | null
+          preferred_symptoms?: string[]
           show_medication_on_dashboard?: boolean
           sleep_tracking_enabled?: boolean | null
           theme_preference?: string

@@ -15,6 +15,7 @@ import {
   MOVEMENT_LIMITATION_OPTIONS,
   TRAINING_FREQUENCY_OPTIONS,
   REGULARITY_OPTIONS,
+  LIFE_STAGE_OPTIONS,
   HORMONAL_MEDICATION_STATUS_OPTIONS,
   BUDDY_STYLE_OPTIONS,
   BUDDY_FREQUENCY_OPTIONS,
@@ -69,6 +70,7 @@ interface FormState {
   lastPeriodStart: string
   averageCycleLength: string
   regularity: string
+  lifeStage: string
   perimenopauseInfo: string
   hormonalMedicationStatus: string
   showMedicationOnDashboard: boolean
@@ -120,6 +122,7 @@ export function ProfileForm({
     lastPeriodStart: cycleProfile?.last_period_start ?? "",
     averageCycleLength: cycleProfile?.average_cycle_length ? String(cycleProfile.average_cycle_length) : "",
     regularity: cycleProfile?.regularity ?? "",
+    lifeStage: cycleProfile?.life_stage ?? "",
     perimenopauseInfo: cycleProfile?.perimenopause_information ?? "",
     hormonalMedicationStatus: profile.hormonal_medication_status ?? "",
     showMedicationOnDashboard: profile.show_medication_on_dashboard,
@@ -181,6 +184,7 @@ export function ProfileForm({
       lastPeriodStart: s.hasCycle ? s.lastPeriodStart || null : null,
       averageCycleLength: s.hasCycle && s.averageCycleLength ? Number(s.averageCycleLength) : null,
       regularity: s.hasCycle ? s.regularity || null : null,
+      lifeStage: s.lifeStage || null,
       perimenopauseInfo: s.perimenopauseInfo.trim() || null,
       hormonalMedicationStatus: s.hormonalMedicationStatus || null,
       showMedicationOnDashboard: s.showMedicationOnDashboard,
@@ -943,6 +947,39 @@ export function ProfileForm({
               </div>
             </>
           )}
+
+          <div>
+            <p className="text-sm font-medium text-ink mb-2">Levensfase</p>
+            <p className="text-xs text-ink-soft mb-2">
+              Past de app-uitleg aan. Dit is géén diagnose — kies wat het best bij jou past.
+            </p>
+            <div className="flex flex-col gap-2">
+              {LIFE_STAGE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() =>
+                    applyUpdate(
+                      (s) => ({
+                        ...s,
+                        lifeStage: opt.value,
+                        hasCycle: opt.value === "menopauze" ? false : s.hasCycle,
+                      }),
+                      "immediate",
+                    )
+                  }
+                  className={`text-left rounded-2xl border px-3 py-2.5 touch-manipulation transition-colors ${
+                    state.lifeStage === opt.value
+                      ? "border-sage bg-sage-soft/40"
+                      : "border-line/70 bg-transparent"
+                  }`}
+                >
+                  <span className="block text-sm font-medium text-ink">{opt.label}</span>
+                  <span className="block text-xs text-ink-soft mt-0.5">{opt.description}</span>
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div>
             <Label htmlFor="perimenopauseInfo">

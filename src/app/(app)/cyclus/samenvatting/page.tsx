@@ -8,23 +8,30 @@ export default async function SamenvattingPage() {
   if (!user) return null
 
   const supabase = await createClient()
-  const since = subDays(new Date(), 12 * 7).toISOString().slice(0, 10)
+  const since = subDays(new Date(), 24 * 7).toISOString().slice(0, 10)
 
-  const [{ data: cycleProfile }, { data: checkins }, { data: logs }] = await Promise.all([
-    supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
-    supabase
-      .from("daily_checkins")
-      .select("date, energy, mood, sleep, stress, symptoms, notes")
-      .eq("user_id", user.id)
-      .gte("date", since)
-      .order("date", { ascending: false }),
-    supabase
-      .from("cycle_logs")
-      .select("date, menstruation")
-      .eq("user_id", user.id)
-      .gte("date", since)
-      .eq("menstruation", true),
-  ])
+  const [{ data: cycleProfile }, { data: checkins }, { data: logs }, { data: periScores }] =
+    await Promise.all([
+      supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase
+        .from("daily_checkins")
+        .select("date, energy, mood, sleep, stress, symptoms, notes")
+        .eq("user_id", user.id)
+        .gte("date", since)
+        .order("date", { ascending: false }),
+      supabase
+        .from("cycle_logs")
+        .select("date, menstruation")
+        .eq("user_id", user.id)
+        .gte("date", since)
+        .eq("menstruation", true),
+      supabase
+        .from("peri_assessments")
+        .select("assessed_on, score")
+        .eq("user_id", user.id)
+        .gte("assessed_on", since)
+        .order("assessed_on", { ascending: false }),
+    ])
 
   return (
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
@@ -48,10 +55,12 @@ export default async function SamenvattingPage() {
                 last_period_start: cycleProfile.last_period_start,
                 average_cycle_length: cycleProfile.average_cycle_length,
                 regularity: cycleProfile.regularity,
+                life_stage: cycleProfile.life_stage,
               }
             : null
         }
         menstruationDates={(logs ?? []).map((l) => l.date)}
+        periScores={periScores ?? []}
       />
     </div>
   )

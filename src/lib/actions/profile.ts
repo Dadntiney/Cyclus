@@ -36,12 +36,21 @@ export interface UpdateProfileInput {
   lastPeriodStart: string | null
   averageCycleLength: number | null
   regularity: string | null
+  lifeStage: string | null
   perimenopauseInfo: string | null
   hormonalMedicationStatus: string | null
   showMedicationOnDashboard: boolean
   buddyStyles: string[]
   buddyMessageFrequency: string | null
 }
+
+const LIFE_STAGE_VALUES = new Set([
+  "regelmatig",
+  "veranderend",
+  "perimenopauze",
+  "menopauze",
+  "onbekend",
+])
 
 export async function updateProfile(input: UpdateProfileInput) {
   const supabase = await createClient()
@@ -92,6 +101,9 @@ export async function updateProfile(input: UpdateProfileInput) {
     return { error: "Vul een gemiddelde cyclusduur tussen 15 en 60 dagen in." }
   }
 
+  const lifeStage =
+    input.lifeStage && LIFE_STAGE_VALUES.has(input.lifeStage) ? input.lifeStage : null
+
   const { error: cycleError } = await supabase
     .from("cycle_profiles")
     .update({
@@ -99,6 +111,7 @@ export async function updateProfile(input: UpdateProfileInput) {
       last_period_start: input.lastPeriodStart,
       average_cycle_length: input.averageCycleLength,
       regularity: input.regularity,
+      life_stage: lifeStage,
       perimenopause_information: input.perimenopauseInfo,
     })
     .eq("user_id", user.id)
