@@ -2,6 +2,7 @@ import type { CSSProperties } from "react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getActiveConversation } from "@/lib/data/buddy"
 import { ChatWindow } from "@/components/buddy/chat-window"
+import { BuddyMark } from "@/components/buddy/buddy-mark"
 
 // Exact fit between MobileHeader and BottomNav on mobile. Rather than a
 // hand-calculated pixel constant for their heights (that drifted out of
@@ -31,7 +32,10 @@ export default async function BuddyPage() {
       style={mobileChatHeightStyle}
     >
       <div className="px-5 lg:px-8 pt-6 lg:pt-10 pb-2 shrink-0">
-        <h1 className="font-display text-2xl lg:text-3xl text-ink">Buddy</h1>
+        <div className="flex items-center gap-2.5 mb-1">
+          <BuddyMark size="md" />
+          <h1 className="font-display text-2xl lg:text-3xl text-ink">Buddy</h1>
+        </div>
         <p className="text-sm text-ink-soft mt-1">
           Geen diagnoses, geen paniek — wel een luisterend oor. Bij ernstige klachten raden we
           altijd aan een zorgprofessional te raadplegen.

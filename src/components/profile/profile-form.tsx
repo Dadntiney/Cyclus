@@ -26,6 +26,7 @@ import {
 } from "@/lib/constants"
 import { updateProfile, type UpdateProfileInput } from "@/lib/actions/profile"
 import { AutosaveStatusPill, type AutosaveStatus } from "@/components/profile/autosave-status"
+import { BuddyMark } from "@/components/buddy/buddy-mark"
 import { cn } from "@/lib/utils"
 import type { Tables } from "@/types/database"
 
@@ -813,7 +814,10 @@ export function ProfileForm({
       </Card>
 
       <Card id="buddy" className="scroll-mt-24">
-        <h2 className="font-display text-lg text-ink mb-1">Mijn Buddy</h2>
+        <div className="flex items-center gap-2 mb-1">
+          <BuddyMark size="sm" decorative />
+          <h2 className="font-display text-lg text-ink">Mijn Buddy</h2>
+        </div>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Kies één of meerdere stijlen die bij je passen — je berichten, tips en
           weetjes krijgen dan die toon. Kies niets voor de standaard, warme toon.

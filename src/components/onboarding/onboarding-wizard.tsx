@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react"
 import { Footprints, Salad, Brain, Leaf } from "lucide-react"
+import { BuddyMark } from "@/components/buddy/buddy-mark"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
@@ -998,8 +999,8 @@ function BuddyIntroStep({ name, styles }: { name: string; styles: string[] }) {
   const styleLabel = BUDDY_STYLE_OPTIONS.find((opt) => opt.value === styles[0])?.label
   return (
     <div className="text-center">
-      <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-sage-soft flex items-center justify-center">
-        <Leaf className="h-7 w-7 text-sage-dark" strokeWidth={1.75} />
+      <div className="mx-auto mb-4 flex justify-center">
+        <BuddyMark size="xl" />
       </div>
       <h2 className="font-display text-2xl text-ink mb-2">Maak kennis met je Buddy</h2>
       <p className="text-ink-soft text-sm">

@@ -1,11 +1,12 @@
 "use client"
 
 import { useRef, useState, useTransition, type FormEvent } from "react"
-import { Send, MessageCircle } from "lucide-react"
+import { Send } from "lucide-react"
 import { sendBuddyMessage } from "@/lib/actions/buddy"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { EmptyState } from "@/components/ui/empty-state"
+import { BuddyMark } from "@/components/buddy/buddy-mark"
 import type { Tables } from "@/types/database"
 
 type Message = Tables<"buddy_messages">
@@ -77,7 +78,7 @@ export function ChatWindow({
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-5 lg:px-8 py-4 flex flex-col gap-3">
         {messages.length === 0 && (
           <EmptyState
-            icon={<MessageCircle className="h-6 w-6" strokeWidth={1.5} />}
+            icon={<BuddyMark size="lg" decorative />}
             title="Stel een vraag of vertel hoe je je voelt"
             description="Je Buddy denkt mee op basis van je profiel en check-ins."
           />
@@ -85,8 +86,12 @@ export function ChatWindow({
         {messages.map((m) => (
           <div
             key={m.id}
-            className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}
+            className={cn(
+              "flex gap-2",
+              m.role === "user" ? "justify-end" : "justify-start items-end",
+            )}
           >
+            {m.role === "assistant" && <BuddyMark size="sm" className="mb-0.5" decorative />}
             <div
               className={cn(
                 "max-w-[80%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed",
@@ -100,7 +105,8 @@ export function ChatWindow({
           </div>
         ))}
         {isPending && (
-          <div className="flex justify-start">
+          <div className="flex justify-start items-end gap-2">
+            <BuddyMark size="sm" className="mb-0.5" decorative />
             <div className="bg-surface border border-line rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-ink-soft">
               Aan het typen...
             </div>

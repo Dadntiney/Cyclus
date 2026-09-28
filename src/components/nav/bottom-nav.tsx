@@ -6,6 +6,7 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
+import { BuddyGlyph } from "@/components/buddy/buddy-mark"
 import { NAV_ITEMS } from "./nav-items"
 
 export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
@@ -49,6 +50,8 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
                     >
                       <Image src={avatarUrl} alt="" width={20} height={20} className="h-full w-full object-cover" />
                     </span>
+                  ) : href === "/buddy" ? (
+                    <BuddyGlyph className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
                   ) : (
                     <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
                   )}
