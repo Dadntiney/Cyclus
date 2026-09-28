@@ -8,13 +8,18 @@ import { cn } from "@/lib/utils"
 import { startMenstruationPeriod, stopMenstruationPeriod } from "@/lib/actions/cycle"
 
 /**
- * Compact "menstruatie starten/stoppen" shortcut for the Vandaag-pagina.
- * `isActive`/`day` come straight from cycle_profiles.active_period_start —
- * the same explicit source of truth the Cyclus-kalender and Cyclusdag
- * estimate read (see withActivePeriod in lib/cycle/history.ts), so this
- * card and the calendar can never silently disagree with each other.
+ * Compact menstruatie shortcut for Vandaag.
+ * Active period: full row. Idle: quiet text action so it doesn't steal the hero.
  */
-export function MenstruationQuickAction({ isActive, day }: { isActive: boolean; day: number | null }) {
+export function MenstruationQuickAction({
+  isActive,
+  day,
+  variant = "card",
+}: {
+  isActive: boolean
+  day: number | null
+  variant?: "card" | "quiet"
+}) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -31,38 +36,51 @@ export function MenstruationQuickAction({ isActive, day }: { isActive: boolean; 
     })
   }
 
+  if (variant === "quiet" && !isActive) {
+    return (
+      <div>
+        <button
+          type="button"
+          onClick={handleClick}
+          disabled={isPending}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft hover:text-sage-dark min-h-11 touch-manipulation"
+        >
+          <Droplet className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+          {isPending ? "Bezig…" : "Menstruatie starten"}
+        </button>
+        {error && <p className="text-xs text-danger mt-1">{error}</p>}
+      </div>
+    )
+  }
+
   return (
     <div
       className={cn(
-        "rounded-2xl border border-line/70 p-4 flex items-center gap-3.5 transition-colors",
-        isActive && "bg-phase-menstruatie-soft border-transparent",
+        "rounded-2xl px-4 py-3.5 flex items-center gap-3.5 transition-colors",
+        isActive ? "bg-phase-menstruatie-soft" : "bg-cream-soft/80",
       )}
     >
       <div className="relative shrink-0">
         <span
           className={cn(
-            "flex h-11 w-11 items-center justify-center rounded-full",
-            isActive ? "bg-surface/70" : "bg-sage-soft",
+            "flex h-10 w-10 items-center justify-center rounded-full",
+            isActive ? "bg-surface/70" : "bg-surface",
           )}
           aria-hidden
         >
           <Droplet
-            className={cn("h-5 w-5", isActive ? "text-danger" : "text-sage-dark")}
+            className={cn("h-4.5 w-4.5", isActive ? "text-danger" : "text-sage-dark")}
             fill={isActive ? "currentColor" : "none"}
             strokeWidth={1.75}
           />
         </span>
-        {isActive && (
-          <span
-            className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-danger ring-2 ring-phase-menstruatie-soft motion-safe:animate-pulse"
-            aria-hidden
-          />
-        )}
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium text-ink-soft">{isActive ? "Menstruatie actief" : "Cyclus"}</p>
-        <p className={cn("font-display text-lg leading-tight", isActive ? "text-ink" : "text-ink-soft")}>
+        <p className="text-xs font-medium text-ink-soft">
+          {isActive ? "Menstruatie actief" : "Cyclus"}
+        </p>
+        <p className={cn("font-display text-base leading-tight", isActive ? "text-ink" : "text-ink-soft")}>
           {isActive ? `Dag ${day}` : "Geen actieve menstruatie"}
         </p>
       </div>

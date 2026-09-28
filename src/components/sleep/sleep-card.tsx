@@ -23,7 +23,7 @@ export function SleepCard({ date, entry }: { date: string; entry: SleepEntry | n
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-full text-left rounded-2xl border border-line/70 p-4 touch-manipulation transition-colors duration-150 motion-safe:active:scale-[0.985] hover:border-sage/50 active:border-sage/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+        className="w-full text-left rounded-2xl bg-cream-soft/70 px-3.5 py-3 touch-manipulation transition-colors duration-150 motion-safe:active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
       >
         <div className="flex items-center gap-3">
           <span className="shrink-0 h-10 w-10 rounded-full bg-sage-soft flex items-center justify-center" aria-hidden>

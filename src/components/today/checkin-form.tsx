@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { Check, ChevronDown, ChevronUp, Loader2, Plus } from "lucide-react"
 import { RatingScale } from "@/components/ui/rating-scale"
 import { Chip } from "@/components/ui/chip"
@@ -9,9 +10,10 @@ import { Button } from "@/components/ui/button"
 import {
   SYMPTOM_OPTIONS,
   MENTAL_SYMPTOM_OPTIONS,
+  NEED_OPTIONS,
   symptomLabel,
 } from "@/lib/constants"
-import { saveCheckin } from "@/lib/actions/checkin"
+import { saveCheckin, setTodayNeed } from "@/lib/actions/checkin"
 import { parseSymptomDetails } from "@/lib/symptom-details"
 import type { CheckinInput, SymptomDetail } from "@/lib/validations/checkin"
 import type { Tables } from "@/types/database"
@@ -27,6 +29,7 @@ type FormState = {
   symptoms: string[]
   symptomDetails: Record<string, SymptomDetail>
   notes: string
+  need: CheckinInput["need"]
 }
 
 const DEBOUNCE_MS = 700
@@ -40,7 +43,8 @@ function checkinHasContent(checkin: Checkin | null): boolean {
       checkin.sleep ||
       checkin.stress ||
       (checkin.symptoms?.length ?? 0) > 0 ||
-      (checkin.notes?.trim()?.length ?? 0) > 0,
+      (checkin.notes?.trim()?.length ?? 0) > 0 ||
+      checkin.need,
   )
 }
 
@@ -53,18 +57,15 @@ function stateFromCheckin(initial: Checkin | null): FormState {
     symptoms: initial?.symptoms ?? [],
     symptomDetails: parseSymptomDetails(initial?.symptom_details),
     notes: initial?.notes ?? "",
+    need: (initial?.need as CheckinInput["need"]) ?? null,
   }
 }
 
 /**
- * Daily check-in — tap to save, like Profiel.
+ * Light daily check-in for Vandaag.
  *
- * UX choices (intentional):
- * - No separate Opslaan button: every choice persists immediately.
- * - No “vastzetten” of symptoms: rarely used, added clutter for little value.
- * - No severity/count per symptom: not used by insights/Buddy/arts-samenvatting;
- *   presence of a symptom is enough for daily tracking.
- * - Compact summary when already filled; expand via Aanpassen.
+ * Cold open: energy + need only. Details stay behind “Meer toevoegen”.
+ * Autosave like Profiel — no Opslaan button.
  */
 export function CheckinForm({
   initial,
@@ -77,6 +78,9 @@ export function CheckinForm({
   sleepTrackingEnabled?: boolean
   customSymptoms?: string[]
 }) {
+  const router = useRouter()
+  const [, startNeedTransition] = useTransition()
+
   const [extraCustoms, setExtraCustoms] = useState<string[]>([])
   const allCustoms = useMemo(
     () => Array.from(new Set([...customSymptoms, ...extraCustoms])),
@@ -96,8 +100,9 @@ export function CheckinForm({
   const stateRef = useRef(state)
   stateRef.current = state
 
+  // Filled → compact summary. Empty → light editor (energy + need), details closed.
   const [editing, setEditing] = useState(!checkinHasContent(initial))
-  const [showDetails, setShowDetails] = useState(checkinHasContent(initial))
+  const [showDetails, setShowDetails] = useState(false)
   const [customDraft, setCustomDraft] = useState("")
 
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
@@ -108,7 +113,6 @@ export function CheckinForm({
   const savingRef = useRef(false)
   const dirtyRef = useRef(false)
   const mountedRef = useRef(true)
-  const needRef = useRef((initial?.need ?? null) as CheckinInput["need"])
 
   useEffect(() => {
     mountedRef.current = true
@@ -125,14 +129,19 @@ export function CheckinForm({
       state.sleep ||
       state.stress ||
       state.symptoms.length ||
-      state.notes.trim(),
+      state.notes.trim() ||
+      state.need,
   )
 
   const summaryChips = useMemo(() => {
     const chips: string[] = []
     if (state.energy != null) chips.push(`Energie ${state.energy}/5`)
+    if (state.need) {
+      const label = NEED_OPTIONS.find((o) => o.value === state.need)?.label
+      if (label) chips.push(label)
+    }
     if (state.mood != null) chips.push(`Stemming ${state.mood}/5`)
-    if (state.sleep != null) chips.push(`Slaap ${state.sleep}/5`)
+    if (!sleepTrackingEnabled && state.sleep != null) chips.push(`Slaap ${state.sleep}/5`)
     if (state.stress != null) chips.push(`Stress ${state.stress}/5`)
     for (const s of state.symptoms) {
       if (s === "Anders") continue
@@ -140,7 +149,7 @@ export function CheckinForm({
     }
     if (state.notes.trim()) chips.push("Notitie")
     return chips
-  }, [state])
+  }, [state, sleepTrackingEnabled])
 
   async function performSave() {
     if (savingRef.current) {
@@ -165,13 +174,13 @@ export function CheckinForm({
       result = await saveCheckin({
         energy: snapshot.energy,
         mood: snapshot.mood,
+        // Sleep scale is hidden when SleepCard is on; keep any prior value.
         sleep: snapshot.sleep,
         stress: snapshot.stress,
         symptoms: snapshot.symptoms,
-        // Preserve any historically stored details; UI no longer edits them.
         symptomDetails: snapshot.symptomDetails,
         notes: snapshot.notes,
-        need: needRef.current,
+        need: snapshot.need,
         newCustomSymptoms,
       })
     } catch {
@@ -227,6 +236,25 @@ export function CheckinForm({
       return next
     })
     if (changed) scheduleSave(mode === "immediate")
+  }
+
+  function selectNeed(value: string) {
+    const next = state.need === value ? null : (value as CheckinInput["need"])
+    setState((prev) => {
+      const updated = { ...prev, need: next }
+      stateRef.current = updated
+      return updated
+    })
+    // Lightweight need write + refresh so today’s plan can reshape.
+    startNeedTransition(async () => {
+      const result = await setTodayNeed(next)
+      if (result?.error) {
+        setErrorMsg(result.error)
+        setStatus("error")
+        return
+      }
+      router.refresh()
+    })
   }
 
   function toggleSymptom(value: string) {
@@ -306,20 +334,22 @@ export function CheckinForm({
 
   // ── Compact summary ────────────────────────────────────────────────────
   if (hasAnyInput && !editing) {
-    const visible = summaryChips.slice(0, 5)
+    const visible = summaryChips.slice(0, 4)
     const overflow = summaryChips.length - visible.length
 
     return (
-      <div className="rounded-2xl border border-line/70 px-4 py-3.5">
+      <section aria-labelledby="checkin-heading" className="rounded-2xl bg-cream-soft/60 px-4 py-3.5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <h3 className="font-display text-base text-ink leading-tight">Hoe voel je je vandaag?</h3>
+              <h2 id="checkin-heading" className="font-display text-base text-ink leading-tight">
+                Hoe voel je je?
+              </h2>
               <StatusHint />
             </div>
             <div className="flex flex-wrap gap-1.5">
               {visible.map((chip) => (
-                <span key={chip} className="text-xs text-ink bg-cream-soft rounded-full px-2.5 py-1">
+                <span key={chip} className="text-xs text-ink bg-surface rounded-full px-2.5 py-1">
                   {chip}
                 </span>
               ))}
@@ -341,16 +371,18 @@ export function CheckinForm({
             <ChevronDown className="h-4 w-4" strokeWidth={2} />
           </button>
         </div>
-      </div>
+      </section>
     )
   }
 
-  // ── Editor ─────────────────────────────────────────────────────────────
+  // ── Light editor ───────────────────────────────────────────────────────
   return (
-    <div className="rounded-2xl border border-line/70 p-4">
+    <section aria-labelledby="checkin-heading" className="rounded-2xl bg-cream-soft/60 px-4 py-4">
       <div className="flex items-start justify-between gap-3 mb-1">
         <div className="flex items-center gap-2 flex-wrap min-w-0">
-          <h3 className="font-display text-lg text-ink">Hoe voel je je vandaag?</h3>
+          <h2 id="checkin-heading" className="font-display text-lg text-ink">
+            Hoe voel je je?
+          </h2>
           <StatusHint />
         </div>
         {hasAnyInput && (
@@ -365,9 +397,9 @@ export function CheckinForm({
           </button>
         )}
       </div>
-      <p className="text-ink-soft text-sm mb-3">Tik om aan te geven — wordt automatisch bewaard.</p>
+      <p className="text-ink-soft text-sm mb-3">Tik — wordt vanzelf bewaard.</p>
 
-      <div className="flex flex-col gap-3.5">
+      <div className="flex flex-col gap-4">
         <RatingScale
           label="Energie"
           value={state.energy}
@@ -375,6 +407,22 @@ export function CheckinForm({
           lowLabel="Laag"
           highLabel="Hoog"
         />
+
+        <div>
+          <p className="text-sm font-medium text-ink mb-2">Waar heb je behoefte aan?</p>
+          <div className="flex flex-wrap gap-2">
+            {NEED_OPTIONS.map((opt) => (
+              <Chip
+                key={opt.value}
+                selected={state.need === opt.value}
+                onClick={() => selectNeed(opt.value)}
+              >
+                <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
+                {opt.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
 
         {showDetails ? (
           <>
@@ -385,7 +433,7 @@ export function CheckinForm({
               lowLabel="Somber"
               highLabel="Blij"
             />
-            <div>
+            {!sleepTrackingEnabled && (
               <RatingScale
                 label="Slaap"
                 value={state.sleep}
@@ -393,13 +441,7 @@ export function CheckinForm({
                 lowLabel="Slecht"
                 highLabel="Goed"
               />
-              {sleepTrackingEnabled && (
-                <p className="text-xs text-ink-soft mt-1.5 px-1">
-                  Je algemene gevoel — voor je exacte slaapduur en hoe je wakker werd, gebruik je de
-                  Slaap-kaart verderop op deze pagina.
-                </p>
-              )}
-            </div>
+            )}
             <RatingScale
               label="Stress"
               value={state.stress}
@@ -456,6 +498,17 @@ export function CheckinForm({
                 }
               />
             </div>
+
+            {hasAnyInput && (
+              <button
+                type="button"
+                onClick={finishEditing}
+                className="w-full inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl bg-surface text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              >
+                Klaar
+                <ChevronUp className="h-4 w-4" strokeWidth={2} />
+              </button>
+            )}
           </>
         ) : (
           <button
@@ -463,7 +516,7 @@ export function CheckinForm({
             onClick={() => setShowDetails(true)}
             className="self-start inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-11 py-1 touch-manipulation"
           >
-            Meer over vandaag toevoegen
+            Meer toevoegen
             <ChevronDown className="h-4 w-4" strokeWidth={2} />
           </button>
         )}
@@ -476,19 +529,7 @@ export function CheckinForm({
             </button>
           </p>
         )}
-
-        {/* Bottom finish — after a long klachtenlijst you shouldn't have to scroll back up. */}
-        {hasAnyInput && (
-          <button
-            type="button"
-            onClick={finishEditing}
-            className="mt-1 w-full inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl border border-line/70 bg-cream-soft/60 text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-          >
-            Klaar
-            <ChevronUp className="h-4 w-4" strokeWidth={2} />
-          </button>
-        )}
       </div>
-    </div>
+    </section>
   )
 }

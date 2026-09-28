@@ -28,6 +28,7 @@ export function TodayMovementCard({
   reason,
   alternatives,
   completed,
+  emphasis = "default",
 }: {
   userId: string
   date: string
@@ -36,7 +37,13 @@ export function TodayMovementCard({
   reason: string
   alternatives: TodayWorkoutOption[]
   completed: { workoutId: string; title: string; duration: number } | null
+  /** Primary = soft filled surface (the one CTA on Vandaag). */
+  emphasis?: "default" | "primary"
 }) {
+  const shell =
+    emphasis === "primary"
+      ? "rounded-3xl bg-sage-soft/70 p-4"
+      : "rounded-2xl border border-line/70 p-3.5"
   const [override, setOverride] = useState<DayOverride | null>(null)
   const [swapping, setSwapping] = useState(false)
 
@@ -54,7 +61,7 @@ export function TodayMovementCard({
 
   if (completed) {
     return (
-      <div className="rounded-2xl border border-line/70 p-3.5">
+      <div className={shell}>
         <p className="text-xs font-medium text-sage-dark mb-2 inline-flex items-center gap-1">
           <Dumbbell className="h-3.5 w-3.5" strokeWidth={1.75} />
           Beweging
@@ -90,7 +97,7 @@ export function TodayMovementCard({
     : suggested
 
   return (
-    <div className="rounded-2xl border border-line/70 p-3.5">
+    <div className={shell}>
       <p className="text-xs font-medium text-sage-dark mb-2 inline-flex items-center gap-1">
         <Dumbbell className="h-3.5 w-3.5" strokeWidth={1.75} />
         Beweging
@@ -128,7 +135,11 @@ export function TodayMovementCard({
               )}
             </div>
           </div>
-          {!swapped && <p className="text-sm text-ink-soft mt-2">{reason}</p>}
+          {!swapped &&
+            reason &&
+            reason !== "Gebaseerd op je bewegingsvoorkeuren uit je profiel." && (
+              <p className="text-sm text-ink-soft mt-2">{reason}</p>
+            )}
           <Link href={`/training/${effective.id}`} className={cn(buttonVariants(), "mt-3")}>
             Start training
           </Link>

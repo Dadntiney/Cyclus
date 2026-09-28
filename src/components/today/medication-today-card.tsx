@@ -35,7 +35,7 @@ export function MedicationTodayCard({ items, date }: { items: MedicationDashboar
   return (
     <div>
       <h2 className="font-display text-lg text-ink mb-2.5">Mijn medicatie vandaag</h2>
-      <div className="rounded-2xl border border-line/70 p-4">
+      <div className="rounded-2xl bg-cream-soft/70 px-3.5 py-3">
         <div className="flex flex-col gap-2.5">
           {items.map((item) => {
             const paused = item.status === false

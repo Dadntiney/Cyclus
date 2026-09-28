@@ -1,11 +1,14 @@
 import Link from "next/link"
-import { Salad, Sparkles } from "lucide-react"
-import { buttonVariants } from "@/components/ui/button"
+import { ChevronRight } from "lucide-react"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { TodayMovementCard, type TodayWorkoutOption } from "@/components/today/today-movement-card"
-import { cn } from "@/lib/utils"
 import type { Recommendation } from "@/lib/recommendations/engine"
+import type { MentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
 
+/**
+ * Today’s plan — one primary action, secondary rows underneath.
+ * Not a stack of equal “dashboard cards”.
+ */
 export function TodayCards({
   recommendation,
   userId,
@@ -13,6 +16,8 @@ export function TodayCards({
   weekStartISO,
   workoutAlternatives,
   completedWorkout,
+  mentalSuggestion = null,
+  focusLine = null,
 }: {
   recommendation: Recommendation
   userId: string
@@ -20,13 +25,28 @@ export function TodayCards({
   weekStartISO: string
   workoutAlternatives: TodayWorkoutOption[]
   completedWorkout: { workoutId: string; title: string; duration: number } | null
+  mentalSuggestion?: MentalWellbeingSuggestion | null
+  /** Optional personalized one-liner (only when check-in actually shaped today). */
+  focusLine?: string | null
 }) {
-  const { training, nutrition, recovery, dayFocus, movementEnabled, nutritionEnabled } = recommendation
+  const { training, nutrition, recovery, movementEnabled, nutritionEnabled } = recommendation
+
+  const showNutrition = nutritionEnabled && Boolean(nutrition.recipe)
+  // Mental suggestion replaces the generic recovery row when check-in signals it.
+  const showMental = Boolean(mentalSuggestion)
+  const showRecovery = !showMental && Boolean(recovery.title)
 
   return (
-    <div>
-      <h2 className="font-display text-lg text-ink mb-1">Voor vandaag</h2>
-      {dayFocus && <p className="text-sm text-ink-soft mb-3">{dayFocus}</p>}
+    <section aria-labelledby="voor-vandaag-heading">
+      <h2 id="voor-vandaag-heading" className="font-display text-lg text-ink">
+        Voor jou vandaag
+      </h2>
+      {focusLine ? (
+        <p className="text-sm text-ink-soft mt-1 mb-3 leading-relaxed">{focusLine}</p>
+      ) : (
+        <div className="mb-3" aria-hidden />
+      )}
+
       <div className="flex flex-col gap-3">
         {movementEnabled && (
           <TodayMovementCard
@@ -37,63 +57,77 @@ export function TodayCards({
             reason={training.reason}
             alternatives={workoutAlternatives}
             completed={completedWorkout}
+            emphasis="primary"
           />
         )}
 
-        {nutritionEnabled && (
-          <div className="rounded-2xl border border-line/70 p-3.5">
-            <p className="text-xs font-medium text-sage-dark mb-2 inline-flex items-center gap-1">
-              <Salad className="h-3.5 w-3.5" strokeWidth={1.75} />
-              Voeding
-            </p>
-            {nutrition.recipe ? (
-              <>
-                <div className="flex items-start gap-3">
-                  <RecipeImage
-                    title={nutrition.recipe.title}
-                    imageUrl={nutrition.recipe.image_url}
-                    className="h-16 w-16 rounded-xl shrink-0"
-                    sizes="64px"
-                    priority
-                  />
-                  <div className="min-w-0">
-                    <p className="font-display text-lg text-ink leading-snug">{nutrition.recipe.title}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-ink-soft mt-2">{nutrition.reason}</p>
-                <Link
-                  href={`/voeding/${nutrition.recipe.id}`}
-                  className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
-                >
-                  Bekijk recept
-                </Link>
-              </>
-            ) : (
-              <p className="text-sm text-ink-soft mt-1">
-                Nog geen recepten beschikbaar. Kijk later nog eens terug.
+        {showNutrition && nutrition.recipe && (
+          <Link
+            href={`/voeding/${nutrition.recipe.id}`}
+            className="flex items-center gap-3 rounded-2xl bg-cream-soft/70 px-3.5 py-3 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
+          >
+            <RecipeImage
+              title={nutrition.recipe.title}
+              imageUrl={nutrition.recipe.image_url}
+              className="h-12 w-12 rounded-xl shrink-0"
+              sizes="48px"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-medium text-sage-dark">Voeding</p>
+              <p className="text-sm font-medium text-ink leading-snug truncate">
+                {nutrition.recipe.title}
               </p>
-            )}
-          </div>
+              <p className="text-xs text-ink-soft mt-0.5 line-clamp-1">{nutrition.reason}</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
+          </Link>
         )}
 
-        <div className="rounded-2xl border border-line/70 p-3.5">
-          <p className="text-xs font-medium text-sage-dark mb-1 inline-flex items-center gap-1">
-            <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
-            Herstel
-          </p>
-          <p className="font-display text-lg text-ink">{recovery.title}</p>
-          <p className="text-sm text-ink-soft mt-0.5">{recovery.duration} minuten</p>
-          <p className="text-sm text-ink-soft mt-1.5">{recovery.description}</p>
-          {recovery.href && recovery.ctaLabel && (
+        {showMental && mentalSuggestion && (
+          <Link
+            href={`/mentale-rust/${mentalSuggestion.exercise.id}`}
+            className="rounded-2xl bg-info-soft/80 px-3.5 py-3 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
+          >
+            <p className="text-[11px] font-medium text-info mb-0.5">Voor je hoofd</p>
+            <p className="text-sm text-ink leading-snug">{mentalSuggestion.text}</p>
+            <p className="text-xs font-medium text-info mt-1.5 inline-flex items-center gap-0.5">
+              {mentalSuggestion.exercise.title} · {mentalSuggestion.exercise.durationMinutes} min
+              <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+            </p>
+          </Link>
+        )}
+
+        {showRecovery &&
+          (recovery.href ? (
             <Link
               href={recovery.href}
-              className="mt-3 inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
+              className="flex items-center justify-between gap-3 rounded-2xl bg-cream-soft/70 px-3.5 py-3 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
             >
-              {recovery.ctaLabel}
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
+                <p className="text-sm font-medium text-ink truncate">
+                  {recovery.title}
+                  <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
             </Link>
-          )}
-        </div>
+          ) : (
+            <div className="rounded-2xl bg-cream-soft/70 px-3.5 py-3">
+              <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
+              <p className="text-sm font-medium text-ink">
+                {recovery.title}
+                <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
+              </p>
+            </div>
+          ))}
+
+        {!movementEnabled && !showNutrition && !showMental && !showRecovery && (
+          <p className="text-sm text-ink-soft">
+            Zet modules aan in je profiel om hier persoonlijke voorstellen te zien.
+          </p>
+        )}
       </div>
-    </div>
+    </section>
   )
 }
