@@ -1,9 +1,7 @@
 import Link from "next/link"
 import { Brain } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
-import { createClient } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
-import { pickMentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
 import { MINDFUL_EXERCISES } from "@/lib/data/mindful-exercises"
 import { getAffirmationsByThemes } from "@/lib/data/affirmations"
 import { ExerciseLibrary } from "@/components/mental-wellbeing/exercise-library"
@@ -12,7 +10,6 @@ import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
-import type { BuddyStyle } from "@/lib/buddy/styles"
 import type { MentalWellbeingCategory } from "@/lib/constants"
 
 export default async function MentaleRustPage() {
@@ -44,24 +41,7 @@ export default async function MentaleRustPage() {
   }
 
   const today = new Date().toISOString().slice(0, 10)
-  const supabase = await createClient()
-  const { data: checkin } = await supabase
-    .from("daily_checkins")
-    .select("symptoms, mood")
-    .eq("user_id", user.id)
-    .eq("date", today)
-    .maybeSingle()
-
   const preferredCategories = (profile.mental_wellbeing_categories ?? []) as MentalWellbeingCategory[]
-  const preferredStyles = (profile.buddy_styles ?? []) as BuddyStyle[]
-
-  const suggestion = pickMentalWellbeingSuggestion({
-    symptoms: checkin?.symptoms ?? [],
-    mood: checkin?.mood ?? null,
-    seed: `${user.id}-${today}-mentale-rust`,
-    preferredStyles,
-  })
-
   const affirmations = getAffirmationsByThemes([])
 
   return (
@@ -69,18 +49,10 @@ export default async function MentaleRustPage() {
       <div>
         <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Mijn mentale rust</h1>
-        <p className="text-sm text-ink-soft mt-1">Korte oefeningen en affirmaties voor meer rust.</p>
+        <p className="text-sm text-ink-soft mt-1">
+          Korte oefeningen en affirmaties. Een tip op basis van je check-in staat op Vandaag.
+        </p>
       </div>
-
-      {suggestion && (
-        <Link
-          href={`/mentale-rust/${suggestion.exercise.id}`}
-          className="rounded-3xl bg-info-soft px-5 py-4 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
-        >
-          <p className="text-[11px] font-medium text-info mb-0.5">Voor je hoofd, vandaag</p>
-          <p className="text-base text-ink leading-relaxed">{suggestion.text}</p>
-        </Link>
-      )}
 
       <div>
         <h2 className="font-display text-lg text-ink mb-3">Een klein moment voor jezelf</h2>

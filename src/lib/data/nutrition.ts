@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server"
 import type { Tables } from "@/types/database"
 
+/** Card/list fields only — ingredients live on the detail page / week plan. */
 const RECIPE_CARD_COLUMNS =
-  "id, title, description, image_url, preparation_time, servings, is_budget, category, nutrition_information, ingredients"
+  "id, title, description, image_url, preparation_time, servings, is_budget, category, nutrition_information"
 
 export type RecipeCardData = Pick<
   Tables<"recipes">,
@@ -15,7 +16,6 @@ export type RecipeCardData = Pick<
   | "is_budget"
   | "category"
   | "nutrition_information"
-  | "ingredients"
 >
 
 export async function getRecipeLibrary(): Promise<RecipeCardData[]> {

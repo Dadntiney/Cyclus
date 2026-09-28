@@ -116,6 +116,7 @@ export function TodayMovementCard({
               imageUrl={effective.image_url}
               className="h-16 w-16 rounded-xl shrink-0"
               sizes="64px"
+              priority
             />
             <div className="min-w-0">
               <p className="font-display text-lg text-ink leading-snug">{effective.title}</p>

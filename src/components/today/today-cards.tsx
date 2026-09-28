@@ -25,7 +25,7 @@ export function TodayCards({
 
   return (
     <div>
-      <h2 className="font-display text-lg text-ink mb-1">Voor jou vandaag</h2>
+      <h2 className="font-display text-lg text-ink mb-1">Voor vandaag</h2>
       {dayFocus && <p className="text-sm text-ink-soft mb-3">{dayFocus}</p>}
       <div className="flex flex-col gap-3">
         {movementEnabled && (
@@ -54,6 +54,7 @@ export function TodayCards({
                     imageUrl={nutrition.recipe.image_url}
                     className="h-16 w-16 rounded-xl shrink-0"
                     sizes="64px"
+                    priority
                   />
                   <div className="min-w-0">
                     <p className="font-display text-lg text-ink leading-snug">{nutrition.recipe.title}</p>

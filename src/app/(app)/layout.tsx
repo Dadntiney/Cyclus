@@ -17,16 +17,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/login")
   }
 
-  const profile = await getProfile(user.id)
+  // Profile + shell data in one round — onboarding redirect is rare after first use.
+  const [profile, reminders, medicationReminderSources] = await Promise.all([
+    getProfile(user.id),
+    getReminders(user.id),
+    getMedicationReminderSources(user.id),
+  ])
 
   if (!profile?.onboarding_completed) {
     redirect("/onboarding")
   }
-
-  const [reminders, medicationReminderSources] = await Promise.all([
-    getReminders(user.id),
-    getMedicationReminderSources(user.id),
-  ])
   const medicationReminders = medicationReminderSources.map((m) => ({
     id: m.id,
     name: m.name,

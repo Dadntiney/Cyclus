@@ -130,38 +130,39 @@ export default async function VandaagPage() {
   return (
     <PullToRefresh>
       <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <h1 className="font-display text-2xl lg:text-3xl text-ink mb-4">
+        <h1 className="font-display text-2xl lg:text-3xl text-ink mb-3">
           {greeting()}
           {profile?.name ? `, ${profile.name}` : ""}
         </h1>
 
-        <div className="flex flex-col gap-4 mb-6 lg:mb-8">
+        {/* Primary path: phase snapshot → check-in → need → today’s actions */}
+        <div className="flex flex-col gap-4 mb-5">
           {cycleEstimate && tone ? (
             <Link
               href="/cyclus/vandaag"
               className={cn(
-                "rounded-3xl p-5 lg:p-6 flex items-center gap-4 lg:gap-5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform",
+                "rounded-3xl px-4 py-3.5 lg:p-5 flex items-center gap-3.5 lg:gap-5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform",
                 tone.bg,
               )}
             >
               <div
                 className={cn(
-                  "shrink-0 h-20 w-20 lg:h-24 lg:w-24 rounded-full flex flex-col items-center justify-center",
+                  "shrink-0 h-14 w-14 lg:h-20 lg:w-20 rounded-full flex flex-col items-center justify-center",
                   tone.ring,
                 )}
               >
-                <span className={cn("font-display text-3xl lg:text-4xl leading-none", tone.text)}>
+                <span className={cn("font-display text-2xl lg:text-3xl leading-none", tone.text)}>
                   {cycleEstimate.cycleDay}
                 </span>
-                <span className="text-[10px] text-ink-soft mt-1">cyclusdag</span>
+                <span className="text-[10px] text-ink-soft mt-0.5">dag</span>
               </div>
               <div className="min-w-0 flex-1">
                 <p className={cn("text-sm font-semibold", tone.text)}>
                   {cycleEstimate.phaseLabel} · schatting
                 </p>
                 <p className="text-sm text-ink-soft mt-0.5">{PHASE_TAGLINE[cycleEstimate.phase]}</p>
-                <p className={cn("text-xs font-medium mt-1.5 inline-flex items-center gap-0.5", tone.text)}>
-                  Wat betekent dit voor jou?
+                <p className={cn("text-xs font-medium mt-1 inline-flex items-center gap-0.5", tone.text)}>
+                  Wat betekent dit?
                   <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
                 </p>
               </div>
@@ -170,22 +171,12 @@ export default async function VandaagPage() {
             <p className="text-sm text-ink-soft">Fijn dat je er bent.</p>
           )}
 
-          {showMenstruationQuickAction && (
-            <MenstruationQuickAction isActive={isMenstruationActive} day={menstruationDay} />
-          )}
-
           <CheckinForm
             initial={checkin ?? null}
             mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
             sleepTrackingEnabled={profile?.sleep_tracking_enabled === true}
             customSymptoms={profile?.custom_symptoms ?? []}
           />
-
-          {mentalWellbeingSuggestion && (
-            <MentalWellbeingSuggestionCard suggestion={mentalWellbeingSuggestion} />
-          )}
-
-          {showBuddyQuote && <BuddyQuoteCard quote={buddyQuote} />}
         </div>
 
         <div className="lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
@@ -201,6 +192,11 @@ export default async function VandaagPage() {
                 completedWorkout={completedWorkout}
               />
             )}
+
+            {mentalWellbeingSuggestion && (
+              <MentalWellbeingSuggestionCard suggestion={mentalWellbeingSuggestion} />
+            )}
+
             <DayCloseCard
               userId={user.id}
               date={today}
@@ -215,17 +211,25 @@ export default async function VandaagPage() {
 
           <div className="flex flex-col gap-5 mt-5 lg:mt-0">
             {profile?.sleep_tracking_enabled === true && (
-              <div>
+              <div id="slaap-vandaag">
                 <SleepCard date={today} entry={sleepEntry} />
-                {sleepObservation && <p className="text-xs text-ink-soft mt-2 px-1 leading-relaxed">{sleepObservation}</p>}
+                {sleepObservation && (
+                  <p className="text-xs text-ink-soft mt-2 px-1 leading-relaxed">{sleepObservation}</p>
+                )}
                 <Link
                   href="/slaap"
                   className="text-xs font-medium text-sage-dark mt-2 px-1 inline-flex items-center min-h-11 touch-manipulation"
                 >
-                  Bekijk slaapgeschiedenis
+                  Slaapgeschiedenis
                 </Link>
               </div>
             )}
+
+            {showMenstruationQuickAction && (
+              <MenstruationQuickAction isActive={isMenstruationActive} day={menstruationDay} />
+            )}
+
+            {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
 
             <ProgressCard
               completedThisWeek={completedThisWeek}
@@ -234,7 +238,7 @@ export default async function VandaagPage() {
               movementEnabled={profile?.movement_enabled ?? true}
             />
 
-            {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
+            {showBuddyQuote && <BuddyQuoteCard quote={buddyQuote} />}
 
             <Suspense fallback={<DailyTipSkeleton />}>
               <DailyTip

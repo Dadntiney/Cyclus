@@ -1,29 +1,19 @@
 import Link from "next/link"
 import { Heart, Salad } from "lucide-react"
-import { createClient, getAuthedUser } from "@/lib/supabase/server"
+import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getRecipeLibrary } from "@/lib/data/nutrition"
-import { pickTodaysRecipe } from "@/lib/recommendations/engine"
 import { RecipeLibrary } from "@/components/nutrition/recipe-library"
-import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
-import { cn } from "@/lib/utils"
 
 export default async function VoedingPage() {
-  const supabase = await createClient()
   const user = await getAuthedUser()
   if (!user) return null
 
-  const today = new Date().toISOString().slice(0, 10)
-
-  const [recipes, profile, { data: checkin }] = await Promise.all([
-    getRecipeLibrary(),
-    getProfile(user.id),
-    supabase.from("daily_checkins").select("need").eq("user_id", user.id).eq("date", today).maybeSingle(),
-  ])
+  const [recipes, profile] = await Promise.all([getRecipeLibrary(), getProfile(user.id)])
 
   if (profile && !profile.nutrition_enabled) {
     return (
@@ -47,18 +37,6 @@ export default async function VoedingPage() {
     )
   }
 
-  const todaysPick = pickTodaysRecipe({
-    profile: {
-      nutrition_preferences: profile?.nutrition_preferences ?? [],
-      nutrition_style: profile?.nutrition_style ?? "gebalanceerd",
-      disliked_foods: profile?.disliked_foods ?? [],
-      food_allergies: profile?.food_allergies ?? [],
-    },
-    latestCheckin: checkin ?? null,
-    recipes,
-    seed: `${user.id}-${today}`,
-  })
-
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
       <div>
@@ -66,7 +44,9 @@ export default async function VoedingPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="font-display text-2xl lg:text-3xl text-ink">Voeding</h1>
-            <p className="text-sm text-ink-soft mt-1">Recepten die passen bij jouw voorkeuren.</p>
+            <p className="text-sm text-ink-soft mt-1">
+              Recepten die passen bij jouw voorkeuren. Het advies voor vandaag staat op Vandaag.
+            </p>
           </div>
           <Link
             href="/voeding/favorieten"
@@ -77,30 +57,6 @@ export default async function VoedingPage() {
           </Link>
         </div>
       </div>
-
-      {todaysPick.recipe && (
-        <Card className="bg-sage-soft border-transparent">
-          <p className="text-sm font-medium text-sage-dark mb-2">Suggestie voor vandaag</p>
-          <div className="flex items-start gap-3">
-            <RecipeImage
-              title={todaysPick.recipe.title}
-              imageUrl={todaysPick.recipe.image_url}
-              className="h-16 w-16 rounded-xl shrink-0"
-              sizes="64px"
-            />
-            <div className="min-w-0">
-              <p className="font-display text-xl text-ink leading-snug">{todaysPick.recipe.title}</p>
-              <p className="text-base text-ink-soft mt-2">{todaysPick.reason}</p>
-              <Link
-                href={`/voeding/${todaysPick.recipe.id}`}
-                className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
-              >
-                Bekijk recept
-              </Link>
-            </div>
-          </div>
-        </Card>
-      )}
 
       <div>
         <h2 className="font-display text-lg text-ink mb-3">Alle recepten</h2>

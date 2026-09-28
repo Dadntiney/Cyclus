@@ -12,13 +12,7 @@ import {
 import type { LucideIcon } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
-import { getVandaagData } from "@/lib/data/vandaag"
-import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { Card } from "@/components/ui/card"
-import { buttonVariants } from "@/components/ui/button"
-import { WorkoutImage } from "@/components/training/workout-image"
-import { RecipeImage } from "@/components/nutrition/recipe-image"
-import { cn } from "@/lib/utils"
 
 interface ModuleTile {
   href: string
@@ -68,11 +62,15 @@ const DISABLED_PROFILE_ANCHORS: Record<string, string> = {
   sleep_tracking_enabled: "/profiel#slaap",
 }
 
+/**
+ * Module hub — not a second Vandaag. Daily picks live on /vandaag so this
+ * page stays a fast launcher (and avoids loading the full vandaag dataset).
+ */
 export default async function VoorJouPage() {
   const user = await getAuthedUser()
   if (!user) return null
 
-  const [profile, vandaag] = await Promise.all([getProfile(user.id), getVandaagData(user.id)])
+  const profile = await getProfile(user.id)
   if (!profile) return null
 
   const flags: Record<string, boolean> = {
@@ -103,22 +101,10 @@ export default async function VoorJouPage() {
     })
   }
 
-  const phase = vandaag.cycleEstimate?.phase ?? null
-  const phaseContent = phase ? getPhaseContent(phase) : null
   const goalLine =
     profile.goals?.length > 0
       ? `Gericht op ${profile.goals.slice(0, 2).join(" en ").toLowerCase()}.`
-      : null
-  const personalLine = [
-    phaseContent ? `Nu: ${phaseContent.label.toLowerCase()}.` : null,
-    goalLine,
-  ]
-    .filter(Boolean)
-    .join(" ")
-
-  const workout = vandaag.recommendation?.training.workout ?? null
-  const recipe = vandaag.recommendation?.nutrition.recipe ?? null
-  const hasTodayPicks = Boolean(workout || recipe)
+      : "Jouw modules en favorieten op één plek."
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
@@ -126,69 +112,15 @@ export default async function VoorJouPage() {
         <h1 className="font-display text-2xl lg:text-3xl text-ink">
           Voor jou{profile.name ? `, ${profile.name}` : ""}
         </h1>
-        <p className="text-sm text-ink-soft mt-1">
-          {personalLine || "Jouw modules en favorieten op één plek."}
-        </p>
+        <p className="text-sm text-ink-soft mt-1">{goalLine}</p>
+        <Link
+          href="/vandaag"
+          className="mt-2 inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
+        >
+          Naar Vandaag
+          <ChevronRight className="h-4 w-4" strokeWidth={2} />
+        </Link>
       </div>
-
-      {hasTodayPicks && (
-        <section>
-          <div className="flex items-baseline justify-between gap-3 mb-2.5">
-            <h2 className="font-display text-base text-ink">Voor jou vandaag</h2>
-            <Link href="/vandaag" className="text-xs font-medium text-sage-dark touch-manipulation">
-              Naar Vandaag
-            </Link>
-          </div>
-          <div className="flex flex-col gap-2">
-            {workout && (
-              <Card className="p-4">
-                <p className="text-xs font-medium text-sage-dark mb-2">Beweging</p>
-                <div className="flex items-start gap-3">
-                  <WorkoutImage
-                    type={workout.type}
-                    title={workout.title}
-                    imageUrl={workout.image_url}
-                    className="h-14 w-14 rounded-xl shrink-0"
-                    sizes="56px"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-ink">{workout.title}</p>
-                    <p className="text-xs text-ink-soft mt-0.5">{workout.duration} minuten</p>
-                    <Link
-                      href={`/training/${workout.id}`}
-                      className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "mt-2.5")}
-                    >
-                      Start training
-                    </Link>
-                  </div>
-                </div>
-              </Card>
-            )}
-            {recipe && (
-              <Card className="p-4">
-                <p className="text-xs font-medium text-sage-dark mb-2">Voeding</p>
-                <div className="flex items-start gap-3">
-                  <RecipeImage
-                    title={recipe.title}
-                    imageUrl={recipe.image_url}
-                    className="h-14 w-14 rounded-xl shrink-0"
-                    sizes="56px"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-ink">{recipe.title}</p>
-                    <Link
-                      href={`/voeding/${recipe.id}`}
-                      className="mt-2.5 inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
-                    >
-                      Bekijk recept
-                    </Link>
-                  </div>
-                </div>
-              </Card>
-            )}
-          </div>
-        </section>
-      )}
 
       {enabledKeys.length > 0 && (
         <div>

@@ -158,9 +158,9 @@ export function DayCloseCard({
             )}
             <span className={cn(item.done ? "text-ink" : "text-ink-soft")}>{item.label}</span>
             {item.key === "sleep" && !item.done && (
-              <Link href="/slaap" className="ml-auto text-xs font-medium text-sage-dark touch-manipulation">
+              <a href="#slaap-vandaag" className="ml-auto text-xs font-medium text-sage-dark touch-manipulation">
                 Naar slaap
-              </Link>
+              </a>
             )}
             {item.key === "movement" && !item.done && (
               <span className="ml-auto text-xs text-ink-soft">Boven bij Beweging</span>

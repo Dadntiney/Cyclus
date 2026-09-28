@@ -333,10 +333,8 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
         }
 
   const namePart = profile.name ? `, ${profile.name}` : ""
+  // Don't restate cyclusdag/fase here — the phase hero above already does that.
   let dayFocus = `Luister vandaag naar hoe je je voelt en pas je tempo daarop aan${namePart}.`
-  if (cycleEstimate) {
-    dayFocus = `Je cyclusdag ${cycleEstimate.cycleDay} valt naar schatting in de ${cycleEstimate.phaseLabel.toLowerCase()}. Luister naar hoe je je vandaag voelt en pas je tempo daarop aan.`
-  }
   if (need === "rust") {
     dayFocus = `Je gaf aan dat je vandaag naar rust verlangt${namePart}. Wees zacht voor jezelf — dat is vandaag genoeg.`
   } else if (lowerIntensity && matchesSleepPattern && personalSleepPattern) {

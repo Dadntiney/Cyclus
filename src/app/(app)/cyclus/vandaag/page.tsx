@@ -18,8 +18,6 @@ import { Expandable } from "@/components/ui/expandable"
 import { BackButton } from "@/components/ui/back-button"
 import { buttonVariants } from "@/components/ui/button"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
-import { MedicationTodayCard } from "@/components/today/medication-today-card"
-import { getMedicationDashboardItems } from "@/lib/data/medications"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { cn } from "@/lib/utils"
 
@@ -102,8 +100,6 @@ export default async function CyclusdagPage() {
     )
   }
 
-  const showMedication = Boolean(profile?.show_medication_on_dashboard)
-  const medicationItems = showMedication ? await getMedicationDashboardItems(user.id, today) : []
   const patterns = computeSymptomFrequency(checkins ?? [])
   const phaseInsights = computePhaseSymptomInsights(cycleHistory, checkins ?? [])
   const phaseInsight = getTopPhaseSymptomInsight(phaseInsights, cycleEstimate.phase)
@@ -120,9 +116,8 @@ export default async function CyclusdagPage() {
   })
 
   // Passive/ambient buddy content (fun fact + "even onthouden" moment) —
-  // gated by her optional cadence preference, not by whether medication is
-  // shown. "Alleen relevant" leans on whether there's an actual recognized
-  // pattern to point to, not just a generic quote.
+  // gated by her optional cadence preference. "Alleen relevant" leans on
+  // whether there's an actual recognized pattern, not just a generic quote.
   const showAmbientBuddyContent = shouldShowBuddyMessage(
     `${user.id}-${today}-cyclusdag`,
     profile?.buddy_message_frequency ?? null,
@@ -164,16 +159,6 @@ export default async function CyclusdagPage() {
             </div>
           </Card>
         </section>
-
-        {medicationItems.length > 0 && (
-          <section>
-            <MedicationTodayCard items={medicationItems} date={today} />
-            <p className="text-xs text-ink-soft px-1 mt-2.5 leading-relaxed">
-              Dit toont je cyclusdag, fase, medicatie en klachten naast elkaar — puur ter
-              overzicht. Cyclus trekt hier geen conclusies uit over oorzaak en gevolg.
-            </p>
-          </section>
-        )}
 
         {showAmbientBuddyContent && (
           <section>

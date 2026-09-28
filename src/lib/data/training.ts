@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server"
 
+const WORKOUT_LIBRARY_COLUMNS = "id, title, type, duration, difficulty, image_url"
+
 export async function getWorkoutLibrary() {
   const supabase = await createClient()
-  const { data } = await supabase.from("workouts").select("*").order("title")
+  const { data } = await supabase.from("workouts").select(WORKOUT_LIBRARY_COLUMNS).order("title")
   return data ?? []
 }
 

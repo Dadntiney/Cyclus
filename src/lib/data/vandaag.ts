@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { differenceInCalendarDays, parseISO, startOfWeek, subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
@@ -16,14 +17,22 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10)
 }
 
-export async function getVandaagData(userId: string) {
+/** Deduped per request — Vandaag (and any co-loader) only pays once. */
+export const getVandaagData = cache(async function getVandaagData(userId: string) {
   const supabase = await createClient()
   const today = todayISO()
   const weekAgo = subDays(new Date(today), 6).toISOString().slice(0, 10)
   const sixMonthsAgo = subDays(new Date(today), 200).toISOString().slice(0, 10)
 
+  // Profile is React-cached from the app layout — usually a cache hit, then
+  // we skip whole optional datasets (workouts, recipes, meds, sleep history).
+  const profile = await getProfile(userId)
+  const movementEnabled = profile?.movement_enabled ?? true
+  const nutritionEnabled = profile?.nutrition_enabled ?? true
+  const sleepEnabled = profile?.sleep_tracking_enabled === true
+  const medsEnabled = Boolean(profile?.show_medication_on_dashboard)
+
   const [
-    profile,
     { data: cycleProfile },
     { data: checkin },
     { data: workouts },
@@ -33,35 +42,46 @@ export async function getVandaagData(userId: string) {
     { data: cycleLogs },
     medicationItems,
     { data: sleepEntry },
+    personalSleepContext,
   ] = await Promise.all([
-    getProfile(userId),
     supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
     supabase.from("daily_checkins").select("*").eq("user_id", userId).eq("date", today).maybeSingle(),
-    supabase.from("workouts").select("id, title, type, duration, difficulty, image_url"),
-    supabase
-      .from("recipes")
-      .select("id, title, category, preparation_time, nutrition_information, image_url, ingredients"),
+    movementEnabled
+      ? supabase.from("workouts").select("id, title, type, duration, difficulty, image_url")
+      : Promise.resolve({ data: [] }),
+    nutritionEnabled
+      ? supabase
+          .from("recipes")
+          .select("id, title, category, preparation_time, nutrition_information, image_url, ingredients")
+      : Promise.resolve({ data: [] }),
     supabase
       .from("daily_checkins")
       .select("date")
       .eq("user_id", userId)
       .gte("date", weekAgo)
       .lte("date", today),
-    supabase
-      .from("workout_sessions")
-      .select("date, completed, workout_id")
-      .eq("user_id", userId)
-      .eq("completed", true)
-      .gte("date", weekAgo)
-      .lte("date", today),
+    movementEnabled
+      ? supabase
+          .from("workout_sessions")
+          .select("date, completed, workout_id")
+          .eq("user_id", userId)
+          .eq("completed", true)
+          .gte("date", weekAgo)
+          .lte("date", today)
+      : Promise.resolve({ data: [] }),
     supabase
       .from("cycle_logs")
       .select("date, menstruation, symptoms")
       .eq("user_id", userId)
       .gte("date", sixMonthsAgo)
       .order("date", { ascending: true }),
-    getMedicationDashboardItems(userId, today),
-    supabase.from("sleep_entries").select("*").eq("user_id", userId).eq("date", today).maybeSingle(),
+    medsEnabled ? getMedicationDashboardItems(userId, today) : Promise.resolve([]),
+    sleepEnabled
+      ? supabase.from("sleep_entries").select("*").eq("user_id", userId).eq("date", today).maybeSingle()
+      : Promise.resolve({ data: null }),
+    sleepEnabled
+      ? getPersonalSleepContext(userId, today)
+      : Promise.resolve({ todaySleepDurationMinutes: null, personalSleepPattern: null }),
   ])
 
   const streak = computeStreak((recentCheckins ?? []).map((c) => c.date), today)
@@ -79,23 +99,12 @@ export async function getVandaagData(userId: string) {
     : null
   const weekStartISO = startOfWeek(new Date(today), { weekStartsOn: 1 }).toISOString().slice(0, 10)
 
-  // Only meaningful when she opted into sleep tracking — otherwise there's
-  // no sleep_entries row to speak of, and no observation or pattern to show.
   const sleepDurationMinutes =
     sleepEntry?.bedtime && sleepEntry?.wake_time
       ? computeSleepDurationMinutes(sleepEntry.bedtime, sleepEntry.wake_time)
       : null
 
-  // The one place a multi-day pattern (not just today's data) can steer
-  // today's advice: if her history shows a symptom that reliably follows a
-  // short night, and last night was short, that personalizes today's
-  // training pick, recovery block, and "Vandaag voor jou" text. Shared with
-  // the Beweging page (see getPersonalSleepContext) so both agree on why —
-  // and, since it can shift which workout gets picked, on what.
-  const { personalSleepPattern } =
-    profile?.sleep_tracking_enabled === true
-      ? await getPersonalSleepContext(userId, today)
-      : { personalSleepPattern: null }
+  const personalSleepPattern = sleepEnabled ? personalSleepContext.personalSleepPattern : null
 
   const activePeriodStart = cycleProfile?.active_period_start ?? null
   const cycleHistory = computeCycleHistory(
@@ -147,7 +156,7 @@ export async function getVandaagData(userId: string) {
       : null
 
   const sleepObservation =
-    profile?.sleep_tracking_enabled === true
+    sleepEnabled
       ? pickSleepObservation({
           durationMinutes: sleepDurationMinutes,
           wakeFeeling: sleepEntry?.wake_feeling ?? null,
@@ -186,4 +195,4 @@ export async function getVandaagData(userId: string) {
     sleepEntry,
     sleepObservation,
   }
-}
+})

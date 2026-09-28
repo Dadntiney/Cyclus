@@ -45,36 +45,6 @@ export default async function OvergangPage() {
         <p className="text-base text-ink-soft mt-2 leading-relaxed">{LIFE_STAGE_KNOWLEDGE.intro}</p>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-3 mb-6">
-        <Link
-          href="/cyclus/klachtenlast"
-          className="rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation"
-        >
-          <span className="block text-sm font-medium text-ink">Klachtenlast</span>
-          <span className="block text-xs text-ink-soft mt-0.5">
-            Maandelijkse check (0–100) om te zien of klachten veranderen.
-          </span>
-        </Link>
-        <Link
-          href="/cyclus/samenvatting"
-          className="rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation"
-        >
-          <span className="block text-sm font-medium text-ink">Voor je arts</span>
-          <span className="block text-xs text-ink-soft mt-0.5">
-            Print of download een overzicht voor je afspraak.
-          </span>
-        </Link>
-        <Link
-          href="/profiel#cyclus"
-          className="rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation sm:col-span-2"
-        >
-          <span className="block text-sm font-medium text-ink">Levensfase instellen</span>
-          <span className="block text-xs text-ink-soft mt-0.5">
-            Regelmatig, veranderend, perimenopauze of na de menopauze — past de uitleg aan.
-          </span>
-        </Link>
-      </div>
-
       <div className="flex flex-col gap-5">
         <section>
           <h2 className="font-display text-lg text-ink mb-2.5">Hoe je cyclus kan veranderen</h2>
