@@ -40,12 +40,16 @@ export function TodayMovementCard({
   reason: string
   alternatives: TodayWorkoutOption[]
   completed: { workoutId: string; title: string; duration: number } | null
-  emphasis?: "default" | "primary"
+  /** quiet = secondary row on a rest-first day (no hero CTA). */
+  emphasis?: "default" | "primary" | "quiet"
   /** Inside TodayCards surface — no outer shell. */
   embedded?: boolean
 }) {
+  const quiet = emphasis === "quiet"
   const shell = embedded
-    ? "px-4 pt-4 pb-3"
+    ? quiet
+      ? "px-4 py-3.5"
+      : "px-4 pt-4 pb-3"
     : emphasis === "primary"
       ? "rounded-3xl bg-sage-soft/70 p-4"
       : "rounded-2xl border border-line/70 p-3.5"
@@ -112,33 +116,64 @@ export function TodayMovementCard({
         </div>
       ) : effective ? (
         <>
-          <div className="flex items-start gap-3">
-            <WorkoutImage
-              type={effective.type}
-              title={effective.title}
-              imageUrl={effective.image_url}
-              className="h-14 w-14 rounded-xl shrink-0"
-              sizes="56px"
-              priority
-            />
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
-              <p className="font-display text-lg text-ink leading-snug">{effective.title}</p>
-              <p className="text-sm text-ink-soft mt-0.5">{effective.duration} minuten</p>
-              {swapped && suggested && (
-                <p className="text-xs text-ink-soft mt-1">Jouw keuze · advies was {suggested.title}</p>
-              )}
+          {quiet ? (
+            <div className="flex items-start gap-3">
+              <WorkoutImage
+                type={effective.type}
+                title={effective.title}
+                imageUrl={effective.image_url}
+                className="h-11 w-11 rounded-xl shrink-0"
+                sizes="44px"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
+                <Link
+                  href={`/training/${effective.id}`}
+                  className="text-sm font-medium text-ink leading-snug touch-manipulation inline-flex items-center gap-1"
+                >
+                  {effective.title}
+                  <span className="font-normal text-ink-soft"> · {effective.duration} min</span>
+                </Link>
+                {swapped && suggested && (
+                  <p className="text-xs text-ink-soft mt-0.5">
+                    Jouw keuze · advies was {suggested.title}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-          {!swapped && reason && reason !== GENERIC_REASON && (
-            <p className="text-sm text-ink-soft mt-2">{reason}</p>
+          ) : (
+            <>
+              <div className="flex items-start gap-3">
+                <WorkoutImage
+                  type={effective.type}
+                  title={effective.title}
+                  imageUrl={effective.image_url}
+                  className="h-14 w-14 rounded-xl shrink-0"
+                  sizes="56px"
+                  priority
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
+                  <p className="font-display text-lg text-ink leading-snug">{effective.title}</p>
+                  <p className="text-sm text-ink-soft mt-0.5">{effective.duration} minuten</p>
+                  {swapped && suggested && (
+                    <p className="text-xs text-ink-soft mt-1">
+                      Jouw keuze · advies was {suggested.title}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {!swapped && reason && reason !== GENERIC_REASON && (
+                <p className="text-sm text-ink-soft mt-2">{reason}</p>
+              )}
+              <Link href={`/training/${effective.id}`} className={cn(buttonVariants(), "mt-3")}>
+                Start training
+              </Link>
+            </>
           )}
-          <Link href={`/training/${effective.id}`} className={cn(buttonVariants(), "mt-3")}>
-            Start training
-          </Link>
 
           {/* Secondary actions stay behind one control — less CTA soup. */}
-          <div className="mt-1">
+          <div className={quiet ? "mt-0.5" : "mt-1"}>
             <button
               type="button"
               onClick={() => {
@@ -148,7 +183,7 @@ export function TodayMovementCard({
               className="inline-flex items-center gap-1 min-h-11 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
               aria-expanded={showAdjust}
             >
-              Aanpassen
+              Andere keuze
               <ChevronDown
                 className={cn("h-3.5 w-3.5 transition-transform", showAdjust && "rotate-180")}
                 strokeWidth={2}

@@ -367,7 +367,7 @@ export function CheckinForm({
             className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-sage-dark min-h-11 px-1 touch-manipulation rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
             aria-expanded={false}
           >
-            Aanpassen
+            Wijzigen
             <ChevronDown className="h-4 w-4" strokeWidth={2} />
           </button>
         </div>

@@ -332,19 +332,18 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
           ...recoveryCta,
         }
 
-  const namePart = profile.name ? `, ${profile.name}` : ""
-  // Don't restate cyclusdag/fase here — the phase hero above already does that.
-  let dayFocus = `Luister vandaag naar hoe je je voelt en pas je tempo daarop aan${namePart}.`
+  // No name here — greeting already uses it. Restating feels robotic.
+  let dayFocus = "Luister vandaag naar hoe je je voelt en pas je tempo daarop aan."
   if (need === "rust") {
-    dayFocus = `Je gaf aan dat je vandaag naar rust verlangt${namePart}. Wees zacht voor jezelf — dat is vandaag genoeg.`
+    dayFocus = "Je gaf aan dat je vandaag naar rust verlangt. Wees zacht voor jezelf — dat is vandaag genoeg."
   } else if (lowerIntensity && matchesSleepPattern && personalSleepPattern) {
-    dayFocus = `Je sliep vannacht relatief kort${namePart} — in jouw gegevens hangt dat vaker samen met ${symptomLabel(personalSleepPattern.symptom).toLowerCase()}. Wees dus extra zacht voor jezelf vandaag.`
+    dayFocus = `Je sliep vannacht relatief kort — in jouw gegevens hangt dat vaker samen met ${symptomLabel(personalSleepPattern.symptom).toLowerCase()}. Wees dus extra zacht voor jezelf vandaag.`
   } else if (lowerIntensity) {
-    dayFocus = `Je gaf aan dat het vandaag wat minder gaat${namePart}. Wees zacht voor jezelf en kies rust waar dat kan.`
+    dayFocus = "Je gaf aan dat het vandaag wat minder gaat. Wees zacht voor jezelf en kies rust waar dat kan."
   } else if (wantsMoreActive) {
-    dayFocus = `Je gaf aan dat je zin hebt om te bewegen vandaag${namePart} — dit hebben we daarom voor je samengesteld.`
+    dayFocus = "Je gaf aan dat je zin hebt om te bewegen vandaag — dit hebben we daarom voor je samengesteld."
   } else if (wantsSelfCare) {
-    dayFocus = `Je gaf aan dat je vandaag tijd voor jezelf wilt${namePart}. Dat mag er gewoon zijn.`
+    dayFocus = "Je gaf aan dat je vandaag tijd voor jezelf wilt. Dat mag er gewoon zijn."
   }
 
   const buddyContext: string[] = []
