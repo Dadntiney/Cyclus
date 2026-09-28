@@ -65,6 +65,11 @@ export function FavoritesSection({
                   </Link>
                 ))}
               </div>
+              {favoriteExercises.length > 4 && (
+                <Link href="/training/favorieten" className="text-xs text-sage-dark mt-2 inline-block">
+                  Alle favoriete oefeningen →
+                </Link>
+              )}
             </div>
           )}
         </div>

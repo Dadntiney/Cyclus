@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { computeStreak } from "@/lib/data/streak"
 import { getFavoriteRecipes } from "@/lib/data/nutrition"
+import { getFavoriteExercises } from "@/lib/data/training"
 
 // The layout and whichever page it wraps both need her profile row on
 // nearly every navigation; without this every request paid for that
@@ -72,7 +73,7 @@ export async function getProfileOverview(userId: string) {
     { data: checkinDates },
     { data: workoutSessions },
     favoriteRecipes,
-    { data: exerciseFavoriteRows },
+    favoriteExercises,
     { count: medicationCount },
   ] = await Promise.all([
     getProfile(userId).then((data) => ({ data })),
@@ -80,11 +81,7 @@ export async function getProfileOverview(userId: string) {
     supabase.from("daily_checkins").select("date").eq("user_id", userId),
     supabase.from("workout_sessions").select("date").eq("user_id", userId).eq("completed", true),
     getFavoriteRecipes(userId),
-    supabase
-      .from("exercise_favorites")
-      .select("exercise_id")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false }),
+    getFavoriteExercises(userId),
     supabase.from("medications").select("id", { count: "exact", head: true }).eq("user_id", userId),
   ])
 
@@ -93,19 +90,6 @@ export async function getProfileOverview(userId: string) {
   const totalWorkoutsCompleted = (workoutSessions ?? []).length
   const currentStreak = computeStreak(dates, today)
   const bestStreak = Math.max(currentStreak, longestStreak(dates))
-
-  const favoriteExerciseIds = (exerciseFavoriteRows ?? []).map((f) => f.exercise_id)
-  let favoriteExercises: { id: string; name: string; muscle_group: string | null; workout_id: string }[] = []
-  if (favoriteExerciseIds.length) {
-    const { data: exercises } = await supabase
-      .from("exercises")
-      .select("id, name, muscle_group, workout_id")
-      .in("id", favoriteExerciseIds)
-    const byId = new Map((exercises ?? []).map((e) => [e.id, e]))
-    favoriteExercises = favoriteExerciseIds
-      .map((id) => byId.get(id))
-      .filter((e): e is NonNullable<typeof e> => Boolean(e))
-  }
 
   const milestones = buildMilestones({
     totalCheckins,

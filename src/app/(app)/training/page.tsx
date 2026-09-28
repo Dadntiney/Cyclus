@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { format } from "date-fns"
-import { ChevronRight, Settings2, Dumbbell, Calendar } from "lucide-react"
+import { Settings2, Dumbbell, Heart } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getWorkoutLibrary } from "@/lib/data/training"
@@ -86,8 +86,19 @@ export default async function TrainingPage() {
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
         <BackButton href="/voor-jou" label="Voor jou" />
-        <h1 className="font-display text-2xl lg:text-3xl text-ink">Beweging</h1>
-        <p className="text-sm text-ink-soft mt-1">Jouw trainingsbibliotheek, afgestemd op jouw voorkeuren.</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="font-display text-2xl lg:text-3xl text-ink">Beweging</h1>
+            <p className="text-sm text-ink-soft mt-1">Jouw trainingsbibliotheek, afgestemd op jouw voorkeuren.</p>
+          </div>
+          <Link
+            href="/training/favorieten"
+            className="flex items-center gap-1.5 text-sm font-medium text-sage-dark"
+          >
+            <Heart className="h-4 w-4" />
+            Favorieten
+          </Link>
+        </div>
       </div>
 
       {todaysPick.workout && (
@@ -111,17 +122,6 @@ export default async function TrainingPage() {
           </div>
         </Card>
       )}
-
-      <Link
-        href="/deze-week"
-        className="flex items-center justify-between rounded-2xl bg-surface border border-line/70 px-4 py-3.5 touch-manipulation"
-      >
-        <span className="text-sm font-medium text-ink inline-flex items-center gap-1.5">
-          <Calendar className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-          Bekijk je weekplanning
-        </span>
-        <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
-      </Link>
 
       <div>
         <div className="flex items-baseline justify-between mb-3">

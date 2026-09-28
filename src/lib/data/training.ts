@@ -27,3 +27,29 @@ export async function getFavoriteExerciseIds(userId: string): Promise<Set<string
     .eq("user_id", userId)
   return new Set((data ?? []).map((f) => f.exercise_id))
 }
+
+export interface FavoriteExercise {
+  id: string
+  name: string
+  muscle_group: string | null
+  workout_id: string
+}
+
+export async function getFavoriteExercises(userId: string): Promise<FavoriteExercise[]> {
+  const supabase = await createClient()
+  const { data: favorites } = await supabase
+    .from("exercise_favorites")
+    .select("exercise_id")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+
+  const exerciseIds = (favorites ?? []).map((f) => f.exercise_id)
+  if (!exerciseIds.length) return []
+
+  const { data: exercises } = await supabase
+    .from("exercises")
+    .select("id, name, muscle_group, workout_id")
+    .in("id", exerciseIds)
+  const byId = new Map((exercises ?? []).map((e) => [e.id, e]))
+  return exerciseIds.map((id) => byId.get(id)).filter((e): e is FavoriteExercise => Boolean(e))
+}

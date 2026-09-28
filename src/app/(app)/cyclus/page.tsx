@@ -108,6 +108,17 @@ export default async function CyclusPage() {
   const phaseInsights = computePhaseSymptomInsights(history, checkinsForPatterns).slice(0, 3)
   const cycleLengthTrend = computeCycleLengthTrend(history)
 
+  // "Persoonlijke inzichten" and "Wat je cycli laten zien" both surface
+  // symptom-vs-phase findings from independent engines, so the same fact
+  // ("vaker moe in je luteale fase") could otherwise appear twice, worded
+  // differently. The phase/cycle-based version below is the stronger, more
+  // specific claim (it counts actual completed cycles), so drop any
+  // personal insight that restates the same phase+symptom pair.
+  const shownPhaseSymptoms = new Set(phaseInsights.map((i) => `${i.phase}:${i.symptom}`))
+  const dedupedPersonalInsights = personalInsights.filter(
+    (insight) => !(insight.phase && insight.symptom && shownPhaseSymptoms.has(`${insight.phase}:${insight.symptom}`)),
+  )
+
   const hasCycle = cycleProfile?.has_cycle ?? true
   const isIrregular = cycleProfile?.regularity === "onregelmatig" || cycleProfile?.regularity === "onbekend"
   const lifeStageLikelyRelevant =
@@ -264,7 +275,7 @@ export default async function CyclusPage() {
         </div>
 
         <div className="mt-6 lg:mt-0 flex flex-col gap-6">
-          <PersonalInsights insights={personalInsights} checkinCount={insightCheckins.length} />
+          <PersonalInsights insights={dedupedPersonalInsights} checkinCount={insightCheckins.length} />
 
           {phaseInsights.length > 0 && (
             <div>

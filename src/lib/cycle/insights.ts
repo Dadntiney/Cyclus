@@ -25,6 +25,12 @@ export interface PersonalInsight {
   text: string
   /** Higher = stronger signal; used for sorting. */
   score: number
+  /** Only set for a phase-based insight — lets a caller cross-check it against
+   * computePhaseSymptomInsights (patterns.ts), which looks at the same kind of
+   * question (symptom vs. phase) but over completed cycles specifically, so
+   * the two can otherwise state the same finding twice in different words. */
+  phase?: CyclePhase
+  symptom?: string
 }
 
 interface SplitResult {
@@ -171,6 +177,8 @@ export function computePersonalInsights(
           id: `phase-${phase}-${hit.symptom}`,
           score: hit.delta * 0.95,
           text: `In je ${PHASE_LABELS[phase]} noteer je vaker ${hit.symptom.toLowerCase()}.`,
+          phase,
+          symptom: hit.symptom,
         })
       }
     }

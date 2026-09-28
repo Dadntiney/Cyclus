@@ -106,7 +106,7 @@ export default async function VoorJouPage() {
                   <Heart className="h-4 w-4 text-peach" strokeWidth={1.75} />
                   Favorieten
                 </p>
-                <p className="text-sm text-ink-soft mt-0.5">Je opgeslagen recepten en oefeningen.</p>
+                <p className="text-sm text-ink-soft mt-0.5">Je opgeslagen recepten.</p>
               </div>
               <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
             </Card>
