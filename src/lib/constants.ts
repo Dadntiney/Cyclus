@@ -79,6 +79,9 @@ export const NUTRITION_OPTIONS = [
   "Dingen die ik niet lust",
 ] as const
 
+/** Optional world cuisines — off by default in suggestions and library. */
+export const CUISINE_OPTIONS = ["Turks", "Marokkaans", "Libanees"] as const
+
 export const TRAINING_FREQUENCY_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const
 
 export const STYLE_OPTIONS = [

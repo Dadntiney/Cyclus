@@ -66,19 +66,21 @@ export function CheckinForm({
   const [notes, setNotes] = useState(initial?.notes ?? "")
   const [customDraft, setCustomDraft] = useState("")
   const [pinned, setPinned] = useState<string[]>(preferredSymptoms)
-  const [showMore, setShowMore] = useState(
-    Boolean(
-      initial?.mood ||
-        initial?.sleep ||
-        initial?.stress ||
-        initial?.symptoms?.length ||
-        initial?.notes ||
-        (initial?.symptom_details && Object.keys(parseSymptomDetails(initial.symptom_details)).length),
-    ),
-  )
+  // Always start collapsed on Vandaag so a morning check-in doesn't leave a
+  // long open list for the rest of the day. Expand via "Aanpassen" / "Meer…".
+  const [showMore, setShowMore] = useState(false)
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle")
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  const hasExtraDetails = Boolean(
+    mood ||
+      sleep ||
+      stress ||
+      symptoms.length ||
+      notes.trim() ||
+      Object.keys(symptomDetails).length,
+  )
 
   function toggleSymptom(value: string) {
     setSymptoms((prev) => {
@@ -163,6 +165,7 @@ export function CheckinForm({
         setErrorMsg(result.error)
       } else {
         setStatus("saved")
+        setShowMore(false)
       }
     })
   }
@@ -302,11 +305,55 @@ export function CheckinForm({
               />
             </div>
           </>
+        ) : hasExtraDetails ? (
+          <div className="rounded-xl bg-cream-soft/80 px-3 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-ink-soft mb-1.5">Ingevuld voor vandaag</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {mood != null && (
+                    <span className="text-xs text-ink bg-surface rounded-full px-2.5 py-1">
+                      Stemming {mood}/5
+                    </span>
+                  )}
+                  {sleep != null && (
+                    <span className="text-xs text-ink bg-surface rounded-full px-2.5 py-1">
+                      Slaap {sleep}/5
+                    </span>
+                  )}
+                  {stress != null && (
+                    <span className="text-xs text-ink bg-surface rounded-full px-2.5 py-1">
+                      Stress {stress}/5
+                    </span>
+                  )}
+                  {symptoms.slice(0, 4).map((s) => (
+                    <span key={s} className="text-xs text-ink bg-surface rounded-full px-2.5 py-1">
+                      {symptomLabel(s)}
+                    </span>
+                  ))}
+                  {symptoms.length > 4 && (
+                    <span className="text-xs text-ink-soft px-1 py-1">+{symptoms.length - 4}</span>
+                  )}
+                  {notes.trim() && (
+                    <span className="text-xs text-ink bg-surface rounded-full px-2.5 py-1">Notitie</span>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMore(true)}
+                className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-sage-dark min-h-11 px-1 touch-manipulation rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              >
+                Aanpassen
+                <ChevronDown className="h-4 w-4" strokeWidth={2} />
+              </button>
+            </div>
+          </div>
         ) : (
           <button
             type="button"
             onClick={() => setShowMore(true)}
-            className="self-start inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 py-1"
+            className="self-start inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-11 py-1 touch-manipulation"
           >
             Meer over vandaag toevoegen
             <ChevronDown className="h-4 w-4" strokeWidth={2} />
@@ -317,6 +364,15 @@ export function CheckinForm({
           <Button onClick={handleSave} disabled={isPending}>
             {isPending ? "Bezig met opslaan..." : "Check-in opslaan"}
           </Button>
+          {showMore && hasExtraDetails && (
+            <button
+              type="button"
+              onClick={() => setShowMore(false)}
+              className="text-sm font-medium text-ink-soft min-h-11 px-1 touch-manipulation"
+            >
+              Inklappen
+            </button>
+          )}
           {status === "saved" && (
             <span className="animate-pop-in inline-flex items-center gap-1.5 text-sm text-sage-dark font-medium">
               <span className="h-5 w-5 rounded-full bg-sage-soft flex items-center justify-center">

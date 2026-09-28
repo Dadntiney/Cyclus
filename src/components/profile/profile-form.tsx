@@ -10,6 +10,7 @@ import {
   GOAL_OPTIONS,
   TRAINING_OPTIONS,
   NUTRITION_OPTIONS,
+  CUISINE_OPTIONS,
   NUTRITION_STYLE_OPTIONS,
   HEALTH_CONDITION_OPTIONS,
   MOVEMENT_LIMITATION_OPTIONS,
@@ -587,6 +588,27 @@ export function ProfileForm({
                 />
               </div>
             )}
+            <p className="text-sm font-medium text-ink mb-1 mt-4">Wereldkeuken (optioneel)</p>
+            <p className="text-xs text-ink-soft mb-2">
+              Standaard laten we Turkse, Marokkaanse en Libanese recepten weg. Zet aan wat je wilt
+              zien in tips en Deze week.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {CUISINE_OPTIONS.map((opt) => (
+                <Chip
+                  key={opt}
+                  selected={state.nutritionPreferences.includes(opt)}
+                  onClick={() =>
+                    applyUpdate(
+                      (s) => ({ ...s, nutritionPreferences: toggle(s.nutritionPreferences, opt) }),
+                      "immediate",
+                    )
+                  }
+                >
+                  {opt}
+                </Chip>
+              ))}
+            </div>
           </>
         ) : (
           <p className="text-xs text-ink-soft mt-2">

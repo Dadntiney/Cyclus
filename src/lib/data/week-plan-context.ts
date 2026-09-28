@@ -10,6 +10,7 @@ import {
   type MealSlot,
 } from "@/lib/recommendations/week-plan"
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
+import { filterRecipesByCuisinePrefs } from "@/lib/nutrition/cuisine"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
 import type { Tables } from "@/types/database"
 
@@ -85,10 +86,9 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
     seed: userId,
   })
 
-  const availableRecipes = filterRecipesForNutritionPrefs(
-    recipeRows,
-    profile.food_allergies,
-    profile.disliked_foods,
+  const availableRecipes = filterRecipesByCuisinePrefs(
+    filterRecipesForNutritionPrefs(recipeRows, profile.food_allergies, profile.disliked_foods),
+    profile.nutrition_preferences,
   )
   const recipePoolBySlot: Record<MealSlot, WeekPlanRecipe[]> = {
     ontbijt: availableRecipes.filter((r) => r.category.includes("Ontbijt")),

@@ -3,6 +3,7 @@ import type { CycleEstimate } from "@/lib/cycle/estimate"
 import { TRAINING_PREFERENCE_TO_TYPE, symptomLabel } from "@/lib/constants"
 import { SHORT_NIGHT_MINUTES } from "@/lib/sleep/insights"
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
+import { dietPrefsForCategoryMatch, filterRecipesByCuisinePrefs } from "@/lib/nutrition/cuisine"
 
 /** The single strongest sleep/symptom correlation from her history (see
  * computeSleepSymptomInsights) — just enough to personalize today's
@@ -239,14 +240,14 @@ export function pickTodaysRecipe(input: NutritionPickInput): NutritionRecommenda
   const nutritionPrefs = profile.nutrition_preferences ?? []
   const wantsLowCarb = profile.nutrition_style === "koolhydraatarm"
 
-  const availableRecipes = filterRecipesForNutritionPrefs(
-    recipes,
-    profile.food_allergies,
-    profile.disliked_foods,
+  const availableRecipes = filterRecipesByCuisinePrefs(
+    filterRecipesForNutritionPrefs(recipes, profile.food_allergies, profile.disliked_foods),
+    nutritionPrefs,
   )
 
-  let candidateRecipes = nutritionPrefs.length
-    ? availableRecipes.filter((r) => r.category.some((c) => nutritionPrefs.includes(c)))
+  const dietPrefs = dietPrefsForCategoryMatch(nutritionPrefs)
+  let candidateRecipes = dietPrefs.length
+    ? availableRecipes.filter((r) => r.category.some((c) => dietPrefs.includes(c)))
     : availableRecipes
 
   if (!candidateRecipes.length) candidateRecipes = availableRecipes

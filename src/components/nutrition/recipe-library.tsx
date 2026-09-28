@@ -5,7 +5,8 @@ import { Salad } from "lucide-react"
 import { Chip } from "@/components/ui/chip"
 import { RecipeCard } from "./recipe-card"
 import { EmptyState } from "@/components/ui/empty-state"
-import { RECIPE_CATEGORIES } from "@/lib/constants"
+import { CUISINE_OPTIONS, RECIPE_CATEGORIES } from "@/lib/constants"
+import { detectRecipeCuisines, isWorldCuisineLabel, recipeHasWorldCuisine } from "@/lib/nutrition/cuisine"
 import type { RecipeCardData } from "@/lib/data/nutrition"
 
 const BUDGET_FILTER = "Budget"
@@ -32,9 +33,19 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
 
   const filtered = useMemo(() => {
     let result = recipes
-    if (activeFilter === BUDGET_FILTER) result = result.filter((r) => r.is_budget)
-    else if (activeFilter === LOW_CARB_FILTER) result = result.filter(isLowCarb)
-    else if (activeFilter) result = result.filter((r) => r.category.includes(activeFilter))
+
+    // "Alles" hides optional world cuisines; cuisine chips opt them in.
+    if (activeFilter === null) {
+      result = result.filter((r) => !recipeHasWorldCuisine(r))
+    } else if (isWorldCuisineLabel(activeFilter)) {
+      result = result.filter((r) => detectRecipeCuisines(r).includes(activeFilter))
+    } else if (activeFilter === BUDGET_FILTER) {
+      result = result.filter((r) => r.is_budget)
+    } else if (activeFilter === LOW_CARB_FILTER) {
+      result = result.filter(isLowCarb)
+    } else {
+      result = result.filter((r) => r.category.includes(activeFilter))
+    }
 
     if (timeFilter === 30) {
       result = result.filter((r) => r.preparation_time !== null && r.preparation_time >= 30)
@@ -77,6 +88,16 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
             onClick={() => setActiveFilter(category)}
           >
             {category}
+          </Chip>
+        ))}
+        {CUISINE_OPTIONS.map((cuisine) => (
+          <Chip
+            key={cuisine}
+            className="shrink-0"
+            selected={activeFilter === cuisine}
+            onClick={() => setActiveFilter(cuisine)}
+          >
+            {cuisine}
           </Chip>
         ))}
       </div>

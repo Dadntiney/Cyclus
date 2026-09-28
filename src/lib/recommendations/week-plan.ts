@@ -5,6 +5,7 @@ import { estimateCycle, type CycleEstimate } from "@/lib/cycle/estimate"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
+import { dietPrefsForCategoryMatch, filterRecipesByCuisinePrefs } from "@/lib/nutrition/cuisine"
 
 export type WeekPlanWorkout = Pick<
   Tables<"workouts">,
@@ -94,9 +95,13 @@ function pickMeal(
   preferredCategories: string[],
   allergies: string[],
   dislikedFoods: string[],
+  nutritionPreferences: string[],
   seed: string,
 ): Recipe | null {
-  const availableRecipes = filterRecipesForNutritionPrefs(recipes, allergies, dislikedFoods)
+  const availableRecipes = filterRecipesByCuisinePrefs(
+    filterRecipesForNutritionPrefs(recipes, allergies, dislikedFoods),
+    nutritionPreferences,
+  )
 
   let candidates = availableRecipes.filter((r) => r.category.includes(MEAL_SLOT_CATEGORY[slot]))
   if (!candidates.length) candidates = availableRecipes
@@ -152,9 +157,8 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
     gentlerDayIndexes,
   })
 
-  const dietPrefs = (profile.nutrition_preferences ?? []).filter(
-    (p) => p !== "Geen voorkeur" && p !== "Allergieën" && p !== "Dingen die ik niet lust",
-  )
+  const nutritionPreferences = profile.nutrition_preferences ?? []
+  const dietPrefs = dietPrefsForCategoryMatch(nutritionPreferences)
   const allergies = profile.food_allergies ?? []
   const dislikedFoods = profile.disliked_foods ?? []
 
@@ -174,6 +178,7 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
         phaseContent?.nutrition.recipeCategories ?? [],
         allergies,
         dislikedFoods,
+        nutritionPreferences,
         `${seed}-${dateISO}-${slot}`,
       ),
     }))

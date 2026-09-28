@@ -1,4 +1,4 @@
-import { differenceInCalendarDays, parseISO, subDays } from "date-fns"
+import { differenceInCalendarDays, parseISO, startOfWeek, subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
@@ -49,7 +49,7 @@ export async function getVandaagData(userId: string) {
       .lte("date", today),
     supabase
       .from("workout_sessions")
-      .select("date, completed")
+      .select("date, completed, workout_id")
       .eq("user_id", userId)
       .eq("completed", true)
       .gte("date", weekAgo)
@@ -66,6 +66,18 @@ export async function getVandaagData(userId: string) {
 
   const streak = computeStreak((recentCheckins ?? []).map((c) => c.date), today)
   const completedThisWeek = (weekSessions ?? []).length
+  const todaySession = (weekSessions ?? []).find((s) => s.date === today) ?? null
+  const completedWorkoutMeta = todaySession
+    ? (workouts ?? []).find((w) => w.id === todaySession.workout_id) ?? null
+    : null
+  const completedWorkout = completedWorkoutMeta
+    ? {
+        workoutId: completedWorkoutMeta.id,
+        title: completedWorkoutMeta.title,
+        duration: completedWorkoutMeta.duration,
+      }
+    : null
+  const weekStartISO = startOfWeek(new Date(today), { weekStartsOn: 1 }).toISOString().slice(0, 10)
 
   // Only meaningful when she opted into sleep tracking — otherwise there's
   // no sleep_entries row to speak of, and no observation or pattern to show.
@@ -143,6 +155,18 @@ export async function getVandaagData(userId: string) {
         })
       : null
 
+  const suggestedId = recommendation?.training.workout?.id ?? null
+  const workoutAlternatives = (workouts ?? [])
+    .filter((w) => w.id !== suggestedId)
+    .slice(0, 6)
+    .map((w) => ({
+      id: w.id,
+      title: w.title,
+      type: w.type,
+      duration: w.duration,
+      image_url: w.image_url,
+    }))
+
   return {
     profile,
     cycleProfile,
@@ -152,8 +176,11 @@ export async function getVandaagData(userId: string) {
     menstruationDay,
     recommendation,
     today,
+    weekStartISO,
     streak,
     completedThisWeek,
+    completedWorkout,
+    workoutAlternatives,
     medicationItems,
     mentalWellbeingSuggestion,
     sleepEntry,

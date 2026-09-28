@@ -5,6 +5,7 @@ import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { getDailyTip } from "@/lib/data/daily-tip"
 import { TodayCards } from "@/components/today/today-cards"
+import { DayCloseCard } from "@/components/today/day-close-card"
 import { CheckinForm } from "@/components/today/checkin-form"
 import { NeedPicker } from "@/components/today/need-picker"
 import { DailyTipCard } from "@/components/today/daily-tip-card"
@@ -105,8 +106,11 @@ export default async function VandaagPage() {
     menstruationDay,
     recommendation,
     checkin,
+    weekStartISO,
     streak,
     completedThisWeek,
+    completedWorkout,
+    workoutAlternatives,
     medicationItems,
     mentalWellbeingSuggestion,
     sleepEntry,
@@ -188,7 +192,26 @@ export default async function VandaagPage() {
         <div className="lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
           <div className="flex flex-col gap-5 lg:col-span-2">
             <NeedPicker initialNeed={checkin?.need ?? null} />
-            {recommendation && <TodayCards recommendation={recommendation} />}
+            {recommendation && (
+              <TodayCards
+                recommendation={recommendation}
+                userId={user.id}
+                date={today}
+                weekStartISO={weekStartISO}
+                workoutAlternatives={workoutAlternatives}
+                completedWorkout={completedWorkout}
+              />
+            )}
+            <DayCloseCard
+              userId={user.id}
+              date={today}
+              weekStartISO={weekStartISO}
+              hasCheckin={Boolean(checkin)}
+              movementEnabled={profile?.movement_enabled ?? true}
+              movementDone={Boolean(completedWorkout)}
+              sleepTrackingEnabled={profile?.sleep_tracking_enabled === true}
+              hasSleepEntry={Boolean(sleepEntry?.bedtime && sleepEntry?.wake_time)}
+            />
           </div>
 
           <div className="flex flex-col gap-5 mt-5 lg:mt-0">
