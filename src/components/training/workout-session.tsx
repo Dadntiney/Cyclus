@@ -2,11 +2,17 @@
 
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Sparkles } from "lucide-react"
+import { Sparkles, PlayCircle, PartyPopper } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ExerciseFavoriteButton } from "@/components/training/exercise-favorite-button"
+import { ExerciseDemo } from "@/components/training/exercise-demo"
+import { ExerciseVideoPlayer } from "@/components/training/exercise-video"
+import { WorkoutImage } from "@/components/training/workout-image"
 import { completeWorkoutSession, fetchAlternativeExercise } from "@/lib/actions/training"
+import { lookupExerciseVideo } from "@/lib/data/exercise-videos"
+import { formatExercisePrescription } from "@/lib/training/prescription"
+import { triggerHaptic } from "@/lib/platform"
 import type { Tables } from "@/types/database"
 
 type Exercise = Tables<"exercises">
@@ -14,6 +20,12 @@ type Workout = Tables<"workouts">
 
 function parseSteps(steps: Exercise["steps"]): string[] {
   return Array.isArray(steps) ? steps.filter((s): s is string => typeof s === "string") : []
+}
+
+/** Own media (self-hosted, scalable) always wins; the curated YouTube
+ * library is only a stand-in for exercises that don't have real media yet. */
+function ownDemo(ex: Exercise) {
+  return ex.demo_video_url || ex.demo_image_url ? true : false
 }
 
 export function WorkoutSession({
@@ -35,11 +47,14 @@ export function WorkoutSession({
   const [finished, setFinished] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [isSwapping, setIsSwapping] = useState(false)
+  const [previewId, setPreviewId] = useState<string | null>(null)
+  const [finishError, setFinishError] = useState<string | null>(null)
 
   const current = exercises[index]
 
   function advance(markDone: boolean) {
     if (markDone && current) {
+      triggerHaptic("medium")
       setDoneIds((prev) => new Set(prev).add(current.id))
     }
     if (index + 1 >= exercises.length) {
@@ -63,8 +78,13 @@ export function WorkoutSession({
   }
 
   function handleFinishWorkout() {
+    setFinishError(null)
     startTransition(async () => {
-      await completeWorkoutSession(workout.id)
+      const result = await completeWorkoutSession(workout.id)
+      if (result?.error) {
+        setFinishError(result.error)
+        return
+      }
       router.push("/training")
       router.refresh()
     })
@@ -73,35 +93,73 @@ export function WorkoutSession({
   if (!started) {
     return (
       <div className="flex flex-col gap-4">
+        <WorkoutImage
+          type={workout.type}
+          imageUrl={workout.image_url}
+          className="aspect-[16/9] lg:aspect-[21/9] w-full rounded-3xl"
+          iconClassName="h-20 w-20"
+          sizes="(min-width: 1024px) 768px, 100vw"
+          priority
+        />
         <Card>
           <p className="font-display text-xl text-ink mb-1">{workout.title}</p>
           <p className="text-sm text-ink-soft mb-4">
             {workout.duration} minuten · {exercises.length} oefeningen
           </p>
           {workout.description && <p className="text-sm text-ink-soft mb-5">{workout.description}</p>}
-          <Button onClick={() => setStarted(true)}>Workout starten</Button>
+          <Button onClick={() => setStarted(true)}>Training starten</Button>
         </Card>
 
         {exercises.length > 0 && (
           <Card>
             <p className="text-sm font-medium text-ink mb-3">Wat ga je doen?</p>
             <ul className="flex flex-col gap-3">
-              {exercises.map((ex, i) => (
-                <li key={ex.id} className="flex items-start gap-3">
-                  <span className="mt-0.5 h-5 w-5 rounded-full bg-sage-soft text-sage-dark text-[11px] font-semibold flex items-center justify-center shrink-0">
-                    {i + 1}
-                  </span>
-                  <div>
-                    <p className="text-sm font-medium text-ink">{ex.name}</p>
-                    <p className="text-xs text-ink-soft">
-                      {ex.muscle_group ? `${ex.muscle_group} · ` : ""}
-                      {ex.sets ? `${ex.sets} sets` : ""}
-                      {ex.sets && ex.reps ? " · " : ""}
-                      {ex.reps ?? ""}
-                    </p>
-                  </div>
-                </li>
-              ))}
+              {exercises.map((ex, i) => {
+                const hasOwnDemo = ownDemo(ex)
+                const video = hasOwnDemo ? null : lookupExerciseVideo(ex.name)
+                const hasPreview = hasOwnDemo || Boolean(video)
+                const expanded = previewId === ex.id
+                return (
+                  <li key={ex.id} className="flex flex-col gap-2.5">
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 h-5 w-5 rounded-full bg-sage-soft text-sage-dark text-[11px] font-semibold flex items-center justify-center shrink-0">
+                        {i + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-ink">{ex.name}</p>
+                        <p className="text-xs text-ink-soft">
+                          {ex.muscle_group ? `${ex.muscle_group} · ` : ""}
+                          {formatExercisePrescription(workout.type, ex.sets, ex.reps)}
+                        </p>
+                        {hasPreview && (
+                          <button
+                            type="button"
+                            onClick={() => setPreviewId(expanded ? null : ex.id)}
+                            className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sage-dark touch-manipulation"
+                          >
+                            <PlayCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
+                            {expanded ? "Verberg uitvoering" : "Bekijk uitvoering"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {expanded && hasOwnDemo && (
+                      <ExerciseDemo
+                        name={ex.name}
+                        muscleGroup={ex.muscle_group}
+                        videoUrl={ex.demo_video_url}
+                        imageUrl={ex.demo_image_url}
+                        className="ml-8 aspect-video w-[calc(100%-2rem)] rounded-2xl"
+                      />
+                    )}
+                    {expanded && !hasOwnDemo && video && (
+                      <div className="pl-8">
+                        <ExerciseVideoPlayer video={video} exerciseName={ex.name} />
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           </Card>
         )}
@@ -113,7 +171,7 @@ export function WorkoutSession({
     const doneCount = doneIds.size
     return (
       <Card className="text-center">
-        <p className="text-3xl mb-2">🎉</p>
+        <PartyPopper className="h-8 w-8 mx-auto mb-2 text-sage-dark" strokeWidth={1.5} />
         <p className="font-display text-xl text-ink mb-1">
           Mooi gedaan{name ? `, ${name}` : ""}.
         </p>
@@ -122,8 +180,9 @@ export function WorkoutSession({
         </p>
         <p className="text-sm text-ink-soft mb-5">Je hebt vandaag weer iets voor jezelf gedaan.</p>
         <Button onClick={handleFinishWorkout} disabled={isPending}>
-          {isPending ? "Bezig..." : "Workout afronden"}
+          {isPending ? "Bezig..." : "Training afronden"}
         </Button>
+        {finishError && <p className="text-sm text-danger mt-3">{finishError}</p>}
       </Card>
     )
   }
@@ -131,6 +190,8 @@ export function WorkoutSession({
   if (!current) return null
 
   const steps = parseSteps(current.steps)
+  const currentHasOwnDemo = ownDemo(current)
+  const currentVideo = currentHasOwnDemo ? null : lookupExerciseVideo(current.name)
 
   return (
     <Card>
@@ -138,6 +199,19 @@ export function WorkoutSession({
         Oefening {index + 1} van {exercises.length}
         {current.muscle_group ? ` · ${current.muscle_group}` : ""}
       </p>
+      {currentVideo ? (
+        <div className="mb-3">
+          <ExerciseVideoPlayer video={currentVideo} exerciseName={current.name} />
+        </div>
+      ) : (
+        <ExerciseDemo
+          name={current.name}
+          muscleGroup={current.muscle_group}
+          videoUrl={current.demo_video_url}
+          imageUrl={current.demo_image_url}
+          className="aspect-video w-full rounded-2xl mb-3"
+        />
+      )}
       <div className="flex items-start justify-between gap-3 mb-2">
         <p className="font-display text-xl text-ink">{current.name}</p>
         <ExerciseFavoriteButton
@@ -147,9 +221,7 @@ export function WorkoutSession({
       </div>
       {(current.sets || current.reps) && (
         <p className="text-sm text-sage-dark font-medium mb-4">
-          {current.sets ? `${current.sets} sets` : ""}
-          {current.sets && current.reps ? " · " : ""}
-          {current.reps ?? ""}
+          {formatExercisePrescription(workout.type, current.sets, current.reps)}
         </p>
       )}
 

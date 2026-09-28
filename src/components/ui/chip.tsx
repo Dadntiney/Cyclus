@@ -14,8 +14,8 @@ export function Chip({ selected, className, ...props }: ChipProps) {
         "motion-safe:active:scale-[0.96]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream",
         selected
-          ? "bg-sage-dark text-white border-sage-dark"
-          : "bg-white text-ink border-line hover:border-sage/60 active:border-sage/60",
+          ? "bg-sage-fill text-white border-sage-dark"
+          : "bg-surface text-ink border-line hover:border-sage/60 active:border-sage/60",
         className,
       )}
       aria-pressed={selected}

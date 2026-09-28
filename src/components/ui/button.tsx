@@ -11,15 +11,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-sage-dark text-white hover:bg-sage-darker active:bg-sage-darker",
-  secondary: "bg-white text-ink border border-line hover:bg-cream-soft active:bg-cream-soft",
+  primary: "bg-sage-fill text-white hover:bg-sage-fill-darker active:bg-sage-fill-darker",
+  secondary: "bg-surface text-ink border border-line hover:bg-cream-soft active:bg-cream-soft",
   ghost: "bg-transparent text-ink hover:bg-cream-soft active:bg-cream-soft",
-  danger: "bg-danger text-white hover:bg-danger-dark active:bg-danger-dark",
+  danger: "bg-danger-fill text-white hover:bg-danger-fill-darker active:bg-danger-fill-darker",
 }
 
 const sizeClasses: Record<Size, string> = {
   sm: "text-sm px-3.5 py-2.5 rounded-xl min-h-11",
-  md: "text-[15px] px-5 py-3 rounded-2xl min-h-11",
+  // 16px (not 15px): the size iOS treats as "real" body text and the
+  // threshold that keeps Safari from auto-zooming on focus — this is the
+  // default every primary CTA in the app uses unless it opts into sm/lg.
+  md: "text-base px-5 py-3 rounded-2xl min-h-11",
   lg: "text-base px-6 py-3.5 rounded-2xl min-h-12",
 }
 

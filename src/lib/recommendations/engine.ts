@@ -1,8 +1,21 @@
 import type { Tables } from "@/types/database"
-import type { CycleEstimate, CyclePhase } from "@/lib/cycle/estimate"
+import type { CycleEstimate } from "@/lib/cycle/estimate"
+import { TRAINING_PREFERENCE_TO_TYPE, symptomLabel } from "@/lib/constants"
+import { SHORT_NIGHT_MINUTES } from "@/lib/sleep/insights"
+import { filterOutDislikedRecipes } from "@/lib/nutrition/dislikes"
 
-type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
-type Recipe = Pick<Tables<"recipes">, "id" | "title" | "category" | "preparation_time" | "nutrition_information">
+/** The single strongest sleep/symptom correlation from her history (see
+ * computeSleepSymptomInsights) — just enough to personalize today's
+ * wording when it actually applies, not the full insight shape. */
+export interface PersonalSleepPattern {
+  symptom: string
+}
+
+type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty" | "image_url">
+type Recipe = Pick<
+  Tables<"recipes">,
+  "id" | "title" | "category" | "preparation_time" | "nutrition_information" | "image_url" | "ingredients"
+>
 type Profile = Tables<"profiles">
 type Checkin = Tables<"daily_checkins">
 
@@ -14,12 +27,19 @@ export interface RecommendationInput {
     | "training_preferences"
     | "nutrition_preferences"
     | "nutrition_style"
+    | "disliked_foods"
     | "health_conditions"
     | "movement_limitations"
     | "wellness_preference"
+    | "movement_enabled"
+    | "nutrition_enabled"
   >
   cycleEstimate: CycleEstimate | null
   latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms" | "need"> | null
+  /** Last night's tracked sleep duration, if she has sleep tracking on and filled it in. */
+  todaySleepDurationMinutes?: number | null
+  /** The strongest sleep/symptom pattern from her history, if any cleared the bar — see computeSleepSymptomInsights. */
+  personalSleepPattern?: PersonalSleepPattern | null
   workouts: Workout[]
   recipes: Recipe[]
   seed: string
@@ -39,8 +59,8 @@ export interface TrainingPickInput {
     | "wellness_preference"
   >
   latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms" | "need"> | null
-  /** Soft phase bias. Check-in signals always win over this. */
-  cycleEstimate?: CycleEstimate | null
+  todaySleepDurationMinutes?: number | null
+  personalSleepPattern?: PersonalSleepPattern | null
   workouts: Workout[]
   seed: string
 }
@@ -51,9 +71,8 @@ export interface NutritionRecommendation {
 }
 
 export interface NutritionPickInput {
-  profile: Pick<Profile, "nutrition_preferences" | "nutrition_style">
-  latestCheckin: Pick<Checkin, "need" | "energy" | "sleep" | "symptoms"> | null
-  cycleEstimate?: CycleEstimate | null
+  profile: Pick<Profile, "nutrition_preferences" | "nutrition_style" | "disliked_foods">
+  latestCheckin: Pick<Checkin, "need"> | null
   recipes: Recipe[]
   seed: string
 }
@@ -72,16 +91,8 @@ export interface Recommendation {
   recovery: RecoveryRecommendation
   dayFocus: string
   buddyContext: string[]
-}
-
-const TRAINING_PREFERENCE_TO_TYPE: Record<string, string> = {
-  Krachttraining: "krachttraining",
-  Pilates: "pilates",
-  Yoga: "yoga",
-  Wandelen: "wandelen",
-  Fietsen: "fietsen",
-  Hardlopen: "hardlopen",
-  Mobiliteit: "mobiliteit",
+  movementEnabled: boolean
+  nutritionEnabled: boolean
 }
 
 const WELLNESS_TYPE_BOOST: Record<string, string[]> = {
@@ -165,36 +176,37 @@ function seededIndex(seed: string, length: number): number {
   return Math.abs(hash) % length
 }
 
-function narrowIfPossible<T>(current: T[], next: T[]): T[] {
-  return next.length ? next : current
+/** True when today's short night matches a symptom she's historically more
+ * likely to report after a short night — the one place a multi-day pattern
+ * (not just today's data) can steer today's advice. */
+function shortNightMatchesPersonalPattern(
+  todaySleepDurationMinutes: number | null | undefined,
+  personalSleepPattern: PersonalSleepPattern | null | undefined,
+): boolean {
+  return (
+    Boolean(personalSleepPattern) &&
+    todaySleepDurationMinutes !== null &&
+    todaySleepDurationMinutes !== undefined &&
+    todaySleepDurationMinutes < SHORT_NIGHT_MINUTES
+  )
 }
 
-/**
- * True when today's check-in suggests a gentler session. Exported so the
- * weekprogramma can prefer short workouts on the same days.
- */
-export function wantsLowerIntensityToday(
+function wantsLowerIntensityToday(
   checkin: RecommendationInput["latestCheckin"],
+  todaySleepDurationMinutes?: number | null,
+  personalSleepPattern?: PersonalSleepPattern | null,
 ): boolean {
-  if (!checkin) return false
-  const lowEnergy = checkin.energy !== null && checkin.energy <= 2
-  const highStress = checkin.stress !== null && checkin.stress >= 4
-  const poorSleep = checkin.sleep !== null && checkin.sleep <= 2
-  const lowMood = checkin.mood !== null && checkin.mood <= 2
-  const draining = (checkin.symptoms ?? []).some((s) => DRAINING_SYMPTOMS.includes(s))
-  return lowEnergy || highStress || poorSleep || lowMood || draining || checkin.need === "rust"
-}
-
-/** Prefer short sessions when energy/time/need point that way. */
-export function shouldPreferShort(
-  checkin: RecommendationInput["latestCheckin"],
-  cycleEstimate?: CycleEstimate | null,
-): boolean {
-  if (checkin?.need === "rust" || checkin?.need === "mezelf") return true
-  if (checkin?.energy !== null && checkin?.energy !== undefined && checkin.energy <= 2) return true
-  if (checkin?.sleep !== null && checkin?.sleep !== undefined && checkin.sleep <= 2) return true
-  if (cycleEstimate?.phase === "menstruatie") return true
-  return false
+  const lowEnergy = Boolean(checkin) && checkin!.energy !== null && checkin!.energy <= 2
+  const highStress = Boolean(checkin) && checkin!.stress !== null && checkin!.stress >= 4
+  const poorSleep = Boolean(checkin) && checkin!.sleep !== null && checkin!.sleep <= 2
+  const needsRest = checkin?.need === "rust"
+  return (
+    lowEnergy ||
+    highStress ||
+    poorSleep ||
+    needsRest ||
+    shortNightMatchesPersonalPattern(todaySleepDurationMinutes, personalSleepPattern)
+  )
 }
 
 function parseCarbGrams(nutritionInformation: Recipe["nutrition_information"]): number | null {
@@ -213,7 +225,7 @@ function parseCarbGrams(nutritionInformation: Recipe["nutrition_information"]): 
  * Priority: check-in need/intensity → impact limits → phase bias → wellness style.
  */
 export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendation {
-  const { profile, latestCheckin, workouts, seed, cycleEstimate } = input
+  const { profile, latestCheckin, todaySleepDurationMinutes, personalSleepPattern, workouts, seed } = input
   const need = latestCheckin?.need ?? null
   const wantsMoreActive = need === "beweging"
   const lowerIntensity = wantsLowerIntensityToday(latestCheckin)
@@ -222,15 +234,24 @@ export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendat
   const wellness = profile.wellness_preference ?? null
   const wellnessTypes = wellness ? (WELLNESS_TYPE_BOOST[wellness] ?? []) : []
 
+  const rawPreferenceCount = profile.training_preferences.length
   const preferredTypes = profile.training_preferences
     .map((pref) => TRAINING_PREFERENCE_TO_TYPE[pref])
     .filter((type): type is string => Boolean(type))
 
-  const impactSensitive =
-    (profile.health_conditions ?? []).some((c) => IMPACT_SENSITIVE_TAGS.includes(c)) ||
-    (profile.movement_limitations ?? []).some((c) => IMPACT_SENSITIVE_TAGS.includes(c))
+  const lowerIntensity = wantsLowerIntensityToday(latestCheckin, todaySleepDurationMinutes, personalSleepPattern)
+  const matchesSleepPattern = shortNightMatchesPersonalPattern(todaySleepDurationMinutes, personalSleepPattern)
 
-  let candidateWorkouts = preferredTypes.length
+  const impactSensitive = (profile.health_conditions ?? []).some((c) =>
+    IMPACT_SENSITIVE_TAGS.includes(c),
+  ) || (profile.movement_limitations ?? []).some((c) => IMPACT_SENSITIVE_TAGS.includes(c))
+
+  // When she's set preferences, only ever show those types — even if none
+  // of them happen to map to workout content yet (e.g. only "Zwemmen").
+  // Falling back to the full library in that case would defeat the point
+  // of choosing specific types. No preferences set at all keeps today's
+  // default: show everything.
+  let candidateWorkouts = rawPreferenceCount > 0
     ? workouts.filter((w) => preferredTypes.includes(w.type))
     : workouts
 
@@ -300,7 +321,7 @@ export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendat
     }
   }
 
-  if (!candidateWorkouts.length) candidateWorkouts = workouts
+  if (!candidateWorkouts.length && rawPreferenceCount === 0) candidateWorkouts = workouts
 
   const workout = candidateWorkouts.length
     ? candidateWorkouts[seededIndex(`${seed}-training`, candidateWorkouts.length)]
@@ -308,8 +329,12 @@ export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendat
 
   const usedPhase = usedPhaseGentle || usedPhaseActive || usedPhaseTypes
   let reason: string
-  if (lowerIntensity && need === "rust") {
+  if (!workout && rawPreferenceCount > 0) {
+    reason = "We hebben nog geen passende workouts voor de bewegingsvorm(en) die je koos — pas dit aan in je profiel."
+  } else if (lowerIntensity && need === "rust") {
     reason = "Je gaf aan dat je vandaag naar rust verlangt — een zachte sessie dus."
+  } else if (lowerIntensity && matchesSleepPattern && personalSleepPattern) {
+    reason = `Je sliep vannacht relatief kort — in jouw gegevens hangt dat vaker samen met ${symptomLabel(personalSleepPattern.symptom).toLowerCase()}, dus kozen we een zachtere sessie.`
   } else if (lowerIntensity) {
     reason =
       "Je energie, slaap, stemming of klachten gaven aan dat een rustigere sessie vandaag beter past."
@@ -365,11 +390,13 @@ export function pickTodaysRecipe(input: NutritionPickInput): NutritionRecommenda
     (p) => p !== "Geen voorkeur" && p !== "Allergieën" && p !== "Dingen die ik niet lust",
   )
 
-  let candidateRecipes = categoryPrefs.length
-    ? recipes.filter((r) => r.category.some((c) => categoryPrefs.includes(c)))
-    : recipes
+  const availableRecipes = filterOutDislikedRecipes(recipes, profile.disliked_foods)
 
-  if (!candidateRecipes.length) candidateRecipes = recipes
+  let candidateRecipes = nutritionPrefs.length
+    ? availableRecipes.filter((r) => r.category.some((c) => nutritionPrefs.includes(c)))
+    : availableRecipes
+
+  if (!candidateRecipes.length) candidateRecipes = availableRecipes
 
   let reason: string
   let usedQuick = false
@@ -537,28 +564,22 @@ function buildRecovery(
 }
 
 export function buildRecommendation(input: RecommendationInput): Recommendation {
-  const { profile, cycleEstimate, latestCheckin, workouts, recipes, seed } = input
+  const { profile, cycleEstimate, latestCheckin, todaySleepDurationMinutes, personalSleepPattern, workouts, recipes, seed } =
+    input
 
   const need = latestCheckin?.need ?? null
   const wantsMoreActive = need === "beweging"
   const wantsSelfCare = need === "mezelf"
-  const lowerIntensity = wantsLowerIntensityToday(latestCheckin)
+  const lowerIntensity = wantsLowerIntensityToday(latestCheckin, todaySleepDurationMinutes, personalSleepPattern)
+  const matchesSleepPattern = shortNightMatchesPersonalPattern(todaySleepDurationMinutes, personalSleepPattern)
 
-  const { workout, reason: trainingReason } = pickTodaysWorkout({
-    profile,
-    latestCheckin,
-    cycleEstimate,
-    workouts,
-    seed,
-  })
+  const { workout, reason: trainingReason } = profile.movement_enabled
+    ? pickTodaysWorkout({ profile, latestCheckin, todaySleepDurationMinutes, personalSleepPattern, workouts, seed })
+    : { workout: null, reason: "" }
 
-  const { recipe, reason: nutritionReason } = pickTodaysRecipe({
-    profile,
-    latestCheckin,
-    cycleEstimate,
-    recipes,
-    seed,
-  })
+  const { recipe, reason: nutritionReason } = profile.nutrition_enabled
+    ? pickTodaysRecipe({ profile, latestCheckin, recipes, seed })
+    : { recipe: null, reason: "" }
 
   const recovery = buildRecovery(
     profile,
@@ -576,6 +597,8 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
   }
   if (need === "rust") {
     dayFocus = `Je gaf aan dat je vandaag naar rust verlangt${namePart}. Wees zacht voor jezelf — dat is vandaag genoeg.`
+  } else if (lowerIntensity && matchesSleepPattern && personalSleepPattern) {
+    dayFocus = `Je sliep vannacht relatief kort${namePart} — in jouw gegevens hangt dat vaker samen met ${symptomLabel(personalSleepPattern.symptom).toLowerCase()}. Wees dus extra zacht voor jezelf vandaag.`
   } else if (lowerIntensity) {
     dayFocus = `Je gaf aan dat het vandaag wat minder gaat${namePart}. Wees zacht voor jezelf en kies rust waar dat kan.`
   } else if (wantsMoreActive) {
@@ -607,7 +630,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     if (latestCheckin.stress) parts.push(`stress ${latestCheckin.stress}/5`)
     if (parts.length) buddyContext.push(`Laatste check-in: ${parts.join(", ")}`)
     if (latestCheckin.symptoms?.length) {
-      buddyContext.push(`Klachten: ${latestCheckin.symptoms.join(", ")}`)
+      buddyContext.push(`Klachten: ${latestCheckin.symptoms.map(symptomLabel).join(", ")}`)
     }
     if (latestCheckin.need) buddyContext.push(`Behoefte vandaag: ${latestCheckin.need}`)
   }
@@ -618,5 +641,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     recovery,
     dayFocus,
     buddyContext,
+    movementEnabled: profile.movement_enabled,
+    nutritionEnabled: profile.nutrition_enabled,
   }
 }

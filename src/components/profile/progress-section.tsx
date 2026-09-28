@@ -45,7 +45,7 @@ export function ProgressSection({
                 key={m.id}
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1.5"
               >
-                <span aria-hidden>{m.emoji}</span>
+                <m.icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
                 {m.label}
               </span>
             ))}

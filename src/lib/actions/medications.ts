@@ -2,89 +2,78 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
-import { z } from "zod"
+import { medicationSchema, type MedicationInput } from "@/lib/validations/medication"
 
-const medicationSchema = z.object({
-  name: z.string().trim().min(1, "Naam is verplicht").max(120),
-  notes: z.string().trim().max(500).optional(),
-  reminderTime: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/)
-    .optional()
-    .nullable(),
-  reminderEnabled: z.boolean().default(true),
-})
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
-
-function normalizeTime(value: string | null | undefined): string | null {
-  if (!value) return null
-  return value.length === 5 ? `${value}:00` : value
-}
-
-export async function addMedication(input: z.infer<typeof medicationSchema>) {
-  const parsed = medicationSchema.safeParse(input)
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." }
+function toRow(data: MedicationInput) {
+  return {
+    category: data.category,
+    name: data.name.trim(),
+    hormone_type: data.hormoneType?.trim() || null,
+    form: data.form?.trim() || null,
+    dosage: data.dosage?.trim() || null,
+    schedule_type: data.scheduleType,
+    schedule_days: data.scheduleType === "wekelijkse_dagen" ? (data.scheduleDays ?? null) : null,
+    schedule_days_on: data.scheduleType === "cyclisch" ? (data.scheduleDaysOn ?? null) : null,
+    schedule_days_off: data.scheduleType === "cyclisch" ? (data.scheduleDaysOff ?? null) : null,
+    start_date: data.startDate || null,
+    end_date: data.endDate || null,
+    time_of_day: data.timeOfDay || null,
+    reminder_enabled: data.reminderEnabled,
+    remind_on_start: data.remindOnStart,
+    remind_daily: data.remindDaily,
+    remind_on_stop: data.remindOnStop,
+    notes: data.notes?.trim() || null,
   }
-
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { error: "Je bent niet ingelogd." }
-
-  const { error } = await supabase.from("medications").insert({
-    user_id: user.id,
-    name: parsed.data.name,
-    notes: parsed.data.notes || null,
-    reminder_time: normalizeTime(parsed.data.reminderTime ?? null),
-    reminder_enabled: parsed.data.reminderEnabled,
-  })
-
-  if (error) return { error: "Toevoegen is niet gelukt." }
-
-  revalidatePath("/hulpmiddelen")
-  revalidatePath("/vandaag")
-  return { success: true }
 }
 
-export async function updateMedication(
-  id: string,
-  input: Partial<z.infer<typeof medicationSchema>> & { active?: boolean },
-) {
+function revalidateMedicationPaths() {
+  revalidatePath("/medicatie")
+  revalidatePath("/vandaag")
+  revalidatePath("/cyclus/vandaag")
+  revalidatePath("/profiel")
+}
+
+export async function createMedication(input: MedicationInput) {
+  const parsed = medicationSchema.safeParse(input)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." }
+
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return { error: "Je bent niet ingelogd." }
 
-  const patch: {
-    updated_at: string
-    name?: string
-    notes?: string | null
-    reminder_time?: string | null
-    reminder_enabled?: boolean
-    active?: boolean
-  } = { updated_at: new Date().toISOString() }
-  if (input.name !== undefined) patch.name = input.name
-  if (input.notes !== undefined) patch.notes = input.notes || null
-  if (input.reminderTime !== undefined) patch.reminder_time = normalizeTime(input.reminderTime)
-  if (input.reminderEnabled !== undefined) patch.reminder_enabled = input.reminderEnabled
-  if (input.active !== undefined) patch.active = input.active
+  const { data, error } = await supabase
+    .from("medications")
+    .insert({ user_id: user.id, ...toRow(parsed.data) })
+    .select()
+    .single()
+
+  if (error) return { error: "Opslaan is niet gelukt." }
+
+  revalidateMedicationPaths()
+  return { success: true, medication: data }
+}
+
+export async function updateMedication(id: string, input: MedicationInput) {
+  const parsed = medicationSchema.safeParse(input)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Je bent niet ingelogd." }
 
   const { error } = await supabase
     .from("medications")
-    .update(patch)
+    .update(toRow(parsed.data))
     .eq("id", id)
     .eq("user_id", user.id)
 
   if (error) return { error: "Bijwerken is niet gelukt." }
 
-  revalidatePath("/hulpmiddelen")
-  revalidatePath("/vandaag")
+  revalidateMedicationPaths()
   return { success: true }
 }
 
@@ -96,43 +85,43 @@ export async function deleteMedication(id: string) {
   if (!user) return { error: "Je bent niet ingelogd." }
 
   const { error } = await supabase.from("medications").delete().eq("id", id).eq("user_id", user.id)
+
   if (error) return { error: "Verwijderen is niet gelukt." }
 
-  revalidatePath("/hulpmiddelen")
-  revalidatePath("/vandaag")
+  revalidateMedicationPaths()
   return { success: true }
 }
 
-export async function toggleMedicationTaken(medicationId: string, taken: boolean) {
+/** Toggles whether today's (or a given date's) dose was marked as taken. */
+export async function toggleMedicationTaken(medicationId: string, date: string) {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return { error: "Je bent niet ingelogd." }
 
-  const date = todayISO()
+  const { data: existing } = await supabase
+    .from("medication_logs")
+    .select("id, taken")
+    .eq("medication_id", medicationId)
+    .eq("date", date)
+    .eq("user_id", user.id)
+    .maybeSingle()
 
-  if (taken) {
-    const { error } = await supabase.from("medication_intakes").upsert(
-      {
-        user_id: user.id,
-        medication_id: medicationId,
-        date,
-      },
-      { onConflict: "user_id,medication_id,date" },
-    )
-    if (error) return { error: "Markeren is niet gelukt." }
+  if (existing) {
+    const { error } = await supabase
+      .from("medication_logs")
+      .update({ taken: !existing.taken })
+      .eq("id", existing.id)
+    if (error) return { error: "Bijwerken is niet gelukt." }
   } else {
     const { error } = await supabase
-      .from("medication_intakes")
-      .delete()
-      .eq("user_id", user.id)
-      .eq("medication_id", medicationId)
-      .eq("date", date)
-    if (error) return { error: "Ongedaan maken is niet gelukt." }
+      .from("medication_logs")
+      .insert({ user_id: user.id, medication_id: medicationId, date, taken: true })
+    if (error) return { error: "Opslaan is niet gelukt." }
   }
 
-  revalidatePath("/hulpmiddelen")
   revalidatePath("/vandaag")
+  revalidatePath("/cyclus/vandaag")
   return { success: true }
 }

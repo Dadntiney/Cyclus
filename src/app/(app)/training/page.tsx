@@ -1,26 +1,18 @@
 import Link from "next/link"
 import { format } from "date-fns"
-import { nl } from "date-fns/locale"
-import { Check, Moon } from "lucide-react"
+import { Settings2, Dumbbell, Heart } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
-import { getWorkoutLibrary, getWeekSessions } from "@/lib/data/training"
-import { estimateCycle } from "@/lib/cycle/estimate"
-import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
-import {
-  pickTodaysWorkout,
-  shouldPreferShort,
-} from "@/lib/recommendations/engine"
+import { getProfile } from "@/lib/data/profile"
+import { getWorkoutLibrary } from "@/lib/data/training"
+import { getPersonalSleepContext } from "@/lib/data/sleep"
+import { pickTodaysWorkout } from "@/lib/recommendations/engine"
 import { WorkoutLibrary } from "@/components/training/workout-library"
+import { WorkoutImage } from "@/components/training/workout-image"
 import { Card } from "@/components/ui/card"
+import { buttonVariants } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
+import { TRAINING_PREFERENCE_TO_TYPE } from "@/lib/constants"
 import { cn } from "@/lib/utils"
-
-const FOCUS_LABELS: Record<DayFocus, string> = {
-  kracht: "Kracht",
-  cardio: "Cardio",
-  mobiliteit: "Mobiliteit",
-  herstel: "Herstel",
-  rust: "Rustdag",
-}
 
 export default async function TrainingPage() {
   const supabase = await createClient()
@@ -29,52 +21,54 @@ export default async function TrainingPage() {
 
   const todayISO = format(new Date(), "yyyy-MM-dd")
 
-  const [workouts, week, { data: profile }, { data: checkin }, { data: cycleProfile }] =
-    await Promise.all([
-      getWorkoutLibrary(),
-      getWeekSessions(user.id),
-      supabase
-        .from("profiles")
-        .select(
-          "training_frequency, health_conditions, movement_limitations, training_preferences, wellness_preference",
-        )
-        .eq("id", user.id)
-        .single(),
-      supabase
-        .from("daily_checkins")
-        .select("energy, mood, sleep, stress, symptoms, need")
-        .eq("user_id", user.id)
-        .eq("date", todayISO)
-        .maybeSingle(),
-      supabase
-        .from("cycle_profiles")
-        .select("has_cycle, last_period_start, average_cycle_length")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-    ])
+  const [workouts, profile, { data: checkin }] = await Promise.all([
+    getWorkoutLibrary(),
+    getProfile(user.id),
+    supabase
+      .from("daily_checkins")
+      .select("energy, mood, sleep, stress, symptoms, need")
+      .eq("user_id", user.id)
+      .eq("date", todayISO)
+      .maybeSingle(),
+  ])
 
-  const cycleEstimate = cycleProfile
-    ? estimateCycle(
-        cycleProfile.last_period_start,
-        cycleProfile.average_cycle_length,
-        cycleProfile.has_cycle,
-      )
-    : null
+  if (profile && !profile.movement_enabled) {
+    return (
+      <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+        <BackButton href="/voor-jou" label="Voor jou" />
+        <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Beweging</h1>
+        <p className="text-sm text-ink-soft mb-6">Jouw weekplanning en trainingsbibliotheek.</p>
+        <Card className="text-center py-8">
+          <Dumbbell className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
+          <p className="font-display text-lg text-ink mb-2">Beweging staat nu uit</p>
+          <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
+            Je gaf aan dat beweging op dit moment niet relevant voor je is. Dat is helemaal prima —
+            je ziet hierdoor nergens trainingsadvies. Wil je dit toch weer gebruiken?
+          </p>
+          <Link href="/profiel#beweging" className={buttonVariants()}>
+            Zet aan in mijn profiel
+          </Link>
+        </Card>
+      </div>
+    )
+  }
 
-  const program = buildWeeklyProgram({
-    frequency: profile?.training_frequency ?? 3,
-    healthConditions: profile?.health_conditions ?? [],
-    movementLimitations: profile?.movement_limitations ?? [],
-    workouts,
-    seed: `${user.id}-weekprogram`,
-    preferShort: shouldPreferShort(checkin ?? null, cycleEstimate),
-  })
+  const rawPreferences = profile?.training_preferences ?? []
+  const preferredTypes = rawPreferences
+    .map((p) => TRAINING_PREFERENCE_TO_TYPE[p])
+    .filter((t): t is string => Boolean(t))
+  const libraryWorkouts = rawPreferences.length
+    ? workouts.filter((w) => preferredTypes.includes(w.type))
+    : workouts
 
-  // Today's slot in the week plan is replaced with the same, check-in-aware
-  // pick Vandaag shows (same seed, so both pages agree) — the weekday
-  // rotation can't know she has low energy or asked for rest today, but the
-  // one live signal we have should win over a fixed schedule. A rest day
-  // stays a rest day: this only steps in on days she already planned to move.
+  // Same personal sleep/symptom pattern Vandaag uses, and same seed — so
+  // this page never picks a different workout than Vandaag on a day the
+  // pattern applies.
+  const { todaySleepDurationMinutes, personalSleepPattern } =
+    profile?.sleep_tracking_enabled === true
+      ? await getPersonalSleepContext(user.id, todayISO)
+      : { todaySleepDurationMinutes: null, personalSleepPattern: null }
+
   const todaysPick = pickTodaysWorkout({
     profile: {
       training_preferences: profile?.training_preferences ?? [],
@@ -83,105 +77,81 @@ export default async function TrainingPage() {
       wellness_preference: profile?.wellness_preference ?? null,
     },
     latestCheckin: checkin ?? null,
-    cycleEstimate,
+    todaySleepDurationMinutes,
+    personalSleepPattern,
     workouts,
     seed: `${user.id}-${todayISO}`,
   })
-  const todayIndex = week.findIndex((d) => d.date === todayISO)
 
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
-        <h1 className="font-display text-2xl lg:text-3xl text-ink">Beweging</h1>
-        <p className="text-sm text-ink-soft mt-1">Jouw weekplanning en trainingsbibliotheek.</p>
+        <BackButton href="/voor-jou" label="Voor jou" />
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="font-display text-2xl lg:text-3xl text-ink">Beweging</h1>
+            <p className="text-sm text-ink-soft mt-1">Jouw trainingsbibliotheek, afgestemd op jouw voorkeuren.</p>
+          </div>
+          <Link
+            href="/training/favorieten"
+            className="flex items-center gap-1.5 text-sm font-medium text-sage-dark"
+          >
+            <Heart className="h-4 w-4" />
+            Favorieten
+          </Link>
+        </div>
       </div>
 
-      <div>
-        <h2 className="font-display text-lg text-ink mb-3">Deze week</h2>
-        <Card className="p-3">
-          <div className="grid grid-cols-7 gap-1.5 text-center">
-            {week.map(({ date, sessions }) => {
-              const done = sessions.some((s) => s.completed)
-              return (
-                <div key={date} className="flex flex-col items-center gap-1.5 py-2">
-                  <span className="text-[11px] text-ink-soft capitalize">
-                    {format(new Date(date), "EEEEEE", { locale: nl })}
-                  </span>
-                  <div
-                    className={cn(
-                      "h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium",
-                      done
-                        ? "bg-sage-dark text-white"
-                        : date === todayISO
-                          ? "border border-sage text-sage-dark"
-                          : "bg-cream-soft text-ink-soft",
-                    )}
-                  >
-                    {done ? <Check className="h-4 w-4" /> : format(new Date(date), "d")}
-                  </div>
-                </div>
-              )
-            })}
+      {todaysPick.workout && (
+        <Card className="bg-sage-soft border-transparent">
+          <p className="text-sm font-medium text-sage-dark mb-1">Voor jou vandaag</p>
+          <div className="flex items-start gap-3">
+            <WorkoutImage
+              type={todaysPick.workout.type}
+              imageUrl={todaysPick.workout.image_url}
+              className="h-16 w-16 rounded-xl shrink-0"
+              sizes="64px"
+            />
+            <div className="min-w-0">
+              <p className="font-display text-xl text-ink">{todaysPick.workout.title}</p>
+              <p className="text-sm text-ink-soft mt-0.5">{todaysPick.workout.duration} minuten</p>
+              <p className="text-base text-ink-soft mt-2">{todaysPick.reason}</p>
+              <Link href={`/training/${todaysPick.workout.id}`} className={cn(buttonVariants(), "mt-3")}>
+                Start training
+              </Link>
+            </div>
           </div>
         </Card>
-      </div>
+      )}
 
-      <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
-        <div>
-          <h2 className="font-display text-lg text-ink mb-3">Jouw weekprogramma</h2>
-          <p className="text-sm text-ink-soft mb-3">
-            Gebaseerd op {profile?.training_frequency ?? 3}x per week uit je profiel. Pas dit aan
-            bij Profiel als dit niet meer klopt.
+      <div>
+        <div className="flex items-baseline justify-between mb-3">
+          <h2 className="font-display text-lg text-ink">
+            {rawPreferences.length ? "Trainingen voor jou" : "Alle trainingen"}
+          </h2>
+          <Link
+            href="/profiel#beweging"
+            className="inline-flex items-center gap-1 text-xs font-medium text-sage-dark touch-manipulation"
+          >
+            <Settings2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+            Voorkeuren
+          </Link>
+        </div>
+        {rawPreferences.length > 0 && (
+          <p className="text-xs text-ink-soft mb-3">
+            Gefilterd op basis van je gekozen bewegingsvormen ({rawPreferences.join(", ")}).
           </p>
-          <div className="flex flex-col gap-2">
-            {program.map((day, i) => {
-              const isToday = i === todayIndex
-              const workout = isToday && day.focus !== "rust" ? (todaysPick.workout ?? day.workout) : day.workout
-
-              if (!workout) {
-                return (
-                  <Card key={day.weekday} className="p-3.5 bg-cream-soft border-transparent shadow-none">
-                    <div className="flex items-center gap-2.5 text-ink-soft">
-                      <Moon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                      <div>
-                        <p className="text-xs">{day.weekday}</p>
-                        <p className="text-sm font-medium">{FOCUS_LABELS.rust}</p>
-                      </div>
-                    </div>
-                  </Card>
-                )
-              }
-
-              return (
-                <Link
-                  key={day.weekday}
-                  href={`/training/${workout.id}`}
-                  className="block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
-                >
-                  <Card interactive className={cn("p-3.5", isToday && "bg-sage-soft border-transparent")}>
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className={cn("text-xs", isToday ? "text-sage-dark font-medium" : "text-ink-soft")}>
-                          {isToday ? "Vandaag voor jou" : `${day.weekday} · ${FOCUS_LABELS[day.focus]}`}
-                        </p>
-                        <p className="font-medium text-ink text-sm mt-0.5">{workout.title}</p>
-                        {isToday && (
-                          <p className="text-xs text-ink-soft mt-1">{todaysPick.reason}</p>
-                        )}
-                      </div>
-                      <span className="text-xs text-ink-soft shrink-0">{workout.duration} min</span>
-                    </div>
-                  </Card>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="mt-6 lg:mt-0">
-          <h2 className="font-display text-lg text-ink mb-3">Alle workouts</h2>
-          <WorkoutLibrary workouts={workouts} />
-        </div>
+        )}
+        {libraryWorkouts.length ? (
+          <WorkoutLibrary workouts={libraryWorkouts} />
+        ) : (
+          <Card>
+            <p className="text-sm text-ink-soft">
+              We hebben nog geen workouts voor de vorm(en) van bewegen die je koos. Pas je
+              voorkeuren aan in je profiel, of laat het ons weten.
+            </p>
+          </Card>
+        )}
       </div>
     </div>
   )

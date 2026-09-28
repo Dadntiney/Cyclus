@@ -1,0 +1,1371 @@
+[
+  {
+    "title": "Shakshuka met feta en volkoren brood",
+    "description": "Eieren gepocheerd in een kruidige tomatensaus met paprika en feta — een stevig, eiwitrijk ontbijt of lunch.",
+    "ingredients": [
+      "1 ui",
+      "1 paprika",
+      "400g tomatenblokjes",
+      "4 eieren",
+      "100g feta",
+      "1 tl komijn",
+      "volkoren brood",
+      "olijfolie",
+      "peper en zout"
+    ],
+    "instructions": "Fruit ui en paprika, voeg tomaten en komijn toe, laat indikken, breek eieren erin en bak tot het eiwit gestold is. Serveer met feta en brood.",
+    "preparation_time": 25,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snipper de ui en snijd de paprika in blokjes.",
+      "Fruit ui en paprika aan in olijfolie.",
+      "Voeg tomatenblokjes en komijn toe en laat 10 minuten indikken.",
+      "Maak kuiltjes, breek de eieren erin en bak afgedekt 5-7 minuten.",
+      "Verkruimel feta erover en serveer met geroosterd volkoren brood."
+    ],
+    "category": [
+      "Ontbijt",
+      "Lunch",
+      "Vegetarisch",
+      "Eiwitrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 420,
+      "eiwit": "22g",
+      "koolhydraten": "28g",
+      "vet": "24g"
+    },
+    "is_budget": true,
+    "storage_tip": "Saus tot 2 dagen in de koelkast; eieren het liefst vers bakken.",
+    "meal_prep_tip": "Maak de tomatensaus vooraf; voeg eieren pas toe vlak voor het eten.",
+    "low_carb_variant": "Serveer zonder brood, met extra paprika of avocado."
+  },
+  {
+    "title": "Japanse tamago-sando",
+    "description": "Zachte Japanse eiersalade op luchtig witbrood — een snelle, eiwitrijke lunchklassieker.",
+    "ingredients": [
+      "4 eieren",
+      "3 el Japanse mayonaise (of gewone + scheutje rijstazijn)",
+      "4 sneetjes zacht witbrood",
+      "snufje zout en suiker",
+      "boter"
+    ],
+    "instructions": "Kook eieren hard, prak grof met mayonaise, beleg brood, snijd korsten eraf en diagonale driehoekjes.",
+    "preparation_time": 20,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de eieren 9 minuten hard en spoel koud af.",
+      "Pel en prak grof met mayonaise, zout en een snufje suiker.",
+      "Besmeer het brood licht met boter.",
+      "Beleg, snijd de korsten eraf en snijd diagonaal door."
+    ],
+    "category": [
+      "Lunch",
+      "Snack",
+      "Vegetarisch",
+      "Eiwitrijk",
+      "Snel"
+    ],
+    "nutrition_information": {
+      "calorieen": 380,
+      "eiwit": "18g",
+      "koolhydraten": "32g",
+      "vet": "20g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Turks menemen",
+    "description": "Roerei in tomatensaus met paprika en ui — een warm Turks ontbijt vol smaak.",
+    "ingredients": [
+      "3 eieren",
+      "2 tomaten",
+      "1 paprika",
+      "1 ui",
+      "olijfolie",
+      "pul biber of chilivlokken",
+      "peper en zout",
+      "vers brood"
+    ],
+    "instructions": "Fruit ui en paprika, voeg tomaten toe, roer eieren erdoor tot net gestold. Serveer met brood.",
+    "preparation_time": 20,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snipper ui en snijd paprika en tomaten fijn.",
+      "Fruit ui en paprika in olijfolie.",
+      "Voeg tomaten toe en laat 5 minuten sudderen.",
+      "Klop eieren los, giet erbij en roer tot net gestold.",
+      "Werk af met pul biber en serveer met brood."
+    ],
+    "category": [
+      "Ontbijt",
+      "Lunch",
+      "Vegetarisch",
+      "Eiwitrijk",
+      "Snel"
+    ],
+    "nutrition_information": {
+      "calorieen": 310,
+      "eiwit": "16g",
+      "koolhydraten": "18g",
+      "vet": "20g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Scandinavische havermoutpap met bosbessen",
+    "description": "Romige havermoutpap met bosbessen en een scheutje melk — eenvoudig, vezelrijk ontbijt.",
+    "ingredients": [
+      "80g havermout",
+      "250ml (plantaardige) melk",
+      "handvol bosbessen",
+      "1 tl honing",
+      "snufje zout",
+      "handvol amandelen"
+    ],
+    "instructions": "Kook havermout met melk tot romig, top af met bosbessen, honing en amandelen.",
+    "preparation_time": 12,
+    "servings": 1,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Breng melk met een snufje zout aan de kook.",
+      "Voeg havermout toe en kook 5-7 minuten al roerend.",
+      "Schep in een kom.",
+      "Top met bosbessen, honing en amandelen."
+    ],
+    "category": [
+      "Ontbijt",
+      "Vegetarisch",
+      "Vezelrijk",
+      "Snel",
+      "Magnesiumrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 360,
+      "eiwit": "12g",
+      "koolhydraten": "52g",
+      "vet": "12g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Chia-pudding met mango en kokos",
+    "description": "Romige chia-pudding met tropische mango en kokos — ideaal als ontbijt of snack om voor te bereiden.",
+    "ingredients": [
+      "3 el chiazaad",
+      "200ml kokosmelk light",
+      "1 rijpe mango",
+      "1 tl honing of ahornsiroop",
+      "geraspte kokos"
+    ],
+    "instructions": "Meng chia met kokosmelk, laat opstijven in de koelkast, top met mango en kokos.",
+    "preparation_time": 10,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Meng chiazaad, kokosmelk en honing in een potje.",
+      "Laat minimaal 2 uur (liefst overnight) in de koelkast opstijven.",
+      "Snijd de mango in blokjes.",
+      "Schep de pudding in kommen en top met mango en geraspte kokos."
+    ],
+    "category": [
+      "Ontbijt",
+      "Snack",
+      "Veganistisch",
+      "Glutenvrij",
+      "Voorbereiden",
+      "Antioxidantrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 280,
+      "eiwit": "6g",
+      "koolhydraten": "28g",
+      "vet": "16g"
+    },
+    "is_budget": false,
+    "meal_prep_tip": "Maak 3-4 potjes tegelijk voor meerdere ochtenden."
+  },
+  {
+    "title": "Groene smoothie met spinazie, banaan en pindakaas",
+    "description": "Een romige, ijzerrijke groene smoothie die ook verzadigt dankzij pindakaas en banaan.",
+    "ingredients": [
+      "1 handvol spinazie",
+      "1 banaan",
+      "1 el pindakaas",
+      "250ml plantaardige melk",
+      "1 tl lijnzaad",
+      "ijsblokjes"
+    ],
+    "instructions": "Blend alles tot een gladde smoothie.",
+    "preparation_time": 5,
+    "servings": 1,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Doe spinazie, banaan, pindakaas, melk en lijnzaad in de blender.",
+      "Voeg een paar ijsblokjes toe.",
+      "Blend tot volledig glad.",
+      "Drink direct."
+    ],
+    "category": [
+      "Smoothie",
+      "Ontbijt",
+      "Snack",
+      "Veganistisch",
+      "IJzerrijk",
+      "Snel",
+      "Drankje"
+    ],
+    "nutrition_information": {
+      "calorieen": 320,
+      "eiwit": "12g",
+      "koolhydraten": "38g",
+      "vet": "14g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Bessen-yoghurt smoothie met haver",
+    "description": "Frisse smoothie van yoghurt, bessen en haver — ontbijt in een glas, vol eiwit en vezels.",
+    "ingredients": [
+      "150g Griekse yoghurt",
+      "handvol gemengde bessen",
+      "2 el havermout",
+      "1 tl honing",
+      "100ml melk",
+      "ijsblokjes"
+    ],
+    "instructions": "Blend tot een dikke, frisse smoothie.",
+    "preparation_time": 5,
+    "servings": 1,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Doe yoghurt, bessen, havermout, honing en melk in de blender.",
+      "Voeg ijsblokjes toe.",
+      "Blend glad.",
+      "Serveer meteen."
+    ],
+    "category": [
+      "Smoothie",
+      "Ontbijt",
+      "Snack",
+      "Vegetarisch",
+      "Eiwitrijk",
+      "Snel",
+      "Drankje",
+      "Antioxidantrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 290,
+      "eiwit": "18g",
+      "koolhydraten": "36g",
+      "vet": "8g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Pasta e ceci (pasta met kikkererwten)",
+    "description": "Een Romeinse klassieker: korte pasta in een romige saus van kikkererwten, knoflook en rozemarijn.",
+    "ingredients": [
+      "200g korte pasta",
+      "1 blik kikkererwten",
+      "2 teentjes knoflook",
+      "1 takje rozemarijn",
+      "olijfolie",
+      "chilivlokken",
+      "peper en zout",
+      "citroenschil"
+    ],
+    "instructions": "Fruit knoflook, prak deel kikkererwten, kook pasta erin tot romig. Werk af met olie en citroenschil.",
+    "preparation_time": 30,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Fruit knoflook en rozemarijn in olijfolie.",
+      "Voeg kikkererwten toe; prak de helft grof.",
+      "Voeg een scheut water toe en laat sudderen.",
+      "Kook de pasta al dente en meng door de saus met wat kookvocht.",
+      "Werk af met chili, peper, olie en citroenschil."
+    ],
+    "category": [
+      "Diner",
+      "Lunch",
+      "Pasta",
+      "Vegetarisch",
+      "Veganistisch",
+      "Vezelrijk",
+      "IJzerrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 480,
+      "eiwit": "18g",
+      "koolhydraten": "72g",
+      "vet": "12g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Spaghetti aglio e olio met broccoli",
+    "description": "Snelle Italiaanse pasta met knoflook, chiliolie en broccoli — eenvoudig maar vol smaak.",
+    "ingredients": [
+      "200g spaghetti",
+      "1 broccoli",
+      "3 teentjes knoflook",
+      "olijfolie",
+      "chilivlokken",
+      "peper en zout",
+      "parmezaan (optioneel)"
+    ],
+    "instructions": "Kook pasta en broccoli, meng met knoflook-chiliolie.",
+    "preparation_time": 20,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de spaghetti volgens de verpakking.",
+      "Blancheer broccoliroosjes 3 minuten mee.",
+      "Fruit knoflook en chili in olijfolie zonder te kleuren.",
+      "Meng pasta en broccoli door de olie met wat kookvocht.",
+      "Werk af met peper en eventueel parmezaan."
+    ],
+    "category": [
+      "Diner",
+      "Lunch",
+      "Pasta",
+      "Vegetarisch",
+      "Snel"
+    ],
+    "nutrition_information": {
+      "calorieen": 450,
+      "eiwit": "16g",
+      "koolhydraten": "68g",
+      "vet": "14g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Pasta primavera met lentegroenten",
+    "description": "Kleurrijke pasta met seizoensgroenten, citroen en olijfolie — licht en antioxidantrijk.",
+    "ingredients": [
+      "200g penne",
+      "1 courgette",
+      "1 paprika",
+      "handvol cherrytomaatjes",
+      "olijfolie",
+      "citroen",
+      "basilicum",
+      "peper en zout"
+    ],
+    "instructions": "Bak groenten kort, meng met pasta, citroen en basilicum.",
+    "preparation_time": 25,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de pasta al dente.",
+      "Snijd groenten in blokjes of reepjes.",
+      "Bak kort in olijfolie tot ze beetgaar zijn.",
+      "Meng met pasta, citroensap en basilicum.",
+      "Breng op smaak met peper en zout."
+    ],
+    "category": [
+      "Diner",
+      "Lunch",
+      "Pasta",
+      "Vegetarisch",
+      "Veganistisch",
+      "Antioxidantrijk",
+      "Snel"
+    ],
+    "nutrition_information": {
+      "calorieen": 420,
+      "eiwit": "14g",
+      "koolhydraten": "70g",
+      "vet": "10g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "One-pot tomatensoep-pasta",
+    "description": "Comfortabele one-pot pasta die kookt in een milde tomatensoep — ideaal bij cravings naar warm en hartig.",
+    "ingredients": [
+      "200g korte pasta",
+      "700ml groentebouillon",
+      "400g tomatenblokjes",
+      "1 ui",
+      "2 teentjes knoflook",
+      "1 tl oregano",
+      "olijfolie",
+      "basilicum"
+    ],
+    "instructions": "Fruit ui/knoflook, voeg tomaten, bouillon en pasta toe, kook tot gaar.",
+    "preparation_time": 25,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Fruit ui en knoflook in olijfolie.",
+      "Voeg tomatenblokjes, oregano en bouillon toe.",
+      "Voeg de pasta toe en kook al roerend 10-12 minuten.",
+      "Proef of de pasta gaar is; voeg eventueel water toe.",
+      "Werk af met verse basilicum."
+    ],
+    "category": [
+      "Diner",
+      "Pasta",
+      "Soep",
+      "Vegetarisch",
+      "Veganistisch",
+      "Comfort food",
+      "Snel",
+      "Voorbereiden"
+    ],
+    "nutrition_information": {
+      "calorieen": 360,
+      "eiwit": "12g",
+      "koolhydraten": "64g",
+      "vet": "7g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Volkoren wrap met kip, avocado en yoghurt-dressing",
+    "description": "Stevige wrap met gegrilde kip, avocado en een frisse yoghurtdressing — goed voor lunch of meal prep.",
+    "ingredients": [
+      "2 volkoren wraps",
+      "200g kipfilet",
+      "1 avocado",
+      "100g Griekse yoghurt",
+      "1/2 komkommer",
+      "sla",
+      "citroensap",
+      "peper en zout"
+    ],
+    "instructions": "Grill kip, meng dressing, vul wraps met sla, kip en avocado.",
+    "preparation_time": 25,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kruid en bak de kipfilet gaar; snijd in reepjes.",
+      "Meng yoghurt met citroensap, peper en zout.",
+      "Besmeer wraps met de dressing.",
+      "Beleg met sla, komkommer, kip en avocado.",
+      "Rol stevig op en snijd doormidden."
+    ],
+    "category": [
+      "Lunch",
+      "Diner",
+      "Eiwitrijk",
+      "Snel",
+      "Voorbereiden"
+    ],
+    "nutrition_information": {
+      "calorieen": 480,
+      "eiwit": "36g",
+      "koolhydraten": "38g",
+      "vet": "20g"
+    },
+    "is_budget": false
+  },
+  {
+    "title": "Hummus-wrap met geroosterde groenten",
+    "description": "Vegan wrap gevuld met hummus en geroosterde seizoensgroenten — kleurrijk en vezelrijk.",
+    "ingredients": [
+      "2 wraps",
+      "150g hummus",
+      "1 paprika",
+      "1 courgette",
+      "rode ui",
+      "olijfolie",
+      "komijn",
+      "rucola"
+    ],
+    "instructions": "Rooster groenten, besmeer wraps met hummus en rol op.",
+    "preparation_time": 30,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm de oven op 200°C.",
+      "Snijd groenten, besprenkel met olie en komijn, rooster 20 minuten.",
+      "Besmeer wraps met hummus.",
+      "Verdeel groenten en rucola.",
+      "Rol op en serveer warm of koud."
+    ],
+    "category": [
+      "Lunch",
+      "Vegetarisch",
+      "Veganistisch",
+      "Vezelrijk",
+      "Voorbereiden"
+    ],
+    "nutrition_information": {
+      "calorieen": 390,
+      "eiwit": "12g",
+      "koolhydraten": "48g",
+      "vet": "16g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Franse ratatouille",
+    "description": "Provençaalse groentestoof van aubergine, courgette, paprika en tomaat — veelzijdig als bijgerecht of hoofdgerecht.",
+    "ingredients": [
+      "1 aubergine",
+      "1 courgette",
+      "2 paprika's",
+      "400g tomatenblokjes",
+      "1 ui",
+      "2 teentjes knoflook",
+      "tijm",
+      "olijfolie"
+    ],
+    "instructions": "Bak groenten, stoof met tomaten en tijm tot zacht.",
+    "preparation_time": 45,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd alle groenten in gelijke blokjes.",
+      "Fruit ui en knoflook.",
+      "Voeg aubergine, courgette en paprika toe en bak 10 minuten.",
+      "Voeg tomaten en tijm toe.",
+      "Laat 20-25 minuten sudderen tot alles zacht is."
+    ],
+    "category": [
+      "Diner",
+      "Bijgerecht",
+      "Veganistisch",
+      "Glutenvrij",
+      "Antioxidantrijk",
+      "Voorbereiden"
+    ],
+    "nutrition_information": {
+      "calorieen": 180,
+      "eiwit": "5g",
+      "koolhydraten": "22g",
+      "vet": "8g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Portugese bacalhau à Brás",
+    "description": "Klassiek Portugees gerecht van kabeljauw, ui, aardappelreepjes en ei — troostrijk en eiwitrijk.",
+    "ingredients": [
+      "300g gedroogde of verse kabeljauw",
+      "2 uien",
+      "300g aardappel (julienne of ovenfriet)",
+      "4 eieren",
+      "olijfolie",
+      "peterselie",
+      "zwarte olijven"
+    ],
+    "instructions": "Bak aardappelreepjes knapperig, fruit ui, meng met kabeljauw en eieren tot romig.",
+    "preparation_time": 40,
+    "servings": 3,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Bak de aardappelreepjes knapperig in de oven of pan.",
+      "Fruit de uien zacht in olijfolie.",
+      "Voeg de kabeljauw toe en verwarm mee.",
+      "Meng aardappel erdoor.",
+      "Roer losgeklopte eieren erdoor tot net gestold; werk af met peterselie en olijven."
+    ],
+    "category": [
+      "Diner",
+      "Eiwitrijk",
+      "Glutenvrij",
+      "Comfort food"
+    ],
+    "nutrition_information": {
+      "calorieen": 460,
+      "eiwit": "32g",
+      "koolhydraten": "28g",
+      "vet": "24g"
+    },
+    "is_budget": false
+  },
+  {
+    "title": "Ethiopische misir wot (pittige linzenstoof)",
+    "description": "Rode linzen gestoofd met berbere-kruiden en ui — ijzerrijk, vegan en perfect met injera of rijst.",
+    "ingredients": [
+      "200g rode linzen",
+      "2 uien",
+      "2 teentjes knoflook",
+      "1 el tomatpuree",
+      "1-2 tl berbere of chilipoeder + komijn",
+      "olijfolie",
+      "500ml water"
+    ],
+    "instructions": "Fruit ui langzaam, voeg kruiden en linzen toe, stoof tot dik en zacht.",
+    "preparation_time": 40,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snipper uien fijn en fruit langzaam 10 minuten.",
+      "Voeg knoflook, tomatpuree en berbere toe.",
+      "Voeg linzen en water toe.",
+      "Laat 20-25 minuten sudderen tot dik.",
+      "Serveer met rijst of platbrood."
+    ],
+    "category": [
+      "Diner",
+      "Lunch",
+      "Curry",
+      "Veganistisch",
+      "Glutenvrij",
+      "IJzerrijk",
+      "Vezelrijk",
+      "Voorbereiden"
+    ],
+    "nutrition_information": {
+      "calorieen": 300,
+      "eiwit": "18g",
+      "koolhydraten": "42g",
+      "vet": "6g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Mexicaanse black bean tacos",
+    "description": "Snelle tacos met gekruide zwarte bonen, avocado en salsa — vezelrijk en verzadigend.",
+    "ingredients": [
+      "8 kleine tortilla's",
+      "1 blik zwarte bonen",
+      "1 avocado",
+      "1 tomaat",
+      "1/2 rode ui",
+      "komijn",
+      "paprikapoeder",
+      "limoen",
+      "koriander"
+    ],
+    "instructions": "Bak bonen met kruiden, vul tortilla's met bonen, avocado en salsa.",
+    "preparation_time": 20,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Bak de zwarte bonen met komijn en paprika 5 minuten.",
+      "Snijd avocado, tomaat en ui voor de salsa.",
+      "Warm de tortilla's kort op.",
+      "Vul met bonen, avocado en salsa.",
+      "Besprenkel met limoen en koriander."
+    ],
+    "category": [
+      "Diner",
+      "Lunch",
+      "Vegetarisch",
+      "Veganistisch",
+      "Vezelrijk",
+      "Snel"
+    ],
+    "nutrition_information": {
+      "calorieen": 440,
+      "eiwit": "16g",
+      "koolhydraten": "58g",
+      "vet": "16g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Japanse misosoep met tofu en wakame",
+    "description": "Lichte, warme Japanse soep met miso, tofu en zeewier — snel, troostrijk en mineraalrijk.",
+    "ingredients": [
+      "750ml water",
+      "2 el misopasta",
+      "100g zachte tofu",
+      "1 el gedroogde wakame",
+      "2 lente-uitjes",
+      "1 tl sojasaus"
+    ],
+    "instructions": "Week wakame, verwarm water, los miso erin op, voeg tofu toe.",
+    "preparation_time": 15,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Week de wakame 5 minuten in wat water.",
+      "Breng water bijna aan de kook.",
+      "Haal van het vuur en los de miso erin op (niet laten koken).",
+      "Voeg tofu, wakame en sojasaus toe.",
+      "Werk af met lente-ui."
+    ],
+    "category": [
+      "Soep",
+      "Lunch",
+      "Snack",
+      "Veganistisch",
+      "Glutenvrij",
+      "Snel"
+    ],
+    "nutrition_information": {
+      "calorieen": 120,
+      "eiwit": "10g",
+      "koolhydraten": "8g",
+      "vet": "5g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Pannenkoeken van banaan en ei",
+    "description": "Snelle, glutenvrije pannenkoekjes van alleen banaan en ei — ideaal bij zoete cravings.",
+    "ingredients": [
+      "2 rijpe bananen",
+      "3 eieren",
+      "snufje kaneel",
+      "kokosolie of boter",
+      "vers fruit om te serveren"
+    ],
+    "instructions": "Prak banaan met ei, bak kleine pannenkoekjes, serveer met fruit.",
+    "preparation_time": 15,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Prak de bananen grof.",
+      "Klop de eieren erdoor met kaneel.",
+      "Bak kleine pannenkoekjes in een anti-aanbakpan.",
+      "Keer als de onderkant goudbruin is.",
+      "Serveer met vers fruit."
+    ],
+    "category": [
+      "Ontbijt",
+      "Dessert",
+      "Snack",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Snel",
+      "Comfort food"
+    ],
+    "nutrition_information": {
+      "calorieen": 280,
+      "eiwit": "14g",
+      "koolhydraten": "32g",
+      "vet": "10g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Dark chocolate oat cups",
+    "description": "Havermoutcups met een laagje pure chocolade — magnesiumrijke snack om voor te bereiden bij PMS-cravings.",
+    "ingredients": [
+      "120g havermout",
+      "3 el pindakaas",
+      "2 el honing",
+      "80g pure chocolade",
+      "snufje zout"
+    ],
+    "instructions": "Meng haverbasis, druk in muffinvormpjes, vul met gesmolten chocolade, laat opstijven.",
+    "preparation_time": 20,
+    "servings": 6,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Meng havermout, pindakaas, honing en zout.",
+      "Verdeel over 6 muffinbakjes en druk een kuiltje.",
+      "Smelt de pure chocolade au bain-marie.",
+      "Vul de kuiltjes met chocolade.",
+      "Laat 1 uur opstijven in de koelkast."
+    ],
+    "category": [
+      "Snack",
+      "Dessert",
+      "Vegetarisch",
+      "Magnesiumrijk",
+      "Voorbereiden",
+      "Comfort food"
+    ],
+    "nutrition_information": {
+      "calorieen": 210,
+      "eiwit": "5g",
+      "koolhydraten": "24g",
+      "vet": "11g"
+    },
+    "is_budget": true,
+    "meal_prep_tip": "Bewaar tot 5 dagen in de koelkast."
+  },
+  {
+    "title": "Romige paddenstoelenrisotto",
+    "description": "Italiaanse risotto met paddenstoelen en Parmezaan — comfort food met complexe koolhydraten voor de luteale fase.",
+    "ingredients": [
+      "200g risottorijst",
+      "300g gemengde paddenstoelen",
+      "1 ui",
+      "800ml groentebouillon",
+      "olijfolie",
+      "50g Parmezaan",
+      "boter",
+      "peterselie"
+    ],
+    "instructions": "Fruit ui, bak rijst glazig, voeg bouillon lepelsgewijs toe, meng paddenstoelen en kaas erdoor.",
+    "preparation_time": 40,
+    "servings": 3,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Fruit de ui zacht.",
+      "Bak de rijst 1 minuut mee tot glazig.",
+      "Voeg bouillon lepelsgewijs toe, al roerend, ca. 18 minuten.",
+      "Bak paddenstoelen apart bruin.",
+      "Roer paddenstoelen, boter en Parmezaan door de risotto."
+    ],
+    "category": [
+      "Diner",
+      "Rijst",
+      "Vegetarisch",
+      "Comfort food",
+      "Magnesiumrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 480,
+      "eiwit": "14g",
+      "koolhydraten": "68g",
+      "vet": "16g"
+    },
+    "is_budget": false
+  },
+  {
+    "title": "Zoete aardappel-chili sin carne",
+    "description": "Pittige, vegetarische chili met zoete aardappel en bonen — meal-prepvriendelijk en vezelrijk.",
+    "ingredients": [
+      "1 zoete aardappel",
+      "1 blik kidneybonen",
+      "1 blik tomatenblokjes",
+      "1 ui",
+      "1 tl komijn",
+      "1 tl paprikapoeder",
+      "olijfolie",
+      "koriander"
+    ],
+    "instructions": "Bak ui en zoete aardappel, stoof met tomaten, kruiden en bonen.",
+    "preparation_time": 35,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd zoete aardappel in blokjes.",
+      "Fruit ui, voeg zoete aardappel toe.",
+      "Voeg tomaten, komijn en paprika toe.",
+      "Laat 20 minuten sudderen, voeg bonen toe.",
+      "Werk af met koriander."
+    ],
+    "category": [
+      "Diner",
+      "Vegetarisch",
+      "Veganistisch",
+      "Glutenvrij",
+      "Vezelrijk",
+      "Voorbereiden",
+      "Magnesiumrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 320,
+      "eiwit": "14g",
+      "koolhydraten": "48g",
+      "vet": "7g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Peruaanse quinoa salade met avocado",
+    "description": "Frisse quinoa-salade met avocado, tomaat en limoen — licht, eiwitrijk en antioxidantrijk.",
+    "ingredients": [
+      "150g quinoa",
+      "1 avocado",
+      "200g cherrytomaatjes",
+      "1/2 rode ui",
+      "limoen",
+      "olijfolie",
+      "koriander",
+      "peper en zout"
+    ],
+    "instructions": "Kook quinoa, meng met groenten en limoendressing.",
+    "preparation_time": 25,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de quinoa volgens de verpakking en laat afkoelen.",
+      "Snijd avocado, tomaat en ui.",
+      "Maak een dressing van limoen, olie, peper en zout.",
+      "Meng alles voorzichtig.",
+      "Werk af met koriander."
+    ],
+    "category": [
+      "Lunch",
+      "Salade",
+      "Bowl",
+      "Veganistisch",
+      "Glutenvrij",
+      "Eiwitrijk",
+      "Antioxidantrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 420,
+      "eiwit": "12g",
+      "koolhydraten": "48g",
+      "vet": "20g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Thaise groene curry met tofu",
+    "description": "Romige groene curry met tofu en groenten — plantaardig, geurig en goed voor ovulatie/folliculaire fase.",
+    "ingredients": [
+      "200g tofu",
+      "2 el groene currypasta",
+      "400ml kokosmelk",
+      "1 paprika",
+      "handvol snijbonen",
+      "1 courgette",
+      "thaise basilicum",
+      "rijst om te serveren"
+    ],
+    "instructions": "Bak currypasta, voeg kokosmelk en groenten toe, laat sudderen met tofu.",
+    "preparation_time": 30,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Bak de currypasta kort in een scheutje olie.",
+      "Voeg kokosmelk toe en breng aan de kook.",
+      "Voeg groenten en tofu toe.",
+      "Laat 10-12 minuten sudderen.",
+      "Werk af met Thaise basilicum; serveer met rijst."
+    ],
+    "category": [
+      "Diner",
+      "Curry",
+      "Veganistisch",
+      "Glutenvrij",
+      "Antioxidantrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 420,
+      "eiwit": "16g",
+      "koolhydraten": "22g",
+      "vet": "30g"
+    },
+    "is_budget": false
+  },
+  {
+    "title": "Omelet met spinazie en geitenkaas",
+    "description": "Luchtige omelet met spinazie en geitenkaas — snel, ijzerrijk ontbijt of lunch.",
+    "ingredients": [
+      "3 eieren",
+      "handvol spinazie",
+      "40g geitenkaas",
+      "boter of olie",
+      "peper en zout"
+    ],
+    "instructions": "Klop eieren, bak omelet, vul met spinazie en geitenkaas.",
+    "preparation_time": 12,
+    "servings": 1,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Klop de eieren los met peper en zout.",
+      "Bak kort de spinazie mee tot geslonken.",
+      "Giet de eieren in de pan.",
+      "Verkruimel geitenkaas erover.",
+      "Vouw de omelet dubbel en serveer."
+    ],
+    "category": [
+      "Ontbijt",
+      "Lunch",
+      "Vegetarisch",
+      "Eiwitrijk",
+      "IJzerrijk",
+      "Glutenvrij",
+      "Snel"
+    ],
+    "nutrition_information": {
+      "calorieen": 340,
+      "eiwit": "24g",
+      "koolhydraten": "4g",
+      "vet": "26g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Boekweitpannenkoekjes met gerookte zalm",
+    "description": "Hartige, glutenvrije pannenkoekjes van boekweitmeel met zalm en dille — eiwitrijk en omega-3.",
+    "ingredients": [
+      "100g boekweitmeel",
+      "1 ei",
+      "200ml melk",
+      "100g gerookte zalm",
+      "verse dille",
+      "crème fraîche",
+      "peper en zout"
+    ],
+    "instructions": "Bak dunne pannenkoekjes, beleg met zalm, crème fraîche en dille.",
+    "preparation_time": 25,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Meng boekweitmeel, ei, melk, peper en zout tot een glad beslag.",
+      "Bak dunne pannenkoekjes.",
+      "Besmeer met een beetje crème fraîche.",
+      "Beleg met gerookte zalm en dille.",
+      "Serveer warm of op kamertemperatuur."
+    ],
+    "category": [
+      "Ontbijt",
+      "Lunch",
+      "Glutenvrij",
+      "Eiwitrijk",
+      "Antioxidantrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 420,
+      "eiwit": "24g",
+      "koolhydraten": "36g",
+      "vet": "18g"
+    },
+    "is_budget": false
+  },
+  {
+    "title": "Indonesische nasi goreng met ei",
+    "description": "Gebakken rijst met groenten en gebakken ei — snelle, stevige maaltijd met goede restverwerking.",
+    "ingredients": [
+      "400g koude gekookte rijst",
+      "2 eieren",
+      "1 ui",
+      "2 teentjes knoflook",
+      "gemengde groenten",
+      "2 el ketjap manis",
+      "1 tl sambal",
+      "lente-ui"
+    ],
+    "instructions": "Bak ui/knoflook, voeg rijst en ketjap toe, bak ei apart en serveer erbovenop.",
+    "preparation_time": 20,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Fruit ui en knoflook.",
+      "Voeg groenten kort mee.",
+      "Roerbak de koude rijst erdoor.",
+      "Voeg ketjap en sambal toe.",
+      "Bak eieren en leg ze op de nasi; werk af met lente-ui."
+    ],
+    "category": [
+      "Diner",
+      "Lunch",
+      "Rijst",
+      "Vegetarisch",
+      "Snel",
+      "Comfort food",
+      "Voorbereiden"
+    ],
+    "nutrition_information": {
+      "calorieen": 480,
+      "eiwit": "16g",
+      "koolhydraten": "68g",
+      "vet": "14g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Geroosterde bloemkool-tacos met tahin",
+    "description": "Knapperige bloemkoolroosjes in tortilla's met tahin-limoensaus — vegan en vol smaak.",
+    "ingredients": [
+      "1 bloemkool",
+      "8 tortilla's",
+      "2 el tahin",
+      "1 limoen",
+      "1 tl komijn",
+      "olijfolie",
+      "rode kool",
+      "koriander"
+    ],
+    "instructions": "Rooster bloemkool, maak tahinsaus, vul tortilla's.",
+    "preparation_time": 35,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm oven op 210°C.",
+      "Meng bloemkoolroosjes met olie en komijn; rooster 25 minuten.",
+      "Klop tahin met limoensap en water tot een saus.",
+      "Warm tortilla's.",
+      "Vul met bloemkool, rode kool, saus en koriander."
+    ],
+    "category": [
+      "Diner",
+      "Lunch",
+      "Veganistisch",
+      "Vegetarisch",
+      "Vezelrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 380,
+      "eiwit": "12g",
+      "koolhydraten": "46g",
+      "vet": "16g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Warm chocolade-havermoutontbijt",
+    "description": "Romige havermout met cacao en banaan — voedzame zoete start, fijn bij cravings.",
+    "ingredients": [
+      "80g havermout",
+      "250ml melk",
+      "1 el cacao",
+      "1 banaan",
+      "1 tl honing",
+      "snufje zout"
+    ],
+    "instructions": "Kook havermout met melk en cacao, top met banaan.",
+    "preparation_time": 10,
+    "servings": 1,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Meng havermout, melk, cacao en zout in een pan.",
+      "Kook 5-7 minuten al roerend.",
+      "Schep in een kom.",
+      "Top met plakjes banaan en honing."
+    ],
+    "category": [
+      "Ontbijt",
+      "Vegetarisch",
+      "Magnesiumrijk",
+      "Snel",
+      "Comfort food"
+    ],
+    "nutrition_information": {
+      "calorieen": 390,
+      "eiwit": "14g",
+      "koolhydraten": "62g",
+      "vet": "10g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Salade Niçoise met tonijn",
+    "description": "Franse klassieker met tonijn, ei, sperziebonen en aardappel — eiwitrijke lunchsalade.",
+    "ingredients": [
+      "1 blik tonijn in olijfolie",
+      "2 eieren",
+      "200g sperziebonen",
+      "300g krieltjes",
+      "cherrytomaatjes",
+      "olijven",
+      "sla",
+      "mosterd-vinaigrette"
+    ],
+    "instructions": "Kook aardappel, ei en bonen; schik met tonijn en dressing.",
+    "preparation_time": 30,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook krieltjes gaar.",
+      "Kook eieren 8 minuten hard.",
+      "Blancheer sperziebonen.",
+      "Schik sla, aardappel, bonen, tomaat, ei en tonijn.",
+      "Besprenkel met mosterd-vinaigrette."
+    ],
+    "category": [
+      "Lunch",
+      "Salade",
+      "Eiwitrijk",
+      "Glutenvrij"
+    ],
+    "nutrition_information": {
+      "calorieen": 460,
+      "eiwit": "32g",
+      "koolhydraten": "28g",
+      "vet": "24g"
+    },
+    "is_budget": false
+  },
+  {
+    "title": "Kokos-linzen dhal met spinazie",
+    "description": "Milde Indiase dhal van rode linzen met kokosmelk en spinazie — ijzerrijk comfort food.",
+    "ingredients": [
+      "200g rode linzen",
+      "400ml kokosmelk light",
+      "1 ui",
+      "2 teentjes knoflook",
+      "1 tl kerriepoeder",
+      "1 tl kurkuma",
+      "handvol spinazie",
+      "olijfolie"
+    ],
+    "instructions": "Fruit aromaten, kook linzen met kokosmelk, roer spinazie erdoor.",
+    "preparation_time": 30,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Fruit ui en knoflook.",
+      "Voeg kerrie en kurkuma toe.",
+      "Voeg linzen, kokosmelk en water toe.",
+      "Laat 20 minuten sudderen.",
+      "Roer spinazie erdoor tot geslonken."
+    ],
+    "category": [
+      "Diner",
+      "Curry",
+      "Veganistisch",
+      "Glutenvrij",
+      "IJzerrijk",
+      "Vezelrijk",
+      "Voorbereiden",
+      "Comfort food"
+    ],
+    "nutrition_information": {
+      "calorieen": 340,
+      "eiwit": "16g",
+      "koolhydraten": "38g",
+      "vet": "14g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Gegrilde halloumi-salade met watermeloen",
+    "description": "Zout-zoete salade van halloumi, watermeloen en munt — fris voor ovulatie/folliculaire fase.",
+    "ingredients": [
+      "200g halloumi",
+      "300g watermeloen",
+      "handvol munt",
+      "rucola",
+      "olijfolie",
+      "limoen",
+      "peper"
+    ],
+    "instructions": "Grill halloumi, meng met watermeloen, munt en dressing.",
+    "preparation_time": 15,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd halloumi in plakjes en grill goudbruin.",
+      "Snijd watermeloen in blokjes.",
+      "Meng rucola, watermeloen en munt.",
+      "Leg halloumi erop.",
+      "Besprenkel met olie, limoen en peper."
+    ],
+    "category": [
+      "Lunch",
+      "Salade",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Snel",
+      "Antioxidantrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 380,
+      "eiwit": "20g",
+      "koolhydraten": "18g",
+      "vet": "26g"
+    },
+    "is_budget": false
+  },
+  {
+    "title": "Koude tomatensoep met volkoren croutons",
+    "description": "Extra groenterijke koude tomatensoep als lunchbowl, met knapperige croutons.",
+    "ingredients": [
+      "6 rijpe tomaten",
+      "1 komkommer",
+      "1 paprika",
+      "1 teentje knoflook",
+      "olijfolie",
+      "sherryazijn",
+      "volkoren brood voor croutons"
+    ],
+    "instructions": "Blend groenten glad, koel, serveer met croutons.",
+    "preparation_time": 20,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd groenten grof.",
+      "Blend met knoflook, olie en azijn tot glad.",
+      "Laat minstens 30 minuten koelen.",
+      "Rooster broodblokjes tot croutons.",
+      "Serveer de soep koud met croutons."
+    ],
+    "category": [
+      "Lunch",
+      "Soep",
+      "Veganistisch",
+      "Snel",
+      "Vezelrijk",
+      "Antioxidantrijk"
+    ],
+    "nutrition_information": {
+      "calorieen": 180,
+      "eiwit": "4g",
+      "koolhydraten": "22g",
+      "vet": "8g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Koreaanse kimchi-jjigae met tofu",
+    "description": "Pittige Koreaanse stoofsoep met kimchi en tofu — warm, verzadigend en vol smaak.",
+    "ingredients": [
+      "300g zure kimchi",
+      "200g stevige tofu",
+      "1 ui",
+      "2 teentjes knoflook",
+      "1 el gochujang",
+      "500ml groentebouillon",
+      "1 tl sesamolie",
+      "lente-ui"
+    ],
+    "instructions": "Fruit aromaten met kimchi, voeg bouillon en tofu toe, laat sudderen.",
+    "preparation_time": 30,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Fruit ui, knoflook en kimchi in sesamolie.",
+      "Voeg gochujang en bouillon toe.",
+      "Laat 10 minuten sudderen.",
+      "Voeg tofublokjes toe en warm 5 minuten mee.",
+      "Werk af met lente-ui."
+    ],
+    "category": [
+      "Diner",
+      "Soep",
+      "Veganistisch",
+      "Glutenvrij",
+      "Comfort food"
+    ],
+    "nutrition_information": {
+      "calorieen": 240,
+      "eiwit": "14g",
+      "koolhydraten": "18g",
+      "vet": "12g"
+    },
+    "is_budget": true
+  },
+  {
+    "title": "Marokkaanse zoete aardappel-kikkererwtenschotel",
+    "description": "Geurige ovenschotel met zoete aardappel, kikkererwten, komijn en kaneel — vezelrijk comfort food.",
+    "ingredients": [
+      "2 zoete aardappelen",
+      "1 blik kikkererwten",
+      "1 ui",
+      "1 tl komijn",
+      "1/2 tl kaneel",
+      "olijfolie",
+      "verse koriander",
+      "citroen"
+    ],
+    "instructions": "Rooster zoete aardappel, bak kikkererwten met kruiden, meng en werk af met koriander.",
+    "preparation_time": 40,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm oven op 200°C en rooster zoete aardappelblokjes 25 minuten.",
+      "Fruit ui met komijn en kaneel.",
+      "Voeg kikkererwten toe en bak 5 minuten mee.",
+      "Meng met de geroosterde zoete aardappel.",
+      "Werk af met koriander en citroensap."
+    ],
+    "category": [
+      "Diner",
+      "Ovengerecht",
+      "Veganistisch",
+      "Glutenvrij",
+      "Vezelrijk",
+      "IJzerrijk",
+      "Voorbereiden"
+    ],
+    "nutrition_information": {
+      "calorieen": 360,
+      "eiwit": "12g",
+      "koolhydraten": "54g",
+      "vet": "10g"
+    },
+    "is_budget": true
+  }
+]

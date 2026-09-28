@@ -2,29 +2,40 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
-import { z } from "zod"
+import { reminderSchema, type ReminderInput } from "@/lib/validations/reminder"
 
-const reminderSchema = z.object({
-  checkinReminderEnabled: z.boolean(),
-  checkinReminderTime: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, "Ongeldige tijd")
-    .or(z.string().regex(/^\d{2}:\d{2}:\d{2}$/)),
-  workoutReminderEnabled: z.boolean(),
-  browserNotificationsEnabled: z.boolean(),
-})
+export async function createReminder(input: ReminderInput) {
+  const parsed = reminderSchema.safeParse(input)
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." }
 
-export type ReminderSettingsInput = z.infer<typeof reminderSchema>
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Je bent niet ingelogd." }
 
-function normalizeTime(value: string): string {
-  return value.length === 5 ? `${value}:00` : value
+  const { data, error } = await supabase
+    .from("reminders")
+    .insert({
+      user_id: user.id,
+      type: parsed.data.type,
+      label: parsed.data.label?.trim() || null,
+      enabled: parsed.data.enabled,
+      days: parsed.data.days,
+      time: parsed.data.time,
+    })
+    .select()
+    .single()
+
+  if (error) return { error: "Opslaan van je herinnering is niet gelukt." }
+
+  revalidatePath("/profiel")
+  return { success: true, reminder: data }
 }
 
-export async function saveReminderSettings(input: ReminderSettingsInput) {
+export async function updateReminder(id: string, input: ReminderInput) {
   const parsed = reminderSchema.safeParse(input)
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." }
-  }
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." }
 
   const supabase = await createClient()
   const {
@@ -33,20 +44,53 @@ export async function saveReminderSettings(input: ReminderSettingsInput) {
   if (!user) return { error: "Je bent niet ingelogd." }
 
   const { error } = await supabase
-    .from("profiles")
+    .from("reminders")
     .update({
-      checkin_reminder_enabled: parsed.data.checkinReminderEnabled,
-      checkin_reminder_time: normalizeTime(parsed.data.checkinReminderTime),
-      workout_reminder_enabled: parsed.data.workoutReminderEnabled,
-      browser_notifications_enabled: parsed.data.browserNotificationsEnabled,
-      updated_at: new Date().toISOString(),
+      type: parsed.data.type,
+      label: parsed.data.label?.trim() || null,
+      enabled: parsed.data.enabled,
+      days: parsed.data.days,
+      time: parsed.data.time,
     })
-    .eq("id", user.id)
+    .eq("id", id)
+    .eq("user_id", user.id)
 
-  if (error) return { error: "Opslaan van herinneringen is niet gelukt." }
+  if (error) return { error: "Bijwerken van je herinnering is niet gelukt." }
 
   revalidatePath("/profiel")
-  revalidatePath("/hulpmiddelen")
-  revalidatePath("/vandaag")
+  return { success: true }
+}
+
+export async function toggleReminder(id: string, enabled: boolean) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Je bent niet ingelogd." }
+
+  const { error } = await supabase
+    .from("reminders")
+    .update({ enabled })
+    .eq("id", id)
+    .eq("user_id", user.id)
+
+  if (error) return { error: "Bijwerken is niet gelukt." }
+
+  revalidatePath("/profiel")
+  return { success: true }
+}
+
+export async function deleteReminder(id: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Je bent niet ingelogd." }
+
+  const { error } = await supabase.from("reminders").delete().eq("id", id).eq("user_id", user.id)
+
+  if (error) return { error: "Verwijderen is niet gelukt." }
+
+  revalidatePath("/profiel")
   return { success: true }
 }

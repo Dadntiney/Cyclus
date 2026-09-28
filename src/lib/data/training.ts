@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server"
-import { startOfWeek, addDays, format } from "date-fns"
 
 export async function getWorkoutLibrary() {
   const supabase = await createClient()
@@ -29,20 +28,28 @@ export async function getFavoriteExerciseIds(userId: string): Promise<Set<string
   return new Set((data ?? []).map((f) => f.exercise_id))
 }
 
-export async function getWeekSessions(userId: string) {
+export interface FavoriteExercise {
+  id: string
+  name: string
+  muscle_group: string | null
+  workout_id: string
+}
+
+export async function getFavoriteExercises(userId: string): Promise<FavoriteExercise[]> {
   const supabase = await createClient()
-  const monday = startOfWeek(new Date(), { weekStartsOn: 1 })
-  const days = Array.from({ length: 7 }, (_, i) => format(addDays(monday, i), "yyyy-MM-dd"))
-
-  const { data: sessions } = await supabase
-    .from("workout_sessions")
-    .select("date, completed, workout_id")
+  const { data: favorites } = await supabase
+    .from("exercise_favorites")
+    .select("exercise_id")
     .eq("user_id", userId)
-    .gte("date", days[0])
-    .lte("date", days[6])
+    .order("created_at", { ascending: false })
 
-  return days.map((date) => ({
-    date,
-    sessions: (sessions ?? []).filter((s) => s.date === date),
-  }))
+  const exerciseIds = (favorites ?? []).map((f) => f.exercise_id)
+  if (!exerciseIds.length) return []
+
+  const { data: exercises } = await supabase
+    .from("exercises")
+    .select("id, name, muscle_group, workout_id")
+    .in("id", exerciseIds)
+  const byId = new Map((exercises ?? []).map((e) => [e.id, e]))
+  return exerciseIds.map((id) => byId.get(id)).filter((e): e is FavoriteExercise => Boolean(e))
 }

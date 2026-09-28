@@ -1,19 +1,25 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { buildDoctorSummary, type DoctorSummaryInput } from "@/lib/cycle/doctor-summary"
+import {
+  buildDoctorSummary,
+  type DoctorSummaryInput,
+  type DoctorSummaryWeeks,
+} from "@/lib/cycle/doctor-summary"
 import { DoctorSummaryView } from "@/components/cycle/doctor-summary-view"
 
 export function DoctorSummaryClient({
   checkins,
   cycleProfile,
   menstruationDates,
+  periScores = [],
 }: {
   checkins: DoctorSummaryInput["checkins"]
   cycleProfile: DoctorSummaryInput["cycleProfile"]
   menstruationDates: string[]
+  periScores?: { assessed_on: string; score: number }[]
 }) {
-  const [weeks, setWeeks] = useState<4 | 8 | 12>(8)
+  const [weeks, setWeeks] = useState<DoctorSummaryWeeks>(8)
 
   const filtered = useMemo(() => {
     const cutoff = new Date()
@@ -22,14 +28,16 @@ export function DoctorSummaryClient({
     return {
       checkins: checkins.filter((c) => c.date >= cutoffISO),
       menstruationDates: menstruationDates.filter((d) => d >= cutoffISO),
+      periScores: periScores.filter((p) => p.assessed_on >= cutoffISO),
     }
-  }, [checkins, menstruationDates, weeks])
+  }, [checkins, menstruationDates, periScores, weeks])
 
   const summary = buildDoctorSummary({
     weeks,
     checkins: filtered.checkins,
     cycleProfile,
     menstruationDates: filtered.menstruationDates,
+    periScores: filtered.periScores,
   })
 
   return <DoctorSummaryView summary={summary} weeks={weeks} onWeeksChange={setWeeks} />

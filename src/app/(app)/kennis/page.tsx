@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { listKnowledgeArticles } from "@/lib/data/knowledge"
 import { Card } from "@/components/ui/card"
+import { BackButton } from "@/components/ui/back-button"
 
 const CATEGORY_LABELS: Record<string, string> = {
   overgang: "Overgang",
@@ -18,6 +19,7 @@ export default async function KennisPage() {
 
   return (
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
+      <BackButton href="/vandaag" label="Vandaag" />
       <div>
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Kennis</h1>
         <p className="text-sm text-ink-soft mt-1">

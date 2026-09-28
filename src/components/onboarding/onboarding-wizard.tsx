@@ -1,9 +1,12 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useMemo, useState, useTransition } from "react"
+import { Footprints, Salad, Brain, Leaf } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input"
+import { TagListInput } from "@/components/ui/tag-list-input"
 import {
   GOAL_OPTIONS,
   TRAINING_OPTIONS,
@@ -14,6 +17,10 @@ import {
   TRAINING_FREQUENCY_OPTIONS,
   STYLE_OPTIONS,
   REGULARITY_OPTIONS,
+  HORMONAL_MEDICATION_STATUS_OPTIONS,
+  BUDDY_STYLE_OPTIONS,
+  BUDDY_FREQUENCY_OPTIONS,
+  MENTAL_WELLBEING_CATEGORY_OPTIONS,
 } from "@/lib/constants"
 import { completeOnboarding } from "@/lib/actions/onboarding"
 import { cn } from "@/lib/utils"
@@ -32,14 +39,58 @@ interface FormData {
   goals: string[]
   healthConditions: string[]
   movementLimitations: string[]
+  movementEnabled: boolean | null
   trainingPreferences: string[]
+  trainingFrequency: number | null
+  nutritionEnabled: boolean | null
   nutritionStyle: string
   nutritionPreferences: string[]
-  trainingFrequency: number | null
+  dislikedFoods: string[]
+  // Tri-state, unlike movement/nutrition: "misschien_later" is a genuine
+  // third answer (not a decision-avoidance null), so it's tracked separately
+  // from "unanswered" — see the completeOnboarding mapping in handleFinish.
+  mentalWellbeingChoice: "ja" | "misschien_later" | "nee" | null
+  mentalWellbeingCategories: string[]
+  hormonalMedicationStatus: string
   wellnessPreference: string
+  buddyStyles: string[]
+  buddyMessageFrequency: string
 }
 
-const TOTAL_STEPS = 13
+// The step sequence is dynamic: whether movement/nutrition were switched on
+// decides whether their follow-up questions appear at all, so nobody who
+// says "not relevant for me" gets asked to configure it anyway.
+type StepId =
+  | "welcome"
+  | "name"
+  | "age"
+  | "body"
+  | "cycle"
+  | "goals"
+  | "health"
+  | "movement-toggle"
+  | "movement-preferences"
+  | "movement-frequency"
+  | "nutrition-toggle"
+  | "nutrition-style"
+  | "nutrition-preferences"
+  | "wellbeing-toggle"
+  | "wellbeing-preferences"
+  | "medication-status"
+  | "wellness"
+  | "buddy-style"
+  | "buddy"
+
+function buildStepSequence(data: FormData): StepId[] {
+  const steps: StepId[] = ["welcome", "name", "age", "body", "cycle", "goals", "health", "movement-toggle"]
+  if (data.movementEnabled) steps.push("movement-preferences", "movement-frequency")
+  steps.push("nutrition-toggle")
+  if (data.nutritionEnabled) steps.push("nutrition-style", "nutrition-preferences")
+  steps.push("wellbeing-toggle")
+  if (data.mentalWellbeingChoice === "ja") steps.push("wellbeing-preferences")
+  steps.push("medication-status", "wellness", "buddy-style", "buddy")
+  return steps
+}
 
 function toggle(list: string[], value: string) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
@@ -63,22 +114,34 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
     goals: [],
     healthConditions: [],
     movementLimitations: [],
+    movementEnabled: null,
     trainingPreferences: [],
+    trainingFrequency: null,
+    nutritionEnabled: null,
     nutritionStyle: "normaal",
     nutritionPreferences: [],
-    trainingFrequency: null,
+    dislikedFoods: [],
+    mentalWellbeingChoice: null,
+    mentalWellbeingCategories: [],
+    hormonalMedicationStatus: "",
     wellnessPreference: "",
+    buddyStyles: [],
+    buddyMessageFrequency: "",
   })
 
+  const stepSequence = useMemo(() => buildStepSequence(data), [data])
+  const stepId = stepSequence[step]
+  const totalSteps = stepSequence.length
+
   function validateStep(): string | null {
-    switch (step) {
-      case 1:
+    switch (stepId) {
+      case "name":
         return data.name.trim().length > 0 ? null : "Vul je naam in."
-      case 2: {
+      case "age": {
         const age = Number(data.age)
         return age >= 10 && age <= 100 ? null : "Vul een geldige leeftijd in."
       }
-      case 4:
+      case "cycle":
         if (data.hasCycle === null) return "Laat ons weten of je een cyclus hebt."
         if (data.hasCycle) {
           if (!data.lastPeriodStart) return "Vul de startdatum van je laatste menstruatie in."
@@ -87,11 +150,17 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
           if (!data.regularity) return "Laat ons weten of je cyclus regelmatig is."
         }
         return null
-      case 5:
+      case "goals":
         return data.goals.length > 0 ? null : "Kies minstens één doel."
-      case 10:
+      case "movement-toggle":
+        return data.movementEnabled === null ? "Laat ons weten of beweging relevant voor je is." : null
+      case "movement-frequency":
         return data.trainingFrequency ? null : "Kies hoe vaak je wilt bewegen."
-      case 11:
+      case "nutrition-toggle":
+        return data.nutritionEnabled === null ? "Laat ons weten of voeding relevant voor je is." : null
+      case "wellbeing-toggle":
+        return data.mentalWellbeingChoice === null ? "Laat ons weten wat hier bij jou past." : null
+      case "wellness":
         return data.wellnessPreference ? null : "Kies een stijl die bij je past."
       default:
         return null
@@ -105,7 +174,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
       return
     }
     setError(null)
-    setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1))
+    setStep((s) => Math.min(s + 1, totalSteps - 1))
   }
 
   function goBack() {
@@ -134,16 +203,50 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             | undefined,
           perimenopauseInfo: data.perimenopauseInfo || undefined,
           goals: data.goals,
-          healthConditions: data.healthConditions,
-          movementLimitations: data.movementLimitations,
+          movementEnabled: data.movementEnabled ?? false,
           trainingPreferences: data.trainingPreferences,
+          trainingFrequency: data.trainingFrequency ?? undefined,
+          nutritionEnabled: data.nutritionEnabled ?? false,
           nutritionStyle: data.nutritionStyle as "normaal" | "koolhydraatarm",
           nutritionPreferences: data.nutritionPreferences,
-          trainingFrequency: data.trainingFrequency!,
+          dislikedFoods: data.nutritionPreferences.includes("Dingen die ik niet lust") ? data.dislikedFoods : [],
+          // "misschien_later" and "unanswered" both map to null (never asked
+          // her again automatically, distinct from an explicit "nee") — see
+          // the migration comment in mental_wellbeing.sql.
+          mentalWellbeingEnabled:
+            data.mentalWellbeingChoice === "ja" ? true : data.mentalWellbeingChoice === "nee" ? false : null,
+          mentalWellbeingCategories:
+            data.mentalWellbeingChoice === "ja" ? data.mentalWellbeingCategories : [],
+          healthConditions: data.healthConditions,
+          movementLimitations: data.movementLimitations,
           wellnessPreference: data.wellnessPreference as
             | "natuurlijk"
             | "gebalanceerd"
             | "fitness",
+          hormonalMedicationStatus: (data.hormonalMedicationStatus || undefined) as
+            | "nee"
+            | "ht"
+            | "ac"
+            | "andere_hormonaal"
+            | "andere_medicatie"
+            | "onbekend_liever_niet"
+            | undefined,
+          buddyStyles: data.buddyStyles as (
+            | "liefdevol"
+            | "humor"
+            | "spiritueel"
+            | "motiverend"
+            | "informatief"
+            | "rustig"
+            | "direct"
+            | "luchtig"
+          )[],
+          buddyMessageFrequency: (data.buddyMessageFrequency || undefined) as
+            | "elke_dag"
+            | "paar_keer_per_week"
+            | "alleen_relevant"
+            | "uit"
+            | undefined,
         })
       } catch (e) {
         setError(e instanceof Error ? e.message : "Er ging iets mis. Probeer het opnieuw.")
@@ -156,19 +259,21 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
       {step > 0 && (
         <div className="w-full h-1.5 rounded-full bg-cream-soft mb-8 overflow-hidden">
           <div
-            className="h-full bg-sage-dark rounded-full transition-all duration-300"
-            style={{ width: `${(step / (TOTAL_STEPS - 1)) * 100}%` }}
+            className="h-full bg-sage-fill rounded-full transition-all duration-300"
+            style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
           />
         </div>
       )}
 
       <div className="flex-1 flex flex-col justify-center">
-        {step === 0 && <WelcomeStep />}
-        {step === 1 && <NameStep value={data.name} onChange={(name) => setData((d) => ({ ...d, name }))} />}
-        {step === 2 && <AgeStep value={data.age} onChange={(age) => setData((d) => ({ ...d, age }))} />}
-        {step === 3 && <BodyStep data={data} setData={setData} />}
-        {step === 4 && <CycleStep data={data} setData={setData} />}
-        {step === 5 && (
+        {stepId === "welcome" && <WelcomeStep />}
+        {stepId === "name" && (
+          <NameStep value={data.name} onChange={(name) => setData((d) => ({ ...d, name }))} />
+        )}
+        {stepId === "age" && <AgeStep value={data.age} onChange={(age) => setData((d) => ({ ...d, age }))} />}
+        {stepId === "body" && <BodyStep data={data} setData={setData} />}
+        {stepId === "cycle" && <CycleStep data={data} setData={setData} />}
+        {stepId === "goals" && (
           <MultiSelectStep
             title="Wat zijn jouw doelen?"
             subtitle="Kies wat op dit moment bij je past. Je kunt er meerdere kiezen."
@@ -177,11 +282,24 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             onToggle={(v) => setData((d) => ({ ...d, goals: toggle(d.goals, v) }))}
           />
         )}
-        {step === 6 && <HealthStep data={data} setData={setData} />}
-        {step === 7 && (
+        {stepId === "health" && <HealthStep data={data} setData={setData} />}
+        {stepId === "movement-toggle" && (
+          <OptionalModuleToggleStep
+            icon={Footprints}
+            title="Wil je beweging gebruiken?"
+            subtitle="Sommige vrouwen willen liever geen trainingsadvies zien. Helemaal jouw keuze — dit kun je later altijd aanpassen in je profiel."
+            value={data.movementEnabled}
+            onChange={(movementEnabled) =>
+              setData((d) => ({ ...d, movementEnabled, trainingPreferences: movementEnabled ? d.trainingPreferences : [] }))
+            }
+            yesLabel="Ja, graag"
+            noLabel="Nee, niet nodig"
+          />
+        )}
+        {stepId === "movement-preferences" && (
           <MultiSelectStep
             title="Welke beweging spreekt je aan?"
-            subtitle="Kies wat je leuk vindt of wilt proberen."
+            subtitle="Kies wat je leuk vindt of wilt proberen. We laten je daarna alleen nog hierop afgestemde suggesties zien."
             options={TRAINING_OPTIONS}
             selected={data.trainingPreferences}
             onToggle={(v) =>
@@ -189,36 +307,101 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             }
           />
         )}
-        {step === 8 && (
-          <NutritionStyleStep
-            value={data.nutritionStyle}
-            onChange={(nutritionStyle) => setData((d) => ({ ...d, nutritionStyle }))}
-          />
-        )}
-        {step === 9 && (
-          <MultiSelectStep
-            title="Heb je voedingsvoorkeuren?"
-            subtitle="Zo stellen we passende recepten voor."
-            options={NUTRITION_OPTIONS}
-            selected={data.nutritionPreferences}
-            onToggle={(v) =>
-              setData((d) => ({ ...d, nutritionPreferences: toggle(d.nutritionPreferences, v) }))
-            }
-          />
-        )}
-        {step === 10 && (
+        {stepId === "movement-frequency" && (
           <FrequencyStep
             value={data.trainingFrequency}
             onChange={(trainingFrequency) => setData((d) => ({ ...d, trainingFrequency }))}
           />
         )}
-        {step === 11 && (
+        {stepId === "nutrition-toggle" && (
+          <OptionalModuleToggleStep
+            icon={Salad}
+            title="Wil je voeding gebruiken?"
+            subtitle="Als voeding nu niet relevant voor je is, sla je dit gerust over. Ook dit pas je later altijd aan in je profiel."
+            value={data.nutritionEnabled}
+            onChange={(nutritionEnabled) =>
+              setData((d) => ({
+                ...d,
+                nutritionEnabled,
+                nutritionPreferences: nutritionEnabled ? d.nutritionPreferences : [],
+                dislikedFoods: nutritionEnabled ? d.dislikedFoods : [],
+              }))
+            }
+            yesLabel="Ja, graag"
+            noLabel="Nee, niet nodig"
+          />
+        )}
+        {stepId === "nutrition-style" && (
+          <NutritionStyleStep
+            value={data.nutritionStyle}
+            onChange={(nutritionStyle) => setData((d) => ({ ...d, nutritionStyle }))}
+          />
+        )}
+        {stepId === "nutrition-preferences" && (
+          <div>
+            <MultiSelectStep
+              title="Heb je voedingsvoorkeuren?"
+              subtitle="Zo stellen we passende recepten voor."
+              options={NUTRITION_OPTIONS}
+              selected={data.nutritionPreferences}
+              onToggle={(v) =>
+                setData((d) => ({ ...d, nutritionPreferences: toggle(d.nutritionPreferences, v) }))
+              }
+            />
+            {data.nutritionPreferences.includes("Dingen die ik niet lust") && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-ink mb-2">Welke gerechten of ingrediënten lust je niet?</p>
+                <TagListInput
+                  value={data.dislikedFoods}
+                  onChange={(dislikedFoods) => setData((d) => ({ ...d, dislikedFoods }))}
+                  placeholder="Bijv. paddenstoelen, spruitjes"
+                />
+              </div>
+            )}
+          </div>
+        )}
+        {stepId === "wellbeing-toggle" && (
+          <MentalWellbeingToggleStep
+            value={data.mentalWellbeingChoice}
+            onChange={(mentalWellbeingChoice) =>
+              setData((d) => ({
+                ...d,
+                mentalWellbeingChoice,
+                mentalWellbeingCategories: mentalWellbeingChoice === "ja" ? d.mentalWellbeingCategories : [],
+              }))
+            }
+          />
+        )}
+        {stepId === "wellbeing-preferences" && (
+          <MentalWellbeingPreferencesStep
+            selected={data.mentalWellbeingCategories}
+            onToggle={(v) =>
+              setData((d) => ({ ...d, mentalWellbeingCategories: toggle(d.mentalWellbeingCategories, v) }))
+            }
+          />
+        )}
+        {stepId === "medication-status" && (
+          <MedicationStatusStep
+            value={data.hormonalMedicationStatus}
+            onChange={(hormonalMedicationStatus) => setData((d) => ({ ...d, hormonalMedicationStatus }))}
+          />
+        )}
+        {stepId === "wellness" && (
           <StyleStep
             value={data.wellnessPreference}
             onChange={(wellnessPreference) => setData((d) => ({ ...d, wellnessPreference }))}
           />
         )}
-        {step === 12 && <BuddyIntroStep name={data.name} />}
+        {stepId === "buddy-style" && (
+          <BuddyStyleStep
+            styles={data.buddyStyles}
+            onToggleStyle={(v) => setData((d) => ({ ...d, buddyStyles: toggle(d.buddyStyles, v) }))}
+            onClear={() => setData((d) => ({ ...d, buddyStyles: [] }))}
+            frequency={data.buddyMessageFrequency}
+            onChangeFrequency={(buddyMessageFrequency) => setData((d) => ({ ...d, buddyMessageFrequency }))}
+          />
+        )}
+        {stepId === "buddy" && <BuddyIntroStep name={data.name} styles={data.buddyStyles} />}
       </div>
 
       <FieldError>{error}</FieldError>
@@ -229,7 +412,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             Terug
           </Button>
         )}
-        {step < TOTAL_STEPS - 1 ? (
+        {step < totalSteps - 1 ? (
           <Button onClick={goNext} className="flex-1">
             {step === 0 ? "Laten we beginnen" : "Volgende"}
           </Button>
@@ -528,6 +711,100 @@ function HealthStep({
   )
 }
 
+function OptionalModuleToggleStep({
+  icon: Icon,
+  title,
+  subtitle,
+  value,
+  onChange,
+  yesLabel,
+  noLabel,
+}: {
+  icon: LucideIcon
+  title: string
+  subtitle: string
+  value: boolean | null
+  onChange: (v: boolean) => void
+  yesLabel: string
+  noLabel: string
+}) {
+  return (
+    <div className="text-center">
+      <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center">
+        <Icon className="h-6 w-6 text-sage-dark" strokeWidth={1.75} />
+      </div>
+      <h2 className="font-display text-2xl text-ink mb-2">{title}</h2>
+      <p className="text-ink-soft text-sm mb-6">{subtitle}</p>
+      <div className="flex gap-2 justify-center">
+        <Chip selected={value === true} onClick={() => onChange(true)}>
+          {yesLabel}
+        </Chip>
+        <Chip selected={value === false} onClick={() => onChange(false)}>
+          {noLabel}
+        </Chip>
+      </div>
+    </div>
+  )
+}
+
+function MentalWellbeingToggleStep({
+  value,
+  onChange,
+}: {
+  value: "ja" | "misschien_later" | "nee" | null
+  onChange: (v: "ja" | "misschien_later" | "nee") => void
+}) {
+  return (
+    <div className="text-center">
+      <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center">
+        <Brain className="h-6 w-6 text-sage-dark" strokeWidth={1.75} />
+      </div>
+      <h2 className="font-display text-2xl text-ink mb-2">Wil je ook ondersteuning voor je mentale rust?</h2>
+      <p className="text-ink-soft text-sm mb-6">
+        Denk aan korte meditaties, mindfulness-oefeningen en affirmaties. Helemaal optioneel — en
+        dit kun je later altijd aanpassen in je profiel.
+      </p>
+      <div className="flex flex-col gap-2 items-center">
+        <Chip selected={value === "ja"} onClick={() => onChange("ja")}>
+          Ja, graag
+        </Chip>
+        <Chip selected={value === "misschien_later"} onClick={() => onChange("misschien_later")}>
+          Misschien later
+        </Chip>
+        <Chip selected={value === "nee"} onClick={() => onChange("nee")}>
+          Nee, liever niet
+        </Chip>
+      </div>
+    </div>
+  )
+}
+
+function MentalWellbeingPreferencesStep({
+  selected,
+  onToggle,
+}: {
+  selected: string[]
+  onToggle: (value: string) => void
+}) {
+  return (
+    <div>
+      <h2 className="font-display text-2xl text-ink mb-2">Bij welke gevoelens wil je ondersteuning?</h2>
+      <p className="text-ink-soft text-sm mb-6">
+        Optioneel, en je kunt er meerdere kiezen. Zo laten we je sneller passende meditaties,
+        mindfulness-oefeningen en affirmaties zien.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {MENTAL_WELLBEING_CATEGORY_OPTIONS.map((opt) => (
+          <Chip key={opt.value} selected={selected.includes(opt.value)} onClick={() => onToggle(opt.value)}>
+            <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
+            {opt.label}
+          </Chip>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function NutritionStyleStep({
   value,
   onChange,
@@ -551,7 +828,7 @@ function NutritionStyleStep({
               "flex flex-col gap-1 rounded-2xl border px-4 py-3.5 text-left transition-colors",
               value === opt.value
                 ? "bg-sage-soft border-sage"
-                : "bg-white border-line hover:border-sage/60",
+                : "bg-surface border-line hover:border-sage/60",
             )}
           >
             <span className="font-medium text-ink">{opt.label}</span>
@@ -591,6 +868,37 @@ function FrequencyStep({
   )
 }
 
+function MedicationStatusStep({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div>
+      <h2 className="font-display text-2xl text-ink mb-2">Hormonale medicatie</h2>
+      <p className="text-ink-soft text-sm mb-6">
+        Gebruik je hormonale medicatie of medicatie die invloed kan hebben op je cyclus of
+        hormonen? Dit is puur informatief — als je hier iets anders dan &ldquo;Nee&rdquo; kiest,
+        kun je daarna zelf je eigen schema bijhouden. Je past dit later altijd aan in je profiel.
+      </p>
+      <div className="flex flex-col gap-2">
+        {HORMONAL_MEDICATION_STATUS_OPTIONS.map((opt) => (
+          <Chip
+            key={opt.value}
+            selected={value === opt.value}
+            onClick={() => onChange(opt.value)}
+            className="w-full justify-start"
+          >
+            {opt.label}
+          </Chip>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function StyleStep({
   value,
   onChange,
@@ -612,10 +920,10 @@ function StyleStep({
               "flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-colors",
               value === opt.value
                 ? "bg-sage-soft border-sage"
-                : "bg-white border-line hover:border-sage/60",
+                : "bg-surface border-line hover:border-sage/60",
             )}
           >
-            <span className="text-xl">{opt.emoji}</span>
+            <opt.icon className="h-5 w-5 text-sage-dark" strokeWidth={1.75} />
             <span className="font-medium text-ink">{opt.label}</span>
           </button>
         ))}
@@ -624,17 +932,63 @@ function StyleStep({
   )
 }
 
-function BuddyIntroStep({ name }: { name: string }) {
+function BuddyStyleStep({
+  styles,
+  onToggleStyle,
+  onClear,
+  frequency,
+  onChangeFrequency,
+}: {
+  styles: string[]
+  onToggleStyle: (v: string) => void
+  onClear: () => void
+  frequency: string
+  onChangeFrequency: (v: string) => void
+}) {
+  return (
+    <div>
+      <h2 className="font-display text-2xl text-ink mb-2">Hoe praat je Buddy met je?</h2>
+      <p className="text-ink-soft text-sm mb-6">
+        Optioneel. Kies één of meerdere stijlen die bij je passen — je berichten, tips en
+        weetjes krijgen dan die toon. Later altijd aan te passen via Profiel.
+      </p>
+      <div className="flex flex-wrap gap-2 mb-3">
+        <Chip selected={styles.length === 0} onClick={onClear}>
+          Geen voorkeur
+        </Chip>
+        {BUDDY_STYLE_OPTIONS.map((opt) => (
+          <Chip key={opt.value} selected={styles.includes(opt.value)} onClick={() => onToggleStyle(opt.value)}>
+            <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
+            {opt.label}
+          </Chip>
+        ))}
+      </div>
+
+      <p className="text-sm font-medium text-ink mb-2 mt-6">Hoe vaak wil je berichten van je Buddy?</p>
+      <div className="flex flex-wrap gap-2">
+        {BUDDY_FREQUENCY_OPTIONS.map((opt) => (
+          <Chip key={opt.value} selected={frequency === opt.value} onClick={() => onChangeFrequency(opt.value)}>
+            {opt.label}
+          </Chip>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function BuddyIntroStep({ name, styles }: { name: string; styles: string[] }) {
+  const styleLabel = BUDDY_STYLE_OPTIONS.find((opt) => opt.value === styles[0])?.label
   return (
     <div className="text-center">
-      <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-sage-soft flex items-center justify-center text-2xl">
-        🌿
+      <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-sage-soft flex items-center justify-center">
+        <Leaf className="h-7 w-7 text-sage-dark" strokeWidth={1.75} />
       </div>
       <h2 className="font-display text-2xl text-ink mb-2">Maak kennis met je Buddy</h2>
       <p className="text-ink-soft text-sm">
         {name ? `${name}, je` : "Je"} Buddy is er om mee te praten over hoe je je voelt, je
         cyclus en je dag. Geen diagnoses, wel een luisterend oor en praktische tips. Bij
         ernstige klachten verwijst je Buddy je altijd door naar een zorgprofessional.
+        {styleLabel ? ` Ze praat voortaan met je in een ${styleLabel.toLowerCase()} toon.` : ""}
       </p>
     </div>
   )

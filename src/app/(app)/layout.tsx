@@ -1,78 +1,73 @@
 import { redirect } from "next/navigation"
-import { createClient, getAuthedUser } from "@/lib/supabase/server"
+import { getAuthedUser } from "@/lib/supabase/server"
 import { Sidebar } from "@/components/nav/sidebar"
 import { BottomNav } from "@/components/nav/bottom-nav"
 import { MobileHeader } from "@/components/nav/mobile-header"
 import { PageTransition } from "@/components/nav/page-transition"
-import { ReminderScheduler } from "@/components/reminders/reminder-scheduler"
-import { getMedicationsForUser } from "@/lib/data/medications"
-import { buildWeeklyProgram } from "@/lib/recommendations/weekly-program"
-import { format } from "date-fns"
+import { ReminderToastHost, type MorningReminderSettings } from "@/components/reminders/reminder-toast-host"
+import { getReminders } from "@/lib/data/reminders"
+import { getMedicationReminderSources } from "@/lib/data/medications"
+import { getProfile } from "@/lib/data/profile"
+import type { MedicationReminderLike } from "@/lib/client/medication-reminder-scheduler"
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
   const user = await getAuthedUser()
 
   if (!user) {
     redirect("/login")
   }
 
-  const todayISO = format(new Date(), "yyyy-MM-dd")
-
-  const [
-    { data: profile },
-    { data: checkin },
-    { data: todaySession },
-    { data: workouts },
-    medications,
-  ] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single(),
-    supabase
-      .from("daily_checkins")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("date", todayISO)
-      .maybeSingle(),
-    supabase
-      .from("workout_sessions")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("date", todayISO)
-      .eq("completed", true)
-      .limit(1)
-      .maybeSingle(),
-    supabase.from("workouts").select("*"),
-    getMedicationsForUser(user.id),
-  ])
+  const profile = await getProfile(user.id)
 
   if (!profile?.onboarding_completed) {
     redirect("/onboarding")
   }
 
-  const program = buildWeeklyProgram({
-    frequency: profile.training_frequency ?? 3,
-    healthConditions: profile.health_conditions ?? [],
-    movementLimitations: profile.movement_limitations ?? [],
-    workouts: workouts ?? [],
-    seed: `${user.id}-weekprogram`,
-  })
-  const jsDay = new Date().getDay() // 0 Sun
-  const mondayIndex = jsDay === 0 ? 6 : jsDay - 1
-  const isPlannedWorkoutDay = program[mondayIndex]?.focus !== "rust"
+  const [reminders, medicationReminderSources] = await Promise.all([
+    getReminders(user.id),
+    getMedicationReminderSources(user.id),
+  ])
+  const medicationReminders = medicationReminderSources.map((m) => ({
+    id: m.id,
+    name: m.name,
+    reminderEnabled: m.reminder_enabled,
+    timeOfDay: m.time_of_day,
+    scheduleType: m.schedule_type as MedicationReminderLike["scheduleType"],
+    scheduleDays: m.schedule_days,
+    scheduleDaysOn: m.schedule_days_on,
+    scheduleDaysOff: m.schedule_days_off,
+    startDate: m.start_date,
+    endDate: m.end_date,
+    remindOnStart: m.remind_on_start,
+    remindDaily: m.remind_daily,
+    remindOnStop: m.remind_on_stop,
+  }))
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar name={profile.name} avatarUrl={profile.avatar_url} />
+      <Sidebar avatarUrl={profile.avatar_url} />
       <div className="flex-1 flex flex-col min-w-0">
-        <MobileHeader avatarUrl={profile.avatar_url} />
+        <MobileHeader />
         <main className="flex-1 pb-24 md:pb-10">
           <PageTransition>{children}</PageTransition>
         </main>
-        <BottomNav />
+        <BottomNav avatarUrl={profile.avatar_url} />
+        <ReminderToastHost
+          reminders={reminders}
+          medications={medicationReminders}
+          buddyStyles={profile.buddy_styles}
+          morningReminder={
+            profile.morning_reminder_enabled === true
+              ? {
+                  enabled: true,
+                  time: profile.morning_reminder_time,
+                  days: profile.morning_reminder_days,
+                  contentType: profile.morning_reminder_content_type as MorningReminderSettings["contentType"],
+                  preferredStyles: profile.buddy_styles,
+                }
+              : null
+          }
+        />
       </div>
       <ReminderScheduler
         enabled={Boolean(profile.browser_notifications_enabled)}

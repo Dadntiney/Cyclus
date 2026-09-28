@@ -1,0 +1,3217 @@
+[
+  {
+    "title": "Amerikaanse pompoen-quinoa ovenschotel",
+    "description": "Een verzadigende ovenschotel van pompoen, quinoa, zwarte bonen en kaas — stevig comfort food vol magnesium.",
+    "ingredients": [
+      "500g pompoen",
+      "150g quinoa",
+      "1 blik zwarte bonen",
+      "1 tl paprikapoeder",
+      "geraspte kaas",
+      "groentebouillon"
+    ],
+    "instructions": "Rooster de pompoen, kook de quinoa, meng alles met bonen in een ovenschaal en bak af met kaas.",
+    "preparation_time": 45,
+    "nutrition_information": {
+      "vet": "14g",
+      "eiwit": "17g",
+      "calorieen": 400,
+      "koolhydraten": "48g"
+    },
+    "category": [
+      "Diner",
+      "Ovengerecht",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Magnesiumrijk",
+      "Vezelrijk",
+      "Voorbereiden"
+    ],
+    "image_url": "https://buqdbdrbhrgzesjipwem.supabase.co/storage/v1/object/public/recipe-images/1e067213-bc84-4a1c-ba46-71ce04d2eba8.jpg",
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm de oven voor op 200°C en rooster de in blokjes gesneden pompoen 20 minuten.",
+      "Kook de quinoa volgens de verpakking in groentebouillon.",
+      "Meng de quinoa met de geroosterde pompoen, zwarte bonen en paprikapoeder in een ovenschaal.",
+      "Bestrooi met geraspte kaas.",
+      "Bak nog 10-15 minuten tot de kaas gesmolten en goudbruin is."
+    ],
+    "optional_ingredients": [
+      "Avocado",
+      "Verse koriander"
+    ],
+    "low_carb_variant": "Gebruik iets minder quinoa en vul aan met extra pompoen en bonen.",
+    "storage_tip": "Tot 4 dagen in de koelkast en goed in te vriezen.",
+    "meal_prep_tip": "Maak een dubbele portie in een grote ovenschaal en verdeel over bakjes voor de week.",
+    "is_budget": true
+  },
+  {
+    "title": "Bananen-nicecream met pure chocolade",
+    "description": "Romig \"ijs\" van bevroren banaan, gemixt tot een gladde massa en afgewerkt met pure chocolade.",
+    "ingredients": [
+      "3 bevroren bananen",
+      "scheutje plantaardige melk",
+      "handvol pure chocoladestukjes"
+    ],
+    "instructions": "Blend de bevroren banaan met een scheutje melk tot een romige massa en werk af met chocoladestukjes.",
+    "preparation_time": 10,
+    "nutrition_information": {
+      "vet": "6g",
+      "eiwit": "3g",
+      "calorieen": 210,
+      "koolhydraten": "38g"
+    },
+    "category": [
+      "Dessert",
+      "Veganistisch",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Snel"
+    ],
+    "image_url": "https://buqdbdrbhrgzesjipwem.supabase.co/storage/v1/object/public/recipe-images/4a16147f-fd57-42c1-97f1-35f4725aa2f9.jpg",
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd de bevroren bananen in stukken.",
+      "Blend de banaan met een klein scheutje plantaardige melk tot een romige, ijsachtige massa.",
+      "Schep direct in een kom.",
+      "Werk af met pure chocoladestukjes."
+    ],
+    "optional_ingredients": [
+      "Pindakaas",
+      "Kaneel"
+    ],
+    "low_carb_variant": "Gebruik minder banaan en meer bevroren bessen voor minder koolhydraten.",
+    "storage_tip": "Het lekkerst direct na bereiding — nicecream smelt snel.",
+    "meal_prep_tip": "Vries bananen in stukken in zodat je altijd binnen 5 minuten nicecream kunt maken.",
+    "is_budget": true
+  },
+  {
+    "title": "Bibim guksu (Koreaanse pittige koude noedels)",
+    "description": "Koude tarwenoedels in een pittig-zoete gochujangsaus met kleurrijke groenten en komkommer.",
+    "ingredients": [
+      "200g tarwenoedels (somyeon)",
+      "1/2 komkommer",
+      "1 wortel",
+      "2 el gochujang",
+      "1 el rijstazijn",
+      "1 tl suiker",
+      "sesamolie"
+    ],
+    "instructions": "Kook de noedels en spoel koud af, meng gochujang met azijn en suiker en meng alles met de gesneden groenten.",
+    "preparation_time": 20,
+    "nutrition_information": {
+      "vet": "8g",
+      "eiwit": "10g",
+      "calorieen": 380,
+      "koolhydraten": "68g"
+    },
+    "category": [
+      "Lunch",
+      "Diner",
+      "Vegetarisch",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de noedels volgens de verpakking en spoel direct koud af onder de kraan.",
+      "Snijd de komkommer en wortel in dunne reepjes.",
+      "Meng de gochujang met rijstazijn, suiker en een scheutje sesamolie tot een dressing.",
+      "Meng de koude noedels met de dressing en groenten.",
+      "Serveer direct, eventueel met een half gekookt ei erbij."
+    ],
+    "optional_ingredients": [
+      "Half ei per persoon",
+      "Peer in reepjes"
+    ],
+    "low_carb_variant": "Gebruik minder noedels en vul aan met extra komkommer en wortel voor minder koolhydraten.",
+    "storage_tip": "Bewaar noedels en saus apart, tot 1 dag in de koelkast.",
+    "meal_prep_tip": "Kook de noedels vooraf en spoel goed koud af zodat ze niet aan elkaar plakken.",
+    "is_budget": true
+  },
+  {
+    "title": "Bibimbap met kimchi",
+    "description": "Een kleurrijke Koreaanse rijstbowl met verschillende groenten, een spiegelei en pittige, gefermenteerde kimchi.",
+    "ingredients": [
+      "200g rijst",
+      "handvol spinazie",
+      "1 wortel",
+      "handvol taugé",
+      "100g kimchi",
+      "1 ei per persoon",
+      "sesamolie",
+      "gochujang"
+    ],
+    "instructions": "Kook de rijst, blancheer en kruid elke groente apart, bak de eieren en schik alles op de rijst met kimchi en gochujang.",
+    "preparation_time": 30,
+    "nutrition_information": {
+      "vet": "16g",
+      "eiwit": "18g",
+      "calorieen": 460,
+      "koolhydraten": "58g"
+    },
+    "category": [
+      "Diner",
+      "Lunch",
+      "Bowl",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Vezelrijk"
+    ],
+    "image_url": "https://buqdbdrbhrgzesjipwem.supabase.co/storage/v1/object/public/recipe-images/4ffa3cc7-164f-4209-91bc-5df3eab1953f.jpg",
+    "servings": 2,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Kook de rijst volgens de verpakking.",
+      "Blancheer de spinazie en taugé apart kort en kruid met een beetje sesamolie en zout.",
+      "Rasp of julienne de wortel en bak kort in een scheutje olie.",
+      "Bak voor elke portie een spiegelei.",
+      "Verdeel de rijst over kommen en schik de groenten, kimchi en het ei erop.",
+      "Serveer met gochujang en een scheutje sesamolie."
+    ],
+    "optional_ingredients": [
+      "Rundvlees in reepjes",
+      "Extra sesamzaad"
+    ],
+    "low_carb_variant": "Vervang de helft van de rijst door extra groenten voor minder koolhydraten.",
+    "storage_tip": "Bewaar de onderdelen apart, tot 2 dagen in de koelkast.",
+    "meal_prep_tip": "Bereid de groenten en rijst vooraf en stel de bowl pas samen vlak voor het eten.",
+    "is_budget": false
+  },
+  {
+    "title": "Braziliaanse açaí bowl",
+    "description": "Een kleurrijke, verfrissende bowl van bevroren açaípulp, banaan en topping van vers fruit en granola.",
+    "ingredients": [
+      "100g bevroren açaípulp",
+      "1 bevroren banaan",
+      "scheutje plantaardige melk",
+      "granola",
+      "handvol bosbessen",
+      "schijfjes banaan"
+    ],
+    "instructions": "Blend de açaí met banaan en melk tot een dikke smoothie en top af met fruit en granola.",
+    "preparation_time": 10,
+    "nutrition_information": {
+      "vet": "10g",
+      "eiwit": "6g",
+      "calorieen": 340,
+      "koolhydraten": "58g"
+    },
+    "category": [
+      "Ontbijt",
+      "Bowl",
+      "Smoothie",
+      "Veganistisch",
+      "Antioxidantrijk"
+    ],
+    "image_url": "https://buqdbdrbhrgzesjipwem.supabase.co/storage/v1/object/public/recipe-images/05f0ba38-a768-4ab9-bdf2-b15cd8b30b69.jpg",
+    "servings": 1,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Blend de bevroren açaípulp, banaan en plantaardige melk tot een dikke, romige massa.",
+      "Giet in een kom.",
+      "Top af met granola, bosbessen en schijfjes banaan.",
+      "Werk eventueel af met kokosrasp."
+    ],
+    "optional_ingredients": [
+      "Kokosrasp",
+      "Chiazaad"
+    ],
+    "low_carb_variant": "Gebruik minder banaan en meer bevroren bessen voor minder koolhydraten.",
+    "storage_tip": "Het lekkerst direct na bereiding — een açaí bowl wordt snel waterig.",
+    "meal_prep_tip": "Vries bananen vooraf in stukken in, zodat je alleen nog hoeft te blenden.",
+    "is_budget": false
+  },
+  {
+    "title": "Caprese salade met burrata",
+    "description": "De Italiaanse klassieker in een romige versie: rijpe tomaat, romige burrata en verse basilicum.",
+    "ingredients": [
+      "4 rijpe tomaten",
+      "125g burrata",
+      "verse basilicum",
+      "olijfolie",
+      "balsamicoazijn"
+    ],
+    "instructions": "Snijd de tomaten in plakken, schik met de burrata en basilicum en besprenkel met olijfolie en balsamico.",
+    "preparation_time": 10,
+    "nutrition_information": {
+      "vet": "26g",
+      "eiwit": "16g",
+      "calorieen": 320,
+      "koolhydraten": "8g"
+    },
+    "category": [
+      "Lunch",
+      "Salade",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Snel",
+      "Antioxidantrijk"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd de tomaten in plakken en schik op een bord.",
+      "Scheur de burrata open en leg erbovenop.",
+      "Verdeel verse basilicumblaadjes eroverheen.",
+      "Besprenkel met olijfolie en een scheutje balsamicoazijn en breng op smaak met zout en peper."
+    ],
+    "optional_ingredients": [
+      "Geroosterd stokbrood",
+      "Pijnboompitten"
+    ],
+    "low_carb_variant": "Dit gerecht is van nature al koolhydraatarm.",
+    "storage_tip": "Het lekkerst vers bereid en op kamertemperatuur gegeten.",
+    "meal_prep_tip": "Snijd de tomaten vooraf, voeg de burrata pas vlak voor het serveren toe.",
+    "is_budget": false
+  },
+  {
+    "title": "Caribische kip-kokosrijst met bonen (rice and peas)",
+    "description": "Romige kokosrijst met bonen en kruidige kip — een Caribische klassieker vol comfort.",
+    "ingredients": [
+      "4 kipdijfilets",
+      "1 blik kokosmelk",
+      "200g rijst",
+      "1 blik kidneybonen",
+      "verse tijm",
+      "1 chilipeper",
+      "1 teentje knoflook"
+    ],
+    "instructions": "Kruid en bak de kip, kook de rijst in kokosmelk met bonen en kruiden en serveer samen.",
+    "preparation_time": 40,
+    "nutrition_information": {
+      "vet": "22g",
+      "eiwit": "32g",
+      "calorieen": 520,
+      "koolhydraten": "48g"
+    },
+    "category": [
+      "Diner",
+      "Rijst",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Eiwitrijk",
+      "Magnesiumrijk",
+      "Voorbereiden"
+    ],
+    "image_url": "https://buqdbdrbhrgzesjipwem.supabase.co/storage/v1/object/public/recipe-images/07c628fa-9b2b-44e3-975a-c197b7b59fbc.jpg",
+    "servings": 4,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Kruid de kipdijfilets met tijm, knoflook en peper en bak of gril gaar.",
+      "Breng de kokosmelk met evenveel water, de kidneybonen, tijm en een hele chilipeper aan de kook.",
+      "Voeg de rijst toe en laat 15-18 minuten zachtjes garen tot de rijst gaar is.",
+      "Verwijder de hele chilipeper.",
+      "Serveer de kokosrijst met de kip erbij."
+    ],
+    "optional_ingredients": [
+      "Lente-ui",
+      "Limoen erbij"
+    ],
+    "low_carb_variant": "Gebruik magere kokosmelk (light) en iets minder rijst voor minder koolhydraten en vet.",
+    "storage_tip": "Tot 3 dagen in de koelkast en goed in te vriezen.",
+    "meal_prep_tip": "Maak een dubbele portie rijst en kip en verdeel over bakjes voor de week.",
+    "is_budget": false
+  },
+  {
+    "title": "Chocoladepudding van avocado en cacao",
+    "description": "Een romige, voedzame chocoladepudding gemaakt van rijpe avocado en pure cacao — verrassend luchtig en niet te zoet.",
+    "ingredients": [
+      "2 rijpe avocados",
+      "4 el pure cacaopoeder",
+      "3 el ahornsiroop",
+      "scheutje plantaardige melk",
+      "snufje zeezout"
+    ],
+    "instructions": "Blend avocado met cacao, ahornsiroop en een scheutje melk tot een gladde, romige pudding.",
+    "preparation_time": 15,
+    "nutrition_information": {
+      "vet": "16g",
+      "eiwit": "4g",
+      "calorieen": 220,
+      "koolhydraten": "18g"
+    },
+    "category": [
+      "Dessert",
+      "Snack",
+      "Veganistisch",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Magnesiumrijk",
+      "Snel"
+    ],
+    "image_url": "https://buqdbdrbhrgzesjipwem.supabase.co/storage/v1/object/public/recipe-images/708753f4-c9f0-4317-816d-38e8e1cbb6f0.jpg",
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Halveer de avocados en schep het vruchtvlees in een blender.",
+      "Voeg de cacaopoeder, ahornsiroop, melk en zout toe.",
+      "Blend tot een gladde, romige pudding.",
+      "Verdeel over kommetjes en laat 30 minuten opstijven in de koelkast."
+    ],
+    "optional_ingredients": [
+      "Frambozen erbij",
+      "Kokosrasp"
+    ],
+    "low_carb_variant": "Gebruik iets minder ahornsiroop voor een minder zoete, koolhydraatarmere versie.",
+    "storage_tip": "Tot 2 dagen in de koelkast, afgedekt zodat de bovenkant niet verkleurt.",
+    "meal_prep_tip": "Maak een grote portie vooraf — deze pudding is een fijn toetje voor meerdere dagen.",
+    "is_budget": false
+  },
+  {
+    "title": "Dal makhani (romige zwarte linzencurry)",
+    "description": "Een rijke, romige Indiase curry van zwarte linzen en kidneybonen, langzaam gegaard met tomaat en boter.",
+    "ingredients": [
+      "200g zwarte linzen (urad dal)",
+      "handvol kidneybonen",
+      "1 blik tomatenblokjes",
+      "1 ui",
+      "2 teentjes knoflook",
+      "verse gember",
+      "scheutje room"
+    ],
+    "instructions": "Kook de linzen en bonen gaar, fruit ui, knoflook en gember, voeg tomaat en de peulvruchten toe en laat lang sudderen met een scheutje room.",
+    "preparation_time": 60,
+    "nutrition_information": {
+      "vet": "14g",
+      "eiwit": "18g",
+      "calorieen": 360,
+      "koolhydraten": "38g"
+    },
+    "category": [
+      "Diner",
+      "Curry",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Magnesiumrijk",
+      "Vezelrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Week de zwarte linzen bij voorkeur een nacht en kook ze samen met de kidneybonen gaar.",
+      "Fruit de ui, knoflook en gember aan in een scheutje boter.",
+      "Voeg de tomatenblokjes toe en laat 10 minuten inkoken.",
+      "Voeg de gekookte linzen en bonen toe met wat kookvocht en laat 30 minuten zachtjes sudderen.",
+      "Roer een scheutje room erdoor en breng op smaak met garam masala en zout."
+    ],
+    "optional_ingredients": [
+      "Garam masala",
+      "Rijst of naanbrood erbij"
+    ],
+    "low_carb_variant": "Gebruik iets minder linzen en bonen en vul aan met extra spinazie.",
+    "storage_tip": "Tot 4 dagen in de koelkast en uitstekend in te vriezen.",
+    "meal_prep_tip": "Kook een grote pan linzen en bonen vooraf en vries in porties in.",
+    "is_budget": true
+  },
+  {
+    "title": "Donkere chocolade-energyballs met dadels",
+    "description": "Snelle, magnesiumrijke energyballs van dadels, amandelen en pure cacao — een voedzaam alternatief voor een chocoladereep.",
+    "ingredients": [
+      "200g ontpitte dadels",
+      "100g amandelen",
+      "3 el pure cacaopoeder",
+      "1 el kokosolie",
+      "snufje zeezout"
+    ],
+    "instructions": "Blend alle ingrediënten tot een plakkerig mengsel en rol er balletjes van.",
+    "preparation_time": 15,
+    "nutrition_information": {
+      "vet": "10g",
+      "eiwit": "5g",
+      "calorieen": 190,
+      "koolhydraten": "22g"
+    },
+    "category": [
+      "Snack",
+      "Dessert",
+      "Veganistisch",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Magnesiumrijk",
+      "Snel",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Doe de dadels, amandelen, cacaopoeder, kokosolie en zout in een foodprocessor.",
+      "Blend tot een plakkerig, samenhangend mengsel.",
+      "Rol er met natte handen balletjes van.",
+      "Rol de balletjes eventueel door kokosrasp.",
+      "Laat 30 minuten opstijven in de koelkast."
+    ],
+    "optional_ingredients": [
+      "Kokosrasp om in te rollen",
+      "Chiazaad"
+    ],
+    "low_carb_variant": "Gebruik iets minder dadels en meer amandelen voor minder koolhydraten.",
+    "storage_tip": "Tot een week in een afgesloten bakje in de koelkast.",
+    "meal_prep_tip": "Maak een grote batch — energyballs vriezen ook uitstekend in.",
+    "is_budget": true
+  },
+  {
+    "title": "Fesenjan (Perzische kip in granaatappel-walnootsaus)",
+    "description": "Een rijke Perzische stoof van kip in een diepe saus van gemalen walnoten en granaatappelmelasse.",
+    "ingredients": [
+      "4 kipdijfilets",
+      "200g walnoten, gemalen",
+      "4 el granaatappelmelasse",
+      "1 ui",
+      "kippenbouillon",
+      "handvol granaatappelpitten"
+    ],
+    "instructions": "Fruit de ui, bak de kip aan, voeg gemalen walnoten, granaatappelmelasse en bouillon toe en laat 40 minuten sudderen.",
+    "preparation_time": 55,
+    "nutrition_information": {
+      "vet": "32g",
+      "eiwit": "32g",
+      "calorieen": 480,
+      "koolhydraten": "16g"
+    },
+    "category": [
+      "Diner",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Eiwitrijk",
+      "Antioxidantrijk"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Fruit de ui aan in een scheutje olie.",
+      "Bak de kipdijfilets kort aan tot lichtbruin.",
+      "Voeg de gemalen walnoten, granaatappelmelasse en bouillon toe.",
+      "Laat afgedekt 35-40 minuten zachtjes sudderen tot de saus indikt.",
+      "Breng op smaak met zout en eventueel wat extra melasse voor de zoetzure balans.",
+      "Werk af met verse granaatappelpitten."
+    ],
+    "optional_ingredients": [
+      "Kaneel",
+      "Rijst erbij"
+    ],
+    "low_carb_variant": "Dit gerecht is al relatief koolhydraatarm — serveer met bloemkoolrijst in plaats van gewone rijst.",
+    "storage_tip": "Tot 3 dagen in de koelkast, smaakt de volgende dag vaak nog voller.",
+    "meal_prep_tip": "Deze stoof is uitstekend een dag van tevoren te maken.",
+    "is_budget": false
+  },
+  {
+    "title": "Frisse mango-avocado salade met limoen",
+    "description": "Een tropisch frisse salade van rijpe mango, romige avocado, rode ui en limoen.",
+    "ingredients": [
+      "1 rijpe mango",
+      "1 avocado",
+      "1/4 rode ui",
+      "verse koriander",
+      "limoensap",
+      "handvol rucola"
+    ],
+    "instructions": "Snijd mango en avocado in blokjes, meng met fijngesneden rode ui en rucola en besprenkel met limoensap.",
+    "preparation_time": 15,
+    "nutrition_information": {
+      "vet": "16g",
+      "eiwit": "3g",
+      "calorieen": 240,
+      "koolhydraten": "24g"
+    },
+    "category": [
+      "Lunch",
+      "Salade",
+      "Veganistisch",
+      "Glutenvrij",
+      "Snel",
+      "Vezelrijk"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd de mango en avocado in blokjes.",
+      "Snijd de rode ui zo fijn mogelijk.",
+      "Meng mango, avocado, ui en rucola in een schaal.",
+      "Besprenkel met flink wat limoensap en werk af met verse koriander."
+    ],
+    "optional_ingredients": [
+      "Chilipeper",
+      "Geroosterde cashewnoten"
+    ],
+    "low_carb_variant": "Gebruik minder mango en vul aan met extra rucola en komkommer.",
+    "storage_tip": "Het lekkerst vers bereid, avocado en mango verkleuren snel.",
+    "meal_prep_tip": "Snijd de ui en kruiden vooraf, snijd mango en avocado pas vlak voor het serveren.",
+    "is_budget": true
+  },
+  {
+    "title": "Gado-gado",
+    "description": "Een Indonesische groentesalade met licht gestoomde groenten, ei en een romige pindasaus.",
+    "ingredients": [
+      "handvol sperziebonen",
+      "handvol taugé",
+      "1/2 komkommer",
+      "1 aardappel",
+      "2 eieren",
+      "3 el pindakaas",
+      "sojasaus",
+      "kokosmelk"
+    ],
+    "instructions": "Stoom of blancheer de groenten, kook de aardappel en eieren en serveer met een romige pindasaus.",
+    "preparation_time": 30,
+    "nutrition_information": {
+      "vet": "22g",
+      "eiwit": "16g",
+      "calorieen": 380,
+      "koolhydraten": "30g"
+    },
+    "category": [
+      "Lunch",
+      "Salade",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Vezelrijk"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Kook de aardappel gaar en snijd in plakjes.",
+      "Blancheer de sperziebonen en taugé kort beetgaar.",
+      "Kook de eieren hard en pel ze.",
+      "Meng de pindakaas met een scheutje sojasaus, kokosmelk en warm water tot een gladde saus.",
+      "Schik alle groenten, aardappel en ei op een bord en schenk de pindasaus erover."
+    ],
+    "optional_ingredients": [
+      "Kroepoek",
+      "Gebakken tofu of tempeh"
+    ],
+    "low_carb_variant": "Laat de aardappel weg en vul aan met extra komkommer en taugé.",
+    "storage_tip": "Bewaar de pindasaus apart, tot 3 dagen in de koelkast.",
+    "meal_prep_tip": "Kook aardappel en eieren vooraf en stoom de groenten vlak voor het eten.",
+    "is_budget": false
+  },
+  {
+    "title": "Gazpacho Andaluz",
+    "description": "Een koude Spaanse tomatensoep vol frisse groenten — perfect als lichte lunch op een warme dag.",
+    "ingredients": [
+      "6 rijpe tomaten",
+      "1 komkommer",
+      "1 groene paprika",
+      "1 teentje knoflook",
+      "2 el olijfolie",
+      "scheutje sherryazijn",
+      "sneetje oud brood"
+    ],
+    "instructions": "Blend alle groenten met brood, olijfolie en azijn glad en laat goed koud worden in de koelkast.",
+    "preparation_time": 20,
+    "nutrition_information": {
+      "vet": "6g",
+      "eiwit": "3g",
+      "calorieen": 140,
+      "koolhydraten": "18g"
+    },
+    "category": [
+      "Lunch",
+      "Soep",
+      "Veganistisch",
+      "Snel",
+      "Vezelrijk"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd de tomaten, komkommer, paprika en knoflook grof.",
+      "Blend alles samen met het brood, olijfolie en sherryazijn tot een gladde soep.",
+      "Breng op smaak met zout en peper.",
+      "Laat minstens 2 uur koud worden in de koelkast.",
+      "Serveer koud, eventueel met wat fijngesneden groenten erbovenop."
+    ],
+    "optional_ingredients": [
+      "Extra olijfolie als garnering",
+      "Fijngesneden groenten erbovenop"
+    ],
+    "low_carb_variant": "Laat het brood weg en vul aan met extra olijfolie voor binding.",
+    "storage_tip": "Tot 3 dagen in de koelkast, goed afgedekt.",
+    "meal_prep_tip": "Maak een grote kan vooraf — gazpacho wordt lekkerder als de smaken even kunnen trekken.",
+    "is_budget": true
+  },
+  {
+    "title": "Gezouten karamel-notenmix",
+    "description": "Een zelfgemaakte, magnesiumrijke notenmix met een vleugje zeezout en een hint van karamel.",
+    "ingredients": [
+      "150g gemengde noten (amandel, cashew, walnoot)",
+      "2 el ahornsiroop",
+      "1 tl kaneel",
+      "grof zeezout"
+    ],
+    "instructions": "Meng de noten met ahornsiroop en kaneel en rooster ze knapperig in de oven, werk af met zeezout.",
+    "preparation_time": 20,
+    "nutrition_information": {
+      "vet": "17g",
+      "eiwit": "6g",
+      "calorieen": 210,
+      "koolhydraten": "10g"
+    },
+    "category": [
+      "Snack",
+      "Veganistisch",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Magnesiumrijk",
+      "Voorbereiden"
+    ],
+    "image_url": "https://buqdbdrbhrgzesjipwem.supabase.co/storage/v1/object/public/recipe-images/51e7370d-e39f-41d5-8480-af05648113c9.jpg",
+    "servings": 6,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm de oven voor op 180°C.",
+      "Meng de noten met ahornsiroop en kaneel.",
+      "Verdeel op een bakplaat met bakpapier.",
+      "Rooster 10-12 minuten tot goudbruin, roer halverwege om.",
+      "Bestrooi direct na de oven met grof zeezout en laat afkoelen tot krokant."
+    ],
+    "optional_ingredients": [
+      "Pompoenpitten",
+      "Rozijnen"
+    ],
+    "low_carb_variant": "Laat de ahornsiroop weg en rooster de noten puur met zout voor minder koolhydraten.",
+    "storage_tip": "Tot 2 weken in een afgesloten pot op kamertemperatuur.",
+    "meal_prep_tip": "Maak een grote batch — deze notenmix is ideaal om in porties mee te nemen.",
+    "is_budget": false
+  },
+  {
+    "title": "Griekse boerensalade (Horiatiki)",
+    "description": "De originele Griekse salade zonder sla: rijpe tomaat, komkommer, rode ui, olijven en een plak feta.",
+    "ingredients": [
+      "4 rijpe tomaten",
+      "1 komkommer",
+      "1/2 rode ui",
+      "handvol zwarte olijven",
+      "150g feta in een plak",
+      "olijfolie",
+      "oregano"
+    ],
+    "instructions": "Snijd de groenten in grove stukken, leg de feta erop en besprenkel met olijfolie en oregano.",
+    "preparation_time": 15,
+    "nutrition_information": {
+      "vet": "24g",
+      "eiwit": "12g",
+      "calorieen": 320,
+      "koolhydraten": "12g"
+    },
+    "category": [
+      "Lunch",
+      "Salade",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd de tomaten, komkommer en rode ui in grove stukken.",
+      "Meng de groenten met de olijven in een schaal.",
+      "Leg de plak feta bovenop.",
+      "Besprenkel met olijfolie en bestrooi met gedroogde oregano en een snufje zout."
+    ],
+    "optional_ingredients": [
+      "Kappertjes",
+      "Groene paprika"
+    ],
+    "low_carb_variant": "Deze salade is van nature al koolhydraatarm.",
+    "storage_tip": "Het lekkerst vers, de groenten worden waterig als de salade te lang blijft staan.",
+    "meal_prep_tip": "Snijd de groenten vooraf en meng pas vlak voor het serveren met de dressing.",
+    "is_budget": false
+  },
+  {
+    "title": "Griekse fakes (linzensoep)",
+    "description": "Een eenvoudige, rustieke Griekse linzensoep op basis van tomaat, laurier en een scheut rode wijnazijn.",
+    "ingredients": [
+      "250g bruine linzen",
+      "1 blik tomatenblokjes",
+      "1 ui",
+      "2 teentjes knoflook",
+      "1 wortel",
+      "laurierblad",
+      "rode wijnazijn",
+      "olijfolie"
+    ],
+    "instructions": "Fruit ui, knoflook en wortel aan, voeg linzen, tomaat en water toe en laat 30 minuten sudderen tot de linzen gaar zijn.",
+    "preparation_time": 40,
+    "nutrition_information": {
+      "vet": "6g",
+      "eiwit": "16g",
+      "calorieen": 260,
+      "koolhydraten": "38g"
+    },
+    "category": [
+      "Diner",
+      "Lunch",
+      "Soep",
+      "Veganistisch",
+      "Glutenvrij",
+      "IJzerrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Fruit de fijngesneden ui, knoflook en wortel aan in olijfolie.",
+      "Voeg de linzen, tomatenblokjes, laurierblad en ruim water toe.",
+      "Breng aan de kook en laat 30 minuten zachtjes sudderen.",
+      "Breng op smaak met zout, peper en een scheut rode wijnazijn.",
+      "Serveer met een extra scheut olijfolie erover."
+    ],
+    "optional_ingredients": [
+      "Feta erbij",
+      "Extra knoflook",
+      "Verse oregano"
+    ],
+    "low_carb_variant": "Voeg extra groenten toe en gebruik iets minder linzen voor een lagere koolhydraatinname.",
+    "storage_tip": "Tot 4 dagen in de koelkast en goed in te vriezen.",
+    "meal_prep_tip": "Maak een dubbele portie — deze soep smaakt de volgende dag vaak nog beter.",
+    "is_budget": true
+  },
+  {
+    "title": "Griekse gegrilde vis met citroen en oregano",
+    "description": "Eenvoudig bereide witvis met citroen, olijfolie en oregano — een Griekse klassieker vol smaak.",
+    "ingredients": [
+      "2 zeebaarsfilets",
+      "1 citroen",
+      "2 el olijfolie",
+      "gedroogde oregano",
+      "1 teentje knoflook"
+    ],
+    "instructions": "Marineer de vis kort in citroen, olijfolie en oregano en gril of bak tot gaar.",
+    "preparation_time": 20,
+    "nutrition_information": {
+      "vet": "16g",
+      "eiwit": "32g",
+      "calorieen": 280,
+      "koolhydraten": "3g"
+    },
+    "category": [
+      "Diner",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Eiwitrijk",
+      "Antioxidantrijk",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Meng olijfolie, citroensap, oregano en fijngehakte knoflook tot een marinade.",
+      "Leg de visfilets erin en laat 10 minuten marineren.",
+      "Bak of gril de vis 3-4 minuten per kant tot gaar en glazig van binnen.",
+      "Besprenkel met extra citroensap voor het serveren."
+    ],
+    "optional_ingredients": [
+      "Verse peterselie",
+      "Cherrytomaatjes erbij"
+    ],
+    "low_carb_variant": "Dit gerecht is van nature al koolhydraatarm.",
+    "storage_tip": "Het lekkerst vers bereid en direct gegeten.",
+    "meal_prep_tip": "Maak de marinade vooraf, dan hoeft de vis alleen nog gebakken te worden.",
+    "is_budget": false
+  },
+  {
+    "title": "Griekse moussaka",
+    "description": "Een klassieke Griekse ovenschotel van gebakken aubergine, gekruid gehakt en een romige bechamelsaus.",
+    "ingredients": [
+      "2 aubergines",
+      "400g lamsgehakt of rundergehakt",
+      "1 blik tomatenblokjes",
+      "1 ui",
+      "500ml melk",
+      "40g bloem",
+      "40g boter",
+      "geraspte kaas"
+    ],
+    "instructions": "Bak de aubergine, maak een gehaktsaus met tomaat, maak een bechamelsaus en laag alles in een ovenschaal, bak af in de oven.",
+    "preparation_time": 75,
+    "nutrition_information": {
+      "vet": "32g",
+      "eiwit": "26g",
+      "calorieen": 480,
+      "koolhydraten": "24g"
+    },
+    "category": [
+      "Diner",
+      "Ovengerecht",
+      "Eiwitrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 6,
+    "difficulty": "pittig",
+    "steps": [
+      "Snijd de aubergine in plakken en bak ze aan beide kanten goudbruin.",
+      "Bak het gehakt rul met ui en tomatenblokjes tot een dikke saus, kruid met kaneel.",
+      "Maak een bechamelsaus van boter, bloem en melk, breng op smaak met nootmuskaat.",
+      "Laag de aubergine en gehaktsaus in een ovenschaal en schenk de bechamel erover.",
+      "Bestrooi met kaas en bak 35 minuten op 190°C tot goudbruin."
+    ],
+    "optional_ingredients": [
+      "Kaneel",
+      "Nootmuskaat"
+    ],
+    "low_carb_variant": "Vervang de bechamelsaus door een dunnere laag geraspte kaas voor minder koolhydraten.",
+    "storage_tip": "Tot 3 dagen in de koelkast, en uitstekend in te vriezen in porties.",
+    "meal_prep_tip": "Bereid de hele schotel een dag van tevoren en bak af vlak voor het serveren.",
+    "is_budget": false
+  },
+  {
+    "title": "Griekse yoghurt-chocolademousse",
+    "description": "Een luchtige, eiwitrijke chocolademousse van Griekse yoghurt en pure cacao — zoet genoeg zonder overdaad aan suiker.",
+    "ingredients": [
+      "300g Griekse yoghurt",
+      "3 el pure cacaopoeder",
+      "2 el honing",
+      "snufje zeezout"
+    ],
+    "instructions": "Meng de yoghurt met cacao, honing en een snufje zout tot een gladde mousse.",
+    "preparation_time": 10,
+    "nutrition_information": {
+      "vet": "4g",
+      "eiwit": "14g",
+      "calorieen": 180,
+      "koolhydraten": "18g"
+    },
+    "category": [
+      "Dessert",
+      "Snack",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Eiwitrijk",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Roer de cacaopoeder en honing door de Griekse yoghurt tot een gladde massa.",
+      "Voeg een snufje zeezout toe voor extra diepte.",
+      "Verdeel over glaasjes.",
+      "Laat 15 minuten opstijven in de koelkast en werk eventueel af met fruit."
+    ],
+    "optional_ingredients": [
+      "Frambozen",
+      "Chocoladeschaafsel"
+    ],
+    "low_carb_variant": "Gebruik minder honing voor een minder zoete, koolhydraatarmere versie.",
+    "storage_tip": "Tot 2 dagen in de koelkast.",
+    "meal_prep_tip": "Maak een grotere portie vooraf in aparte glaasjes voor een klaarstaand toetje.",
+    "is_budget": true
+  },
+  {
+    "title": "Gyudon (Japanse rundvlees-rijstbowl)",
+    "description": "Dungesneden rundvlees en ui, langzaam getrokken in een zoethartige sojasaus, geserveerd over warme rijst.",
+    "ingredients": [
+      "250g dungesneden rundvlees",
+      "1 ui",
+      "200g rijst",
+      "sojasaus",
+      "mirin",
+      "1 el suiker",
+      "dashi of runderbouillon"
+    ],
+    "instructions": "Kook de rijst, laat ui en vlees garen in de zoethartige bouillon en schep over de rijst.",
+    "preparation_time": 25,
+    "nutrition_information": {
+      "vet": "16g",
+      "eiwit": "30g",
+      "calorieen": 520,
+      "koolhydraten": "62g"
+    },
+    "category": [
+      "Diner",
+      "Bowl",
+      "IJzerrijk",
+      "Eiwitrijk"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de rijst volgens de verpakking.",
+      "Snijd de ui in dunne halve ringen en breng aan de kook in sojasaus, mirin, suiker en bouillon.",
+      "Laat de ui 5 minuten meesudderen tot zacht.",
+      "Voeg het dungesneden rundvlees toe en laat 3-4 minuten garen in de saus.",
+      "Verdeel de rijst over kommen en schep het vlees met saus erover.",
+      "Werk af met lente-ui."
+    ],
+    "optional_ingredients": [
+      "Gepofte ei",
+      "Gemberreepjes",
+      "Lente-ui"
+    ],
+    "low_carb_variant": "Vervang de helft van de rijst door bloemkoolrijst voor minder koolhydraten.",
+    "storage_tip": "Tot 2 dagen in de koelkast, apart van de rijst bewaren voor de beste textuur.",
+    "meal_prep_tip": "Snijd het vlees en de ui vooraf — dit gerecht staat dan in 15 minuten op tafel.",
+    "is_budget": false
+  },
+  {
+    "title": "Hartige kaas-zadencrackers",
+    "description": "Knapperige, zelfgemaakte crackers van geraspte kaas en gemengde zaden — een hartige snack tegen de trek.",
+    "ingredients": [
+      "150g geraspte oude kaas",
+      "3 el lijnzaad",
+      "3 el sesamzaad",
+      "2 el zonnebloempitten",
+      "1 ei"
+    ],
+    "instructions": "Meng kaas, zaden en ei tot een deeg, rol dun uit en bak knapperig in de oven.",
+    "preparation_time": 30,
+    "nutrition_information": {
+      "vet": "12g",
+      "eiwit": "9g",
+      "calorieen": 150,
+      "koolhydraten": "3g"
+    },
+    "category": [
+      "Snack",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Eiwitrijk",
+      "Magnesiumrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 6,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm de oven voor op 180°C.",
+      "Meng de geraspte kaas, alle zaden en het ei tot een samenhangend deeg.",
+      "Rol het deeg dun uit tussen twee vellen bakpapier.",
+      "Snijd in vierkantjes en leg op een bakplaat.",
+      "Bak 12-15 minuten tot goudbruin en krokant."
+    ],
+    "optional_ingredients": [
+      "Chilivlokken",
+      "Kruiden naar smaak"
+    ],
+    "low_carb_variant": "Deze crackers zijn van nature al koolhydraatarm.",
+    "storage_tip": "Tot een week in een afgesloten bakje.",
+    "meal_prep_tip": "Bak een dubbele batch — deze crackers blijven goed knapperig in een afgesloten pot.",
+    "is_budget": false
+  },
+  {
+    "title": "Hongaarse goulash met aardappelen",
+    "description": "Een stevige Hongaarse rundvleesstoof op smaak gebracht met paprikapoeder en komijn.",
+    "ingredients": [
+      "600g runderstoofvlees",
+      "3 el paprikapoeder",
+      "2 uien",
+      "2 paprikas",
+      "500g aardappelen",
+      "1 blik tomatenblokjes",
+      "runderbouillon"
+    ],
+    "instructions": "Fruit de uien, bak het vlees aan met paprikapoeder, voeg tomaat, bouillon en paprika toe en laat 1,5 uur sudderen, voeg de aardappel later toe.",
+    "preparation_time": 120,
+    "nutrition_information": {
+      "vet": "18g",
+      "eiwit": "34g",
+      "calorieen": 460,
+      "koolhydraten": "34g"
+    },
+    "category": [
+      "Diner",
+      "Glutenvrij",
+      "Eiwitrijk",
+      "Magnesiumrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Fruit de uien glazig in een scheutje olie.",
+      "Bak het rundvlees aan en bestrooi rijkelijk met paprikapoeder.",
+      "Voeg de tomatenblokjes, bouillon en in reepjes gesneden paprika toe.",
+      "Laat afgedekt 1 tot 1,5 uur zachtjes sudderen tot het vlees mals is.",
+      "Voeg de in blokjes gesneden aardappelen toe en kook nog 20 minuten mee tot gaar."
+    ],
+    "optional_ingredients": [
+      "Zure room",
+      "Kummel (komijnzaad)"
+    ],
+    "low_carb_variant": "Gebruik minder aardappel en vul aan met extra paprika en courgette.",
+    "storage_tip": "Tot 4 dagen in de koelkast, en uitstekend in te vriezen.",
+    "meal_prep_tip": "Maak een dubbele portie — goulash smaakt de volgende dag vaak nog voller.",
+    "is_budget": false
+  },
+  {
+    "title": "Kaasplankje met noten en honing",
+    "description": "Een hartig-zoet snackbord van verschillende kazen, noten, druiven en een drupje honing — voelt als een traktatie.",
+    "ingredients": [
+      "150g gemengde kaas (oud, brie, geitenkaas)",
+      "handvol walnoten",
+      "handvol druiven",
+      "honing",
+      "knapperige crackers"
+    ],
+    "instructions": "Schik de kaas, noten en druiven op een plank en besprenkel de zachte kaas met honing.",
+    "preparation_time": 10,
+    "nutrition_information": {
+      "vet": "24g",
+      "eiwit": "18g",
+      "calorieen": 380,
+      "koolhydraten": "22g"
+    },
+    "category": [
+      "Snack",
+      "Vegetarisch",
+      "Eiwitrijk",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd de kazen in stukken en schik op een plank of bord.",
+      "Voeg de walnoten en druiven toe.",
+      "Besprenkel de brie of geitenkaas met een beetje honing.",
+      "Serveer met knapperige crackers erbij."
+    ],
+    "optional_ingredients": [
+      "Gedroogde vijgen",
+      "Augurkjes"
+    ],
+    "low_carb_variant": "Laat de crackers en honing weg en houd het bij kaas, noten en druiven.",
+    "storage_tip": "Het lekkerst vers samengesteld, kort voor het serveren.",
+    "meal_prep_tip": "Snijd de kaas vooraf en bewaar afgedekt tot je klaar bent om te serveren.",
+    "is_budget": false
+  },
+  {
+    "title": "Kikkererwten-brownies",
+    "description": "Verrassend romige, glutenvrije brownies gemaakt op basis van kikkererwten en pure cacao.",
+    "ingredients": [
+      "1 blik kikkererwten",
+      "3 el pure cacaopoeder",
+      "80g pindakaas",
+      "60g honing",
+      "1 tl bakpoeder",
+      "handvol pure chocoladestukjes"
+    ],
+    "instructions": "Blend alle ingrediënten glad, giet in een ovenschaal en bak tot gaar.",
+    "preparation_time": 40,
+    "nutrition_information": {
+      "vet": "8g",
+      "eiwit": "6g",
+      "calorieen": 160,
+      "koolhydraten": "18g"
+    },
+    "category": [
+      "Dessert",
+      "Snack",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Magnesiumrijk",
+      "Vezelrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 9,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm de oven voor op 175°C.",
+      "Doe de uitgelekte kikkererwten, cacaopoeder, pindakaas, honing en bakpoeder in een blender.",
+      "Blend tot een glad beslag.",
+      "Roer de chocoladestukjes erdoor en giet het beslag in een ingevette ovenschaal.",
+      "Bak 20-25 minuten tot gaar en laat volledig afkoelen voor het snijden."
+    ],
+    "optional_ingredients": [
+      "Walnoten",
+      "Extra chocoladestukjes bovenop"
+    ],
+    "low_carb_variant": "Gebruik iets minder honing en meer pure chocolade (85%) voor minder koolhydraten.",
+    "storage_tip": "Tot 4 dagen in een afgesloten bakje, en goed in te vriezen in stukken.",
+    "meal_prep_tip": "Bak een grote bakplaat en vries de brownies in porties in.",
+    "is_budget": true
+  },
+  {
+    "title": "Kleurrijke groentecurry met kokosmelk",
+    "description": "Een milde, romige curry vol gekleurde groenten in kokosmelk, geïnspireerd op Indiase korma.",
+    "ingredients": [
+      "1 blik kokosmelk",
+      "1 bloemkool",
+      "1 wortel",
+      "handvol sperziebonen",
+      "1 rode paprika",
+      "1 el kerriepasta",
+      "1 ui",
+      "cashewnoten"
+    ],
+    "instructions": "Fruit de ui en kerriepasta, voeg de groenten en kokosmelk toe en laat sudderen tot de groenten gaar zijn.",
+    "preparation_time": 35,
+    "nutrition_information": {
+      "vet": "26g",
+      "eiwit": "9g",
+      "calorieen": 340,
+      "koolhydraten": "22g"
+    },
+    "category": [
+      "Diner",
+      "Curry",
+      "Vegetarisch",
+      "Veganistisch",
+      "Glutenvrij",
+      "Antioxidantrijk",
+      "Vezelrijk"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Fruit de ui aan in een scheutje olie.",
+      "Voeg de kerriepasta toe en bak 1 minuut mee.",
+      "Voeg de in stukken gesneden groenten en de kokosmelk toe.",
+      "Laat 15-20 minuten sudderen tot de groenten gaar zijn.",
+      "Werk af met cashewnoten en verse koriander."
+    ],
+    "optional_ingredients": [
+      "Verse koriander",
+      "Rijst erbij"
+    ],
+    "low_carb_variant": "Gebruik magere kokosmelk (light) voor minder vet, de koolhydraten zijn al laag.",
+    "storage_tip": "Tot 3 dagen in de koelkast en goed in te vriezen.",
+    "meal_prep_tip": "Maak een dubbele portie — deze curry smaakt de volgende dag vaak nog beter.",
+    "is_budget": true
+  },
+  {
+    "title": "Koreaanse dak-doritang (gestoofde kip met aardappel)",
+    "description": "Een pittig-zoete Koreaanse kipstoof met aardappel, wortel en gochujang.",
+    "ingredients": [
+      "4 kipdrumsticks",
+      "2 aardappelen",
+      "1 wortel",
+      "2 el gochujang",
+      "1 el sojasaus",
+      "1 el honing",
+      "2 teentjes knoflook"
+    ],
+    "instructions": "Bak de kip kort aan, voeg aardappel, wortel en de saus toe en laat sudderen tot de kip en groenten gaar zijn.",
+    "preparation_time": 45,
+    "nutrition_information": {
+      "vet": "18g",
+      "eiwit": "32g",
+      "calorieen": 460,
+      "koolhydraten": "36g"
+    },
+    "category": [
+      "Diner",
+      "Glutenvrij",
+      "Eiwitrijk",
+      "Magnesiumrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Bak de kipdrumsticks kort aan in een scheutje olie.",
+      "Meng gochujang, sojasaus, honing en knoflook tot een saus.",
+      "Voeg de in stukken gesneden aardappel, wortel en de saus toe aan de kip met een scheutje water.",
+      "Laat 25-30 minuten sudderen tot de kip en groenten gaar zijn en de saus indikt.",
+      "Werk af met lente-ui en sesamzaad."
+    ],
+    "optional_ingredients": [
+      "Lente-ui",
+      "Sesamzaad"
+    ],
+    "low_carb_variant": "Gebruik minder aardappel en vul aan met extra wortel en paprika.",
+    "storage_tip": "Tot 3 dagen in de koelkast.",
+    "meal_prep_tip": "Maak een dubbele portie — deze stoof smaakt de volgende dag vaak nog beter.",
+    "is_budget": false
+  },
+  {
+    "title": "Koreaanse miyeok-guk met rundvlees",
+    "description": "Een traditionele Koreaanse zeewiersoep met rundvlees, rijk aan ijzer en jodium — in Korea klassiek als herstelsoep.",
+    "ingredients": [
+      "30g gedroogd zeewier (miyeok/wakame)",
+      "200g rundvlees in reepjes",
+      "2 teentjes knoflook",
+      "1 el sesamolie",
+      "sojasaus",
+      "sesamzaad"
+    ],
+    "instructions": "Week het zeewier, bak het rundvlees kort aan in sesamolie, voeg zeewier en water toe en laat 20 minuten sudderen.",
+    "preparation_time": 35,
+    "nutrition_information": {
+      "vet": "12g",
+      "eiwit": "22g",
+      "calorieen": 220,
+      "koolhydraten": "6g"
+    },
+    "category": [
+      "Diner",
+      "Soep",
+      "Glutenvrij",
+      "Lactosevrij",
+      "IJzerrijk",
+      "Eiwitrijk"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Week het gedroogde zeewier 15 minuten in koud water en laat uitlekken.",
+      "Bak het rundvlees met knoflook kort aan in sesamolie.",
+      "Voeg het zeewier en een scheutje sojasaus toe en roerbak 2 minuten.",
+      "Voeg ruim water toe en breng aan de kook.",
+      "Laat 20 minuten zachtjes sudderen en breng op smaak met sojasaus.",
+      "Werk af met sesamzaad."
+    ],
+    "optional_ingredients": [
+      "Extra knoflook",
+      "Chilivlokken"
+    ],
+    "low_carb_variant": "Deze soep is van nature al koolhydraatarm.",
+    "storage_tip": "Tot 3 dagen in de koelkast.",
+    "meal_prep_tip": "Week een grotere hoeveelheid zeewier vooraf in en vries in porties in.",
+    "is_budget": false
+  },
+  {
+    "title": "Libanese adas bi hamod",
+    "description": "Een frisse Libanese linzensoep op smaak gebracht met citroen, knoflook en verse koriander, met spinazie erdoor.",
+    "ingredients": [
+      "250g bruine linzen",
+      "150g spinazie",
+      "1 ui",
+      "3 teentjes knoflook",
+      "citroensap",
+      "verse koriander",
+      "1 aardappel"
+    ],
+    "instructions": "Kook linzen en aardappel gaar, fruit knoflook en ui, voeg samen met de spinazie en citroensap toe.",
+    "preparation_time": 35,
+    "nutrition_information": {
+      "vet": "4g",
+      "eiwit": "15g",
+      "calorieen": 240,
+      "koolhydraten": "36g"
+    },
+    "category": [
+      "Diner",
+      "Lunch",
+      "Soep",
+      "Veganistisch",
+      "Glutenvrij",
+      "IJzerrijk"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de linzen en in blokjes gesneden aardappel in ruim water in 20 minuten gaar.",
+      "Fruit ondertussen ui en knoflook aan in een scheutje olie.",
+      "Voeg het ui-knoflookmengsel toe aan de linzen.",
+      "Roer de spinazie erdoor tot deze net geslonken is.",
+      "Breng op smaak met flink wat citroensap, zout en verse koriander."
+    ],
+    "optional_ingredients": [
+      "Extra citroen",
+      "Chilivlokken"
+    ],
+    "low_carb_variant": "Gebruik iets minder aardappel en linzen en vul aan met extra spinazie.",
+    "storage_tip": "Tot 4 dagen in de koelkast en goed in te vriezen.",
+    "meal_prep_tip": "Maak een grote pan vooraf — de smaken trekken er alleen maar verder in.",
+    "is_budget": true
+  },
+  {
+    "title": "Libanese tabouleh met quinoa",
+    "description": "Een frisse, kruidenrijke Libanese salade met veel peterselie en munt, hier gemaakt met quinoa voor extra eiwit en vezels.",
+    "ingredients": [
+      "120g quinoa",
+      "grote bos peterselie",
+      "verse munt",
+      "3 tomaten",
+      "1/2 rode ui",
+      "citroensap",
+      "olijfolie"
+    ],
+    "instructions": "Kook de quinoa en laat afkoelen, hak de kruiden en groenten fijn en meng alles met citroensap en olijfolie.",
+    "preparation_time": 25,
+    "nutrition_information": {
+      "vet": "10g",
+      "eiwit": "8g",
+      "calorieen": 260,
+      "koolhydraten": "34g"
+    },
+    "category": [
+      "Lunch",
+      "Salade",
+      "Veganistisch",
+      "Glutenvrij",
+      "Vezelrijk"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de quinoa volgens de verpakking en laat afkoelen.",
+      "Hak de peterselie en munt fijn.",
+      "Snijd de tomaten en rode ui in kleine blokjes.",
+      "Meng de quinoa met de kruiden en groenten.",
+      "Besprenkel met flink wat citroensap en olijfolie en breng op smaak met zout."
+    ],
+    "optional_ingredients": [
+      "Komkommer",
+      "Granaatappelpitten"
+    ],
+    "low_carb_variant": "Gebruik iets minder quinoa en vul aan met extra peterselie en tomaat.",
+    "storage_tip": "Tot 2 dagen in de koelkast, hoe langer hoe meer de smaken intrekken.",
+    "meal_prep_tip": "Kook de quinoa vooraf, dan staat deze salade in 10 minuten op tafel.",
+    "is_budget": true
+  },
+  {
+    "title": "Loaded sweet potato fries met kaas en spek",
+    "description": "Krokante ovenfriet van zoete aardappel met gesmolten kaas, spekjes en een frisse yoghurtdip — hartig comfort food.",
+    "ingredients": [
+      "2 zoete aardappelen",
+      "80g spekjes",
+      "geraspte kaas",
+      "Griekse yoghurt",
+      "bieslook"
+    ],
+    "instructions": "Snijd de zoete aardappel in reepjes, rooster krokant in de oven, bak de spekjes en overgiet alles met kaas en dip.",
+    "preparation_time": 35,
+    "nutrition_information": {
+      "vet": "20g",
+      "eiwit": "16g",
+      "calorieen": 380,
+      "koolhydraten": "34g"
+    },
+    "category": [
+      "Snack",
+      "Bijgerecht",
+      "Comfort food",
+      "Glutenvrij",
+      "Eiwitrijk"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm de oven voor op 220°C.",
+      "Snijd de zoete aardappel in dunne reepjes en rooster 20-25 minuten tot krokant.",
+      "Bak de spekjes krokant in een pan.",
+      "Verdeel de geraspte kaas over de frietjes en laat nog 3 minuten smelten in de oven.",
+      "Verdeel de spekjes erover en serveer met een dip van Griekse yoghurt en bieslook."
+    ],
+    "optional_ingredients": [
+      "Jalapeño",
+      "Lente-ui"
+    ],
+    "low_carb_variant": "Gebruik minder zoete aardappel en vul aan met extra kaas en spek voor minder koolhydraten.",
+    "storage_tip": "Het lekkerst vers uit de oven, warm opnieuw op in de oven voor het krokante effect.",
+    "meal_prep_tip": "Snijd de zoete aardappel vooraf, rooster vlak voor het serveren.",
+    "is_budget": false
+  },
+  {
+    "title": "Marokkaanse couscoussalade met citroen en munt",
+    "description": "Een frisse couscoussalade met citroen, verse munt, granaatappelpitten en amandelen.",
+    "ingredients": [
+      "150g couscous",
+      "1 citroen",
+      "verse munt",
+      "handvol granaatappelpitten",
+      "handvol amandelen",
+      "olijfolie",
+      "1 komkommer"
+    ],
+    "instructions": "Week de couscous in kokend water, meng met citroensap, munt, komkommer, granaatappelpitten en amandelen.",
+    "preparation_time": 20,
+    "nutrition_information": {
+      "vet": "13g",
+      "eiwit": "8g",
+      "calorieen": 320,
+      "koolhydraten": "42g"
+    },
+    "category": [
+      "Lunch",
+      "Salade",
+      "Vegetarisch",
+      "Vezelrijk"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Overgiet de couscous met evenveel kokend water en laat 5 minuten afgedekt staan.",
+      "Maak de couscous los met een vork.",
+      "Voeg citroensap, olijfolie, gehakte munt en in blokjes gesneden komkommer toe.",
+      "Meng er de granaatappelpitten en gehakte amandelen doorheen.",
+      "Breng op smaak met zout en peper."
+    ],
+    "optional_ingredients": [
+      "Rozijnen",
+      "Fetakaas"
+    ],
+    "low_carb_variant": "Vervang de helft van de couscous door extra komkommer en kruiden.",
+    "storage_tip": "Tot 2 dagen in de koelkast.",
+    "meal_prep_tip": "Maak een dubbele portie — deze salade is een fijne meeneemlunch voor een paar dagen.",
+    "is_budget": false
+  },
+  {
+    "title": "Marokkaanse harira",
+    "description": "Een traditionele Marokkaanse soep met linzen, kikkererwten en lamsvlees, rijk aan ijzer en vaak gegeten om weer op krachten te komen.",
+    "ingredients": [
+      "150g rode linzen",
+      "1 blik kikkererwten",
+      "200g lamsvlees of rundergehakt",
+      "1 blik tomatenblokjes",
+      "1 ui",
+      "2 stengels bleekselderij",
+      "peterselie en koriander",
+      "handvol vermicelli"
+    ],
+    "instructions": "Fruit ui en selderij aan, voeg vlees, linzen, kikkererwten en tomaat toe en laat 30-40 minuten sudderen, voeg de vermicelli op het laatst toe.",
+    "preparation_time": 50,
+    "nutrition_information": {
+      "vet": "8g",
+      "eiwit": "22g",
+      "calorieen": 340,
+      "koolhydraten": "40g"
+    },
+    "category": [
+      "Diner",
+      "Lunch",
+      "Soep",
+      "IJzerrijk",
+      "Eiwitrijk"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Snijd de ui en bleekselderij fijn en fruit ze aan in een scheutje olie.",
+      "Voeg het vlees toe en bak rondom bruin.",
+      "Voeg tomatenblokjes, linzen, kikkererwten en ruim water of bouillon toe.",
+      "Laat 30-40 minuten zachtjes sudderen tot de linzen gaar zijn.",
+      "Voeg de vermicelli toe en kook nog 5 minuten mee.",
+      "Werk af met verse peterselie, koriander en een partje citroen."
+    ],
+    "optional_ingredients": [
+      "Verse gember",
+      "Kaneel",
+      "Partjes citroen"
+    ],
+    "low_carb_variant": "Laat de vermicelli weg en vul aan met extra kikkererwten en groenten.",
+    "storage_tip": "Tot 3 dagen in de koelkast, smaakt opgewarmd vaak intenser.",
+    "meal_prep_tip": "Maak een grote pan en vries in porties in zonder de vermicelli — voeg die pas toe bij het opwarmen.",
+    "is_budget": true
+  },
+  {
+    "title": "Marokkaanse kikkererwtentajine met zoete aardappel",
+    "description": "Een verzadigende, kruidige Marokkaanse ovenschotel van kikkererwten, zoete aardappel en gedroogde pruimen.",
+    "ingredients": [
+      "2 blikken kikkererwten",
+      "2 zoete aardappelen",
+      "handvol gedroogde pruimen",
+      "1 ui",
+      "1 tl kaneel",
+      "1 tl komijnpoeder",
+      "groentebouillon"
+    ],
+    "instructions": "Fruit ui en specerijen, voeg kikkererwten, zoete aardappel, pruimen en bouillon toe en laat sudderen tot de aardappel gaar is.",
+    "preparation_time": 45,
+    "nutrition_information": {
+      "vet": "8g",
+      "eiwit": "12g",
+      "calorieen": 360,
+      "koolhydraten": "58g"
+    },
+    "category": [
+      "Diner",
+      "Ovengerecht",
+      "Veganistisch",
+      "Glutenvrij",
+      "Magnesiumrijk",
+      "Vezelrijk"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Fruit de ui aan met kaneel en komijn in een scheutje olie.",
+      "Voeg de kikkererwten, in blokjes gesneden zoete aardappel en pruimen toe.",
+      "Voeg bouillon toe tot alles net onderstaat.",
+      "Laat 25-30 minuten sudderen tot de zoete aardappel gaar is.",
+      "Werk af met verse koriander."
+    ],
+    "optional_ingredients": [
+      "Amandelen",
+      "Verse koriander"
+    ],
+    "low_carb_variant": "Gebruik minder zoete aardappel en pruimen en vul aan met extra kikkererwten en groenten.",
+    "storage_tip": "Tot 4 dagen in de koelkast en goed in te vriezen.",
+    "meal_prep_tip": "Maak een dubbele portie — deze tajine smaakt de volgende dag vaak nog voller.",
+    "is_budget": true
+  },
+  {
+    "title": "Marokkaanse kip met abrikozen en amandelen",
+    "description": "Een milde, kleurrijke Marokkaanse tajine-stijl stoof van kip met gedroogde abrikozen, amandelen en kaneel.",
+    "ingredients": [
+      "4 kipdijfilets",
+      "handvol gedroogde abrikozen",
+      "handvol amandelen",
+      "1 ui",
+      "1 tl kaneel",
+      "1 tl komijnpoeder",
+      "kippenbouillon"
+    ],
+    "instructions": "Fruit ui en specerijen, bak de kip aan, voeg abrikozen, amandelen en bouillon toe en laat 30 minuten sudderen.",
+    "preparation_time": 45,
+    "nutrition_information": {
+      "vet": "22g",
+      "eiwit": "30g",
+      "calorieen": 420,
+      "koolhydraten": "22g"
+    },
+    "category": [
+      "Diner",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Eiwitrijk",
+      "Antioxidantrijk"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Fruit de ui aan met kaneel en komijn in een scheutje olie.",
+      "Bak de kipdijfilets rondom aan.",
+      "Voeg de abrikozen, amandelen en bouillon toe.",
+      "Laat afgedekt 30 minuten zachtjes sudderen tot de kip gaar is.",
+      "Werk af met verse koriander."
+    ],
+    "optional_ingredients": [
+      "Verse koriander",
+      "Couscous erbij"
+    ],
+    "low_carb_variant": "Gebruik minder abrikozen en vul aan met extra groenten zoals courgette.",
+    "storage_tip": "Tot 3 dagen in de koelkast en goed in te vriezen.",
+    "meal_prep_tip": "Maak een dubbele portie — de smaken worden de volgende dag alleen maar voller.",
+    "is_budget": false
+  },
+  {
+    "title": "Mexicaanse bonen bowl met mangosalsa",
+    "description": "Een kleurrijke bowl van zwarte bonen, rijst, avocado en een frisse mangosalsa.",
+    "ingredients": [
+      "1 blik zwarte bonen",
+      "150g rijst",
+      "1 avocado",
+      "1 mango",
+      "1/2 rode ui",
+      "verse koriander",
+      "limoensap"
+    ],
+    "instructions": "Kook de rijst, maak de mangosalsa en verdeel alles met de bonen en avocado over kommen.",
+    "preparation_time": 25,
+    "nutrition_information": {
+      "vet": "14g",
+      "eiwit": "13g",
+      "calorieen": 420,
+      "koolhydraten": "62g"
+    },
+    "category": [
+      "Diner",
+      "Bowl",
+      "Veganistisch",
+      "Glutenvrij",
+      "Antioxidantrijk",
+      "Vezelrijk"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de rijst volgens de verpakking.",
+      "Verwarm de zwarte bonen kort met een snufje komijn en zout.",
+      "Snijd de mango en rode ui fijn en meng met koriander en limoensap tot een salsa.",
+      "Snijd de avocado in plakjes.",
+      "Verdeel rijst, bonen, avocado en mangosalsa over kommen."
+    ],
+    "optional_ingredients": [
+      "Gegrilde mais",
+      "Zure room"
+    ],
+    "low_carb_variant": "Vervang een deel van de rijst door extra sla en groenten voor minder koolhydraten.",
+    "storage_tip": "Bewaar de onderdelen apart, tot 2 dagen in de koelkast.",
+    "meal_prep_tip": "Kook de rijst en bonen vooraf en stel de bowl pas samen vlak voor het eten.",
+    "is_budget": true
+  },
+  {
+    "title": "Mexicaanse chili con carne",
+    "description": "Een stevige, kruidige Mexicaans-Tex-Mex stoof van rundergehakt, bonen en tomaat.",
+    "ingredients": [
+      "400g rundergehakt",
+      "1 blik kidneybonen",
+      "1 blik tomatenblokjes",
+      "1 ui",
+      "2 teentjes knoflook",
+      "1 el chilipoeder",
+      "1 tl komijnpoeder",
+      "1 paprika"
+    ],
+    "instructions": "Bak het gehakt rul, fruit ui, knoflook en paprika mee, voeg bonen, tomaat en kruiden toe en laat 25 minuten sudderen.",
+    "preparation_time": 40,
+    "nutrition_information": {
+      "vet": "18g",
+      "eiwit": "30g",
+      "calorieen": 380,
+      "koolhydraten": "22g"
+    },
+    "category": [
+      "Diner",
+      "Eiwitrijk",
+      "Glutenvrij",
+      "IJzerrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Bak het rundergehakt rul in een grote pan.",
+      "Voeg ui, knoflook en paprika toe en bak nog 3 minuten mee.",
+      "Voeg de kidneybonen, tomatenblokjes, chilipoeder en komijn toe.",
+      "Laat 25 minuten zachtjes sudderen tot een dikke saus ontstaat.",
+      "Breng op smaak met zout en peper."
+    ],
+    "optional_ingredients": [
+      "Avocado",
+      "Zure room",
+      "Geraspte kaas"
+    ],
+    "low_carb_variant": "Gebruik iets minder bonen en vul aan met extra paprika en courgette voor minder koolhydraten.",
+    "storage_tip": "Tot 4 dagen in de koelkast, en uitstekend in te vriezen.",
+    "meal_prep_tip": "Maak een dubbele portie — chili smaakt de volgende dag vaak nog beter.",
+    "is_budget": true
+  },
+  {
+    "title": "Miso-soep met tofu en wakame",
+    "description": "Een lichte, gefermenteerde Japanse soep van misopasta, zijdezachte tofu en wakame-zeewier.",
+    "ingredients": [
+      "3 el misopasta",
+      "200g zijdezachte tofu",
+      "10g gedroogd wakame",
+      "1L dashi of groentebouillon",
+      "lente-ui"
+    ],
+    "instructions": "Breng de bouillon aan de kook, week het wakame, los de miso apart op en voeg samen met de tofu toe.",
+    "preparation_time": 15,
+    "nutrition_information": {
+      "vet": "6g",
+      "eiwit": "9g",
+      "calorieen": 120,
+      "koolhydraten": "8g"
+    },
+    "category": [
+      "Lunch",
+      "Soep",
+      "Veganistisch",
+      "Snel",
+      "Vezelrijk"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Week het wakame kort in water en laat uitlekken.",
+      "Breng de dashi of groentebouillon zachtjes aan de kook.",
+      "Los de misopasta op in een beetje van de warme bouillon en roer terug in de pan.",
+      "Voeg de tofu in blokjes en het wakame toe en verwarm nog 2 minuten mee — niet meer koken.",
+      "Werk af met fijngesneden lente-ui."
+    ],
+    "optional_ingredients": [
+      "Extra tofu",
+      "Chilivlokken"
+    ],
+    "low_carb_variant": "Deze soep is van nature al koolhydraatarm.",
+    "storage_tip": "Het lekkerst vers — miso verliest smaak als het te lang doorkookt of blijft staan.",
+    "meal_prep_tip": "Zet de dashi vooraf klaar, dan staat deze soep in 5 minuten op tafel.",
+    "is_budget": true
+  },
+  {
+    "title": "Mujadara (linzen met rijst en gekarameliseerde ui)",
+    "description": "Een eenvoudig Libanees gerecht van linzen en rijst, afgemaakt met een dikke laag krokant gekarameliseerde ui.",
+    "ingredients": [
+      "150g bruine linzen",
+      "150g rijst",
+      "3 uien",
+      "komijnpoeder",
+      "olijfolie"
+    ],
+    "instructions": "Kook de linzen half gaar, voeg de rijst toe en gaar verder, karamelliseer de ui apart krokant en schep erover.",
+    "preparation_time": 45,
+    "nutrition_information": {
+      "vet": "9g",
+      "eiwit": "13g",
+      "calorieen": 380,
+      "koolhydraten": "62g"
+    },
+    "category": [
+      "Diner",
+      "Rijst",
+      "Veganistisch",
+      "Glutenvrij",
+      "Magnesiumrijk",
+      "Vezelrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de linzen 10 minuten voor in ruim water.",
+      "Voeg de rijst en komijnpoeder toe met vers water en kook nog 15-18 minuten tot beide gaar zijn.",
+      "Snijd de uien in dunne ringen en bak ze langzaam in olijfolie tot diepbruin en krokant.",
+      "Verdeel de linzen-rijst over borden.",
+      "Schep de krokante ui erover."
+    ],
+    "optional_ingredients": [
+      "Griekse yoghurt erbij",
+      "Verse peterselie"
+    ],
+    "low_carb_variant": "Gebruik iets minder rijst en vul aan met extra linzen en groenten.",
+    "storage_tip": "Tot 4 dagen in de koelkast.",
+    "meal_prep_tip": "Maak een grote pan — mujadara is ook koud of opgewarmd erg lekker.",
+    "is_budget": true
+  },
+  {
+    "title": "Overnight chia pudding met perzik en amandel",
+    "description": "Een romige, vezelrijke ontbijtpudding van chiazaad in plantaardige melk, met verse perzik en amandelschaafsel.",
+    "ingredients": [
+      "4 el chiazaad",
+      "250ml amandelmelk",
+      "1 perzik",
+      "handvol amandelschaafsel",
+      "1 tl ahornsiroop"
+    ],
+    "instructions": "Meng chiazaad met amandelmelk en ahornsiroop, laat een nacht opstijven en top af met perzik en amandel.",
+    "preparation_time": 10,
+    "nutrition_information": {
+      "vet": "16g",
+      "eiwit": "8g",
+      "calorieen": 280,
+      "koolhydraten": "24g"
+    },
+    "category": [
+      "Ontbijt",
+      "Veganistisch",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Vezelrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 1,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Meng het chiazaad met de amandelmelk en ahornsiroop in een potje.",
+      "Roer goed door en laat 5 minuten staan, roer nogmaals door om klontjes te voorkomen.",
+      "Dek af en laat minimaal een nacht in de koelkast opstijven.",
+      "Snijd de perzik in partjes en top de pudding ermee af.",
+      "Werk af met amandelschaafsel."
+    ],
+    "optional_ingredients": [
+      "Kaneel",
+      "Extra fruit"
+    ],
+    "low_carb_variant": "Gebruik minder ahornsiroop en kies voor bessen in plaats van perzik.",
+    "storage_tip": "Tot 3 dagen in een afgesloten pot in de koelkast.",
+    "meal_prep_tip": "Maak meteen 3-4 potjes voor de hele week.",
+    "is_budget": false
+  },
+  {
+    "title": "Paella met zeevruchten",
+    "description": "Een kleurrijke Spaanse rijstschotel met saffraan, garnalen, mosselen en paprika.",
+    "ingredients": [
+      "300g paellarijst",
+      "300g gemengde zeevruchten",
+      "1 rode paprika",
+      "1 ui",
+      "2 teentjes knoflook",
+      "saffraandraadjes",
+      "visbouillon",
+      "handvol doperwten"
+    ],
+    "instructions": "Fruit ui, knoflook en paprika, bak de rijst kort mee met saffraan, voeg bouillon toe en laat garen, voeg de zeevruchten op het laatst toe.",
+    "preparation_time": 40,
+    "nutrition_information": {
+      "vet": "8g",
+      "eiwit": "26g",
+      "calorieen": 420,
+      "koolhydraten": "54g"
+    },
+    "category": [
+      "Diner",
+      "Rijst",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Antioxidantrijk"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Fruit de ui, knoflook en in reepjes gesneden paprika aan in olijfolie.",
+      "Voeg de rijst toe en bak 2 minuten mee tot glazig.",
+      "Los de saffraan op in wat warme bouillon en voeg samen met de rest van de bouillon toe.",
+      "Laat 15-18 minuten zachtjes garen zonder te roeren.",
+      "Verdeel de zeevruchten en doperwten over de rijst en laat de laatste 5 minuten meegaren.",
+      "Serveer met partjes citroen."
+    ],
+    "optional_ingredients": [
+      "Citroenpartjes",
+      "Verse peterselie"
+    ],
+    "low_carb_variant": "Vervang een deel van de rijst door bloemkoolrijst voor minder koolhydraten.",
+    "storage_tip": "Tot 2 dagen in de koelkast, warm rustig op zodat de zeevruchten niet taai worden.",
+    "meal_prep_tip": "Bereid de bouillon en groenten vooraf, de rijst kook je het best vlak voor het serveren.",
+    "is_budget": false
+  },
+  {
+    "title": "Palak paneer",
+    "description": "Een romige Indiase curry van gepureerde spinazie met blokjes paneer — een klassieker vol ijzer en calcium.",
+    "ingredients": [
+      "300g spinazie",
+      "200g paneer",
+      "1 ui",
+      "2 teentjes knoflook",
+      "1 tomaat",
+      "1 tl komijnzaad",
+      "1 tl garam masala",
+      "scheutje room of kokosmelk"
+    ],
+    "instructions": "Blancheer en pureer de spinazie, fruit ui en specerijen, voeg de spinaziepuree en paneer toe en laat kort sudderen.",
+    "preparation_time": 30,
+    "nutrition_information": {
+      "vet": "27g",
+      "eiwit": "20g",
+      "calorieen": 380,
+      "koolhydraten": "12g"
+    },
+    "category": [
+      "Diner",
+      "Curry",
+      "Vegetarisch",
+      "Glutenvrij",
+      "IJzerrijk"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Blancheer de spinazie kort in kokend water en pureer met een staafmixer.",
+      "Fruit de ui, knoflook en komijnzaad aan in een scheutje olie.",
+      "Voeg de tomaat en garam masala toe en bak kort mee.",
+      "Roer de spinaziepuree erdoor en laat 5 minuten sudderen.",
+      "Voeg de blokjes paneer en een scheutje room toe en verwarm nog 3-4 minuten mee."
+    ],
+    "optional_ingredients": [
+      "Verse gember",
+      "Chilipoeder",
+      "Rijst erbij"
+    ],
+    "low_carb_variant": "Deze curry is van nature al koolhydraatarm — serveer met bloemkoolrijst in plaats van gewone rijst.",
+    "storage_tip": "Tot 3 dagen in de koelkast.",
+    "meal_prep_tip": "De spinaziesaus is goed vooraf te maken en apart in te vriezen; voeg de paneer pas toe bij het opwarmen.",
+    "is_budget": false
+  },
+  {
+    "title": "Panzanella (Toscaanse broodsalade)",
+    "description": "Een Italiaanse zomerse broodsalade van geroosterd brood, rijpe tomaten, komkommer en rode ui.",
+    "ingredients": [
+      "3 sneetjes oud brood",
+      "4 rijpe tomaten",
+      "1/2 komkommer",
+      "1/2 rode ui",
+      "verse basilicum",
+      "olijfolie",
+      "rode wijnazijn"
+    ],
+    "instructions": "Rooster het brood, snijd de groenten en meng alles met olijfolie, azijn en basilicum.",
+    "preparation_time": 20,
+    "nutrition_information": {
+      "vet": "12g",
+      "eiwit": "6g",
+      "calorieen": 260,
+      "koolhydraten": "32g"
+    },
+    "category": [
+      "Lunch",
+      "Salade",
+      "Vegetarisch",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd of scheur het brood in stukken en rooster ze knapperig in de oven of een droge pan.",
+      "Snijd de tomaten, komkommer en rode ui in stukken.",
+      "Meng het geroosterde brood met de groenten.",
+      "Voeg olijfolie, rode wijnazijn en verse basilicum toe en meng goed.",
+      "Laat 10 minuten staan zodat het brood de smaken opneemt."
+    ],
+    "optional_ingredients": [
+      "Kappertjes",
+      "Ansjovis"
+    ],
+    "low_carb_variant": "Gebruik minder brood en vul aan met extra tomaat en komkommer.",
+    "storage_tip": "Het lekkerst binnen een paar uur gegeten, voordat het brood te zacht wordt.",
+    "meal_prep_tip": "Rooster het brood vooraf en meng pas vlak voor het eten met de groenten.",
+    "is_budget": true
+  },
+  {
+    "title": "Pasta met pompoen en salie",
+    "description": "Romige pastasaus van geroosterde pompoen, salie en Parmezaanse kaas — verzadigend en vol magnesium.",
+    "ingredients": [
+      "350g pasta",
+      "500g pompoen",
+      "verse salie",
+      "2 teentjes knoflook",
+      "scheutje room",
+      "Parmezaanse kaas",
+      "handvol pompoenpitten"
+    ],
+    "instructions": "Rooster de pompoen, pureer met room tot een saus, kook de pasta en meng alles met salie en Parmezaan.",
+    "preparation_time": 35,
+    "nutrition_information": {
+      "vet": "16g",
+      "eiwit": "16g",
+      "calorieen": 480,
+      "koolhydraten": "64g"
+    },
+    "category": [
+      "Diner",
+      "Pasta",
+      "Vegetarisch",
+      "Magnesiumrijk"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm de oven voor op 200°C en rooster de in blokjes gesneden pompoen 25 minuten.",
+      "Kook de pasta volgens de verpakking.",
+      "Fruit de knoflook en salie kort in boter.",
+      "Pureer de geroosterde pompoen met een scheutje room en het salie-knoflookmengsel tot een gladde saus.",
+      "Meng de saus door de pasta en werk af met Parmezaanse kaas en pompoenpitten."
+    ],
+    "optional_ingredients": [
+      "Chilivlokken",
+      "Extra kaas"
+    ],
+    "low_carb_variant": "Vervang de pasta door courgettespaghetti voor een flink lagere koolhydraatinname.",
+    "storage_tip": "Tot 3 dagen in de koelkast.",
+    "meal_prep_tip": "Rooster en pureer de pompoensaus vooraf, kook de pasta vlak voor het eten.",
+    "is_budget": false
+  },
+  {
+    "title": "Peruaanse ceviche met zoete aardappel en mais",
+    "description": "Rauwe witvis, gegaard in limoensap, met de klassieke Peruaanse bijgerechten zoete aardappel en mais.",
+    "ingredients": [
+      "300g verse witvis (bijv. zeebaars)",
+      "6 limoenen",
+      "1/2 rode ui",
+      "verse koriander",
+      "1 rode chilipeper",
+      "1 zoete aardappel",
+      "handvol maiskorrels"
+    ],
+    "instructions": "Snijd de vis in blokjes en laat garen in limoensap, kook de zoete aardappel en mais apart en serveer samen.",
+    "preparation_time": 30,
+    "nutrition_information": {
+      "vet": "4g",
+      "eiwit": "26g",
+      "calorieen": 300,
+      "koolhydraten": "32g"
+    },
+    "category": [
+      "Lunch",
+      "Diner",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Snijd de vis in kleine blokjes en leg in een schaal.",
+      "Pers de limoenen erover, voeg fijngesneden rode ui, chilipeper en zout toe.",
+      "Laat 10-15 minuten in de koelkast garen in het limoensap.",
+      "Kook ondertussen de zoete aardappel en mais gaar.",
+      "Werk de ceviche af met verse koriander en serveer met de zoete aardappel en mais erbij."
+    ],
+    "optional_ingredients": [
+      "Extra chilipeper",
+      "Sla als bedje"
+    ],
+    "low_carb_variant": "Laat de zoete aardappel weg en serveer alleen met extra sla en mais.",
+    "storage_tip": "Ceviche is het lekkerst vers en dezelfde dag gegeten.",
+    "meal_prep_tip": "Snijd de vis en kook de zoete aardappel vooraf, laat de vis pas op het laatste moment garen in het limoensap.",
+    "is_budget": false
+  },
+  {
+    "title": "Pindakaas-havermout cookies (no-bake)",
+    "description": "Snelle, geen-oven-nodig koekjes van havermout, pindakaas en honing — een stevige, voedzame snack.",
+    "ingredients": [
+      "150g havermout",
+      "150g pindakaas",
+      "80g honing",
+      "1 tl vanille-extract"
+    ],
+    "instructions": "Verwarm pindakaas en honing zachtjes, meng met havermout en vanille en vorm koekjes.",
+    "preparation_time": 15,
+    "nutrition_information": {
+      "vet": "9g",
+      "eiwit": "6g",
+      "calorieen": 180,
+      "koolhydraten": "20g"
+    },
+    "category": [
+      "Snack",
+      "Dessert",
+      "Vegetarisch",
+      "Magnesiumrijk",
+      "Snel",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 6,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm de pindakaas en honing zachtjes in een pannetje tot vloeibaar.",
+      "Roer de vanille erdoor.",
+      "Meng de havermout erdoor tot een plakkerig deeg.",
+      "Vorm koekjes met een lepel op bakpapier.",
+      "Laat minstens 30 minuten opstijven in de koelkast."
+    ],
+    "optional_ingredients": [
+      "Pure chocoladestukjes",
+      "Chiazaad"
+    ],
+    "low_carb_variant": "Gebruik iets minder honing voor een minder zoete versie.",
+    "storage_tip": "Tot een week in een afgesloten bakje.",
+    "meal_prep_tip": "Maak een dubbele batch — deze koekjes zijn ideaal om in te vriezen.",
+    "is_budget": true
+  },
+  {
+    "title": "Popcorn met pure chocolade en zeezout",
+    "description": "Zelfgemaakte popcorn, versierd met gesmolten pure chocolade en een snufje grof zeezout — een snelle, luchtige snack tegen zoete trek.",
+    "ingredients": [
+      "80g popcornmais",
+      "1 el olie",
+      "80g pure chocolade",
+      "grof zeezout"
+    ],
+    "instructions": "Pop de mais in olie, smelt de chocolade au bain-marie en besprenkel over de popcorn met zeezout.",
+    "preparation_time": 15,
+    "nutrition_information": {
+      "vet": "10g",
+      "eiwit": "3g",
+      "calorieen": 210,
+      "koolhydraten": "26g"
+    },
+    "category": [
+      "Snack",
+      "Veganistisch",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Comfort food",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verhit de olie in een grote pan met deksel en voeg de popcornmais toe.",
+      "Laat op middelhoog vuur poffen tot het poffen bijna stopt, schud de pan af en toe.",
+      "Smelt de pure chocolade au bain-marie.",
+      "Besprenkel de chocolade over de warme popcorn.",
+      "Bestrooi met grof zeezout en laat de chocolade even opstijven."
+    ],
+    "optional_ingredients": [
+      "Gedroogd fruit",
+      "Kaneel"
+    ],
+    "low_carb_variant": "Gebruik minder chocolade en meer zeezout voor een minder zoete versie.",
+    "storage_tip": "Tot 2 dagen in een afgesloten bakje, hoewel het krokantst op de dag zelf.",
+    "meal_prep_tip": "Pop een grote batch mais vooraf en versier met chocolade vlak voor het serveren.",
+    "is_budget": true
+  },
+  {
+    "title": "Portugese gegrilde sardines met paprika",
+    "description": "Eenvoudig gegrilde sardines met een frisse paprika-citroengarnering — een Portugese kuststraditie.",
+    "ingredients": [
+      "6 verse sardines",
+      "1 rode paprika",
+      "1 citroen",
+      "verse peterselie",
+      "olijfolie",
+      "1 teentje knoflook"
+    ],
+    "instructions": "Gril de sardines kort, rooster de paprika en meng met citroen, knoflook en peterselie als garnering.",
+    "preparation_time": 25,
+    "nutrition_information": {
+      "vet": "20g",
+      "eiwit": "28g",
+      "calorieen": 320,
+      "koolhydraten": "6g"
+    },
+    "category": [
+      "Diner",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Eiwitrijk",
+      "Antioxidantrijk",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Gril of bak de sardines 3-4 minuten per kant tot gaar.",
+      "Rooster de paprika onder de grill tot de schil zwart is, laat afkoelen en pel.",
+      "Snijd de geroosterde paprika in reepjes.",
+      "Meng de paprika met fijngehakte knoflook, peterselie, citroensap en olijfolie.",
+      "Serveer de sardines met de paprikagarnering erover."
+    ],
+    "optional_ingredients": [
+      "Grof zeezout",
+      "Geroosterd brood erbij"
+    ],
+    "low_carb_variant": "Dit gerecht is van nature al koolhydraatarm.",
+    "storage_tip": "Het lekkerst vers bereid en direct gegeten.",
+    "meal_prep_tip": "Rooster de paprika vooraf, de sardines bak je het best vlak voor het eten.",
+    "is_budget": false
+  },
+  {
+    "title": "Portugese sopa de grão (kikkererwtensoep met chorizo)",
+    "description": "Een stevige Portugese soep van kikkererwten, chorizo en spinazie, op smaak gebracht met paprikapoeder.",
+    "ingredients": [
+      "2 blikken kikkererwten",
+      "100g chorizo in plakjes",
+      "1 ui",
+      "2 teentjes knoflook",
+      "1 tl gerookt paprikapoeder",
+      "150g spinazie",
+      "groentebouillon"
+    ],
+    "instructions": "Bak de chorizo kort aan, fruit ui en knoflook, voeg kikkererwten, paprikapoeder en bouillon toe en laat sudderen, werk af met spinazie.",
+    "preparation_time": 35,
+    "nutrition_information": {
+      "vet": "16g",
+      "eiwit": "18g",
+      "calorieen": 340,
+      "koolhydraten": "32g"
+    },
+    "category": [
+      "Diner",
+      "Soep",
+      "Glutenvrij",
+      "IJzerrijk",
+      "Eiwitrijk"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Bak de chorizo kort aan zodat het vet vrijkomt en haal uit de pan.",
+      "Fruit de ui en knoflook in het achtergebleven vet.",
+      "Voeg de kikkererwten, gerookt paprikapoeder en bouillon toe.",
+      "Laat 15 minuten sudderen en pureer eventueel de helft glad voor extra binding.",
+      "Roer de spinazie en chorizo erdoor tot de spinazie net geslonken is."
+    ],
+    "optional_ingredients": [
+      "Extra chorizo",
+      "Chilivlokken"
+    ],
+    "low_carb_variant": "Gebruik iets minder kikkererwten en vul aan met extra spinazie of boerenkool.",
+    "storage_tip": "Tot 3 dagen in de koelkast.",
+    "meal_prep_tip": "Maak een dubbele portie — smaakt de volgende dag vaak nog intenser.",
+    "is_budget": true
+  },
+  {
+    "title": "Regenboog Buddha bowl met tahin-dressing",
+    "description": "Een kleurrijke bowl vol geroosterde groenten, quinoa en een romige tahin-citroendressing.",
+    "ingredients": [
+      "100g quinoa",
+      "1 zoete aardappel",
+      "1 rode kool, gerild",
+      "handvol spinazie",
+      "1 avocado",
+      "3 el tahin",
+      "citroensap"
+    ],
+    "instructions": "Rooster de zoete aardappel, kook de quinoa, meng tahin met citroen en water tot een dressing en verdeel alles over kommen.",
+    "preparation_time": 35,
+    "nutrition_information": {
+      "vet": "24g",
+      "eiwit": "13g",
+      "calorieen": 460,
+      "koolhydraten": "48g"
+    },
+    "category": [
+      "Diner",
+      "Lunch",
+      "Bowl",
+      "Veganistisch",
+      "Glutenvrij",
+      "Antioxidantrijk",
+      "Vezelrijk"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm de oven voor op 200°C en rooster de in blokjes gesneden zoete aardappel 20 minuten.",
+      "Kook de quinoa volgens de verpakking.",
+      "Rasp of snijd de rode kool fijn.",
+      "Meng de tahin met citroensap en water tot een gladde dressing.",
+      "Verdeel quinoa, zoete aardappel, rode kool, spinazie en avocado over kommen en schenk de dressing erover."
+    ],
+    "optional_ingredients": [
+      "Geroosterde kikkererwten",
+      "Pompoenpitten"
+    ],
+    "low_carb_variant": "Vervang de zoete aardappel door extra spinazie en avocado voor minder koolhydraten.",
+    "storage_tip": "Bewaar de onderdelen apart, tot 2 dagen in de koelkast.",
+    "meal_prep_tip": "Rooster de zoete aardappel en kook de quinoa vooraf, stel de bowl dan snel samen.",
+    "is_budget": false
+  },
+  {
+    "title": "Salade Niçoise",
+    "description": "Een klassieke Franse salade met tonijn, boontjes, ei en olijven — fris en eiwitrijk.",
+    "ingredients": [
+      "1 blik tonijn op water",
+      "150g sperziebonen",
+      "2 eieren",
+      "handvol cherrytomaatjes",
+      "handvol zwarte olijven",
+      "sla",
+      "olijfolie",
+      "rode wijnazijn"
+    ],
+    "instructions": "Kook de boontjes en eieren, meng met sla, tomaat, olijven en tonijn en besprenkel met een dressing.",
+    "preparation_time": 20,
+    "nutrition_information": {
+      "vet": "20g",
+      "eiwit": "28g",
+      "calorieen": 340,
+      "koolhydraten": "10g"
+    },
+    "category": [
+      "Lunch",
+      "Salade",
+      "Glutenvrij",
+      "Eiwitrijk",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de sperziebonen 5 minuten beetgaar en spoel koud af.",
+      "Kook de eieren in 8-9 minuten hard en pel ze.",
+      "Verdeel de sla over borden en schik de boontjes, tomaat en olijven erop.",
+      "Voeg de uitgelekte tonijn en de in parten gesneden eieren toe.",
+      "Besprenkel met olijfolie en rode wijnazijn."
+    ],
+    "optional_ingredients": [
+      "Ansjovis",
+      "Rode ui",
+      "Gekookte aardappel"
+    ],
+    "low_carb_variant": "Deze salade is van nature al koolhydraatarm.",
+    "storage_tip": "Bewaar de dressing apart, dan blijft de salade tot 1 dag goed.",
+    "meal_prep_tip": "Kook de eieren en boontjes vooraf voor een salade die in 5 minuten in elkaar staat.",
+    "is_budget": false
+  },
+  {
+    "title": "Som tam (groene papajasalade)",
+    "description": "Een pittig-frisse Thaise salade van geraspte groene papaja, limoen, pinda en sperziebonen.",
+    "ingredients": [
+      "1 groene (onrijpe) papaja, geraspt",
+      "handvol sperziebonen",
+      "2 tomaten",
+      "2 el pinda, gehakt",
+      "limoensap",
+      "vissaus",
+      "1 el palmsuiker"
+    ],
+    "instructions": "Kneus de sperziebonen en tomaat licht, meng met de geraspte papaja en breng op smaak met limoen, vissaus en palmsuiker.",
+    "preparation_time": 20,
+    "nutrition_information": {
+      "vet": "6g",
+      "eiwit": "5g",
+      "calorieen": 180,
+      "koolhydraten": "26g"
+    },
+    "category": [
+      "Lunch",
+      "Salade",
+      "Veganistisch",
+      "Glutenvrij",
+      "Snel",
+      "Vezelrijk"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Rasp de groene papaja in dunne reepjes.",
+      "Snijd de sperziebonen in stukken en de tomaat in partjes.",
+      "Kneus de sperziebonen en tomaat licht in een vijzel of met de achterkant van een lepel.",
+      "Meng met de geraspte papaja.",
+      "Breng op smaak met limoensap, vissaus en palmsuiker en werk af met gehakte pinda."
+    ],
+    "optional_ingredients": [
+      "Gedroogde garnaaltjes",
+      "Rode chilipeper"
+    ],
+    "low_carb_variant": "Gebruik iets minder palmsuiker voor een lagere koolhydraatinname.",
+    "storage_tip": "Het lekkerst vers, de papaja wordt snel waterig.",
+    "meal_prep_tip": "Rasp de papaja vooraf en meng de dressing er pas vlak voor het eten doorheen.",
+    "is_budget": true
+  },
+  {
+    "title": "Spaanse aardappel-tortilla",
+    "description": "De Spaanse tortilla española: een dikke omelet van aardappel en ui, langzaam gegaard in olijfolie.",
+    "ingredients": [
+      "600g aardappelen",
+      "2 uien",
+      "6 eieren",
+      "olijfolie"
+    ],
+    "instructions": "Bak de aardappel en ui zachtjes gaar in olijfolie, meng met losgeklopt ei en bak de tortilla aan beide kanten gaar.",
+    "preparation_time": 45,
+    "nutrition_information": {
+      "vet": "18g",
+      "eiwit": "14g",
+      "calorieen": 340,
+      "koolhydraten": "28g"
+    },
+    "category": [
+      "Diner",
+      "Ovengerecht",
+      "Vegetarisch",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Snijd de aardappelen en uien in dunne plakjes.",
+      "Bak ze zachtjes in ruim olijfolie tot zacht, ongeveer 20 minuten, niet bruin laten worden.",
+      "Laat uitlekken en meng met de losgeklopte eieren en een snufje zout.",
+      "Bak het mengsel in een scheutje olie op laag vuur tot de onderkant gestold is.",
+      "Keer de tortilla om met behulp van een bord en bak de andere kant nog 5 minuten."
+    ],
+    "optional_ingredients": [
+      "Chorizo",
+      "Paprika erbij"
+    ],
+    "low_carb_variant": "Gebruik minder aardappel en meer ui en groenten voor minder koolhydraten.",
+    "storage_tip": "Tot 3 dagen in de koelkast, ook lekker koud.",
+    "meal_prep_tip": "Deze tortilla is uitstekend een dag van tevoren te maken.",
+    "is_budget": true
+  },
+  {
+    "title": "Stamppot boerenkool met rookworst",
+    "description": "Een Nederlandse winterse stamppot van aardappel en boerenkool met rookworst — vertrouwd en verzadigend.",
+    "ingredients": [
+      "800g aardappelen",
+      "300g boerenkool",
+      "1 rookworst",
+      "scheutje melk",
+      "klontje boter"
+    ],
+    "instructions": "Kook de aardappelen met de boerenkool gaar, stamp met melk en boter en serveer met de rookworst.",
+    "preparation_time": 35,
+    "nutrition_information": {
+      "vet": "26g",
+      "eiwit": "18g",
+      "calorieen": 480,
+      "koolhydraten": "46g"
+    },
+    "category": [
+      "Diner",
+      "Magnesiumrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Schil en kook de aardappelen samen met de boerenkool in ongeveer 20 minuten gaar.",
+      "Verwarm de rookworst ondertussen mee in een pan met water.",
+      "Giet de aardappelen en boerenkool af en stamp fijn met een scheutje melk en boter.",
+      "Breng op smaak met peper en zout.",
+      "Serveer met de rookworst in plakjes erbij."
+    ],
+    "optional_ingredients": [
+      "Spekjes",
+      "Mosterd erbij"
+    ],
+    "low_carb_variant": "Vervang een deel van de aardappel door extra boerenkool voor minder koolhydraten.",
+    "storage_tip": "Tot 3 dagen in de koelkast, en goed in te vriezen.",
+    "meal_prep_tip": "Maak een dubbele portie — stamppot is de volgende dag vaak nog lekkerder.",
+    "is_budget": true
+  },
+  {
+    "title": "Thaise mangosalade met gegrilde garnalen",
+    "description": "Een kleurrijke, frisse Thaise salade van rijpe mango, gegrilde garnalen en een pittig-zoete limoendressing.",
+    "ingredients": [
+      "200g gepelde garnalen",
+      "1 rijpe mango",
+      "handvol taugé",
+      "verse munt en koriander",
+      "limoensap",
+      "vissaus",
+      "1 rode chilipeper"
+    ],
+    "instructions": "Gril de garnalen kort, snijd de mango in reepjes en meng alles met de kruiden en dressing.",
+    "preparation_time": 20,
+    "nutrition_information": {
+      "vet": "6g",
+      "eiwit": "24g",
+      "calorieen": 260,
+      "koolhydraten": "24g"
+    },
+    "category": [
+      "Lunch",
+      "Salade",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Snel",
+      "Antioxidantrijk"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Gril of bak de garnalen 2-3 minuten per kant tot roze en gaar.",
+      "Snijd de mango in dunne reepjes.",
+      "Meng mango, taugé, munt en koriander in een schaal.",
+      "Meng limoensap, vissaus en fijngesneden chilipeper tot een dressing.",
+      "Meng de garnalen en dressing door de salade."
+    ],
+    "optional_ingredients": [
+      "Geroosterde pinda",
+      "Rode ui"
+    ],
+    "low_carb_variant": "Gebruik iets minder mango en vul aan met extra taugé en komkommer.",
+    "storage_tip": "Het lekkerst vers, de garnalen worden taai bij opwarmen.",
+    "meal_prep_tip": "Gril de garnalen vooraf en meng de salade pas vlak voor het eten.",
+    "is_budget": false
+  },
+  {
+    "title": "Toscaanse witte bonen met salie en tomaat",
+    "description": "Fagioli all uccelletto: een eenvoudig Toscaans boerengerecht van witte bonen, salie, knoflook en tomaat.",
+    "ingredients": [
+      "2 blikken witte bonen",
+      "4 blaadjes verse salie",
+      "3 teentjes knoflook",
+      "1 blik tomatenblokjes",
+      "olijfolie"
+    ],
+    "instructions": "Fruit knoflook en salie in olijfolie, voeg de bonen en tomaat toe en laat 15 minuten sudderen.",
+    "preparation_time": 25,
+    "nutrition_information": {
+      "vet": "9g",
+      "eiwit": "14g",
+      "calorieen": 260,
+      "koolhydraten": "30g"
+    },
+    "category": [
+      "Diner",
+      "Bijgerecht",
+      "Veganistisch",
+      "Glutenvrij",
+      "Lactosevrij",
+      "IJzerrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verhit olijfolie en fruit de knoflook en salieblaadjes kort mee tot geurig.",
+      "Voeg de uitgelekte witte bonen toe en schep om.",
+      "Voeg de tomatenblokjes toe en laat 15 minuten zachtjes sudderen.",
+      "Breng op smaak met peper en zout."
+    ],
+    "optional_ingredients": [
+      "Chilivlokken",
+      "Vers brood erbij"
+    ],
+    "low_carb_variant": "Vul aan met extra spinazie of boerenkool voor volume met minder koolhydraten.",
+    "storage_tip": "Tot 4 dagen in de koelkast.",
+    "meal_prep_tip": "Maak een dubbele portie — smaakt uitstekend als basis voor een snelle lunch de volgende dag.",
+    "is_budget": true
+  },
+  {
+    "title": "Turkse kabak mücver (courgette-pannenkoekjes)",
+    "description": "Krokant gebakken Turkse courgettepannenkoekjes met feta en dille, geserveerd met yoghurtdip.",
+    "ingredients": [
+      "2 courgettes",
+      "100g feta",
+      "2 eieren",
+      "4 el bloem",
+      "verse dille",
+      "Griekse yoghurt",
+      "1 teentje knoflook"
+    ],
+    "instructions": "Rasp de courgette en laat uitlekken, meng met feta, ei en bloem en bak kleine pannenkoekjes goudbruin.",
+    "preparation_time": 30,
+    "nutrition_information": {
+      "vet": "17g",
+      "eiwit": "14g",
+      "calorieen": 280,
+      "koolhydraten": "18g"
+    },
+    "category": [
+      "Lunch",
+      "Snack",
+      "Bijgerecht",
+      "Vegetarisch",
+      "Magnesiumrijk",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Rasp de courgette en meng met een snufje zout, laat 10 minuten staan en knijp het vocht eruit.",
+      "Meng de courgette met verkruimelde feta, eieren, bloem en dille tot een beslag.",
+      "Bak kleine pannenkoekjes in een scheutje olie, 2-3 minuten per kant tot goudbruin.",
+      "Meng de yoghurt met knoflook tot een dip.",
+      "Serveer de pannenkoekjes warm met de yoghurtdip."
+    ],
+    "optional_ingredients": [
+      "Munt",
+      "Citroen"
+    ],
+    "low_carb_variant": "Vervang de bloem door amandelmeel voor een koolhydraatarmere versie.",
+    "storage_tip": "Tot 2 dagen in de koelkast, opwarmen in de koekenpan voor het krokante effect.",
+    "meal_prep_tip": "Rasp en laat de courgette vooraf uitlekken, dan is het beslag zo gemaakt.",
+    "is_budget": false
+  },
+  {
+    "title": "Turkse mercimek çorbası",
+    "description": "Een gladde, romige Turkse rodelinzensoep op smaak gebracht met komijn, munt en citroen.",
+    "ingredients": [
+      "250g rode linzen",
+      "1 ui",
+      "1 wortel",
+      "1 aardappel",
+      "1 tl komijnpoeder",
+      "citroensap",
+      "gedroogde munt"
+    ],
+    "instructions": "Fruit de ui aan, voeg linzen, wortel, aardappel en water toe en laat garen, pureer glad en werk af met citroen en munt.",
+    "preparation_time": 40,
+    "nutrition_information": {
+      "vet": "3g",
+      "eiwit": "14g",
+      "calorieen": 250,
+      "koolhydraten": "40g"
+    },
+    "category": [
+      "Diner",
+      "Lunch",
+      "Soep",
+      "Vegetarisch",
+      "Glutenvrij",
+      "IJzerrijk"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Fruit de ui aan in een scheutje olie.",
+      "Voeg de linzen, in stukken gesneden wortel en aardappel toe met ruim water.",
+      "Voeg het komijnpoeder toe en laat 25 minuten sudderen tot alles gaar is.",
+      "Pureer de soep glad met een staafmixer.",
+      "Breng op smaak met citroensap, zout en gedroogde munt."
+    ],
+    "optional_ingredients": [
+      "Boter met paprikapoeder als garnering",
+      "Extra citroen"
+    ],
+    "low_carb_variant": "Gebruik iets minder aardappel en linzen en vul aan met extra wortel voor minder koolhydraten.",
+    "storage_tip": "Tot 4 dagen in de koelkast en goed in te vriezen.",
+    "meal_prep_tip": "Maak een grote pan en vries in porties in.",
+    "is_budget": true
+  },
+  {
+    "title": "Turkse mezze met gegrilde groenten en granaatappel",
+    "description": "Een kleurrijk Turks mezze-bord met gegrilde aubergine, courgette en paprika, afgemaakt met granaatappelpitten.",
+    "ingredients": [
+      "1 aubergine",
+      "1 courgette",
+      "1 rode paprika",
+      "handvol granaatappelpitten",
+      "verse munt",
+      "olijfolie",
+      "citroensap"
+    ],
+    "instructions": "Gril de groenten in plakken, schik op een bord en werk af met granaatappelpitten, munt en citroen.",
+    "preparation_time": 25,
+    "nutrition_information": {
+      "vet": "10g",
+      "eiwit": "4g",
+      "calorieen": 180,
+      "koolhydraten": "18g"
+    },
+    "category": [
+      "Lunch",
+      "Bijgerecht",
+      "Veganistisch",
+      "Glutenvrij",
+      "Antioxidantrijk",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Snijd aubergine, courgette en paprika in plakken.",
+      "Gril de groenten in een grillpan of onder de oven tot gaar en licht gekarameliseerd.",
+      "Schik de gegrilde groenten op een schaal.",
+      "Besprenkel met olijfolie en citroensap.",
+      "Werk af met granaatappelpitten en verse munt."
+    ],
+    "optional_ingredients": [
+      "Hummus erbij",
+      "Fetakaas"
+    ],
+    "low_carb_variant": "Dit gerecht is van nature al koolhydraatarm.",
+    "storage_tip": "Tot 2 dagen in de koelkast.",
+    "meal_prep_tip": "Gril een grote hoeveelheid groenten vooraf, ze zijn zowel warm als koud lekker.",
+    "is_budget": true
+  },
+  {
+    "title": "Vietnamese pho bo",
+    "description": "Een geurige Vietnamese noedelsoep met rundvlees, steranijs en kaneel, geserveerd met verse kruiden en limoen.",
+    "ingredients": [
+      "200g rijstnoedels",
+      "250g dungesneden rundvlees",
+      "1,2L runderbouillon",
+      "1 steranijs",
+      "1 kaneelstokje",
+      "verse gember",
+      "taugé, munt en limoen"
+    ],
+    "instructions": "Trek de bouillon met steranijs, kaneel en gember, kook de noedels, schik het rauwe vlees erop en giet de hete bouillon erover.",
+    "preparation_time": 45,
+    "nutrition_information": {
+      "vet": "8g",
+      "eiwit": "28g",
+      "calorieen": 420,
+      "koolhydraten": "52g"
+    },
+    "category": [
+      "Diner",
+      "Soep",
+      "Glutenvrij",
+      "Lactosevrij",
+      "IJzerrijk",
+      "Eiwitrijk"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Breng de bouillon met steranijs, kaneelstokje en in plakjes gesneden gember aan de kook en laat 15 minuten trekken.",
+      "Kook de rijstnoedels volgens de verpakking en verdeel over kommen.",
+      "Leg het dungesneden rauwe rundvlees bovenop de noedels.",
+      "Zeef de hete bouillon en giet deze over het vlees — het vlees gaart hierdoor direct.",
+      "Serveer met taugé, verse munt en limoen erbij."
+    ],
+    "optional_ingredients": [
+      "Sriracha",
+      "Hoisinsaus",
+      "Extra verse chili"
+    ],
+    "low_carb_variant": "Vervang de rijstnoedels door extra taugé en groenten voor een koolhydraatarme versie.",
+    "storage_tip": "Bewaar bouillon en noedels apart, tot 3 dagen in de koelkast.",
+    "meal_prep_tip": "De bouillon is uitstekend een dag van tevoren te trekken en smaakt dan vaak nog voller.",
+    "is_budget": false
+  },
+  {
+    "title": "Vietnamese rijstpapierrolletjes met regenboog groenten",
+    "description": "Kleurrijke, verse zomerrolletjes gevuld met paprika, wortel, rode kool en munt.",
+    "ingredients": [
+      "8 rijstpapiervellen",
+      "1 rode paprika",
+      "1 wortel",
+      "handvol rode kool",
+      "verse munt en koriander",
+      "pindakaas",
+      "sojasaus",
+      "limoen"
+    ],
+    "instructions": "Week de rijstpapiervellen, vul met de gesneden groenten en kruiden, rol op en serveer met pindadipsaus.",
+    "preparation_time": 25,
+    "nutrition_information": {
+      "vet": "8g",
+      "eiwit": "8g",
+      "calorieen": 240,
+      "koolhydraten": "34g"
+    },
+    "category": [
+      "Lunch",
+      "Snack",
+      "Veganistisch",
+      "Glutenvrij",
+      "Antioxidantrijk"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Snijd alle groenten in dunne reepjes.",
+      "Week een rijstpapiervel kort in lauw water tot soepel.",
+      "Beleg met de groenten en verse kruiden.",
+      "Rol strak op zoals een loempia.",
+      "Meng pindakaas, sojasaus, limoensap en wat water tot een dipsaus."
+    ],
+    "optional_ingredients": [
+      "Vermicelli",
+      "Tofu in reepjes"
+    ],
+    "low_carb_variant": "Vul de rolletjes met extra groenten en minder pindasaus voor minder koolhydraten.",
+    "storage_tip": "Het lekkerst binnen enkele uren gegeten.",
+    "meal_prep_tip": "Snijd alle groenten vooraf in reepjes, dan rol je deze in enkele minuten.",
+    "is_budget": true
+  },
+  {
+    "title": "Vietnamese zomerrolletjes met garnaal",
+    "description": "Frisse, koude rijstpapierrolletjes gevuld met garnalen, verse kruiden en vermicelli, met een pindadipsaus.",
+    "ingredients": [
+      "8 rijstpapiervellen",
+      "150g gepelde garnalen",
+      "50g vermicelli rijstnoedels",
+      "sla, munt en koriander",
+      "1 wortel",
+      "pindakaas voor de dipsaus",
+      "sojasaus en limoen"
+    ],
+    "instructions": "Week de rijstpapiervellen, vul met noedels, garnalen en kruiden, rol strak op en serveer met pindadipsaus.",
+    "preparation_time": 30,
+    "nutrition_information": {
+      "vet": "8g",
+      "eiwit": "18g",
+      "calorieen": 280,
+      "koolhydraten": "36g"
+    },
+    "category": [
+      "Lunch",
+      "Snack",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Kook de vermicelli volgens de verpakking en spoel koud af.",
+      "Week een rijstpapiervel kort in lauw water tot soepel.",
+      "Beleg met sla, munt, koriander, wortel, noedels en garnalen.",
+      "Rol strak op zoals een loempia.",
+      "Meng pindakaas met sojasaus, limoensap en een scheutje water tot een dipsaus."
+    ],
+    "optional_ingredients": [
+      "Komkommer in reepjes",
+      "Chilisaus"
+    ],
+    "low_carb_variant": "Vul de rolletjes met extra groenten in plaats van vermicelli.",
+    "storage_tip": "Het lekkerst binnen enkele uren gegeten — rijstpapier wordt taai in de koelkast.",
+    "meal_prep_tip": "Snijd alle groenten vooraf, dan rol je deze in enkele minuten.",
+    "is_budget": false
+  },
+  {
+    "title": "Vlaamse stoofpot met rundvlees en donker bier",
+    "description": "Een Belgisch-Vlaamse klassieker: mals rundvlees, langzaam gegaard in donker bier, met mosterd en een vleugje bruine suiker.",
+    "ingredients": [
+      "600g runderstoofvlees",
+      "2 uien",
+      "2 el mosterd",
+      "500ml Belgisch bruin bier",
+      "2 sneetjes peperkoek",
+      "1 el bruine suiker",
+      "runderbouillon"
+    ],
+    "instructions": "Braad het vlees aan, fruit de uien, blus af met bier en laat minstens 2 uur zachtjes stoven met peperkoek en mosterd.",
+    "preparation_time": 150,
+    "nutrition_information": {
+      "vet": "24g",
+      "eiwit": "38g",
+      "calorieen": 480,
+      "koolhydraten": "22g"
+    },
+    "category": [
+      "Diner",
+      "Eiwitrijk",
+      "IJzerrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Braad het rundvlees rondom bruin in een scheutje olie en haal uit de pan.",
+      "Fruit de uien glazig in dezelfde pan.",
+      "Voeg het vlees terug toe en blus af met het bier.",
+      "Voeg bouillon, mosterd, suiker en de peperkoek toe.",
+      "Laat afgedekt 2 tot 2,5 uur zachtjes stoven tot het vlees mals uiteenvalt.",
+      "Breng op smaak met peper en zout."
+    ],
+    "optional_ingredients": [
+      "Laurierblad",
+      "Tijm",
+      "Wortel"
+    ],
+    "low_carb_variant": "Vervang de peperkoek door een scheutje extra mosterd en wat tomatenpuree voor minder koolhydraten.",
+    "storage_tip": "Tot 4 dagen in de koelkast, en uitstekend in te vriezen — smaakt de volgende dag vaak nog beter.",
+    "meal_prep_tip": "Maak een dubbele portie in het weekend en verdeel over bakjes voor meerdere diners.",
+    "is_budget": false
+  },
+  {
+    "title": "Warme appel-kaneelcrumble met havermout",
+    "description": "Een troostrijke, warme crumble van gestoofde appel met een knapperige laag havermout en kaneel — minder zoet dan een klassiek dessert.",
+    "ingredients": [
+      "4 appels",
+      "1 tl kaneel",
+      "100g havermout",
+      "50g boter",
+      "2 el honing",
+      "handvol walnoten"
+    ],
+    "instructions": "Stoof de appel met kaneel, meng havermout met boter tot kruimels en bak de crumble af in de oven.",
+    "preparation_time": 40,
+    "nutrition_information": {
+      "vet": "14g",
+      "eiwit": "5g",
+      "calorieen": 320,
+      "koolhydraten": "42g"
+    },
+    "category": [
+      "Dessert",
+      "Vegetarisch",
+      "Comfort food",
+      "Magnesiumrijk",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm de oven voor op 190°C.",
+      "Snijd de appels in stukken en stoof 5 minuten met kaneel in een pannetje.",
+      "Meng de havermout met gesmolten boter, honing en gehakte walnoten tot kruimels.",
+      "Verdeel de gestoofde appel in een ovenschaal en bedek met de havermoutkruimels.",
+      "Bak 20-25 minuten tot de bovenkant goudbruin en knapperig is."
+    ],
+    "optional_ingredients": [
+      "Rozijnen",
+      "Vanille-ijs erbij"
+    ],
+    "low_carb_variant": "Gebruik minder honing en meer kaneel voor een minder zoete versie.",
+    "storage_tip": "Tot 3 dagen in de koelkast, lekker opgewarmd.",
+    "meal_prep_tip": "Bereid de crumble een dag van tevoren en bak af vlak voor het serveren.",
+    "is_budget": true
+  },
+  {
+    "title": "Warme chocolademelk met kaneel",
+    "description": "Een troostrijke, romige warme chocolademelk van amandelmelk, pure cacao en een vleugje kaneel.",
+    "ingredients": [
+      "300ml amandelmelk",
+      "1,5 el pure cacaopoeder",
+      "1 tl honing",
+      "snufje kaneel"
+    ],
+    "instructions": "Verwarm de melk met cacao, honing en kaneel al roerend tot alles is opgelost.",
+    "preparation_time": 8,
+    "nutrition_information": {
+      "vet": "5g",
+      "eiwit": "3g",
+      "calorieen": 120,
+      "koolhydraten": "16g"
+    },
+    "category": [
+      "Drankje",
+      "Snack",
+      "Veganistisch",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Comfort food",
+      "Snel"
+    ],
+    "image_url": null,
+    "servings": 1,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Verwarm de amandelmelk zachtjes in een pannetje.",
+      "Voeg de cacaopoeder, honing en kaneel toe.",
+      "Klop goed door met een garde tot alles is opgelost en de melk licht schuimig is.",
+      "Giet in een mok en serveer warm."
+    ],
+    "optional_ingredients": [
+      "Mini marshmallows",
+      "Slagroom"
+    ],
+    "low_carb_variant": "Gebruik ongezoete amandelmelk en laat de honing weg voor minder koolhydraten.",
+    "storage_tip": "Het lekkerst direct warm gedronken.",
+    "meal_prep_tip": "Meng cacao, honing en kaneel vooraf in een potje zodat je het alleen nog met warme melk hoeft te mengen.",
+    "is_budget": true
+  },
+  {
+    "title": "West-Afrikaanse pindastoof met kip en spinazie",
+    "description": "Een romige, kruidige pindastoof (groundnut stew) met kip, tomaat en spinazie, geïnspireerd op West-Afrikaanse keukens.",
+    "ingredients": [
+      "4 kipdijfilets",
+      "3 el pindakaas (100% pinda)",
+      "1 blik tomatenblokjes",
+      "1 ui",
+      "2 teentjes knoflook",
+      "150g spinazie",
+      "kippenbouillon"
+    ],
+    "instructions": "Fruit ui en knoflook, bak de kip aan, roer de pindakaas door de tomaat en bouillon en laat sudderen met de kip tot gaar.",
+    "preparation_time": 40,
+    "nutrition_information": {
+      "vet": "26g",
+      "eiwit": "34g",
+      "calorieen": 420,
+      "koolhydraten": "14g"
+    },
+    "category": [
+      "Diner",
+      "Eiwitrijk",
+      "Glutenvrij",
+      "Lactosevrij",
+      "IJzerrijk"
+    ],
+    "image_url": null,
+    "servings": 4,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Fruit de ui en knoflook aan in een scheutje olie.",
+      "Bak de kipdijfilets rondom aan.",
+      "Roer de pindakaas los door de tomatenblokjes en bouillon en voeg toe aan de pan.",
+      "Laat 25 minuten zachtjes sudderen tot de kip gaar is en de saus indikt.",
+      "Roer de spinazie erdoor tot deze net geslonken is."
+    ],
+    "optional_ingredients": [
+      "Chilipeper",
+      "Verse gember",
+      "Rijst erbij"
+    ],
+    "low_carb_variant": "Deze stoof is van nature al koolhydraatarm.",
+    "storage_tip": "Tot 3 dagen in de koelkast.",
+    "meal_prep_tip": "Maak de saus vooraf klaar en voeg de kip pas toe bij het opwarmen voor de beste textuur.",
+    "is_budget": false
+  },
+  {
+    "title": "Zalm-teriyaki rijstbowl met edamame",
+    "description": "Gebakken zalm in een zoethartige teriyakisaus, geserveerd over rijst met edamame en komkommer.",
+    "ingredients": [
+      "2 zalmfilets",
+      "200g rijst",
+      "handvol edamame",
+      "1/2 komkommer",
+      "sojasaus",
+      "mirin",
+      "1 el honing",
+      "sesamzaad"
+    ],
+    "instructions": "Bak de zalm en glaceer met teriyakisaus, kook de rijst en verdeel alles met edamame en komkommer over kommen.",
+    "preparation_time": 30,
+    "nutrition_information": {
+      "vet": "20g",
+      "eiwit": "34g",
+      "calorieen": 540,
+      "koolhydraten": "50g"
+    },
+    "category": [
+      "Diner",
+      "Bowl",
+      "Glutenvrij",
+      "Eiwitrijk",
+      "Magnesiumrijk"
+    ],
+    "image_url": null,
+    "servings": 2,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Kook de rijst volgens de verpakking.",
+      "Kook de edamame kort volgens de verpakking.",
+      "Meng sojasaus, mirin en honing tot een teriyakisaus.",
+      "Bak de zalm op de huidkant tot bijna gaar, giet de saus erbij en laat inkoken tot glanzend.",
+      "Verdeel rijst, edamame, komkommer en de zalm met saus over kommen en werk af met sesamzaad."
+    ],
+    "optional_ingredients": [
+      "Avocado",
+      "Nori-reepjes"
+    ],
+    "low_carb_variant": "Vervang de helft van de rijst door extra komkommer en edamame.",
+    "storage_tip": "Tot 2 dagen in de koelkast, bewaar de rijst apart voor de beste textuur.",
+    "meal_prep_tip": "Kook de rijst en edamame vooraf, bak de zalm vlak voor het eten.",
+    "is_budget": false
+  },
+  {
+    "title": "Zelfgemaakte trailmix met pure chocolade",
+    "description": "Een magnesiumrijke mix van noten, gedroogd fruit en pure chocoladestukjes — perfect tegen zoete trek.",
+    "ingredients": [
+      "handvol amandelen",
+      "handvol cashewnoten",
+      "handvol gedroogde cranberries zonder toegevoegde suiker",
+      "handvol pure chocoladestukjes (70%)",
+      "handvol pompoenpitten"
+    ],
+    "instructions": "Meng alle ingrediënten in een afgesloten pot.",
+    "preparation_time": 5,
+    "nutrition_information": {
+      "vet": "15g",
+      "eiwit": "6g",
+      "calorieen": 220,
+      "koolhydraten": "18g"
+    },
+    "category": [
+      "Snack",
+      "Veganistisch",
+      "Glutenvrij",
+      "Lactosevrij",
+      "Magnesiumrijk",
+      "Snel",
+      "Voorbereiden"
+    ],
+    "image_url": null,
+    "servings": 6,
+    "difficulty": "makkelijk",
+    "steps": [
+      "Meng de noten, gedroogd fruit, chocoladestukjes en pompoenpitten in een kom.",
+      "Verdeel over een afgesloten pot of kleine zakjes voor onderweg."
+    ],
+    "optional_ingredients": [
+      "Kokoschips",
+      "Gedroogde abrikoos"
+    ],
+    "low_carb_variant": "Verminder het gedroogde fruit en voeg extra noten toe voor minder koolhydraten.",
+    "storage_tip": "Tot 3 weken in een afgesloten pot op kamertemperatuur.",
+    "meal_prep_tip": "Verdeel direct in kleine porties zodat je een grijpklare snack voor onderweg hebt.",
+    "is_budget": true
+  },
+  {
+    "title": "Zoete aardappel-zwarte bonen enchiladas",
+    "description": "Gevulde tortilla wraps met zoete aardappel en zwarte bonen, afgebakken onder een laag tomatensaus en kaas.",
+    "ingredients": [
+      "8 kleine tortillas",
+      "2 zoete aardappelen",
+      "1 blik zwarte bonen",
+      "1 blik tomatenblokjes",
+      "1 tl chilipoeder",
+      "geraspte kaas"
+    ],
+    "instructions": "Rooster de zoete aardappel, meng met bonen en vul de tortillas, rol op, overgiet met tomatensaus en kaas en bak af in de oven.",
+    "preparation_time": 50,
+    "nutrition_information": {
+      "vet": "14g",
+      "eiwit": "16g",
+      "calorieen": 420,
+      "koolhydraten": "56g"
+    },
+    "category": [
+      "Diner",
+      "Ovengerecht",
+      "Vegetarisch",
+      "Magnesiumrijk",
+      "Vezelrijk",
+      "Voorbereiden"
+    ],
+    "image_url": "https://buqdbdrbhrgzesjipwem.supabase.co/storage/v1/object/public/recipe-images/a2f3b3e4-deec-4840-abc4-71887d14cd41.jpg",
+    "servings": 4,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Verwarm de oven voor op 200°C en rooster de in blokjes gesneden zoete aardappel 20 minuten.",
+      "Meng de geroosterde zoete aardappel met de zwarte bonen.",
+      "Vul de tortillas met het mengsel en rol ze op in een ovenschaal.",
+      "Pureer de tomatenblokjes met chilipoeder en giet over de wraps.",
+      "Bestrooi met kaas en bak 20 minuten op 190°C tot de kaas gesmolten is."
+    ],
+    "optional_ingredients": [
+      "Avocado",
+      "Verse koriander"
+    ],
+    "low_carb_variant": "Gebruik minder tortilla en zoete aardappel en vul aan met extra bonen en groenten.",
+    "storage_tip": "Tot 3 dagen in de koelkast.",
+    "meal_prep_tip": "Bereid de enchiladas een dag van tevoren voor en bak ze pas af vlak voor het eten.",
+    "is_budget": true
+  },
+  {
+    "title": "Zweedse gehaktballetjes met aardappelpuree en bosbessen",
+    "description": "Klassieke Zweedse köttbullar met romige jus, aardappelpuree en een frisse bosbessencompote.",
+    "ingredients": [
+      "400g half-om-half gehakt",
+      "1 ei",
+      "40g paneermeel",
+      "scheutje melk",
+      "500g aardappelen",
+      "scheutje room",
+      "150g bosbessen"
+    ],
+    "instructions": "Meng en rol de gehaktballetjes, bak ze gaar, kook en stamp de aardappelen en stoof de bosbessen kort in met een beetje suiker.",
+    "preparation_time": 40,
+    "nutrition_information": {
+      "vet": "24g",
+      "eiwit": "28g",
+      "calorieen": 520,
+      "koolhydraten": "46g"
+    },
+    "category": [
+      "Diner",
+      "Eiwitrijk",
+      "IJzerrijk"
+    ],
+    "image_url": null,
+    "servings": 3,
+    "difficulty": "gemiddeld",
+    "steps": [
+      "Meng het gehakt met ei, paneermeel en melk en rol er balletjes van.",
+      "Bak de gehaktballetjes rondom bruin en gaar in een scheutje boter.",
+      "Kook de aardappelen gaar en stamp fijn met een scheutje room.",
+      "Stoof de bosbessen 5 minuten met een klein beetje suiker tot een compote.",
+      "Serveer de gehaktballetjes met puree en de bosbessencompote."
+    ],
+    "optional_ingredients": [
+      "Augurk erbij",
+      "Verse dille"
+    ],
+    "low_carb_variant": "Vervang de aardappelpuree door bloemkoolpuree voor minder koolhydraten.",
+    "storage_tip": "Tot 3 dagen in de koelkast, en de gehaktballetjes zijn goed in te vriezen.",
+    "meal_prep_tip": "Rol en bak een dubbele portie gehaktballetjes en vries ze in — ideaal voor een snel diner later.",
+    "is_budget": false
+  }
+]

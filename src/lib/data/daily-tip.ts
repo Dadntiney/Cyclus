@@ -55,8 +55,7 @@ export async function getDailyTip(
     for (const cat of SYMPTOM_TIP_CATEGORIES[symptom] ?? []) preferred.add(cat)
   }
 
-  const pool =
-    preferred.size > 0 ? tips.filter((t) => preferred.has(t.category)) : tips
+  const pool = preferred.size > 0 ? tips.filter((t) => preferred.has(t.category)) : tips
   const candidates = pool.length ? pool : tips
   const seed = `${options?.userId ?? "anon"}-${today}`
   return candidates[seededIndex(seed, candidates.length)]

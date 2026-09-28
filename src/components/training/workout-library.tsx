@@ -2,11 +2,14 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { Dumbbell } from "lucide-react"
 import { Chip } from "@/components/ui/chip"
 import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
+import { WorkoutImage } from "@/components/training/workout-image"
 import type { Tables } from "@/types/database"
 
-type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty">
+type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty" | "image_url">
 
 const DIFFICULTY_LABELS: Record<string, string> = {
   makkelijk: "Makkelijk",
@@ -41,6 +44,13 @@ export function WorkoutLibrary({ workouts }: { workouts: Workout[] }) {
           </Chip>
         ))}
       </div>
+      {filtered.length === 0 && (
+        <EmptyState
+          icon={<Dumbbell className="h-6 w-6" strokeWidth={1.5} />}
+          title="Geen trainingen gevonden"
+          description="Probeer een andere categorie te kiezen."
+        />
+      )}
       <div className="flex flex-col gap-2">
         {filtered.map((workout) => (
           <Link
@@ -50,11 +60,19 @@ export function WorkoutLibrary({ workouts }: { workouts: Workout[] }) {
           >
             <Card interactive className="p-3.5">
               <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs text-ink-soft">
-                    {DIFFICULTY_LABELS[workout.difficulty] ?? workout.difficulty}
-                  </p>
-                  <p className="font-medium text-ink text-sm mt-0.5">{workout.title}</p>
+                <div className="flex items-center gap-3 min-w-0">
+                  <WorkoutImage
+                    type={workout.type}
+                    imageUrl={workout.image_url}
+                    className="h-11 w-11 rounded-lg shrink-0"
+                    sizes="44px"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-xs text-ink-soft">
+                      {DIFFICULTY_LABELS[workout.difficulty] ?? workout.difficulty}
+                    </p>
+                    <p className="font-medium text-ink text-sm mt-0.5 truncate">{workout.title}</p>
+                  </div>
                 </div>
                 <span className="text-xs text-ink-soft shrink-0">{workout.duration} min</span>
               </div>

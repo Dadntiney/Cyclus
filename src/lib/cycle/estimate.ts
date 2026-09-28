@@ -16,6 +16,28 @@ const PHASE_LABELS: Record<CyclePhase, string> = {
   luteaal: "Luteale fase",
 }
 
+export function phaseLabel(phase: CyclePhase): string {
+  return PHASE_LABELS[phase]
+}
+
+/**
+ * Classifies a cycle day into a phase, using rough, conservative phase
+ * boundaries expressed as a ratio of the cycle length rather than fixed day
+ * counts, so it still makes sense for shorter or longer cycles. Pure and
+ * exported so `estimateCycle` (today) and the historical pattern analysis
+ * in cycle/patterns.ts (past cycles) classify phases identically.
+ */
+export function classifyPhase(cycleDay: number, cycleLength: number): CyclePhase {
+  const menstruationLength = Math.min(7, Math.round(cycleLength * 0.18))
+  const ovulationWindowStart = Math.round(cycleLength * 0.42)
+  const ovulationWindowEnd = Math.round(cycleLength * 0.58)
+
+  if (cycleDay <= menstruationLength) return "menstruatie"
+  if (cycleDay < ovulationWindowStart) return "folliculair"
+  if (cycleDay <= ovulationWindowEnd) return "ovulatie"
+  return "luteaal"
+}
+
 /**
  * Estimates the current cycle day and phase from the last known period
  * start date and the user's average cycle length. Never assumes a default
@@ -41,24 +63,7 @@ export function estimateCycle(
   }
 
   const cycleDay = (daysSinceStart % averageCycleLength) + 1
-
-  // Rough, conservative phase boundaries expressed as a ratio of the
-  // user's own cycle length rather than fixed day counts, so estimates
-  // still make sense for shorter or longer cycles.
-  const menstruationLength = Math.min(7, Math.round(averageCycleLength * 0.18))
-  const ovulationWindowStart = Math.round(averageCycleLength * 0.42)
-  const ovulationWindowEnd = Math.round(averageCycleLength * 0.58)
-
-  let phase: CyclePhase
-  if (cycleDay <= menstruationLength) {
-    phase = "menstruatie"
-  } else if (cycleDay < ovulationWindowStart) {
-    phase = "folliculair"
-  } else if (cycleDay <= ovulationWindowEnd) {
-    phase = "ovulatie"
-  } else {
-    phase = "luteaal"
-  }
+  const phase = classifyPhase(cycleDay, averageCycleLength)
 
   return {
     cycleDay,

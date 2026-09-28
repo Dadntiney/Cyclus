@@ -1,29 +1,57 @@
 "use client"
 
+import { useRef } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
 import { NAV_ITEMS } from "./nav-items"
 
-export function BottomNav() {
+export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
   const pathname = usePathname()
+  const ref = useRef<HTMLElement>(null)
+  useMeasuredHeightVar(ref, "--bottom-nav-h")
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-line safe-bottom">
+    <nav
+      ref={ref}
+      className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-line safe-bottom safe-x"
+    >
       <ul className="flex items-stretch justify-between px-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`)
+          const isProfile = href === "/profiel"
           return (
             <li key={href} className="flex-1">
               <Link
                 href={href}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 py-2.5 min-h-[52px] text-[11px] font-medium touch-manipulation transition-[color,transform] duration-150 motion-safe:active:scale-[0.94]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset",
                   active ? "text-sage-dark" : "text-ink-soft",
                 )}
               >
-                <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
+                <span
+                  className={cn(
+                    "flex items-center justify-center h-7 w-9 rounded-full transition-colors duration-150",
+                    active && "bg-sage-soft",
+                  )}
+                >
+                  {isProfile && avatarUrl ? (
+                    <span
+                      className={cn(
+                        "h-5 w-5 rounded-full overflow-hidden shrink-0",
+                        active && "ring-2 ring-white",
+                      )}
+                    >
+                      <Image src={avatarUrl} alt="" width={20} height={20} className="h-full w-full object-cover" />
+                    </span>
+                  ) : (
+                    <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
+                  )}
+                </span>
                 {label}
               </Link>
             </li>

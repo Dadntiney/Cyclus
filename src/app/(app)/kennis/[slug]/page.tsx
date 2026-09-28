@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getKnowledgeArticle, listKnowledgeArticles } from "@/lib/data/knowledge"
 import { Card } from "@/components/ui/card"
+import { BackButton } from "@/components/ui/back-button"
 
 export default async function KennisArticlePage({
   params,
@@ -17,9 +18,7 @@ export default async function KennisArticlePage({
   return (
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
       <div>
-        <Link href="/kennis" className="text-sm text-sage-dark font-medium">
-          ← Alle kennis
-        </Link>
+        <BackButton href="/kennis" label="Alle kennis" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mt-3">{article.title}</h1>
         <p className="text-sm text-ink-soft mt-2">{article.summary}</p>
       </div>
