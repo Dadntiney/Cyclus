@@ -57,6 +57,8 @@ export function saveWeekOverrides(userId: string, weekStartISO: string, override
   }
 }
 
+export const WEEK_OVERRIDES_CHANGED_EVENT = "cyclus:week-overrides-changed"
+
 export function setDayOverride(
   userId: string,
   weekStartISO: string,
@@ -73,6 +75,11 @@ export function setDayOverride(
     delete next[entryKey]
   }
   saveWeekOverrides(userId, weekStartISO, next)
+  try {
+    window.dispatchEvent(new Event(WEEK_OVERRIDES_CHANGED_EVENT))
+  } catch {
+    /* ignore — non-browser / unavailable */
+  }
   return next
 }
 

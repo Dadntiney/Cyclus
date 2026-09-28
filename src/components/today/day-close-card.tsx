@@ -4,11 +4,18 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Moon, CheckCircle2, Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { loadWeekOverrides } from "@/lib/client/week-plan-storage"
+import {
+  loadWeekOverrides,
+  WEEK_OVERRIDES_CHANGED_EVENT,
+} from "@/lib/client/week-plan-storage"
 
 /**
- * Compact evening wrap-up — not a second questionnaire. Surfaces what’s still
- * open and lets her mark the day as “afgerond” locally. Visible from 18:00.
+ * Compact day wrap-up — not a second questionnaire. Lives at the bottom of
+ * Vandaag so she can confirm what still needs a note (check-in, movement,
+ * sleep) and mark the day “afgerond” without guilt or extra forms.
+ *
+ * Always available (not hour-gated): an evening-only gate hid the card when
+ * hydration lagged, and users who close their day earlier still need it.
  */
 export function DayCloseCard({
   userId,
@@ -29,27 +36,36 @@ export function DayCloseCard({
   sleepTrackingEnabled: boolean
   hasSleepEntry: boolean
 }) {
-  const [ready, setReady] = useState(false)
   const [closed, setClosed] = useState(false)
   const [movementHandled, setMovementHandled] = useState(movementDone)
+  const [hydrated, setHydrated] = useState(false)
   const storageKey = `cyclus:day-closed:${date}`
 
   useEffect(() => {
-    // Hour + localStorage only on client to avoid SSR mismatch.
-    const evening = new Date().getHours() >= 18
-    try {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setClosed(localStorage.getItem(storageKey) === "1")
-      const override = loadWeekOverrides(userId, weekStartISO)[`${date}:workout`]
-      setMovementHandled(movementDone || override?.type === "skip-workout")
-    } catch {
-      setClosed(false)
-      setMovementHandled(movementDone)
+    function syncFromClient() {
+      try {
+        setClosed(localStorage.getItem(storageKey) === "1")
+        const override = loadWeekOverrides(userId, weekStartISO)[`${date}:workout`]
+        // Swap/skip counts as “genoteerd” — she already chose what today looks like.
+        setMovementHandled(
+          movementDone ||
+            override?.type === "skip-workout" ||
+            override?.type === "swap-workout",
+        )
+      } catch {
+        setClosed(false)
+        setMovementHandled(movementDone)
+      }
+      setHydrated(true)
     }
-    setReady(evening)
+    syncFromClient()
+    window.addEventListener(WEEK_OVERRIDES_CHANGED_EVENT, syncFromClient)
+    window.addEventListener("focus", syncFromClient)
+    return () => {
+      window.removeEventListener(WEEK_OVERRIDES_CHANGED_EVENT, syncFromClient)
+      window.removeEventListener("focus", syncFromClient)
+    }
   }, [storageKey, userId, weekStartISO, date, movementDone])
-
-  if (!ready) return null
 
   function markClosed() {
     try {
@@ -98,7 +114,9 @@ export function DayCloseCard({
       : []),
   ]
 
-  if (closed) {
+  // Before client hydration, render the open checklist (not the closed state)
+  // so SSR and first paint match. Closed state applies after localStorage read.
+  if (hydrated && closed) {
     return (
       <div className="rounded-2xl border border-line/70 bg-sage-soft/60 p-4">
         <div className="flex items-center justify-between gap-3">
