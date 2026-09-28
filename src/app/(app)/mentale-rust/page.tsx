@@ -9,6 +9,7 @@ import { getAffirmationsByThemes } from "@/lib/data/affirmations"
 import { ExerciseLibrary } from "@/components/mental-wellbeing/exercise-library"
 import { AffirmationViewer } from "@/components/mental-wellbeing/affirmation-viewer"
 import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
 import type { BuddyStyle } from "@/lib/buddy/styles"
@@ -26,16 +27,17 @@ export default async function MentaleRustPage() {
         <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Mijn mentale rust</h1>
         <p className="text-sm text-ink-soft mb-6">Korte oefeningen en affirmaties voor meer rust.</p>
-        <Card className="text-center py-8">
-          <Brain className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
-          <p className="font-display text-lg text-ink mb-2">Mentale rust staat nu uit</p>
-          <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
-            Je gaf aan dat dit op dit moment niet relevant voor je is. Dat is helemaal prima — je
-            ziet hierdoor nergens meditaties, mindfulness of affirmaties. Wil je dit toch gebruiken?
-          </p>
-          <Link href="/profiel#mentale-rust" className={buttonVariants()}>
-            Zet aan in mijn profiel
-          </Link>
+        <Card>
+          <EmptyState
+            icon={<Brain className="h-8 w-8" strokeWidth={1.5} />}
+            title="Mentale rust staat nu uit"
+            description="Je ziet hierdoor nergens meditaties, mindfulness of affirmaties. Wil je dit toch gebruiken?"
+            action={
+              <Link href="/profiel#mentale-rust" className={buttonVariants()}>
+                Zet aan in mijn profiel
+              </Link>
+            }
+          />
         </Card>
       </div>
     )

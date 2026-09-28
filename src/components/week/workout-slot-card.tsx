@@ -68,6 +68,7 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
         <div className="flex items-center gap-3">
           <WorkoutImage
             type={swapped ? (swappedWorkout?.type ?? "mobiliteit") : (workout?.type ?? "mobiliteit")}
+            title={effectiveWorkout.title}
             imageUrl={swapped ? (swappedWorkout?.image_url ?? null) : (workout?.image_url ?? null)}
             className="h-12 w-12 rounded-xl shrink-0"
             sizes="48px"
@@ -95,7 +96,13 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
           </div>
         </div>
       ) : (
-        <p className="text-sm text-ink-soft">Geen training gevonden voor deze focus.</p>
+        <p className="text-sm text-ink-soft">
+          Geen training voor deze focus.{" "}
+          <Link href="/training" className="font-medium text-sage-dark underline-offset-2 hover:underline">
+            Open beweging
+          </Link>
+          .
+        </p>
       )}
 
       {!skipped && (

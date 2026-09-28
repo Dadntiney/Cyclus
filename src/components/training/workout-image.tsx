@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 
 interface WorkoutImageProps {
   type: string
+  title?: string
   imageUrl: string | null
   className?: string
   iconClassName?: string
@@ -14,6 +15,7 @@ interface WorkoutImageProps {
 /** Workout photo when available, otherwise the illustrated placeholder. */
 export function WorkoutImage({
   type,
+  title,
   imageUrl,
   className,
   iconClassName,
@@ -28,7 +30,7 @@ export function WorkoutImage({
     <div className={cn("relative overflow-hidden bg-cream-soft", className)}>
       <Image
         src={imageUrl}
-        alt=""
+        alt={title ?? "Training"}
         fill
         sizes={sizes ?? "(min-width: 640px) 50vw, 100vw"}
         // Same shared grade as RecipeImage, so photos from different

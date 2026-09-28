@@ -97,8 +97,10 @@ export function WeekView({
               key={d.date}
               type="button"
               onClick={() => setSelectedIndex(i)}
+              aria-pressed={selected}
+              aria-label={`${d.weekday} ${format(parseISO(d.date), "d MMMM", { locale: nl })}${d.isToday ? ", vandaag" : ""}`}
               className={cn(
-                "flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 touch-manipulation transition-colors",
+                "flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 min-h-11 touch-manipulation transition-colors",
                 selected ? "bg-sage-fill text-white" : "bg-surface border border-line text-ink",
               )}
             >
@@ -118,14 +120,22 @@ export function WeekView({
       </div>
 
       <div>
-        <div className="flex items-baseline justify-between mb-2.5">
-          <h2 className="font-display text-lg text-ink capitalize">
-            {day.isToday ? "Vandaag" : day.weekday}
-          </h2>
+        <div className="flex items-baseline justify-between gap-3 mb-1">
+          <h2 className="font-display text-lg text-ink capitalize">{day.weekday}</h2>
           <span className="text-xs text-ink-soft">
             {format(parseISO(day.date), "d MMMM", { locale: nl })}
           </span>
         </div>
+        {day.isToday && (
+          <p className="text-xs text-ink-soft mb-2.5">
+            Weekplan voor vandaag.{" "}
+            <Link href="/vandaag" className="font-medium text-sage-dark underline-offset-2 hover:underline">
+              Check-in en snelle tips staan op Vandaag
+            </Link>
+            .
+          </p>
+        )}
+        {!day.isToday && <div className="mb-2.5" />}
 
         <div className="flex flex-col gap-4">
           {nutritionEnabled && (

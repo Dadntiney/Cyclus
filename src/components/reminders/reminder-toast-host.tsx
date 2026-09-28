@@ -171,7 +171,7 @@ export function ReminderToastHost({
           <button
             type="button"
             onClick={() => dismiss(toast.id)}
-            className="shrink-0 h-7 w-7 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation"
+            className="shrink-0 h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation"
             aria-label="Sluiten"
           >
             <X className="h-4 w-4" />

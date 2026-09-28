@@ -1,4 +1,6 @@
+import Link from "next/link"
 import { format, subDays } from "date-fns"
+import { Droplet, CalendarDays } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { estimateCycle } from "@/lib/cycle/estimate"
@@ -11,8 +13,10 @@ import {
 import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { buildCyclusdagView } from "@/lib/cycle/cyclusdag"
 import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
 import { Expandable } from "@/components/ui/expandable"
 import { BackButton } from "@/components/ui/back-button"
+import { buttonVariants } from "@/components/ui/button"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
@@ -49,10 +53,16 @@ export default async function CyclusdagPage() {
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         {backLink}
         <Card>
-          <p className="text-sm text-ink-soft">
-            Je gaf aan momenteel geen menstruatiecyclus te hebben, dus er is geen cyclusdag om
-            over te laten zien. Je vindt je klachten en patronen nog wel terug bij Mijn cyclus.
-          </p>
+          <EmptyState
+            icon={<Droplet className="h-6 w-6" strokeWidth={1.5} />}
+            title="Geen cyclusdag"
+            description="Je gaf aan momenteel geen menstruatiecyclus te hebben. Klachten en patronen vind je nog wel bij Cyclus."
+            action={
+              <Link href="/cyclus" className={buttonVariants({ variant: "secondary" })}>
+                Naar Cyclus
+              </Link>
+            }
+          />
         </Card>
       </div>
     )
@@ -77,11 +87,16 @@ export default async function CyclusdagPage() {
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         {backLink}
         <Card>
-          <p className="text-sm text-ink-soft">
-            We hebben nog niet genoeg gegevens om je huidige cyclusdag te schatten. Markeer je
-            menstruatiedagen in de kalender bij Mijn cyclus, dan verschijnt hier straks jouw
-            persoonlijke uitleg.
-          </p>
+          <EmptyState
+            icon={<CalendarDays className="h-6 w-6" strokeWidth={1.5} />}
+            title="Nog te weinig gegevens"
+            description="Markeer je menstruatiedagen in de kalender bij Cyclus. Daarna verschijnt hier jouw persoonlijke uitleg."
+            action={
+              <Link href="/cyclus" className={buttonVariants()}>
+                Open kalender
+              </Link>
+            }
+          />
         </Card>
       </div>
     )

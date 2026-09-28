@@ -37,16 +37,17 @@ export default async function SlaapPage() {
         <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Slaap</h1>
         <p className="text-sm text-ink-soft mb-6">Je slaapduur en eenvoudige inzichten.</p>
-        <Card className="text-center py-8">
-          <Moon className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
-          <p className="font-display text-lg text-ink mb-2">Slaap bijhouden staat nu uit</p>
-          <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
-            Je gaf aan dat je dit op dit moment niet wilt bijhouden. Dat is helemaal prima — je ziet
-            hierdoor nergens slaapvragen of slaapkaarten. Wil je dit toch gebruiken?
-          </p>
-          <Link href="/profiel#slaap" className={buttonVariants()}>
-            Zet aan in mijn profiel
-          </Link>
+        <Card>
+          <EmptyState
+            icon={<Moon className="h-8 w-8" strokeWidth={1.5} />}
+            title="Slaap bijhouden staat nu uit"
+            description="Je ziet hierdoor nergens slaapvragen of slaapkaarten. Wil je dit toch gebruiken?"
+            action={
+              <Link href="/profiel#slaap" className={buttonVariants()}>
+                Zet aan in mijn profiel
+              </Link>
+            }
+          />
         </Card>
       </div>
     )
@@ -126,13 +127,11 @@ export default async function SlaapPage() {
           })}
         </Card>
       ) : (
-        <Card>
-          <EmptyState
-            icon={<Moon className="h-6 w-6" />}
-            title="Nog geen nachten ingevuld."
-            description="Vul op Vandaag je bedtijd en opsta-tijd in om je slaap bij te houden."
-          />
-        </Card>
+        <EmptyState
+          icon={<Moon className="h-6 w-6" />}
+          title="Nog geen nachten ingevuld"
+          description="Vul op Vandaag je bedtijd en opsta-tijd in om je slaap bij te houden."
+        />
       )}
     </div>
   )

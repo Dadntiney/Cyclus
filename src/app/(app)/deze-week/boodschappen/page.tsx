@@ -6,6 +6,7 @@ import { buildGroceryList } from "@/lib/nutrition/grocery-list"
 import type { WeekPlanRecipe } from "@/lib/recommendations/week-plan"
 import { GroceryList } from "@/components/week/grocery-list"
 import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
 
@@ -20,15 +21,17 @@ export default async function BoodschappenPage() {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         <BackButton href="/deze-week" label="Deze week" />
-        <Card className="text-center py-8">
-          <Salad className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
-          <p className="font-display text-lg text-ink mb-2">Voeding staat nu uit</p>
-          <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
-            Er is geen boodschappenlijst omdat voeding niet aanstaat in je profiel.
-          </p>
-          <Link href="/profiel#voeding" className={buttonVariants()}>
-            Zet aan in mijn profiel
-          </Link>
+        <Card>
+          <EmptyState
+            icon={<Salad className="h-8 w-8" strokeWidth={1.5} />}
+            title="Voeding staat nu uit"
+            description="Er is geen boodschappenlijst omdat voeding niet aanstaat in je profiel."
+            action={
+              <Link href="/profiel#voeding" className={buttonVariants()}>
+                Zet aan in mijn profiel
+              </Link>
+            }
+          />
         </Card>
       </div>
     )

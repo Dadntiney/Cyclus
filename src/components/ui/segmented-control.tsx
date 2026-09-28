@@ -36,7 +36,7 @@ export function SegmentedControl<T extends string>({
           aria-checked={value === opt.value}
           onClick={() => onChange(opt.value)}
           className={cn(
-            "min-h-9 min-w-[64px] rounded-lg px-3 text-sm font-medium touch-manipulation transition-[background-color,color,box-shadow] duration-150",
+            "min-h-11 min-w-[64px] rounded-lg px-3 text-sm font-medium touch-manipulation transition-[background-color,color,box-shadow] duration-150",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
             value === opt.value
               ? "bg-surface text-ink shadow-sm"

@@ -30,7 +30,7 @@ export function NeedPicker({ initialNeed }: { initialNeed: string | null }) {
 
   return (
     <div>
-      <p className="text-sm font-medium text-ink-soft mb-2">Waar heb je vandaag behoefte aan?</p>
+      <h2 className="text-sm font-medium text-ink-soft mb-2">Waar heb je vandaag behoefte aan?</h2>
       <div className="flex flex-wrap gap-2">
         {NEED_OPTIONS.map((opt) => (
           <Chip

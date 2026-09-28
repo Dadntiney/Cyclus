@@ -40,7 +40,7 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
             type="button"
             onClick={onClose}
             aria-label="Sluiten"
-            className="ml-auto h-9 w-9 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            className="ml-auto h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
           >
             <X className="h-4 w-4" strokeWidth={1.75} />
           </button>

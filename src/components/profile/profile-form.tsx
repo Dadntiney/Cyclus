@@ -144,11 +144,9 @@ export function ProfileForm({
   const savingRef = useRef(false)
   const dirtyRef = useRef(false)
   const retryCountRef = useRef(0)
-  // Which kind of change triggered the save currently in flight (or about
-  // to run) — chips/toggles already show their new state instantly, so a
-  // save that came from one of those skips the "Opgeslagen" confirmation.
-  // Text fields (debounced) keep it, since there's a real delay between
-  // typing and the save actually firing. Errors always show either way.
+  // Tracks whether the in-flight save came from a chip/toggle (immediate)
+  // or a text field (debounced). Both show "Opgeslagen" — toggles need that
+  // confirmation too, even though the UI already flipped optimistically.
   const lastModeRef = useRef<"immediate" | "debounced">("immediate")
 
   function buildPayload(s: FormState): UpdateProfileInput {
@@ -203,7 +201,7 @@ export function ProfileForm({
     }
     savingRef.current = true
     dirtyRef.current = false
-    if (mountedRef.current && lastModeRef.current === "debounced") setStatus("saving")
+    if (mountedRef.current) setStatus("saving")
 
     const payload = buildPayload(stateRef.current)
     let result: Awaited<ReturnType<typeof updateProfile>> | undefined
@@ -234,15 +232,11 @@ export function ProfileForm({
     retryCountRef.current = 0
     if (mountedRef.current) {
       setErrorMessage(null)
-      if (lastModeRef.current === "debounced") {
-        setStatus("saved")
-        if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
-        savedTimerRef.current = setTimeout(() => {
-          if (mountedRef.current) setStatus((current) => (current === "saved" ? "idle" : current))
-        }, SAVED_FLASH_MS)
-      } else {
-        setStatus("idle")
-      }
+      setStatus("saved")
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+      savedTimerRef.current = setTimeout(() => {
+        if (mountedRef.current) setStatus((current) => (current === "saved" ? "idle" : current))
+      }, SAVED_FLASH_MS)
     }
 
     if (dirtyRef.current) {
@@ -451,7 +445,7 @@ export function ProfileForm({
         </div>
       </Card>
 
-      <Card id="beweging">
+      <Card id="beweging" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-display text-lg text-ink">Mijn beweging</h2>
           <div className="flex gap-1.5">
@@ -511,7 +505,7 @@ export function ProfileForm({
         )}
       </Card>
 
-      <Card id="voeding">
+      <Card id="voeding" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-display text-lg text-ink">Mijn voeding</h2>
           <div className="flex gap-1.5">
@@ -584,7 +578,7 @@ export function ProfileForm({
         )}
       </Card>
 
-      <Card id="mentale-rust">
+      <Card id="mentale-rust" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-display text-lg text-ink">Mijn mentale rust</h2>
           <div className="flex gap-1.5">
@@ -637,7 +631,7 @@ export function ProfileForm({
         )}
       </Card>
 
-      <Card id="goedemorgen">
+      <Card id="goedemorgen" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-display text-lg text-ink">Goedemorgen</h2>
           <div className="flex gap-1.5">
@@ -717,7 +711,7 @@ export function ProfileForm({
         )}
       </Card>
 
-      <Card id="slaap">
+      <Card id="slaap" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-display text-lg text-ink">Slaap bijhouden</h2>
           <div className="flex gap-1.5">
@@ -748,7 +742,7 @@ export function ProfileForm({
         )}
       </Card>
 
-      <Card id="medicatie">
+      <Card id="medicatie" className="scroll-mt-24">
         <h2 className="font-display text-lg text-ink mb-1">Medicatie & hormonen</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Gebruik je hormonale medicatie of medicatie die invloed kan hebben op je
@@ -802,7 +796,7 @@ export function ProfileForm({
         )}
       </Card>
 
-      <Card id="buddy">
+      <Card id="buddy" className="scroll-mt-24">
         <h2 className="font-display text-lg text-ink mb-1">Mijn Buddy</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Kies één of meerdere stijlen die bij je passen — je berichten, tips en
@@ -857,7 +851,7 @@ export function ProfileForm({
         />
       </Card>
 
-      <Card id="cyclus">
+      <Card id="cyclus" className="scroll-mt-24">
         <h2 className="font-display text-lg text-ink mb-3">Mijn cyclus</h2>
         <div className="flex flex-col gap-4">
           <div>

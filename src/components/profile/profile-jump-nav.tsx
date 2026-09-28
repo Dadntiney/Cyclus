@@ -1,6 +1,12 @@
 const JUMP_LINKS = [
-  { href: "#beweging", label: "Modules" },
+  { href: "#beweging", label: "Beweging" },
+  { href: "#voeding", label: "Voeding" },
+  { href: "#mentale-rust", label: "Mentale rust" },
+  { href: "#slaap", label: "Slaap" },
+  { href: "#medicatie", label: "Medicatie" },
   { href: "#cyclus", label: "Cyclus" },
+  { href: "#buddy", label: "Buddy" },
+  { href: "#goedemorgen", label: "Goedemorgen" },
   { href: "#herinneringen", label: "Herinneringen" },
   { href: "#privacy", label: "Privacy" },
 ] as const

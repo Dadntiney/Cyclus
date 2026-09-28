@@ -63,6 +63,7 @@ export function WorkoutLibrary({ workouts }: { workouts: Workout[] }) {
                 <div className="flex items-center gap-3 min-w-0">
                   <WorkoutImage
                     type={workout.type}
+                    title={workout.title}
                     imageUrl={workout.image_url}
                     className="h-11 w-11 rounded-lg shrink-0"
                     sizes="44px"

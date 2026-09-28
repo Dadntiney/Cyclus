@@ -337,7 +337,7 @@ export default async function CyclusPage() {
             <Card>
               <EmptyState
                 icon={<Droplet className="h-6 w-6" />}
-                title="Nog geen cyclusgeschiedenis."
+                title="Nog geen cyclusgeschiedenis"
                 description="Markeer menstruatiedagen in de kalender hierboven."
               />
             </Card>
@@ -365,7 +365,7 @@ export default async function CyclusPage() {
           <Card className="mb-3">
             <EmptyState
               icon={<Sparkles className="h-6 w-6" />}
-              title="Nog weinig inzichten."
+              title="Nog weinig inzichten"
               description="Vul een aantal check-ins in op Vandaag. Daarna verschijnen hier verbanden."
             />
           </Card>

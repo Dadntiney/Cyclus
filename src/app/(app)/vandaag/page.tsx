@@ -37,9 +37,12 @@ async function DailyTip({
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-display text-lg text-ink">Kennis</h2>
-        <Link href="/kennis" className="text-xs font-medium text-sage-dark touch-manipulation">
-          Alles
+        <h2 className="font-display text-lg text-ink">Tip van vandaag</h2>
+        <Link
+          href="/kennis"
+          className="text-xs font-medium text-sage-dark touch-manipulation min-h-11 inline-flex items-center"
+        >
+          Alle kennis
         </Link>
       </div>
       <DailyTipCard tip={dailyTip} />
@@ -50,7 +53,7 @@ async function DailyTip({
 function DailyTipSkeleton() {
   return (
     <div>
-      <h2 className="font-display text-lg text-ink mb-3">Kennis</h2>
+      <h2 className="font-display text-lg text-ink mb-3">Tip van vandaag</h2>
       <div className="rounded-3xl bg-cream-soft h-32 animate-pulse" />
     </div>
   )
@@ -167,12 +170,6 @@ export default async function VandaagPage() {
             <MenstruationQuickAction isActive={isMenstruationActive} day={menstruationDay} />
           )}
 
-          {showBuddyQuote && <BuddyQuoteCard quote={buddyQuote} />}
-
-          {mentalWellbeingSuggestion && (
-            <MentalWellbeingSuggestionCard suggestion={mentalWellbeingSuggestion} />
-          )}
-
           <CheckinForm
             initial={checkin ?? null}
             mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
@@ -180,6 +177,12 @@ export default async function VandaagPage() {
             customSymptoms={profile?.custom_symptoms ?? []}
             preferredSymptoms={profile?.preferred_symptoms ?? []}
           />
+
+          {mentalWellbeingSuggestion && (
+            <MentalWellbeingSuggestionCard suggestion={mentalWellbeingSuggestion} />
+          )}
+
+          {showBuddyQuote && <BuddyQuoteCard quote={buddyQuote} />}
         </div>
 
         <div className="lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
@@ -193,7 +196,10 @@ export default async function VandaagPage() {
               <div>
                 <SleepCard date={today} entry={sleepEntry} />
                 {sleepObservation && <p className="text-xs text-ink-soft mt-2 px-1 leading-relaxed">{sleepObservation}</p>}
-                <Link href="/slaap" className="text-xs font-medium text-sage-dark mt-2 px-1 inline-block touch-manipulation">
+                <Link
+                  href="/slaap"
+                  className="text-xs font-medium text-sage-dark mt-2 px-1 inline-flex items-center min-h-11 touch-manipulation"
+                >
                   Bekijk slaapgeschiedenis
                 </Link>
               </div>

@@ -438,7 +438,8 @@ function WelcomeStep() {
         Jouw dag.
       </h1>
       <p className="text-ink-soft text-sm">
-        We stellen je een paar korte vragen zodat Cyclus zich aanpast aan jou.
+        Een paar korte vragen — ongeveer 2 minuten. Alles kun je later nog aanpassen in je
+        profiel.
       </p>
     </div>
   )

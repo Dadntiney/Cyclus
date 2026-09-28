@@ -75,11 +75,11 @@ export function GroceryList({
                 >
                   <span
                     className={cn(
-                      "shrink-0 h-5 w-5 rounded-md border flex items-center justify-center transition-colors",
+                      "shrink-0 h-11 w-11 rounded-xl border flex items-center justify-center transition-colors",
                       isChecked ? "bg-sage-fill border-sage-dark" : "border-line",
                     )}
                   >
-                    {isChecked && <Check className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />}
+                    {isChecked && <Check className="h-4 w-4 text-white" strokeWidth={2.5} />}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span

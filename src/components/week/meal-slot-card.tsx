@@ -101,7 +101,13 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
           </div>
         </Link>
       ) : (
-        <p className="text-sm text-ink-soft">Geen suggestie beschikbaar.</p>
+        <p className="text-sm text-ink-soft">
+          Nog geen recept in deze categorie.{" "}
+          <Link href="/voeding" className="font-medium text-sage-dark underline-offset-2 hover:underline">
+            Bekijk de bibliotheek
+          </Link>
+          .
+        </p>
       )}
 
       {mode === "idle" && !skipped && (

@@ -47,7 +47,7 @@ export function MedicationTodayCard({ items, date }: { items: MedicationDashboar
                   onClick={() => !paused && handleToggle(item.id)}
                   disabled={paused || isPending}
                   className={cn(
-                    "shrink-0 h-6 w-6 rounded-full border flex items-center justify-center text-xs transition-colors touch-manipulation",
+                    "shrink-0 h-11 w-11 rounded-full border flex items-center justify-center text-sm transition-colors touch-manipulation",
                     paused
                       ? "border-line/60 text-ink-soft/40"
                       : taken

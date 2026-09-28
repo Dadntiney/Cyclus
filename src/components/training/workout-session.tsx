@@ -95,6 +95,7 @@ export function WorkoutSession({
       <div className="flex flex-col gap-4">
         <WorkoutImage
           type={workout.type}
+          title={workout.title}
           imageUrl={workout.image_url}
           className="aspect-[16/9] lg:aspect-[21/9] w-full rounded-3xl"
           iconClassName="h-20 w-20"

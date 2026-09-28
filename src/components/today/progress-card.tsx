@@ -25,7 +25,14 @@ export function ProgressCard({
               {completedThisWeek} / {goal}
             </p>
           </div>
-          <div className="w-full h-2 rounded-full bg-cream-soft overflow-hidden mb-2">
+          <div
+            className="w-full h-2 rounded-full bg-cream-soft overflow-hidden mb-2"
+            role="progressbar"
+            aria-valuenow={completedThisWeek}
+            aria-valuemin={0}
+            aria-valuemax={goal}
+            aria-label="Trainingen deze week"
+          >
             <div
               className={cn("h-full rounded-full transition-all duration-500", "bg-sage-fill")}
               style={{ width: `${pct}%` }}

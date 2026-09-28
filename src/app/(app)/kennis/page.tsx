@@ -1,6 +1,8 @@
 import Link from "next/link"
+import { BookOpen } from "lucide-react"
 import { listKnowledgeArticles } from "@/lib/data/knowledge"
 import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
 import { BackButton } from "@/components/ui/back-button"
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -40,11 +42,11 @@ export default async function KennisPage() {
           </Link>
         ))}
         {articles.length === 0 && (
-          <Card>
-            <p className="text-sm text-ink-soft">
-              Nog geen artikelen beschikbaar. Kijk later nog eens terug.
-            </p>
-          </Card>
+          <EmptyState
+            icon={<BookOpen className="h-6 w-6" strokeWidth={1.5} />}
+            title="Nog geen artikelen"
+            description="Zodra er nieuwe kennisartikelen klaarstaan, verschijnen ze hier."
+          />
         )}
       </div>
     </div>

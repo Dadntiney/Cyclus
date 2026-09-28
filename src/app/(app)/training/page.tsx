@@ -9,6 +9,7 @@ import { pickTodaysWorkout } from "@/lib/recommendations/engine"
 import { WorkoutLibrary } from "@/components/training/workout-library"
 import { WorkoutImage } from "@/components/training/workout-image"
 import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
 import { TRAINING_PREFERENCE_TO_TYPE } from "@/lib/constants"
@@ -38,16 +39,17 @@ export default async function TrainingPage() {
         <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Beweging</h1>
         <p className="text-sm text-ink-soft mb-6">Jouw weekplanning en trainingsbibliotheek.</p>
-        <Card className="text-center py-8">
-          <Dumbbell className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
-          <p className="font-display text-lg text-ink mb-2">Beweging staat nu uit</p>
-          <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
-            Je gaf aan dat beweging op dit moment niet relevant voor je is. Dat is helemaal prima —
-            je ziet hierdoor nergens trainingsadvies. Wil je dit toch weer gebruiken?
-          </p>
-          <Link href="/profiel#beweging" className={buttonVariants()}>
-            Zet aan in mijn profiel
-          </Link>
+        <Card>
+          <EmptyState
+            icon={<Dumbbell className="h-8 w-8" strokeWidth={1.5} />}
+            title="Beweging staat nu uit"
+            description="Je ziet hierdoor nergens trainingsadvies. Wil je dit toch weer gebruiken?"
+            action={
+              <Link href="/profiel#beweging" className={buttonVariants()}>
+                Zet aan in mijn profiel
+              </Link>
+            }
+          />
         </Card>
       </div>
     )
@@ -103,10 +105,11 @@ export default async function TrainingPage() {
 
       {todaysPick.workout && (
         <Card className="bg-sage-soft border-transparent">
-          <p className="text-sm font-medium text-sage-dark mb-1">Voor jou vandaag</p>
+          <p className="text-sm font-medium text-sage-dark mb-1">Suggestie voor vandaag</p>
           <div className="flex items-start gap-3">
             <WorkoutImage
               type={todaysPick.workout.type}
+              title={todaysPick.workout.title}
               imageUrl={todaysPick.workout.image_url}
               className="h-16 w-16 rounded-xl shrink-0"
               sizes="64px"

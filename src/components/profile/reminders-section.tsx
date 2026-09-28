@@ -159,7 +159,7 @@ export function RemindersSection({
   const showForm = adding || editingId !== null
 
   return (
-    <Card id="herinneringen">
+    <Card id="herinneringen" className="scroll-mt-24">
       <div className="flex items-center justify-between mb-1">
         <p className="text-sm font-medium text-ink inline-flex items-center gap-1.5">
           <Bell className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />

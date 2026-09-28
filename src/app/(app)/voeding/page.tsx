@@ -6,6 +6,7 @@ import { getRecipeLibrary } from "@/lib/data/nutrition"
 import { pickTodaysRecipe } from "@/lib/recommendations/engine"
 import { RecipeLibrary } from "@/components/nutrition/recipe-library"
 import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
 import { cn } from "@/lib/utils"
@@ -29,16 +30,17 @@ export default async function VoedingPage() {
         <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Voeding</h1>
         <p className="text-sm text-ink-soft mb-6">Recepten die passen bij jouw voorkeuren.</p>
-        <Card className="text-center py-8">
-          <Salad className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
-          <p className="font-display text-lg text-ink mb-2">Voeding staat nu uit</p>
-          <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
-            Je gaf aan dat voeding op dit moment niet relevant voor je is. Dat is helemaal prima —
-            je ziet hierdoor nergens voedingsadvies. Wil je dit toch weer gebruiken?
-          </p>
-          <Link href="/profiel#voeding" className={buttonVariants()}>
-            Zet aan in mijn profiel
-          </Link>
+        <Card>
+          <EmptyState
+            icon={<Salad className="h-8 w-8" strokeWidth={1.5} />}
+            title="Voeding staat nu uit"
+            description="Je ziet hierdoor nergens voedingsadvies. Wil je dit toch weer gebruiken?"
+            action={
+              <Link href="/profiel#voeding" className={buttonVariants()}>
+                Zet aan in mijn profiel
+              </Link>
+            }
+          />
         </Card>
       </div>
     )
@@ -76,7 +78,7 @@ export default async function VoedingPage() {
 
       {todaysPick.recipe && (
         <Card className="bg-sage-soft border-transparent">
-          <p className="text-sm font-medium text-sage-dark mb-1">Voor jou vandaag</p>
+          <p className="text-sm font-medium text-sage-dark mb-1">Suggestie voor vandaag</p>
           <p className="font-display text-xl text-ink">{todaysPick.recipe.title}</p>
           <p className="text-base text-ink-soft mt-2">{todaysPick.reason}</p>
           <Link href={`/voeding/${todaysPick.recipe.id}`} className={cn(buttonVariants(), "mt-3")}>
