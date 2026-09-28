@@ -52,6 +52,7 @@ export default async function VoedingPage() {
       nutrition_preferences: profile?.nutrition_preferences ?? [],
       nutrition_style: profile?.nutrition_style ?? "gebalanceerd",
       disliked_foods: profile?.disliked_foods ?? [],
+      food_allergies: profile?.food_allergies ?? [],
     },
     latestCheckin: checkin ?? null,
     recipes,

@@ -31,6 +31,7 @@ export async function completeOnboarding(input: OnboardingInput) {
       nutrition_enabled: data.nutritionEnabled,
       nutrition_preferences: data.nutritionEnabled ? data.nutritionPreferences : [],
       disliked_foods: data.nutritionEnabled ? data.dislikedFoods : [],
+      food_allergies: data.nutritionEnabled ? data.foodAllergies : [],
       mental_wellbeing_enabled: data.mentalWellbeingEnabled ?? null,
       mental_wellbeing_categories: data.mentalWellbeingEnabled ? data.mentalWellbeingCategories : [],
       wellness_preference: data.wellnessPreference,

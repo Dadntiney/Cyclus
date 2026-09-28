@@ -4,7 +4,7 @@ import type { Tables } from "@/types/database"
 import { estimateCycle, type CycleEstimate } from "@/lib/cycle/estimate"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
-import { filterOutDislikedRecipes } from "@/lib/nutrition/dislikes"
+import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
 
 export type WeekPlanWorkout = Pick<
   Tables<"workouts">,
@@ -69,6 +69,7 @@ export interface BuildWeekPlanInput {
     | "nutrition_preferences"
     | "nutrition_style"
     | "disliked_foods"
+    | "food_allergies"
   >
   cycleProfile: CycleProfile | null
   workouts: Workout[]
@@ -91,10 +92,11 @@ function pickMeal(
   recipes: Recipe[],
   dietPrefs: string[],
   preferredCategories: string[],
+  allergies: string[],
   dislikedFoods: string[],
   seed: string,
 ): Recipe | null {
-  const availableRecipes = filterOutDislikedRecipes(recipes, dislikedFoods)
+  const availableRecipes = filterRecipesForNutritionPrefs(recipes, allergies, dislikedFoods)
 
   let candidates = availableRecipes.filter((r) => r.category.includes(MEAL_SLOT_CATEGORY[slot]))
   if (!candidates.length) candidates = availableRecipes
@@ -150,7 +152,10 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
     gentlerDayIndexes,
   })
 
-  const dietPrefs = (profile.nutrition_preferences ?? []).filter((p) => p !== "Geen voorkeur")
+  const dietPrefs = (profile.nutrition_preferences ?? []).filter(
+    (p) => p !== "Geen voorkeur" && p !== "Allergieën" && p !== "Dingen die ik niet lust",
+  )
+  const allergies = profile.food_allergies ?? []
   const dislikedFoods = profile.disliked_foods ?? []
 
   return program.map((day, i) => {
@@ -167,6 +172,7 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
         recipes,
         dietPrefs,
         phaseContent?.nutrition.recipeCategories ?? [],
+        allergies,
         dislikedFoods,
         `${seed}-${dateISO}-${slot}`,
       ),

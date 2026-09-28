@@ -46,6 +46,7 @@ interface FormData {
   nutritionStyle: string
   nutritionPreferences: string[]
   dislikedFoods: string[]
+  foodAllergies: string[]
   // Tri-state, unlike movement/nutrition: "misschien_later" is a genuine
   // third answer (not a decision-avoidance null), so it's tracked separately
   // from "unanswered" — see the completeOnboarding mapping in handleFinish.
@@ -121,6 +122,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
     nutritionStyle: "normaal",
     nutritionPreferences: [],
     dislikedFoods: [],
+    foodAllergies: [],
     mentalWellbeingChoice: null,
     mentalWellbeingCategories: [],
     hormonalMedicationStatus: "",
@@ -210,6 +212,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
           nutritionStyle: data.nutritionStyle as "normaal" | "koolhydraatarm",
           nutritionPreferences: data.nutritionPreferences,
           dislikedFoods: data.nutritionPreferences.includes("Dingen die ik niet lust") ? data.dislikedFoods : [],
+          foodAllergies: data.nutritionPreferences.includes("Allergieën") ? data.foodAllergies : [],
           // "misschien_later" and "unanswered" both map to null (never asked
           // her again automatically, distinct from an explicit "nee") — see
           // the migration comment in mental_wellbeing.sql.
@@ -325,6 +328,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
                 nutritionEnabled,
                 nutritionPreferences: nutritionEnabled ? d.nutritionPreferences : [],
                 dislikedFoods: nutritionEnabled ? d.dislikedFoods : [],
+                foodAllergies: nutritionEnabled ? d.foodAllergies : [],
               }))
             }
             yesLabel="Ja, graag"
@@ -348,6 +352,19 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
                 setData((d) => ({ ...d, nutritionPreferences: toggle(d.nutritionPreferences, v) }))
               }
             />
+            {data.nutritionPreferences.includes("Allergieën") && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-ink mb-2">Waarvoor ben je allergisch?</p>
+                <p className="text-xs text-ink-soft mb-2">
+                  We laten recepten met deze ingrediënten weg.
+                </p>
+                <TagListInput
+                  value={data.foodAllergies}
+                  onChange={(foodAllergies) => setData((d) => ({ ...d, foodAllergies }))}
+                  placeholder="Bijv. noten, gluten, lactose"
+                />
+              </div>
+            )}
             {data.nutritionPreferences.includes("Dingen die ik niet lust") && (
               <div className="mt-4">
                 <p className="text-sm font-medium text-ink mb-2">Welke gerechten of ingrediënten lust je niet?</p>

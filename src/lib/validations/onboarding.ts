@@ -15,6 +15,7 @@ export const onboardingSchema = z.object({
   nutritionEnabled: z.boolean(),
   nutritionPreferences: z.array(z.string()),
   dislikedFoods: z.array(z.string()).default([]),
+  foodAllergies: z.array(z.string()).default([]),
   // null = never asked, or she chose "misschien later" — distinct from an
   // explicit `false` ("nee"), see the mental_wellbeing migration comment.
   mentalWellbeingEnabled: z.boolean().nullable().optional(),

@@ -352,5 +352,11 @@ do $$ begin
   create policy "peri_assessments_delete_own" on public.peri_assessments for delete using (auth.uid() = user_id);
 exception when duplicate_object then null; end $$;
 
+-- =========================================================
+-- FOOD ALLERGIES (separate from disliked_foods)
+-- =========================================================
+alter table public.profiles
+  add column if not exists food_allergies text[] not null default '{}';
+
 -- Notify PostgREST to reload schema cache
 notify pgrst, 'reload schema';

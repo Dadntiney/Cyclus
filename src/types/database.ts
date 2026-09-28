@@ -614,6 +614,7 @@ export type Database = {
           created_at: string
           custom_symptoms: string[]
           disliked_foods: string[]
+          food_allergies: string[]
           goal_weight_kg: number | null
           goals: string[]
           health_conditions: string[]
@@ -655,6 +656,7 @@ export type Database = {
           buddy_styles?: string[]
           created_at?: string
           disliked_foods?: string[]
+          food_allergies?: string[]
           goal_weight_kg?: number | null
           goals?: string[]
           health_conditions?: string[]
@@ -694,6 +696,7 @@ export type Database = {
           created_at?: string
           custom_symptoms?: string[]
           disliked_foods?: string[]
+          food_allergies?: string[]
           goal_weight_kg?: number | null
           goals?: string[]
           health_conditions?: string[]

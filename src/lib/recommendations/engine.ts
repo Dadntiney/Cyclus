@@ -2,7 +2,7 @@ import type { Tables } from "@/types/database"
 import type { CycleEstimate } from "@/lib/cycle/estimate"
 import { TRAINING_PREFERENCE_TO_TYPE, symptomLabel } from "@/lib/constants"
 import { SHORT_NIGHT_MINUTES } from "@/lib/sleep/insights"
-import { filterOutDislikedRecipes } from "@/lib/nutrition/dislikes"
+import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
 
 /** The single strongest sleep/symptom correlation from her history (see
  * computeSleepSymptomInsights) — just enough to personalize today's
@@ -28,6 +28,7 @@ export interface RecommendationInput {
     | "nutrition_preferences"
     | "nutrition_style"
     | "disliked_foods"
+    | "food_allergies"
     | "health_conditions"
     | "movement_limitations"
     | "wellness_preference"
@@ -66,7 +67,7 @@ export interface NutritionRecommendation {
 }
 
 export interface NutritionPickInput {
-  profile: Pick<Profile, "nutrition_preferences" | "nutrition_style" | "disliked_foods">
+  profile: Pick<Profile, "nutrition_preferences" | "nutrition_style" | "disliked_foods" | "food_allergies">
   latestCheckin: Pick<Checkin, "need"> | null
   recipes: Recipe[]
   seed: string
@@ -238,7 +239,11 @@ export function pickTodaysRecipe(input: NutritionPickInput): NutritionRecommenda
   const nutritionPrefs = profile.nutrition_preferences ?? []
   const wantsLowCarb = profile.nutrition_style === "koolhydraatarm"
 
-  const availableRecipes = filterOutDislikedRecipes(recipes, profile.disliked_foods)
+  const availableRecipes = filterRecipesForNutritionPrefs(
+    recipes,
+    profile.food_allergies,
+    profile.disliked_foods,
+  )
 
   let candidateRecipes = nutritionPrefs.length
     ? availableRecipes.filter((r) => r.category.some((c) => nutritionPrefs.includes(c)))
