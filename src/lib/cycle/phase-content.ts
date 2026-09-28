@@ -153,7 +153,7 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
       focusText:
         "Voldoende eiwitten en magnesiumrijke voeding passen goed bij deze fase, samen met een wat rustiger trainingsvolume waar nodig.",
       exampleFoods: ["Pompoenpitten", "Zoete aardappel", "Zalm", "Spinazie", "Griekse yoghurt"],
-      recipeCategories: ["Diner", "Eiwitrijk", "Meal prep"],
+      recipeCategories: ["Diner", "Eiwitrijk", "Voorbereiden"],
       nutrients: ["Magnesium", "Eiwitten", "Vezels", "Vitamine B6"],
     },
     movement: {
