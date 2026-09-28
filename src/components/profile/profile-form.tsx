@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { Input, Label, Textarea } from "@/components/ui/input"
 import { Chip } from "@/components/ui/chip"
+import { TagListInput } from "@/components/ui/tag-list-input"
 import {
   GOAL_OPTIONS,
   TRAINING_OPTIONS,
@@ -50,6 +51,7 @@ interface FormState {
   trainingPreferences: string[]
   nutritionStyle: string
   nutritionPreferences: string[]
+  dislikedFoods: string[]
   trainingFrequency: number | null
   movementEnabled: boolean
   nutritionEnabled: boolean
@@ -100,6 +102,7 @@ export function ProfileForm({
     trainingPreferences: profile.training_preferences ?? [],
     nutritionStyle: profile.nutrition_style ?? "normaal",
     nutritionPreferences: profile.nutrition_preferences ?? [],
+    dislikedFoods: profile.disliked_foods ?? [],
     trainingFrequency: profile.training_frequency,
     movementEnabled: profile.movement_enabled,
     nutritionEnabled: profile.nutrition_enabled,
@@ -160,6 +163,8 @@ export function ProfileForm({
       nutritionEnabled: s.nutritionEnabled,
       nutritionStyle: s.nutritionStyle,
       nutritionPreferences: s.nutritionEnabled ? s.nutritionPreferences : [],
+      dislikedFoods:
+        s.nutritionEnabled && s.nutritionPreferences.includes("Dingen die ik niet lust") ? s.dislikedFoods : [],
       mentalWellbeingEnabled: s.mentalWellbeingEnabled,
       mentalWellbeingCategories: s.mentalWellbeingEnabled ? s.mentalWellbeingCategories : [],
       morningReminderEnabled: s.morningReminderEnabled,
@@ -554,6 +559,19 @@ export function ProfileForm({
                 </Chip>
               ))}
             </div>
+            {state.nutritionPreferences.includes("Dingen die ik niet lust") && (
+              <div className="mt-3">
+                <p className="text-xs text-ink-soft mb-2">
+                  Welke gerechten of ingrediënten lust je niet? We laten deze links liggen bij het
+                  kiezen van recepten.
+                </p>
+                <TagListInput
+                  value={state.dislikedFoods}
+                  onChange={(dislikedFoods) => applyUpdate((s) => ({ ...s, dislikedFoods }), "immediate")}
+                  placeholder="Bijv. paddenstoelen, spruitjes"
+                />
+              </div>
+            )}
           </>
         ) : (
           <p className="text-xs text-ink-soft mt-2">

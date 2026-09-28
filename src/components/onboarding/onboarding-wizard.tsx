@@ -6,6 +6,7 @@ import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input"
+import { TagListInput } from "@/components/ui/tag-list-input"
 import {
   GOAL_OPTIONS,
   TRAINING_OPTIONS,
@@ -44,6 +45,7 @@ interface FormData {
   nutritionEnabled: boolean | null
   nutritionStyle: string
   nutritionPreferences: string[]
+  dislikedFoods: string[]
   // Tri-state, unlike movement/nutrition: "misschien_later" is a genuine
   // third answer (not a decision-avoidance null), so it's tracked separately
   // from "unanswered" — see the completeOnboarding mapping in handleFinish.
@@ -118,6 +120,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
     nutritionEnabled: null,
     nutritionStyle: "normaal",
     nutritionPreferences: [],
+    dislikedFoods: [],
     mentalWellbeingChoice: null,
     mentalWellbeingCategories: [],
     hormonalMedicationStatus: "",
@@ -206,6 +209,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
           nutritionEnabled: data.nutritionEnabled ?? false,
           nutritionStyle: data.nutritionStyle as "normaal" | "koolhydraatarm",
           nutritionPreferences: data.nutritionPreferences,
+          dislikedFoods: data.nutritionPreferences.includes("Dingen die ik niet lust") ? data.dislikedFoods : [],
           // "misschien_later" and "unanswered" both map to null (never asked
           // her again automatically, distinct from an explicit "nee") — see
           // the migration comment in mental_wellbeing.sql.
@@ -316,7 +320,12 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             subtitle="Als voeding nu niet relevant voor je is, sla je dit gerust over. Ook dit pas je later altijd aan in je profiel."
             value={data.nutritionEnabled}
             onChange={(nutritionEnabled) =>
-              setData((d) => ({ ...d, nutritionEnabled, nutritionPreferences: nutritionEnabled ? d.nutritionPreferences : [] }))
+              setData((d) => ({
+                ...d,
+                nutritionEnabled,
+                nutritionPreferences: nutritionEnabled ? d.nutritionPreferences : [],
+                dislikedFoods: nutritionEnabled ? d.dislikedFoods : [],
+              }))
             }
             yesLabel="Ja, graag"
             noLabel="Nee, niet nodig"
@@ -329,15 +338,27 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
           />
         )}
         {stepId === "nutrition-preferences" && (
-          <MultiSelectStep
-            title="Heb je voedingsvoorkeuren?"
-            subtitle="Zo stellen we passende recepten voor."
-            options={NUTRITION_OPTIONS}
-            selected={data.nutritionPreferences}
-            onToggle={(v) =>
-              setData((d) => ({ ...d, nutritionPreferences: toggle(d.nutritionPreferences, v) }))
-            }
-          />
+          <div>
+            <MultiSelectStep
+              title="Heb je voedingsvoorkeuren?"
+              subtitle="Zo stellen we passende recepten voor."
+              options={NUTRITION_OPTIONS}
+              selected={data.nutritionPreferences}
+              onToggle={(v) =>
+                setData((d) => ({ ...d, nutritionPreferences: toggle(d.nutritionPreferences, v) }))
+              }
+            />
+            {data.nutritionPreferences.includes("Dingen die ik niet lust") && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-ink mb-2">Welke gerechten of ingrediënten lust je niet?</p>
+                <TagListInput
+                  value={data.dislikedFoods}
+                  onChange={(dislikedFoods) => setData((d) => ({ ...d, dislikedFoods }))}
+                  placeholder="Bijv. paddenstoelen, spruitjes"
+                />
+              </div>
+            )}
+          </div>
         )}
         {stepId === "wellbeing-toggle" && (
           <MentalWellbeingToggleStep

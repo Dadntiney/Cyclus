@@ -3,6 +3,7 @@ import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { buildWeekPlan, type WeekPlanRecipe, type MealSlot } from "@/lib/recommendations/week-plan"
 import { buildGroceryList } from "@/lib/nutrition/grocery-list"
+import { filterOutDislikedRecipes } from "@/lib/nutrition/dislikes"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
 import { WeekView } from "@/components/week/week-view"
 
@@ -55,10 +56,13 @@ export default async function DezeWeekPage() {
     seed: user.id,
   })
 
+  // Same dislikes filter as buildWeekPlan's own pick, so "Vervangen" never
+  // offers an alternative she already told us she doesn't like.
+  const availableRecipes = filterOutDislikedRecipes(recipes ?? [], profile.disliked_foods)
   const recipePoolBySlot: Record<MealSlot, WeekPlanRecipe[]> = {
-    ontbijt: (recipes ?? []).filter((r) => r.category.includes("Ontbijt")),
-    lunch: (recipes ?? []).filter((r) => r.category.includes("Lunch")),
-    diner: (recipes ?? []).filter((r) => r.category.includes("Diner")),
+    ontbijt: availableRecipes.filter((r) => r.category.includes("Ontbijt")),
+    lunch: availableRecipes.filter((r) => r.category.includes("Lunch")),
+    diner: availableRecipes.filter((r) => r.category.includes("Diner")),
   }
 
   const weekIngredients = days.flatMap((d) => d.meals.map((m) => m.recipe?.ingredients).filter(Boolean))

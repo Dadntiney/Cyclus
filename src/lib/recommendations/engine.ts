@@ -2,6 +2,7 @@ import type { Tables } from "@/types/database"
 import type { CycleEstimate } from "@/lib/cycle/estimate"
 import { TRAINING_PREFERENCE_TO_TYPE, symptomLabel } from "@/lib/constants"
 import { SHORT_NIGHT_MINUTES } from "@/lib/sleep/insights"
+import { filterOutDislikedRecipes } from "@/lib/nutrition/dislikes"
 
 /** The single strongest sleep/symptom correlation from her history (see
  * computeSleepSymptomInsights) — just enough to personalize today's
@@ -13,7 +14,7 @@ export interface PersonalSleepPattern {
 type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty" | "image_url">
 type Recipe = Pick<
   Tables<"recipes">,
-  "id" | "title" | "category" | "preparation_time" | "nutrition_information" | "image_url"
+  "id" | "title" | "category" | "preparation_time" | "nutrition_information" | "image_url" | "ingredients"
 >
 type Profile = Tables<"profiles">
 type Checkin = Tables<"daily_checkins">
@@ -26,6 +27,7 @@ export interface RecommendationInput {
     | "training_preferences"
     | "nutrition_preferences"
     | "nutrition_style"
+    | "disliked_foods"
     | "health_conditions"
     | "movement_limitations"
     | "wellness_preference"
@@ -63,7 +65,7 @@ export interface NutritionRecommendation {
 }
 
 export interface NutritionPickInput {
-  profile: Pick<Profile, "nutrition_preferences" | "nutrition_style">
+  profile: Pick<Profile, "nutrition_preferences" | "nutrition_style" | "disliked_foods">
   latestCheckin: Pick<Checkin, "need"> | null
   recipes: Recipe[]
   seed: string
@@ -232,11 +234,13 @@ export function pickTodaysRecipe(input: NutritionPickInput): NutritionRecommenda
   const nutritionPrefs = profile.nutrition_preferences ?? []
   const wantsLowCarb = profile.nutrition_style === "koolhydraatarm"
 
-  let candidateRecipes = nutritionPrefs.length
-    ? recipes.filter((r) => r.category.some((c) => nutritionPrefs.includes(c)))
-    : recipes
+  const availableRecipes = filterOutDislikedRecipes(recipes, profile.disliked_foods)
 
-  if (!candidateRecipes.length) candidateRecipes = recipes
+  let candidateRecipes = nutritionPrefs.length
+    ? availableRecipes.filter((r) => r.category.some((c) => nutritionPrefs.includes(c)))
+    : availableRecipes
+
+  if (!candidateRecipes.length) candidateRecipes = availableRecipes
 
   let reason: string
   if (wantsQuickMeal) {

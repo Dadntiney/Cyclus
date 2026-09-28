@@ -40,7 +40,7 @@ export async function getVandaagData(userId: string) {
     supabase.from("workouts").select("id, title, type, duration, difficulty, image_url"),
     supabase
       .from("recipes")
-      .select("id, title, category, preparation_time, nutrition_information, image_url"),
+      .select("id, title, category, preparation_time, nutrition_information, image_url, ingredients"),
     supabase
       .from("daily_checkins")
       .select("date")

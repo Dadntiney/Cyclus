@@ -4,6 +4,7 @@ import type { Tables } from "@/types/database"
 import { estimateCycle, type CycleEstimate } from "@/lib/cycle/estimate"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
+import { filterOutDislikedRecipes } from "@/lib/nutrition/dislikes"
 
 export type WeekPlanWorkout = Pick<
   Tables<"workouts">,
@@ -67,6 +68,7 @@ export interface BuildWeekPlanInput {
     | "training_preferences"
     | "nutrition_preferences"
     | "nutrition_style"
+    | "disliked_foods"
   >
   cycleProfile: CycleProfile | null
   workouts: Workout[]
@@ -89,10 +91,13 @@ function pickMeal(
   recipes: Recipe[],
   dietPrefs: string[],
   preferredCategories: string[],
+  dislikedFoods: string[],
   seed: string,
 ): Recipe | null {
-  let candidates = recipes.filter((r) => r.category.includes(MEAL_SLOT_CATEGORY[slot]))
-  if (!candidates.length) candidates = recipes
+  const availableRecipes = filterOutDislikedRecipes(recipes, dislikedFoods)
+
+  let candidates = availableRecipes.filter((r) => r.category.includes(MEAL_SLOT_CATEGORY[slot]))
+  if (!candidates.length) candidates = availableRecipes
 
   if (dietPrefs.length) {
     const dietMatch = candidates.filter((r) => r.category.some((c) => dietPrefs.includes(c)))
@@ -146,6 +151,7 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
   })
 
   const dietPrefs = (profile.nutrition_preferences ?? []).filter((p) => p !== "Geen voorkeur")
+  const dislikedFoods = profile.disliked_foods ?? []
 
   return program.map((day, i) => {
     const date = addDays(weekStart, i)
@@ -161,6 +167,7 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
         recipes,
         dietPrefs,
         phaseContent?.nutrition.recipeCategories ?? [],
+        dislikedFoods,
         `${seed}-${dateISO}-${slot}`,
       ),
     }))

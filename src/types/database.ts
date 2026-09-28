@@ -576,6 +576,7 @@ export type Database = {
           buddy_message_frequency: string | null
           buddy_styles: string[]
           created_at: string
+          disliked_foods: string[]
           goal_weight_kg: number | null
           goals: string[]
           health_conditions: string[]
@@ -613,6 +614,7 @@ export type Database = {
           buddy_message_frequency?: string | null
           buddy_styles?: string[]
           created_at?: string
+          disliked_foods?: string[]
           goal_weight_kg?: number | null
           goals?: string[]
           health_conditions?: string[]
@@ -650,6 +652,7 @@ export type Database = {
           buddy_message_frequency?: string | null
           buddy_styles?: string[]
           created_at?: string
+          disliked_foods?: string[]
           goal_weight_kg?: number | null
           goals?: string[]
           health_conditions?: string[]

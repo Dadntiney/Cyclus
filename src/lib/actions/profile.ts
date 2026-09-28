@@ -19,6 +19,7 @@ export interface UpdateProfileInput {
   nutritionEnabled: boolean
   nutritionStyle: string
   nutritionPreferences: string[]
+  dislikedFoods: string[]
   mentalWellbeingEnabled: boolean
   mentalWellbeingCategories: string[]
   morningReminderEnabled: boolean
@@ -65,6 +66,7 @@ export async function updateProfile(input: UpdateProfileInput) {
       nutrition_enabled: input.nutritionEnabled,
       nutrition_style: input.nutritionStyle,
       nutrition_preferences: input.nutritionPreferences,
+      disliked_foods: input.dislikedFoods,
       mental_wellbeing_enabled: input.mentalWellbeingEnabled,
       mental_wellbeing_categories: input.mentalWellbeingCategories,
       morning_reminder_enabled: input.morningReminderEnabled,

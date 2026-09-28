@@ -52,6 +52,9 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
   } else if (profile?.nutrition_preferences?.length) {
     lines.push(`Voedingsvoorkeuren: ${profile.nutrition_preferences.join(", ")}`)
   }
+  if (profile?.nutrition_enabled !== false && profile?.disliked_foods?.length) {
+    lines.push(`Lust niet: ${profile.disliked_foods.join(", ")} — stel dit niet voor.`)
+  }
   if (profile?.wellness_preference) lines.push(`Voedings-/bewegingsstijl: ${profile.wellness_preference}`)
   if (profile?.buddy_styles?.length) lines.push(`Buddy-stijl (toon-voorkeur): ${profile.buddy_styles.join(", ")}`)
 
