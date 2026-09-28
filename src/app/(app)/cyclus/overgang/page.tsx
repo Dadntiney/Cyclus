@@ -37,7 +37,7 @@ export default async function OvergangPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <BackButton href="/cyclus" label="Mijn cyclus" />
+      <BackButton href="/cyclus" label="Cyclus" />
 
       <div className="rounded-3xl p-5 lg:p-6 mb-6 bg-info-soft">
         <p className="text-xs font-semibold uppercase tracking-wide text-info">Cyclus & ouder worden</p>
@@ -50,7 +50,7 @@ export default async function OvergangPage() {
           href="/cyclus/klachtenlast"
           className="rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation"
         >
-          <span className="block text-sm font-medium text-ink">Klachtenlast-score</span>
+          <span className="block text-sm font-medium text-ink">Klachtenlast</span>
           <span className="block text-xs text-ink-soft mt-0.5">
             Maandelijkse check (0–100) om te zien of klachten veranderen.
           </span>
@@ -59,7 +59,7 @@ export default async function OvergangPage() {
           href="/cyclus/samenvatting"
           className="rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation"
         >
-          <span className="block text-sm font-medium text-ink">Samenvatting voor je arts</span>
+          <span className="block text-sm font-medium text-ink">Voor je arts</span>
           <span className="block text-xs text-ink-soft mt-0.5">
             Print of download een overzicht voor je afspraak.
           </span>

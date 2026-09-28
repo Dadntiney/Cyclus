@@ -16,6 +16,7 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
   return (
     <nav
       ref={ref}
+      aria-label="Hoofdnavigatie"
       className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-line safe-bottom safe-x"
     >
       <ul className="flex items-stretch justify-between px-2">

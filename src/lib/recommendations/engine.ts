@@ -33,6 +33,7 @@ export interface RecommendationInput {
     | "wellness_preference"
     | "movement_enabled"
     | "nutrition_enabled"
+    | "mental_wellbeing_enabled"
   >
   cycleEstimate: CycleEstimate | null
   latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms" | "need"> | null
@@ -75,6 +76,9 @@ export interface RecoveryRecommendation {
   title: string
   duration: number
   description: string
+  /** Deep link when Mentale rust is enabled — keeps the card actionable. */
+  href?: string
+  ctaLabel?: string
 }
 
 export interface Recommendation {
@@ -293,22 +297,33 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     ? pickTodaysRecipe({ profile, latestCheckin, recipes, seed })
     : { recipe: null, reason: "" }
 
+  const mentalEnabled = profile.mental_wellbeing_enabled === true
+  const recoveryCta = mentalEnabled
+    ? { href: "/mentale-rust", ctaLabel: "Open mentale rust" as const }
+    : {}
+
   const recovery: RecoveryRecommendation = wantsSelfCare
     ? {
         title: "Tijd voor jezelf",
         duration: 15,
-        description: "Je gaf aan dat je daar vandaag behoefte aan hebt. Neem een moment zonder schuldgevoel — een bad, een boek, of gewoon niets.",
+        description:
+          "Je gaf aan dat je daar vandaag behoefte aan hebt. Neem een moment zonder schuldgevoel — een bad, een boek, of gewoon niets.",
+        ...recoveryCta,
       }
     : lowerIntensity
       ? {
           title: "Zachte mobiliteit",
           duration: 10,
-          description: "Neem vandaag de tijd voor rustige mobiliteit en ademhaling. Luister naar wat je lichaam nodig heeft.",
+          description:
+            "Neem vandaag de tijd voor rustige mobiliteit en ademhaling. Luister naar wat je lichaam nodig heeft.",
+          ...recoveryCta,
         }
       : {
           title: "Korte ontspanning",
           duration: 10,
-          description: "Een paar minuten bewust ontspannen helpt je lichaam herstellen, ook op een goede dag.",
+          description:
+            "Een paar minuten bewust ontspannen helpt je lichaam herstellen, ook op een goede dag.",
+          ...recoveryCta,
         }
 
   const namePart = profile.name ? `, ${profile.name}` : ""

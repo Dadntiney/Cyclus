@@ -159,7 +159,7 @@ export function RemindersSection({
   const showForm = adding || editingId !== null
 
   return (
-    <Card>
+    <Card id="herinneringen">
       <div className="flex items-center justify-between mb-1">
         <p className="text-sm font-medium text-ink inline-flex items-center gap-1.5">
           <Bell className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
@@ -169,7 +169,7 @@ export function RemindersSection({
           <button
             type="button"
             onClick={startAdd}
-            className="inline-flex items-center gap-1 text-xs font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
+            className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2} />
             Toevoegen
@@ -219,7 +219,7 @@ export function RemindersSection({
                     type="button"
                     onClick={() => setConfirmDeleteId(reminder.id)}
                     disabled={isPending}
-                    className="shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                    className="shrink-0 h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                     aria-label="Herinnering verwijderen"
                   >
                     <Trash2 className="h-4 w-4" strokeWidth={1.75} />
@@ -268,7 +268,7 @@ export function RemindersSection({
             <button
               type="button"
               onClick={cancelForm}
-              className="h-7 w-7 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              className="h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               aria-label="Sluiten"
             >
               <X className="h-4 w-4" />

@@ -1,7 +1,6 @@
-import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { PeriScoreForm } from "@/components/cycle/peri-score-form"
+import { BackButton } from "@/components/ui/back-button"
 
 export default async function KlachtenlastPage() {
   const supabase = await createClient()
@@ -21,13 +20,7 @@ export default async function KlachtenlastPage() {
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-5">
       <div>
-        <Link
-          href="/cyclus/overgang"
-          className="inline-flex items-center gap-1 text-sm font-medium text-sage-dark touch-manipulation mb-3"
-        >
-          <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
-          Terug naar overgang
-        </Link>
+        <BackButton href="/cyclus" label="Cyclus" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Klachtenlast</h1>
         <p className="text-sm text-ink-soft mt-1">
           Maandelijkse check om te zien of klachten toe- of afnemen.

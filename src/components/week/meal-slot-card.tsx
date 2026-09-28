@@ -105,30 +105,30 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
       )}
 
       {mode === "idle" && !skipped && (
-        <div className="flex gap-3 mt-2.5">
+        <div className="flex flex-wrap gap-1 mt-2">
           {alternatives.length > 0 && (
             <button
               type="button"
               onClick={() => setMode("swap")}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+              className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
             >
-              <Repeat className="h-3 w-3" strokeWidth={1.75} />
+              <Repeat className="h-3.5 w-3.5" strokeWidth={1.75} />
               Vervangen
             </button>
           )}
           <button
             type="button"
             onClick={() => setMode("custom")}
-            className="text-[11px] font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+            className="inline-flex items-center min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
           >
             Eigen maaltijd
           </button>
           <button
             type="button"
             onClick={() => onOverride({ type: "skip-meal", slot })}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+            className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
           >
-            <X className="h-3 w-3" strokeWidth={1.75} />
+            <X className="h-3.5 w-3.5" strokeWidth={1.75} />
             Overslaan
           </button>
         </div>

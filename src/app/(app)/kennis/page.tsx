@@ -19,7 +19,7 @@ export default async function KennisPage() {
 
   return (
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
-      <BackButton href="/vandaag" label="Vandaag" />
+      <BackButton href="/voor-jou" label="Voor jou" />
       <div>
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Kennis</h1>
         <p className="text-sm text-ink-soft mt-1">
@@ -42,7 +42,7 @@ export default async function KennisPage() {
         {articles.length === 0 && (
           <Card>
             <p className="text-sm text-ink-soft">
-              Kennisartikelen verschijnen hier zodra de database-migratie is toegepast.
+              Nog geen artikelen beschikbaar. Kijk later nog eens terug.
             </p>
           </Card>
         )}

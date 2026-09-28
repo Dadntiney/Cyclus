@@ -66,6 +66,14 @@ export function TodayCards({ recommendation }: { recommendation: Recommendation 
           <p className="font-display text-lg text-ink">{recovery.title}</p>
           <p className="text-sm text-ink-soft mt-0.5">{recovery.duration} minuten</p>
           <p className="text-sm text-ink-soft mt-1.5">{recovery.description}</p>
+          {recovery.href && recovery.ctaLabel && (
+            <Link
+              href={recovery.href}
+              className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
+            >
+              {recovery.ctaLabel}
+            </Link>
+          )}
         </div>
       </div>
     </div>

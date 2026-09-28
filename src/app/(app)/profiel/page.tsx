@@ -2,6 +2,7 @@ import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfileOverview } from "@/lib/data/profile"
 import { getReminders } from "@/lib/data/reminders"
 import { ProfileHero } from "@/components/profile/profile-hero"
+import { ProfileJumpNav } from "@/components/profile/profile-jump-nav"
 import { ThemeSection } from "@/components/profile/theme-section"
 import { ProfileForm } from "@/components/profile/profile-form"
 import type { ThemePreference } from "@/lib/actions/profile"
@@ -37,6 +38,8 @@ export default async function ProfielPage() {
         avatarUrl={profile.avatar_url}
         memberSince={stats.memberSince}
       />
+
+      <ProfileJumpNav />
 
       <ThemeSection initial={themePreference} />
 

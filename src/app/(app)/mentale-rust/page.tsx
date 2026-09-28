@@ -25,7 +25,7 @@ export default async function MentaleRustPage() {
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Mijn mentale rust</h1>
-        <p className="text-sm text-ink-soft mb-6">Korte meditaties, mindfulness en affirmaties.</p>
+        <p className="text-sm text-ink-soft mb-6">Korte oefeningen en affirmaties voor meer rust.</p>
         <Card className="text-center py-8">
           <Brain className="h-8 w-8 mx-auto mb-3 text-sage-dark" strokeWidth={1.5} />
           <p className="font-display text-lg text-ink mb-2">Mentale rust staat nu uit</p>
@@ -67,7 +67,7 @@ export default async function MentaleRustPage() {
       <div>
         <BackButton href="/voor-jou" label="Voor jou" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Mijn mentale rust</h1>
-        <p className="text-sm text-ink-soft mt-1">Korte meditaties, mindfulness-oefeningen en affirmaties.</p>
+        <p className="text-sm text-ink-soft mt-1">Korte oefeningen en affirmaties voor meer rust.</p>
       </div>
 
       {suggestion && (

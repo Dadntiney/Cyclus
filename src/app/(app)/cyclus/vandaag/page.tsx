@@ -42,7 +42,7 @@ export default async function CyclusdagPage() {
       .order("date", { ascending: true }),
   ])
 
-  const backLink = <BackButton href="/cyclus" label="Mijn cyclus" />
+  const backLink = <BackButton href="/cyclus" label="Cyclus" />
 
   if (!cycleProfile?.has_cycle) {
     return (

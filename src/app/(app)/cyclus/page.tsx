@@ -431,7 +431,7 @@ export default async function CyclusPage() {
             <span className="min-w-0">
               <span className="block text-sm font-medium text-ink inline-flex items-center gap-1.5">
                 <ClipboardList className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-                Klachtenlast-score
+                Klachtenlast
               </span>
               <span className="block text-xs text-ink-soft mt-0.5">
                 {periLatest?.score != null
@@ -457,21 +457,6 @@ export default async function CyclusPage() {
             </span>
             <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
           </Link>
-
-          {!postCycleMode && cycleEstimate && (
-            <Link
-              href="/cyclus/vandaag"
-              className="flex items-center justify-between rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation"
-            >
-              <span className="min-w-0">
-                <span className="block text-sm font-medium text-ink">Cyclusdag — wat speelt er nu?</span>
-                <span className="block text-xs text-ink-soft mt-0.5">
-                  Uitleg over je huidige fase in je lichaam.
-                </span>
-              </span>
-              <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
-            </Link>
-          )}
         </div>
       </section>
     </div>

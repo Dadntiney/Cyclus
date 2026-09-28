@@ -1,43 +1,22 @@
 import Link from "next/link"
 import { Salad } from "lucide-react"
-import { startOfWeek, subDays } from "date-fns"
-import { createClient, getAuthedUser } from "@/lib/supabase/server"
-import { getProfile } from "@/lib/data/profile"
-import { buildWeekPlan, type WeekPlanRecipe } from "@/lib/recommendations/week-plan"
+import { getAuthedUser } from "@/lib/supabase/server"
+import { loadWeekPlanContext } from "@/lib/data/week-plan-context"
 import { buildGroceryList } from "@/lib/nutrition/grocery-list"
-import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
+import type { WeekPlanRecipe } from "@/lib/recommendations/week-plan"
 import { GroceryList } from "@/components/week/grocery-list"
 import { Card } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
 
-const RECIPE_COLUMNS = "id, title, category, preparation_time, ingredients, nutrition_information, image_url"
-
 export default async function BoodschappenPage() {
-  const supabase = await createClient()
   const user = await getAuthedUser()
   if (!user) return null
 
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
-  const sixMonthsAgo = subDays(new Date(), 200).toISOString().slice(0, 10)
+  const ctx = await loadWeekPlanContext(user.id)
+  if (!ctx) return null
 
-  const [profile, { data: cycleProfile }, { data: workouts }, { data: recipes }, { data: cycleLogs }] =
-    await Promise.all([
-      getProfile(user.id),
-      supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
-      supabase.from("workouts").select("id, title, type, duration, difficulty, image_url"),
-      supabase.from("recipes").select(RECIPE_COLUMNS),
-      supabase
-        .from("cycle_logs")
-        .select("date, menstruation, symptoms")
-        .eq("user_id", user.id)
-        .gte("date", sixMonthsAgo)
-        .order("date", { ascending: true }),
-    ])
-
-  if (!profile) return null
-
-  if (!profile.nutrition_enabled) {
+  if (!ctx.profile.nutrition_enabled) {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         <BackButton href="/deze-week" label="Deze week" />
@@ -55,33 +34,11 @@ export default async function BoodschappenPage() {
     )
   }
 
-  const today = new Date().toISOString().slice(0, 10)
-  const cycleHistory = computeCycleHistory(
-    withActivePeriod(
-      (cycleLogs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
-      cycleProfile?.active_period_start ?? null,
-      today,
-    ),
-  )
-  const effectiveCycleProfile = cycleProfile
-    ? { ...cycleProfile, last_period_start: getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory) }
-    : null
-
-  const days = buildWeekPlan({
-    weekStart,
-    today: new Date(),
-    profile,
-    cycleProfile: effectiveCycleProfile,
-    workouts: workouts ?? [],
-    recipes: recipes ?? [],
-    seed: user.id,
-  })
-
-  const weekIngredients = days.flatMap((d) => d.meals.map((m) => m.recipe?.ingredients).filter(Boolean))
+  const weekIngredients = ctx.days.flatMap((d) => d.meals.map((m) => m.recipe?.ingredients).filter(Boolean))
   const baseCategories = buildGroceryList(weekIngredients)
 
   const recipesById: Record<string, WeekPlanRecipe> = Object.fromEntries(
-    (recipes ?? []).map((r) => [r.id, r]),
+    ctx.recipes.map((r) => [r.id, r]),
   )
 
   return (
@@ -96,9 +53,9 @@ export default async function BoodschappenPage() {
 
       <GroceryList
         userId={user.id}
-        weekStartISO={weekStart.toISOString().slice(0, 10)}
+        weekStartISO={ctx.weekStartISO}
         baseCategories={baseCategories}
-        days={days}
+        days={ctx.days}
         recipesById={recipesById}
       />
     </div>

@@ -23,7 +23,7 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
         Cyclus
       </Link>
 
-      <nav className="flex-1">
+      <nav className="flex-1" aria-label="Hoofdnavigatie">
         <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(`${href}/`)

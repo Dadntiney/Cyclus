@@ -8,9 +8,6 @@ import {
   Moon,
   BookOpen,
   NotebookPen,
-  Stethoscope,
-  ClipboardList,
-  Sunset,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
@@ -41,7 +38,7 @@ const ENABLED_MODULES: Record<string, ModuleTile> = {
     href: "/mentale-rust",
     icon: Brain,
     title: "Mentale rust",
-    description: "Korte meditaties, mindfulness en affirmaties.",
+    description: "Korte oefeningen en affirmaties voor meer rust.",
   },
   sleep_tracking_enabled: {
     href: "/slaap",
@@ -82,12 +79,30 @@ export default async function VoorJouPage() {
   const enabledKeys = Object.keys(ENABLED_MODULES).filter((k) => flags[k])
   const disabledKeys = Object.keys(ENABLED_MODULES).filter((k) => !flags[k])
 
+  const favoriteTiles: ModuleTile[] = []
+  if (flags.nutrition_enabled) {
+    favoriteTiles.push({
+      href: "/voeding/favorieten",
+      icon: Heart,
+      title: "Favoriete recepten",
+      description: "Recepten die je hebt bewaard.",
+    })
+  }
+  if (flags.movement_enabled) {
+    favoriteTiles.push({
+      href: "/training/favorieten",
+      icon: Heart,
+      title: "Favoriete oefeningen",
+      description: "Oefeningen die je hebt bewaard.",
+    })
+  }
+
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
       <div>
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Voor jou</h1>
         <p className="text-sm text-ink-soft mt-1">
-          Al je ondersteuning bij elkaar — helemaal aan te passen aan wat jij nu nodig hebt.
+          Beweging, voeding, rust en slaap — wat jij hebt aangezet.
         </p>
       </div>
 
@@ -111,18 +126,20 @@ export default async function VoorJouPage() {
             )
           })}
 
-          <Link href="/voeding/favorieten">
-            <Card interactive className="flex items-center justify-between gap-4 touch-manipulation">
-              <div className="min-w-0">
-                <p className="text-base font-medium text-ink inline-flex items-center gap-1.5">
-                  <Heart className="h-4 w-4 text-peach" strokeWidth={1.75} />
-                  Favorieten
-                </p>
-                <p className="text-sm text-ink-soft mt-0.5">Je opgeslagen recepten.</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
-            </Card>
-          </Link>
+          {favoriteTiles.map((tile) => (
+            <Link key={tile.href} href={tile.href}>
+              <Card interactive className="flex items-center justify-between gap-4 touch-manipulation">
+                <div className="min-w-0">
+                  <p className="text-base font-medium text-ink inline-flex items-center gap-1.5">
+                    <tile.icon className="h-4 w-4 text-peach" strokeWidth={1.75} aria-hidden />
+                    {tile.title}
+                  </p>
+                  <p className="text-sm text-ink-soft mt-0.5">{tile.description}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
+              </Card>
+            </Link>
+          ))}
         </div>
       )}
 
@@ -143,24 +160,6 @@ export default async function VoorJouPage() {
                 title: "Dagboek",
                 description: "Schrijf van je af — alleen jij ziet dit.",
               },
-              {
-                href: "/cyclus/samenvatting",
-                icon: Stethoscope,
-                title: "Voor je arts",
-                description: "Samenvatting van je check-ins om mee te nemen.",
-              },
-              {
-                href: "/cyclus/klachtenlast",
-                icon: ClipboardList,
-                title: "Klachtenlast",
-                description: "Maandelijkse score om te zien of klachten veranderen.",
-              },
-              {
-                href: "/cyclus/overgang",
-                icon: Sunset,
-                title: "Overgang",
-                description: "Uitleg en tools voor een veranderende cyclus.",
-              },
             ] as const
           ).map((tile) => (
             <Link key={tile.href} href={tile.href}>
@@ -177,6 +176,9 @@ export default async function VoorJouPage() {
             </Link>
           ))}
         </div>
+        <p className="text-xs text-ink-soft mt-3">
+          Cyclus-tools zoals je arts-samenvatting en klachtenlast vind je onder Cyclus.
+        </p>
       </div>
 
       {disabledKeys.length > 0 && (
@@ -188,7 +190,7 @@ export default async function VoorJouPage() {
                 <p className="text-sm text-ink-soft">{DISABLED_HINTS[key]}</p>
                 <Link
                   href={DISABLED_PROFILE_ANCHORS[key]}
-                  className="text-xs font-medium text-sage-dark shrink-0 touch-manipulation"
+                  className="text-xs font-medium text-sage-dark shrink-0 touch-manipulation min-h-11 inline-flex items-center"
                 >
                   Zet aan
                 </Link>
