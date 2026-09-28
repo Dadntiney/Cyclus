@@ -44,7 +44,7 @@ export default async function SlaapPage() {
             title="Slaap bijhouden staat nu uit"
             description="Je ziet hierdoor nergens slaapvragen of slaapkaarten. Wil je dit toch gebruiken?"
             action={
-              <Link href="/profiel#slaap" className={buttonVariants()}>
+              <Link href="/profiel#slaap" className={buttonVariants({ variant: "secondary" })}>
                 Zet aan in mijn profiel
               </Link>
             }

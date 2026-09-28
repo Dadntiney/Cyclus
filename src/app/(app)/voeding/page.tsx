@@ -37,7 +37,7 @@ export default async function VoedingPage() {
             title="Voeding staat nu uit"
             description="Je ziet hierdoor nergens voedingsadvies. Wil je dit toch weer gebruiken?"
             action={
-              <Link href="/profiel#voeding" className={buttonVariants()}>
+              <Link href="/profiel#voeding" className={buttonVariants({ variant: "secondary" })}>
                 Zet aan in mijn profiel
               </Link>
             }
@@ -91,7 +91,10 @@ export default async function VoedingPage() {
             <div className="min-w-0">
               <p className="font-display text-xl text-ink leading-snug">{todaysPick.recipe.title}</p>
               <p className="text-base text-ink-soft mt-2">{todaysPick.reason}</p>
-              <Link href={`/voeding/${todaysPick.recipe.id}`} className={cn(buttonVariants(), "mt-3")}>
+              <Link
+                href={`/voeding/${todaysPick.recipe.id}`}
+                className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
+              >
                 Bekijk recept
               </Link>
             </div>

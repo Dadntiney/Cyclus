@@ -305,7 +305,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
 
   const mentalEnabled = profile.mental_wellbeing_enabled === true
   const recoveryCta = mentalEnabled
-    ? { href: "/mentale-rust", ctaLabel: "Open mentale rust" as const }
+    ? { href: "/mentale-rust", ctaLabel: "Naar mentale rust" as const }
     : {}
 
   const recovery: RecoveryRecommendation = wantsSelfCare

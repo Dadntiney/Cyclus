@@ -43,8 +43,11 @@ export function DoctorSummaryView({
             <Button
               key={w}
               type="button"
-              variant={weeks === w ? "primary" : "secondary"}
+              size="sm"
+              variant={weeks === w ? "secondary" : "ghost"}
               onClick={() => onWeeksChange(w)}
+              aria-pressed={weeks === w}
+              className={weeks === w ? "border-sage/50 bg-sage-soft text-sage-dark" : undefined}
             >
               {w === 24 ? "6 mnd" : `${w} weken`}
             </Button>

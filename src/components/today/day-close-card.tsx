@@ -171,7 +171,7 @@ export function DayCloseCard({
       <button
         type="button"
         onClick={markClosed}
-        className="text-sm font-medium text-sage-dark min-h-11 touch-manipulation"
+        className="w-full inline-flex items-center justify-center min-h-11 rounded-xl border border-line/70 bg-cream-soft/60 text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
       >
         Markeer als afgerond
       </button>

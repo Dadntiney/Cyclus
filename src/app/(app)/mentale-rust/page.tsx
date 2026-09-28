@@ -33,7 +33,7 @@ export default async function MentaleRustPage() {
             title="Mentale rust staat nu uit"
             description="Je ziet hierdoor nergens meditaties, mindfulness of affirmaties. Wil je dit toch gebruiken?"
             action={
-              <Link href="/profiel#mentale-rust" className={buttonVariants()}>
+              <Link href="/profiel#mentale-rust" className={buttonVariants({ variant: "secondary" })}>
                 Zet aan in mijn profiel
               </Link>
             }

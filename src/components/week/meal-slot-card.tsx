@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { ChefHat, Repeat, X, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
 import type { WeekPlanRecipe } from "@/lib/recommendations/week-plan"
 import type { DayOverride, MealSlotKey } from "@/lib/client/week-plan-storage"
@@ -177,24 +178,24 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
             placeholder="Bijv. Eigen salade met kip"
             className="w-full rounded-xl border border-line px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:outline-none focus:ring-2 focus:ring-sage/50"
           />
-          <div className="flex gap-2">
-            <button
+          <div className="flex items-center gap-2">
+            <Button
               type="button"
+              size="sm"
               disabled={!customText.trim()}
               onClick={() => {
                 if (!customText.trim()) return
                 onOverride({ type: "custom-meal", slot, text: customText.trim() })
                 reset()
               }}
-              className="inline-flex items-center gap-1 text-xs font-medium text-white bg-sage-fill rounded-full px-3 py-1.5 disabled:opacity-40 touch-manipulation"
             >
-              <Check className="h-3 w-3" />
+              <Check className="h-3.5 w-3.5" strokeWidth={2} />
               Opslaan
-            </button>
+            </Button>
             <button
               type="button"
               onClick={reset}
-              className="text-xs font-medium text-ink-soft touch-manipulation"
+              className="text-sm font-medium text-ink-soft min-h-11 px-2 touch-manipulation"
             >
               Annuleren
             </button>

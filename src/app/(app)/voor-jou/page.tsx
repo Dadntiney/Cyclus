@@ -156,7 +156,7 @@ export default async function VoorJouPage() {
                     <p className="text-xs text-ink-soft mt-0.5">{workout.duration} minuten</p>
                     <Link
                       href={`/training/${workout.id}`}
-                      className={cn(buttonVariants({ size: "sm" }), "mt-2.5")}
+                      className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "mt-2.5")}
                     >
                       Start training
                     </Link>
@@ -178,7 +178,7 @@ export default async function VoorJouPage() {
                     <p className="text-sm font-medium text-ink">{recipe.title}</p>
                     <Link
                       href={`/voeding/${recipe.id}`}
-                      className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "mt-2.5")}
+                      className="mt-2.5 inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
                     >
                       Bekijk recept
                     </Link>

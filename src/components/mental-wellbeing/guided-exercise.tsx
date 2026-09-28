@@ -67,11 +67,15 @@ export function GuidedExercise({ exercise }: { exercise: MindfulExercise }) {
         <p className="font-display text-xl text-ink mb-2">Klaar</p>
         <p className="text-sm text-ink-soft mb-1 max-w-sm mx-auto">{exercise.closing}</p>
         <p className="text-xs text-ink-soft mb-5">Je nam {formatElapsed(elapsed)} minuten voor jezelf.</p>
-        <div className="flex gap-2 justify-center">
-          <Button variant="secondary" onClick={reset}>
-            Nog een keer
-          </Button>
-          <Button onClick={() => router.push("/mentale-rust")}>Terug naar overzicht</Button>
+        <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+          <Button onClick={reset}>Nog een keer</Button>
+          <button
+            type="button"
+            onClick={() => router.push("/mentale-rust")}
+            className="text-sm font-medium text-ink-soft min-h-11 px-2 touch-manipulation"
+          >
+            Terug naar overzicht
+          </button>
         </div>
       </Card>
     )

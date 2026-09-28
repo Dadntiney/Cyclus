@@ -21,10 +21,15 @@ export default async function MedicatiePage() {
 
       <div className="flex items-center justify-between mb-1">
         <h1 className="font-display text-2xl text-ink">Mijn medicatie</h1>
-        <Link href="/medicatie/nieuw" className={buttonVariants({ size: "sm" })}>
-          <Plus className="h-4 w-4" strokeWidth={2} />
-          Toevoegen
-        </Link>
+        {medications.length > 0 && (
+          <Link
+            href="/medicatie/nieuw"
+            className="inline-flex items-center gap-1 text-sm font-medium text-sage-dark min-h-11 touch-manipulation"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2} />
+            Toevoegen
+          </Link>
+        )}
       </div>
       <p className="text-sm text-ink-soft mb-6">
         Jouw eigen overzicht van hormoontherapie, anticonceptie of andere medicatie — precies

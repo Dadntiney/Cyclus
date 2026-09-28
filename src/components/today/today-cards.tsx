@@ -86,7 +86,7 @@ export function TodayCards({
           {recovery.href && recovery.ctaLabel && (
             <Link
               href={recovery.href}
-              className={cn(buttonVariants({ variant: "secondary" }), "mt-3")}
+              className="mt-3 inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
             >
               {recovery.ctaLabel}
             </Link>

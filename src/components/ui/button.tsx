@@ -41,6 +41,15 @@ export function buttonVariants({
   return cn(baseClasses, variantClasses[variant], sizeClasses[size], className)
 }
 
+/** Calm text action for navigation / tertiary CTAs (not a filled button). */
+export function textActionClass(className?: string) {
+  return cn(
+    "inline-flex items-center gap-1 text-sm font-medium text-sage-dark min-h-11 touch-manipulation rounded-lg",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
+    className,
+  )
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", ...props }, ref) => {
     return (

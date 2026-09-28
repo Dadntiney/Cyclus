@@ -92,7 +92,7 @@ export default async function CyclusdagPage() {
             title="Nog te weinig gegevens"
             description="Markeer je menstruatiedagen in de kalender bij Cyclus. Daarna verschijnt hier jouw persoonlijke uitleg."
             action={
-              <Link href="/cyclus" className={buttonVariants()}>
+              <Link href="/cyclus" className={buttonVariants({ variant: "secondary" })}>
                 Open kalender
               </Link>
             }
