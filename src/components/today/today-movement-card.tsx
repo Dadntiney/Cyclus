@@ -132,7 +132,9 @@ export function TodayMovementCard({
                   className="text-sm font-medium text-ink leading-snug touch-manipulation inline-flex items-center gap-1"
                 >
                   {effective.title}
-                  <span className="font-normal text-ink-soft"> · {effective.duration} min</span>
+                  {!/\bmin(uten)?\b/i.test(effective.title) && (
+                    <span className="font-normal text-ink-soft"> · {effective.duration} min</span>
+                  )}
                 </Link>
                 {swapped && suggested && (
                   <p className="text-xs text-ink-soft mt-0.5">
