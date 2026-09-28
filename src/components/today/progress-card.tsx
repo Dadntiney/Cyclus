@@ -45,11 +45,35 @@ export function ProgressCard({
           </p>
         </>
       )}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-ink-soft">Check-in reeks</p>
-        <p className="text-sm font-medium text-ink">
-          {streak > 0 ? `${streak} ${streak === 1 ? "dag" : "dagen"}` : "Begin vandaag"}
-        </p>
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-sm text-ink-soft">Check-in reeks</p>
+          <p className="text-sm font-medium text-ink">
+            {streak > 0 ? `${streak} ${streak === 1 ? "dag" : "dagen"}` : "Begin vandaag"}
+          </p>
+        </div>
+        <div
+          className="flex items-center gap-1.5"
+          role="img"
+          aria-label={
+            streak > 0
+              ? `Check-in reeks van ${streak} ${streak === 1 ? "dag" : "dagen"}`
+              : "Nog geen check-in reeks"
+          }
+        >
+          {Array.from({ length: 7 }).map((_, i) => {
+            const filled = streak > 0 && i < Math.min(streak, 7)
+            return (
+              <span
+                key={i}
+                className={cn(
+                  "h-2 flex-1 rounded-full transition-colors",
+                  filled ? "bg-sage-fill" : "bg-cream-soft",
+                )}
+              />
+            )
+          })}
+        </div>
       </div>
     </div>
   )

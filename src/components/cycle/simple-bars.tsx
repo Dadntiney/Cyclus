@@ -33,23 +33,46 @@ export function SimpleBars({
   )
 }
 
-export function CycleLengthSparkline({ lengths }: { lengths: number[] }) {
-  if (lengths.length < 2) return null
-  const min = Math.min(...lengths)
-  const max = Math.max(...lengths)
+/**
+ * Compact bar sparkline for calm “at a glance” trends (cycle length, sleep,
+ * peri scores). No chart library — CSS only, dark-mode safe via tokens.
+ */
+export function ValueSparkline({
+  values,
+  formatValue,
+  barClassName = "bg-chart-2/80",
+  minBars = 2,
+}: {
+  values: number[]
+  formatValue?: (value: number) => string
+  barClassName?: string
+  /** Hide when fewer than this many points (default 2). */
+  minBars?: number
+}) {
+  if (values.length < minBars) return null
+  const min = Math.min(...values)
+  const max = Math.max(...values)
   const span = Math.max(1, max - min)
 
   return (
     <div className="flex items-end gap-1 h-12" aria-hidden>
-      {lengths.map((length, index) => {
-        const height = 20 + ((length - min) / span) * 28
+      {values.map((value, index) => {
+        const height = 20 + ((value - min) / span) * 28
         return (
-          <div key={`${length}-${index}`} className="flex-1 flex flex-col items-center gap-1">
-            <div className="w-full rounded-t-md bg-chart-2/80" style={{ height }} />
-            <span className="text-[10px] text-ink-soft tabular-nums">{length}</span>
+          <div key={`${value}-${index}`} className="flex-1 flex flex-col items-center gap-1 min-w-0">
+            <div className={`w-full rounded-t-md ${barClassName}`} style={{ height }} />
+            {formatValue && (
+              <span className="text-[10px] text-ink-soft tabular-nums truncate max-w-full">
+                {formatValue(value)}
+              </span>
+            )}
           </div>
         )
       })}
     </div>
   )
+}
+
+export function CycleLengthSparkline({ lengths }: { lengths: number[] }) {
+  return <ValueSparkline values={lengths} formatValue={(v) => String(v)} />
 }

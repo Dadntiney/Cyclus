@@ -5,6 +5,7 @@ import { getProfile } from "@/lib/data/profile"
 import { getRecipeLibrary } from "@/lib/data/nutrition"
 import { pickTodaysRecipe } from "@/lib/recommendations/engine"
 import { RecipeLibrary } from "@/components/nutrition/recipe-library"
+import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
@@ -78,12 +79,22 @@ export default async function VoedingPage() {
 
       {todaysPick.recipe && (
         <Card className="bg-sage-soft border-transparent">
-          <p className="text-sm font-medium text-sage-dark mb-1">Suggestie voor vandaag</p>
-          <p className="font-display text-xl text-ink">{todaysPick.recipe.title}</p>
-          <p className="text-base text-ink-soft mt-2">{todaysPick.reason}</p>
-          <Link href={`/voeding/${todaysPick.recipe.id}`} className={cn(buttonVariants(), "mt-3")}>
-            Bekijk recept
-          </Link>
+          <p className="text-sm font-medium text-sage-dark mb-2">Suggestie voor vandaag</p>
+          <div className="flex items-start gap-3">
+            <RecipeImage
+              title={todaysPick.recipe.title}
+              imageUrl={todaysPick.recipe.image_url}
+              className="h-16 w-16 rounded-xl shrink-0"
+              sizes="64px"
+            />
+            <div className="min-w-0">
+              <p className="font-display text-xl text-ink leading-snug">{todaysPick.recipe.title}</p>
+              <p className="text-base text-ink-soft mt-2">{todaysPick.reason}</p>
+              <Link href={`/voeding/${todaysPick.recipe.id}`} className={cn(buttonVariants(), "mt-3")}>
+                Bekijk recept
+              </Link>
+            </div>
+          </div>
         </Card>
       )}
 

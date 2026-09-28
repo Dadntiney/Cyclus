@@ -4,6 +4,7 @@ import { listKnowledgeArticles } from "@/lib/data/knowledge"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { BackButton } from "@/components/ui/back-button"
+import { cn } from "@/lib/utils"
 
 const CATEGORY_LABELS: Record<string, string> = {
   overgang: "Overgang",
@@ -14,6 +15,18 @@ const CATEGORY_LABELS: Record<string, string> = {
   voeding: "Voeding",
   zorg: "Zorg",
   prive: "Privé",
+}
+
+/** Soft category accents — calm dots, not cover art. */
+const CATEGORY_DOT: Record<string, string> = {
+  overgang: "bg-phase-luteaal",
+  klachten: "bg-phase-menstruatie",
+  slaap: "bg-sage-fill",
+  mentaal: "bg-peach",
+  beweging: "bg-phase-folliculair",
+  voeding: "bg-phase-ovulatie",
+  zorg: "bg-ink-soft",
+  prive: "bg-ink-soft/60",
 }
 
 export default async function KennisPage() {
@@ -33,7 +46,14 @@ export default async function KennisPage() {
         {articles.map((article) => (
           <Link key={article.id} href={`/kennis/${article.slug}`} className="block">
             <Card interactive>
-              <p className="text-xs font-medium text-sage-dark mb-1">
+              <p className="text-xs font-medium text-sage-dark mb-1 inline-flex items-center gap-1.5">
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full shrink-0",
+                    CATEGORY_DOT[article.category] ?? "bg-sage-fill",
+                  )}
+                  aria-hidden
+                />
                 {CATEGORY_LABELS[article.category] ?? article.category}
               </p>
               <p className="font-display text-lg text-ink">{article.title}</p>

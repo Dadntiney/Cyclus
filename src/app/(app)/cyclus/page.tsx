@@ -35,6 +35,8 @@ import {
   Lightbulb,
 } from "lucide-react"
 import { FLOW_OPTIONS, LIFE_STAGE_OPTIONS, symptomLabel } from "@/lib/constants"
+import { getPhaseContent } from "@/lib/cycle/phase-content"
+import { cn } from "@/lib/utils"
 
 /**
  * Cyclus hub IA (see competitive/UX analysis):
@@ -186,6 +188,7 @@ export default async function CyclusPage() {
   const hasCycle = cycleProfile?.has_cycle ?? true
   const isIrregular =
     cycleProfile?.regularity === "onregelmatig" || cycleProfile?.regularity === "onbekend"
+  const phaseTone = cycleEstimate ? getPhaseContent(cycleEstimate.phase).colors : null
 
   return (
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
@@ -236,10 +239,10 @@ export default async function CyclusPage() {
           )}
         </Card>
       ) : hasCycle ? (
-        <Card>
+        <Card className={cn(phaseTone && "border-transparent", phaseTone?.bg)}>
           {cycleEstimate ? (
             <>
-              <p className="text-sm text-sage-dark font-medium mb-1">Nu</p>
+              <p className={cn("text-sm font-medium mb-1", phaseTone?.text ?? "text-sage-dark")}>Nu</p>
               <p className="font-display text-2xl text-ink">Cyclusdag {cycleEstimate.cycleDay}</p>
               <p className="text-base text-ink-soft mt-1">{cycleEstimate.phaseLabel} · schatting</p>
             </>
@@ -250,7 +253,7 @@ export default async function CyclusPage() {
           )}
 
           {nextPeriod && (
-            <div className="mt-4 rounded-xl bg-cream-soft px-3 py-2.5">
+            <div className="mt-4 rounded-xl bg-surface/70 px-3 py-2.5">
               <p className="text-sm font-medium text-ink">Volgende menstruatie</p>
               <p className="text-sm text-ink-soft mt-1 leading-relaxed">
                 {formatNextPeriodEstimate(nextPeriod)}
@@ -267,12 +270,18 @@ export default async function CyclusPage() {
           {cycleEstimate && (
             <Link
               href="/cyclus/vandaag"
-              className="mt-4 pt-4 border-t border-line flex items-center justify-between touch-manipulation"
+              className={cn(
+                "mt-4 pt-4 border-t flex items-center justify-between touch-manipulation",
+                phaseTone ? "border-ink/10" : "border-line",
+              )}
             >
-              <span className="text-sm font-medium text-sage-dark">
+              <span className={cn("text-sm font-medium", phaseTone?.text ?? "text-sage-dark")}>
                 Wat betekent deze fase voor jou?
               </span>
-              <ChevronRight className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
+              <ChevronRight
+                className={cn("h-4 w-4", phaseTone?.text ?? "text-sage-dark")}
+                strokeWidth={1.75}
+              />
             </Link>
           )}
         </Card>

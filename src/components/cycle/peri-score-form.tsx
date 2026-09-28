@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { Textarea, Label } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import { ValueSparkline } from "@/components/cycle/simple-bars"
 import {
   PERI_SCORE_ITEMS,
   computePeriScore,
@@ -141,7 +142,17 @@ export function PeriScoreForm({
 
       {history.length > 0 && (
         <Card>
-          <h3 className="font-display text-lg text-ink mb-3">Eerdere metingen</h3>
+          <h3 className="font-display text-lg text-ink mb-1">Eerdere metingen</h3>
+          <p className="text-xs text-ink-soft mb-3">Lager is lichter — scores van 0 tot 100.</p>
+          {history.length >= 2 && (
+            <div className="mb-4">
+              <ValueSparkline
+                values={[...history].reverse().map((row) => row.score)}
+                formatValue={(v) => String(v)}
+                barClassName="bg-chart-1/80"
+              />
+            </div>
+          )}
           <ul className="flex flex-col gap-2">
             {history.map((row) => (
               <li key={row.assessed_on} className="flex items-center justify-between text-sm">

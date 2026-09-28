@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
+import { ValueSparkline } from "@/components/cycle/simple-bars"
 
 const PATTERN_WINDOW_DAYS = 60
 const DISPLAYED_NIGHTS = 14
@@ -109,23 +110,49 @@ export default async function SlaapPage() {
 
       <h2 className="font-display text-lg text-ink mb-3">Laatste nachten</h2>
       {recentEntries.length ? (
-        <Card className="p-0 divide-y divide-line">
-          {recentEntries.map((entry) => {
-            const hasDuration = Boolean(entry.bedtime && entry.wake_time)
-            const feeling = entry.wake_feeling ? WAKE_FEELING_BY_VALUE.get(entry.wake_feeling) : null
+        <>
+          {(() => {
+            // Chronological (oldest → newest) for a natural left-to-right rhythm.
+            const durationMinutes = [...recentEntries]
+              .reverse()
+              .filter((e) => e.bedtime && e.wake_time)
+              .map((e) => computeSleepDurationMinutes(e.bedtime!, e.wake_time!))
+            if (durationMinutes.length < 2) return null
             return (
-              <div key={entry.id} className="flex items-center justify-between px-5 py-3.5">
-                <p className="text-sm font-medium text-ink capitalize">
-                  {format(parseISO(entry.date), "EEEE d MMM", { locale: nl })}
-                </p>
-                <div className="flex items-center gap-2 text-sm text-ink-soft">
-                  {hasDuration && <span>{formatSleepDuration(computeSleepDurationMinutes(entry.bedtime!, entry.wake_time!))}</span>}
-                  {feeling && <feeling.icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />}
-                </div>
-              </div>
+              <Card className="mb-3">
+                <p className="text-xs text-ink-soft mb-2">Slaapduur (uren)</p>
+                <ValueSparkline
+                  values={durationMinutes}
+                  formatValue={(mins) => `${Math.round(mins / 60)}u`}
+                  barClassName="bg-chart-1/80"
+                />
+              </Card>
             )
-          })}
-        </Card>
+          })()}
+          <Card className="p-0 divide-y divide-line">
+            {recentEntries.map((entry) => {
+              const hasDuration = Boolean(entry.bedtime && entry.wake_time)
+              const feeling = entry.wake_feeling ? WAKE_FEELING_BY_VALUE.get(entry.wake_feeling) : null
+              return (
+                <div key={entry.id} className="flex items-center justify-between px-5 py-3.5">
+                  <p className="text-sm font-medium text-ink capitalize">
+                    {format(parseISO(entry.date), "EEEE d MMM", { locale: nl })}
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-ink-soft">
+                    {hasDuration && (
+                      <span>
+                        {formatSleepDuration(
+                          computeSleepDurationMinutes(entry.bedtime!, entry.wake_time!),
+                        )}
+                      </span>
+                    )}
+                    {feeling && <feeling.icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />}
+                  </div>
+                </div>
+              )
+            })}
+          </Card>
+        </>
       ) : (
         <EmptyState
           icon={<Moon className="h-6 w-6" />}

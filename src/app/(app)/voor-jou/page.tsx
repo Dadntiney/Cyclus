@@ -16,6 +16,8 @@ import { getVandaagData } from "@/lib/data/vandaag"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { Card } from "@/components/ui/card"
 import { buttonVariants } from "@/components/ui/button"
+import { WorkoutImage } from "@/components/training/workout-image"
+import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { cn } from "@/lib/utils"
 
 interface ModuleTile {
@@ -140,27 +142,48 @@ export default async function VoorJouPage() {
           <div className="flex flex-col gap-2">
             {workout && (
               <Card className="p-4">
-                <p className="text-xs font-medium text-sage-dark mb-1">Beweging</p>
-                <p className="text-sm font-medium text-ink">{workout.title}</p>
-                <p className="text-xs text-ink-soft mt-0.5">{workout.duration} minuten</p>
-                <Link
-                  href={`/training/${workout.id}`}
-                  className={cn(buttonVariants({ size: "sm" }), "mt-3")}
-                >
-                  Start training
-                </Link>
+                <p className="text-xs font-medium text-sage-dark mb-2">Beweging</p>
+                <div className="flex items-start gap-3">
+                  <WorkoutImage
+                    type={workout.type}
+                    title={workout.title}
+                    imageUrl={workout.image_url}
+                    className="h-14 w-14 rounded-xl shrink-0"
+                    sizes="56px"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-ink">{workout.title}</p>
+                    <p className="text-xs text-ink-soft mt-0.5">{workout.duration} minuten</p>
+                    <Link
+                      href={`/training/${workout.id}`}
+                      className={cn(buttonVariants({ size: "sm" }), "mt-2.5")}
+                    >
+                      Start training
+                    </Link>
+                  </div>
+                </div>
               </Card>
             )}
             {recipe && (
               <Card className="p-4">
-                <p className="text-xs font-medium text-sage-dark mb-1">Voeding</p>
-                <p className="text-sm font-medium text-ink">{recipe.title}</p>
-                <Link
-                  href={`/voeding/${recipe.id}`}
-                  className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "mt-3")}
-                >
-                  Bekijk recept
-                </Link>
+                <p className="text-xs font-medium text-sage-dark mb-2">Voeding</p>
+                <div className="flex items-start gap-3">
+                  <RecipeImage
+                    title={recipe.title}
+                    imageUrl={recipe.image_url}
+                    className="h-14 w-14 rounded-xl shrink-0"
+                    sizes="56px"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-ink">{recipe.title}</p>
+                    <Link
+                      href={`/voeding/${recipe.id}`}
+                      className={cn(buttonVariants({ variant: "secondary", size: "sm" }), "mt-2.5")}
+                    >
+                      Bekijk recept
+                    </Link>
+                  </div>
+                </div>
               </Card>
             )}
           </div>
