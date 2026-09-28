@@ -4,10 +4,11 @@ import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } fr
 import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { symptomLabel } from "@/lib/constants"
 import { startOfWeek, subDays } from "date-fns"
+import { todayISO } from "@/lib/dates"
 
 export async function buildBuddyContext(userId: string): Promise<string[]> {
   const supabase = await createClient()
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayISO()
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().slice(0, 10)
   const sixMonthsAgo = subDays(new Date(), 200).toISOString().slice(0, 10)
 

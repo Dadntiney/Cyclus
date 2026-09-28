@@ -8,6 +8,7 @@ import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import { greeting } from "@/lib/greeting"
+import { todayISO } from "@/lib/dates"
 
 /**
  * Vandaag = one calm “this is your day” composition.
@@ -21,7 +22,7 @@ export default async function VandaagPage() {
   const user = await getAuthedUser()
   if (!user) return null
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayISO()
 
   const {
     profile,

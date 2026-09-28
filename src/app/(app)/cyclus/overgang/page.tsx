@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { Expandable } from "@/components/ui/expandable"
 import { BackButton } from "@/components/ui/back-button"
+import { todayISO } from "@/lib/dates"
 
 function seededIndex(seed: string, length: number): number {
   if (length <= 0) return 0
@@ -28,7 +29,7 @@ export default async function OvergangPage() {
     .eq("user_id", user.id)
     .maybeSingle()
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayISO()
   const funFact =
     LIFE_STAGE_KNOWLEDGE.funFacts[seededIndex(`${user.id}-${today}-lifestage`, LIFE_STAGE_KNOWLEDGE.funFacts.length)]
 
@@ -41,7 +42,7 @@ export default async function OvergangPage() {
 
       <div className="rounded-3xl p-5 lg:p-6 mb-6 bg-info-soft">
         <p className="text-xs font-semibold uppercase tracking-wide text-info">Cyclus & ouder worden</p>
-        <p className="font-display text-2xl text-ink mt-1">De overgang, uitgelegd</p>
+        <h1 className="font-display text-2xl text-ink mt-1">De overgang, uitgelegd</h1>
         <p className="text-base text-ink-soft mt-2 leading-relaxed">{LIFE_STAGE_KNOWLEDGE.intro}</p>
       </div>
 

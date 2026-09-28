@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { todayISO } from "@/lib/dates"
 import {
   PERI_SCORE_ITEMS,
   computePeriScore,
@@ -24,7 +25,7 @@ export async function savePeriAssessment(input: {
   }
 
   const score = computePeriScore(answers)
-  const assessedOn = input.assessedOn ?? new Date().toISOString().slice(0, 10)
+  const assessedOn = input.assessedOn ?? todayISO()
 
   const supabase = await createClient()
   const {

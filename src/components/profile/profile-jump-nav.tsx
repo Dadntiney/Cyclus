@@ -1,4 +1,5 @@
 const JUMP_LINKS = [
+  { href: "#weergave", label: "Weergave" },
   { href: "#beweging", label: "Beweging" },
   { href: "#voeding", label: "Voeding" },
   { href: "#mentale-rust", label: "Mentale rust" },

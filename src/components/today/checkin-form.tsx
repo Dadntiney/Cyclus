@@ -228,23 +228,22 @@ export function CheckinForm({
   }
 
   function applyUpdate(updater: (prev: FormState) => FormState, mode: "immediate" | "debounced" = "immediate") {
-    let changed = true
-    setState((prev) => {
-      const next = updater(prev)
-      changed = JSON.stringify(next) !== JSON.stringify(prev)
-      stateRef.current = next
-      return next
-    })
-    if (changed) scheduleSave(mode === "immediate")
+    // Compute next state synchronously against the ref BEFORE scheduling save.
+    // Relying on setState's updater to fill stateRef races under React 19
+    // batching and can persist a stale snapshot (e.g. old energy).
+    const prev = stateRef.current
+    const next = updater(prev)
+    if (JSON.stringify(next) === JSON.stringify(prev)) return
+    stateRef.current = next
+    setState(next)
+    scheduleSave(mode === "immediate")
   }
 
   function selectNeed(value: string) {
-    const next = state.need === value ? null : (value as CheckinInput["need"])
-    setState((prev) => {
-      const updated = { ...prev, need: next }
-      stateRef.current = updated
-      return updated
-    })
+    const next = stateRef.current.need === value ? null : (value as CheckinInput["need"])
+    const updated = { ...stateRef.current, need: next }
+    stateRef.current = updated
+    setState(updated)
     // Lightweight need write + refresh so today’s plan can reshape.
     startNeedTransition(async () => {
       const result = await setTodayNeed(next)

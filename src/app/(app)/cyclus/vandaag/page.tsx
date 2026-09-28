@@ -20,6 +20,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { cn } from "@/lib/utils"
+import { todayISO } from "@/lib/dates"
 
 export default async function CyclusdagPage() {
   const supabase = await createClient()
@@ -66,7 +67,7 @@ export default async function CyclusdagPage() {
     )
   }
 
-  const today = format(new Date(), "yyyy-MM-dd")
+  const today = todayISO()
   const cycleHistory = computeCycleHistory(
     withActivePeriod(
       (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),

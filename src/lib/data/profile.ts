@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 import { computeStreak } from "@/lib/data/streak"
 import { getFavoriteRecipes } from "@/lib/data/nutrition"
 import { getFavoriteExercises } from "@/lib/data/training"
+import { todayISO } from "@/lib/dates"
 
 // The layout and whichever page it wraps both need her profile row on
 // nearly every navigation; without this every request paid for that
@@ -22,9 +23,6 @@ export interface Milestone {
   label: string
 }
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 /** Longest run of consecutive calendar days in a (possibly unordered) date list. */
 function longestStreak(dates: string[]): number {

@@ -37,6 +37,7 @@ import {
 import { FLOW_OPTIONS, LIFE_STAGE_OPTIONS, symptomLabel } from "@/lib/constants"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { cn } from "@/lib/utils"
+import { todayISO } from "@/lib/dates"
 
 /**
  * Cyclus hub IA (see competitive/UX analysis):
@@ -76,7 +77,7 @@ export default async function CyclusPage() {
   const periLatest = periRows?.[0] ?? null
 
   const trackFlowEnabled = profile?.track_flow_intensity ?? false
-  const today = format(new Date(), "yyyy-MM-dd")
+  const today = todayISO()
   const lifeStage = cycleProfile?.life_stage ?? null
   const lifeStageLabel = LIFE_STAGE_OPTIONS.find((o) => o.value === lifeStage)?.label
   const postCycleMode = lifeStage === "menopauze" || cycleProfile?.has_cycle === false

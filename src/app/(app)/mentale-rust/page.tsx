@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
 import type { MentalWellbeingCategory } from "@/lib/constants"
+import { todayISO } from "@/lib/dates"
 
 export default async function MentaleRustPage() {
   const user = await getAuthedUser()
@@ -40,7 +41,7 @@ export default async function MentaleRustPage() {
     )
   }
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayISO()
   const preferredCategories = (profile.mental_wellbeing_categories ?? []) as MentalWellbeingCategory[]
   const affirmations = getAffirmationsByThemes([])
 

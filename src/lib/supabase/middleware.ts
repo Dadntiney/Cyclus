@@ -7,6 +7,8 @@ const PUBLIC_PATHS = [
   "/wachtwoord-vergeten",
   "/wachtwoord-resetten",
   "/auth/callback",
+  // PWA shell assets must not redirect to HTML login (breaks install/manifest).
+  "/manifest.webmanifest",
 ]
 
 function isPublicPath(pathname: string) {

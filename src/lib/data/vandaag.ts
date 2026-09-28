@@ -12,10 +12,8 @@ import { computeSleepDurationMinutes } from "@/lib/sleep/duration"
 import { pickSleepObservation } from "@/lib/sleep/insights"
 import { getPersonalSleepContext } from "@/lib/data/sleep"
 import type { BuddyStyle } from "@/lib/buddy/styles"
+import { todayISO } from "@/lib/dates"
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 /** Deduped per request — Vandaag (and any co-loader) only pays once. */
 export const getVandaagData = cache(async function getVandaagData(userId: string) {

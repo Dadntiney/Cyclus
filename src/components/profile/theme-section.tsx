@@ -33,7 +33,7 @@ export function ThemeSection({ initial }: { initial: ThemePreference }) {
   }
 
   return (
-    <div className="rounded-2xl border border-line/70 p-4">
+    <div id="weergave" className="rounded-2xl border border-line/70 p-4 scroll-mt-24">
       <h2 className="font-display text-lg text-ink mb-1">Weergave</h2>
       <p className="text-xs text-ink-soft mb-3">
         Kies hoe Cyclus eruitziet. Automatisch volgt de instelling van je apparaat.

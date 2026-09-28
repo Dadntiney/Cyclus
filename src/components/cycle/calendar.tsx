@@ -17,6 +17,7 @@ import { ChevronLeft, ChevronRight, X, Droplet, Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toggleMenstruationDay, setCycleLogFlow } from "@/lib/actions/cycle"
 import { FLOW_OPTIONS } from "@/lib/constants"
+import { todayISO } from "@/lib/dates"
 
 interface CalendarProps {
   menstruationDates: Set<string>
@@ -50,11 +51,11 @@ export function Calendar({
   }, [month])
 
   const leadingBlanks = (getDay(startOfMonth(month)) + 6) % 7
-  const todayISO = format(new Date(), "yyyy-MM-dd")
+  const today = todayISO()
 
   function handleDayClick(day: Date) {
     const iso = format(day, "yyyy-MM-dd")
-    if (iso > todayISO) return
+    if (iso > today) return
     setError(null)
 
     if (trackFlowEnabled) {
@@ -175,7 +176,7 @@ export function Calendar({
           const iso = format(day, "yyyy-MM-dd")
           const isMenstruation = dates.has(iso)
           const flow = flowByDate.get(iso)
-          const future = iso > todayISO
+          const future = iso > today
           return (
             <button
               key={iso}

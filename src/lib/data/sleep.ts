@@ -2,10 +2,8 @@ import { subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { computeSleepDurationMinutes } from "@/lib/sleep/duration"
 import { computeSleepSymptomInsights } from "@/lib/sleep/insights"
+import { todayISO } from "@/lib/dates"
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 const PATTERN_WINDOW_DAYS = 60
 

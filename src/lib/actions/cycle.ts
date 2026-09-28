@@ -3,10 +3,8 @@
 import { revalidatePath } from "next/cache"
 import { eachDayOfInterval, format, parseISO } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
+import { todayISO } from "@/lib/dates"
 
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 /**
  * "Menstruatie starten" on Vandaag - sets cycle_profiles.active_period_start

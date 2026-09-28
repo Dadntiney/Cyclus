@@ -13,6 +13,7 @@ import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
 import { filterRecipesByCuisinePrefs } from "@/lib/nutrition/cuisine"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
 import type { Tables } from "@/types/database"
+import { todayISO } from "@/lib/dates"
 
 const RECIPE_COLUMNS =
   "id, title, category, preparation_time, ingredients, nutrition_information, image_url"
@@ -54,7 +55,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
 
   if (!profile) return null
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayISO()
   const cycleHistory = computeCycleHistory(
     withActivePeriod(
       (cycleLogs ?? []).map((l) => ({

@@ -267,19 +267,16 @@ export function ProfileForm({
     }
   }
 
-  /** Every field change goes through here: update state, keep the ref in
-   * sync in the same tick (so an immediate save never reads a stale
-   * snapshot), then schedule a save — skipped entirely if nothing actually
-   * changed (e.g. re-tapping an already-selected chip). */
+  /** Every field change goes through here. Compute next state against the
+   * ref BEFORE scheduling save — setState updaters can race under React 19
+   * batching and otherwise persist a stale snapshot. */
   function applyUpdate(updater: (prev: FormState) => FormState, mode: "immediate" | "debounced") {
-    let changed = true
-    setState((prev) => {
-      const next = updater(prev)
-      changed = JSON.stringify(next) !== JSON.stringify(prev)
-      stateRef.current = next
-      return next
-    })
-    if (changed) scheduleSave(mode === "immediate")
+    const prev = stateRef.current
+    const next = updater(prev)
+    if (JSON.stringify(next) === JSON.stringify(prev)) return
+    stateRef.current = next
+    setState(next)
+    scheduleSave(mode === "immediate")
   }
 
   function flushDebounce() {

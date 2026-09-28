@@ -15,6 +15,7 @@ import { isScheduleStartDay, isScheduleStopDay } from "@/lib/medication/schedule
 import { getMorningMessage } from "@/lib/data/morning-messages"
 import type { MorningReminderContentType } from "@/lib/constants"
 import { cn } from "@/lib/utils"
+import { todayISO as appTodayISO } from "@/lib/dates"
 
 export interface MorningReminderSettings {
   enabled: boolean
@@ -111,7 +112,7 @@ export function ReminderToastHost({
         : []
       if (!dueReminders.length && !dueMedications.length && !dueMorning.length) return
 
-      const todayISO = now.toISOString().slice(0, 10)
+      const todayISO = appTodayISO(now)
       const toasts: Toast[] = []
 
       for (const reminder of dueReminders) {
