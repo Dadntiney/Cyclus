@@ -11,9 +11,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-sage-fill text-white hover:bg-sage-fill-darker active:bg-sage-fill-darker",
-  secondary: "bg-surface text-ink border border-line hover:bg-cream-soft active:bg-cream-soft",
-  ghost: "bg-transparent text-ink hover:bg-cream-soft active:bg-cream-soft",
+  primary:
+    "bg-primary-fill text-white hover:bg-primary-fill-hover active:bg-primary-fill-hover",
+  secondary: "bg-surface text-ink border border-border hover:bg-bg-subtle active:bg-bg-subtle",
+  ghost: "bg-transparent text-ink hover:bg-bg-subtle active:bg-bg-subtle",
   danger: "bg-danger-fill text-white hover:bg-danger-fill-darker active:bg-danger-fill-darker",
 }
 
@@ -29,7 +30,7 @@ const sizeClasses: Record<Size, string> = {
 const baseClasses =
   "inline-flex items-center justify-center gap-2 font-medium transition-[background-color,box-shadow,transform] duration-150 touch-manipulation select-none " +
   "motion-safe:active:scale-[0.97] " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream " +
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg " +
   "disabled:opacity-50 disabled:pointer-events-none"
 
 export function buttonVariants({

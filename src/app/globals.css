@@ -1,86 +1,111 @@
 @import "tailwindcss";
 
 /* ==========================================================
-   Cyclus design tokens
+   Cyclus color system
    ----------------------------------------------------------
-   Palette rationale: sage (muted green) reads as natural,
-   calm and trustworthy without the clinical coldness of blue
-   or the cliché of pink — it's the anchor that makes Cyclus
-   recognizable. Peach adds warmth and a soft, human accent.
-   Cream (never pure white) keeps every screen feeling warm
-   rather than sterile. Every text-bearing color pair below is
-   chosen to clear WCAG AA (4.5:1 for normal text, 3:1 for
-   large text / UI components) against the background it's
-   actually used on — verified pair by pair, not eyeballed.
+   Research conclusion (App Store readiness color audit):
+
+   KEEP the sage + peach + cream identity. It is the strongest fit for a
+   daily cycle/wellbeing app: natural and calm without clinical blue,
+   warm without pink/purple cliché, and already carrying primary actions,
+   menstruation/favorites, and success across the product.
+
+   REFINE into a real semantic system:
+   - Brand (sage/peach) stays the face of the product
+   - Status (success/warning/danger/info) stays functional — not phase colors
+   - Cycle phases get dedicated tokens so they no longer borrow warning/info
+   - Light and Dark share one identity with surface hierarchy
+
+   Phase palette (warm natural family, not a rainbow):
+   - Menstruatie → peach (warmth / body)
+   - Folliculair → sage (growth / energy)
+   - Ovulatie   → honey gold (peak — distinct, on-brand)
+   - Luteaal    → dusty rose (winding down — not "warning amber")
+
+   Accessibility: text-bearing pairs target WCAG AA (4.5:1 normal text).
+   Mid-sage is intentionally NOT for body text (~3.5:1).
    ========================================================== */
+
 :root {
+  /* ——— Neutrals / surfaces ——— */
   --color-cream: #faf6f0;
   --color-cream-soft: #f3ece2;
   --color-ink: #2c2a26;
   --color-ink-soft: #6b665d;
+  --color-line: #e8e1d5;
+  --color-white: #ffffff;
+  --color-surface: #ffffff;
+  /* Slightly lifted layer for sheets/modals above cards */
+  --color-surface-elevated: #ffffff;
 
-  /* Sage: primary brand + action color. The mid-tone (--color-sage)
-     is reserved for borders, dots and soft fills — never for text
-     or white-on-color fills, since it only clears ~3.5:1. Solid
-     fills and text-on-soft-bg use the deeper --color-sage-dark. */
+  /* ——— Brand: sage (primary) ——— */
   --color-sage: #7c8f6f;
   --color-sage-dark: #4d5d44;
   --color-sage-darker: #3d4a36;
   --color-sage-soft: #e4e9de;
-
-  /* Solid button/selected-state fills. Kept separate from
-     --color-sage-dark (used for *text* — 4x more common — which needs
-     to lighten in dark mode) because these sit behind white text as an
-     opaque fill: their contrast doesn't depend on the page background,
-     so they stay the same in both themes. */
+  /* Opaque fills — theme-stable (white label contrast) */
   --color-sage-fill: #4d5d44;
   --color-sage-fill-darker: #3d4a36;
 
-  /* Peach: secondary/warm accent. Solid peach always pairs with
-     ink text (6.8:1), never white (peach-on-white text is ~2.1:1). */
+  /* ——— Brand: peach (accent) ——— */
   --color-peach: #e8a37e;
   --color-peach-soft: #fbe6d8;
 
-  --color-line: #e8e1d5;
-  --color-white: #ffffff;
-  /* Card/control surface — distinct from --color-white so it can
-     become a dark card tone in dark mode while pure white (button
-     labels, decorative rings) stays pure white in both themes. */
-  --color-surface: #ffffff;
-
-  /* Status colors, kept inside the same warm family rather than
-     stock red/amber/blue so they still feel like Cyclus. */
+  /* ——— Status (functional — do not reuse for cycle phases) ——— */
   --color-danger: #a34952;
   --color-danger-dark: #8f3f47;
   --color-danger-soft: #f7e2e2;
-  /* Same fill/text split as sage above — the destructive button's
-     solid fill stays constant; --color-danger (used ~4x more as text)
-     lightens for dark mode. */
   --color-danger-fill: #a34952;
   --color-danger-fill-darker: #8f3f47;
   --color-warning: #8a5a1e;
   --color-warning-soft: #f5e6cf;
+  /* Muted plum for informational banners (overgang, mentale rust) — not ovulation */
   --color-info: #5b4a80;
   --color-info-soft: #ede8f4;
-
-  /* Success intentionally reuses the sage family (not a separate
-     hue) — "green means good" here is the brand color itself, and
-     it's exactly what reinforces recognizability app-wide. */
   --color-success: var(--color-sage-dark);
   --color-success-soft: var(--color-sage-soft);
 
+  /* ——— Cycle phases (dedicated) ——— */
+  --color-phase-menstruatie: #e8a37e;
+  --color-phase-menstruatie-soft: #fbe6d8;
+  --color-phase-menstruatie-text: #2c2a26;
+
+  --color-phase-folliculair: #4d5d44;
+  --color-phase-folliculair-soft: #e4e9de;
+  --color-phase-folliculair-text: #4d5d44;
+
+  --color-phase-ovulatie: #c4a35a;
+  --color-phase-ovulatie-soft: #f3edd8;
+  --color-phase-ovulatie-text: #7a6230;
+
+  --color-phase-luteaal: #b07a7e;
+  --color-phase-luteaal-soft: #f3e6e6;
+  --color-phase-luteaal-text: #7a4e52;
+
+  /* ——— Charts ——— */
+  --color-chart-1: #7c8f6f;
+  --color-chart-2: #e8a37e;
+  --color-chart-track: #f3ece2;
+
+  /* ——— Semantic aliases (prefer these in new UI) ——— */
+  --color-bg: var(--color-cream);
+  --color-bg-subtle: var(--color-cream-soft);
+  --color-text: var(--color-ink);
+  --color-text-muted: var(--color-ink-soft);
+  --color-border: var(--color-line);
+  --color-primary: var(--color-sage);
+  --color-primary-text: var(--color-sage-dark);
+  --color-primary-soft: var(--color-sage-soft);
+  --color-primary-fill: var(--color-sage-fill);
+  --color-primary-fill-hover: var(--color-sage-fill-darker);
+  --color-accent: var(--color-peach);
+  --color-accent-soft: var(--color-peach-soft);
+
   --shadow-card: 0 2px 16px rgba(44, 42, 38, 0.05);
+  --shadow-elevated: 0 8px 28px rgba(44, 42, 38, 0.1);
 }
 
-/* ==========================================================
-   Dark mode — same warm, sage-led identity, re-tuned for a dark
-   surface. "Automatisch" (no data-theme attribute) follows the
-   device via prefers-color-scheme; "dag"/"nacht" force light/dark
-   regardless of the device via data-theme, set server-side in
-   src/app/layout.tsx from profiles.theme_preference so there's no
-   flash on load. The *-fill tokens above are deliberately not
-   redefined here — they're opaque button fills whose white-text
-   contrast doesn't depend on the surrounding theme. */
+/* Dark: same identity, re-tuned surfaces — not inverted light */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --color-cream: #1d1b18;
@@ -95,14 +120,38 @@
     --color-peach-soft: #3d2c22;
     --color-line: #3a372f;
     --color-surface: #2b2924;
+    --color-surface-elevated: #32302a;
     --color-danger: #d98891;
     --color-danger-dark: #e8a7ae;
     --color-danger-soft: #3a2225;
     --color-warning: #d9a54a;
     --color-warning-soft: #3a2f1a;
-    --color-info: #b3a3dd;
+    /* Less neon than previous lilac */
+    --color-info: #a89cc4;
     --color-info-soft: #2a2438;
+
+    --color-phase-menstruatie: #e0a37e;
+    --color-phase-menstruatie-soft: #3d2c22;
+    --color-phase-menstruatie-text: #f2ede3;
+
+    --color-phase-folliculair: #a8c191;
+    --color-phase-folliculair-soft: #2f3a29;
+    --color-phase-folliculair-text: #a8c191;
+
+    --color-phase-ovulatie: #d4c08a;
+    --color-phase-ovulatie-soft: #3a3424;
+    --color-phase-ovulatie-text: #d4c08a;
+
+    --color-phase-luteaal: #d4a8ac;
+    --color-phase-luteaal-soft: #3a282a;
+    --color-phase-luteaal-text: #d4a8ac;
+
+    --color-chart-1: #8fa280;
+    --color-chart-2: #e0a37e;
+    --color-chart-track: #26241f;
+
     --shadow-card: 0 2px 20px rgba(0, 0, 0, 0.45);
+    --shadow-elevated: 0 10px 32px rgba(0, 0, 0, 0.55);
   }
 }
 
@@ -119,14 +168,37 @@
   --color-peach-soft: #3d2c22;
   --color-line: #3a372f;
   --color-surface: #2b2924;
+  --color-surface-elevated: #32302a;
   --color-danger: #d98891;
   --color-danger-dark: #e8a7ae;
   --color-danger-soft: #3a2225;
   --color-warning: #d9a54a;
   --color-warning-soft: #3a2f1a;
-  --color-info: #b3a3dd;
+  --color-info: #a89cc4;
   --color-info-soft: #2a2438;
+
+  --color-phase-menstruatie: #e0a37e;
+  --color-phase-menstruatie-soft: #3d2c22;
+  --color-phase-menstruatie-text: #f2ede3;
+
+  --color-phase-folliculair: #a8c191;
+  --color-phase-folliculair-soft: #2f3a29;
+  --color-phase-folliculair-text: #a8c191;
+
+  --color-phase-ovulatie: #d4c08a;
+  --color-phase-ovulatie-soft: #3a3424;
+  --color-phase-ovulatie-text: #d4c08a;
+
+  --color-phase-luteaal: #d4a8ac;
+  --color-phase-luteaal-soft: #3a282a;
+  --color-phase-luteaal-text: #d4a8ac;
+
+  --color-chart-1: #8fa280;
+  --color-chart-2: #e0a37e;
+  --color-chart-track: #26241f;
+
   --shadow-card: 0 2px 20px rgba(0, 0, 0, 0.45);
+  --shadow-elevated: 0 10px 32px rgba(0, 0, 0, 0.55);
 }
 
 @theme inline {
@@ -146,6 +218,8 @@
   --color-peach-soft: var(--color-peach-soft);
   --color-line: var(--color-line);
   --color-surface: var(--color-surface);
+  --color-surface-elevated: var(--color-surface-elevated);
+  --color-white: var(--color-white);
   --color-danger: var(--color-danger);
   --color-danger-dark: var(--color-danger-dark);
   --color-danger-soft: var(--color-danger-soft);
@@ -157,24 +231,46 @@
   --color-info-soft: var(--color-info-soft);
   --color-success: var(--color-success);
   --color-success-soft: var(--color-success-soft);
+
+  --color-phase-menstruatie: var(--color-phase-menstruatie);
+  --color-phase-menstruatie-soft: var(--color-phase-menstruatie-soft);
+  --color-phase-menstruatie-text: var(--color-phase-menstruatie-text);
+  --color-phase-folliculair: var(--color-phase-folliculair);
+  --color-phase-folliculair-soft: var(--color-phase-folliculair-soft);
+  --color-phase-folliculair-text: var(--color-phase-folliculair-text);
+  --color-phase-ovulatie: var(--color-phase-ovulatie);
+  --color-phase-ovulatie-soft: var(--color-phase-ovulatie-soft);
+  --color-phase-ovulatie-text: var(--color-phase-ovulatie-text);
+  --color-phase-luteaal: var(--color-phase-luteaal);
+  --color-phase-luteaal-soft: var(--color-phase-luteaal-soft);
+  --color-phase-luteaal-text: var(--color-phase-luteaal-text);
+
+  --color-chart-1: var(--color-chart-1);
+  --color-chart-2: var(--color-chart-2);
+  --color-chart-track: var(--color-chart-track);
+
+  --color-bg: var(--color-bg);
+  --color-bg-subtle: var(--color-bg-subtle);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-border: var(--color-border);
+  --color-primary: var(--color-primary);
+  --color-primary-text: var(--color-primary-text);
+  --color-primary-soft: var(--color-primary-soft);
+  --color-primary-fill: var(--color-primary-fill);
+  --color-primary-fill-hover: var(--color-primary-fill-hover);
+  --color-accent: var(--color-accent);
+  --color-accent-soft: var(--color-accent-soft);
+
   --shadow-card: var(--shadow-card);
+  --shadow-elevated: var(--shadow-elevated);
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
 }
 
 html {
   -webkit-text-size-adjust: 100%;
-  /* Lets native UI (scrollbars, form controls) pick a matching light/dark
-     rendering on its own; "light dark" (rather than a fixed value) means
-     it still follows the OS when data-theme is left unset (automatisch). */
   color-scheme: light dark;
-  /* So a deep link like /profiel#slaap lands with its target fully in
-     view instead of tucked under the sticky mobile header (which
-     next/link's hash scrolling otherwise ignores, since it's a
-     sticky/fixed element — see MobileHeader). Matches its measured real
-     height; the fallback matches its typical rendered height before that
-     is published. No sticky top header above the md breakpoint, where
-     the sidebar layout takes over. */
   scroll-padding-top: var(--mobile-header-h, 77px);
 }
 
@@ -199,11 +295,6 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* iOS Safari renders type="date"/"time" values with their own internal
-   shadow-DOM box, which ignores the input's line-height and bottom-aligns
-   instead of centering — the value ends up sitting low, reading as
-   "overflowing" its rounded border. Disabling the native appearance hands
-   layout back to normal CSS so it centers like any other input. */
 input[type="date"],
 input[type="time"] {
   -webkit-appearance: none;
@@ -215,9 +306,6 @@ input[type="time"]::-webkit-date-and-time-value {
   text-align: left;
 }
 
-/* Every interactive element gets a consistent, deliberate tap response;
-   this is the one global override so individual components don't have to
-   repeat it, and prefers-reduced-motion is respected automatically. */
 @media (prefers-reduced-motion: no-preference) {
   a,
   button,

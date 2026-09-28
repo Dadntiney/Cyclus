@@ -21,9 +21,9 @@ export function SimpleBars({
             <span className="text-ink">{symptomLabel(item.label)}</span>
             <span className="text-ink-soft tabular-nums">{item.value}</span>
           </div>
-          <div className="h-2 rounded-full bg-cream-soft overflow-hidden">
+          <div className="h-2 rounded-full bg-chart-track overflow-hidden">
             <div
-              className="h-full rounded-full bg-sage/80 transition-[width] duration-500"
+              className="h-full rounded-full bg-chart-1/80 transition-[width] duration-500"
               style={{ width: `${Math.max(8, Math.round((item.value / max) * 100))}%` }}
             />
           </div>
@@ -45,7 +45,7 @@ export function CycleLengthSparkline({ lengths }: { lengths: number[] }) {
         const height = 20 + ((length - min) / span) * 28
         return (
           <div key={`${length}-${index}`} className="flex-1 flex flex-col items-center gap-1">
-            <div className="w-full rounded-t-md bg-peach/80" style={{ height }} />
+            <div className="w-full rounded-t-md bg-chart-2/80" style={{ height }} />
             <span className="text-[10px] text-ink-soft tabular-nums">{length}</span>
           </div>
         )

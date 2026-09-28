@@ -56,11 +56,28 @@ function DailyTipSkeleton() {
   )
 }
 
+/** Same phase tokens as Cyclusdag / week strip — one coherent map app-wide. */
 const PHASE_TONE: Record<CyclePhase, { bg: string; text: string; ring: string }> = {
-  menstruatie: { bg: "bg-peach-soft", text: "text-ink", ring: "bg-surface/70" },
-  folliculair: { bg: "bg-sage-soft", text: "text-sage-dark", ring: "bg-surface/70" },
-  ovulatie: { bg: "bg-sage-soft", text: "text-sage-dark", ring: "bg-surface/70" },
-  luteaal: { bg: "bg-peach-soft", text: "text-ink", ring: "bg-surface/70" },
+  menstruatie: {
+    bg: "bg-phase-menstruatie-soft",
+    text: "text-phase-menstruatie-text",
+    ring: "bg-surface/70",
+  },
+  folliculair: {
+    bg: "bg-phase-folliculair-soft",
+    text: "text-phase-folliculair-text",
+    ring: "bg-surface/70",
+  },
+  ovulatie: {
+    bg: "bg-phase-ovulatie-soft",
+    text: "text-phase-ovulatie-text",
+    ring: "bg-surface/70",
+  },
+  luteaal: {
+    bg: "bg-phase-luteaal-soft",
+    text: "text-phase-luteaal-text",
+    ring: "bg-surface/70",
+  },
 }
 
 const PHASE_TAGLINE: Record<CyclePhase, string> = {

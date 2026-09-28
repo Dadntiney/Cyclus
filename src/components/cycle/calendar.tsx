@@ -185,7 +185,7 @@ export function Calendar({
               className={cn(
                 "relative h-11 rounded-full text-sm mx-auto w-11 flex items-center justify-center transition-colors touch-manipulation",
                 isSameMonth(day, month) ? "text-ink" : "text-ink-soft/40",
-                isMenstruation && "bg-peach text-ink font-medium",
+                isMenstruation && "bg-phase-menstruatie text-phase-menstruatie-text font-medium",
                 !isMenstruation && isToday(day) && "border border-sage text-sage-dark font-medium",
                 !isMenstruation && !isToday(day) && "hover:bg-cream-soft",
                 future && "opacity-30 cursor-not-allowed",
@@ -207,7 +207,7 @@ export function Calendar({
 
       <div className="flex items-center gap-4 mt-4 text-xs text-ink-soft flex-wrap">
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full bg-peach inline-block" />
+          <span className="h-3 w-3 rounded-full bg-phase-menstruatie inline-block" />
           Menstruatie
         </div>
         <div className="flex items-center gap-1.5">

@@ -3,6 +3,7 @@ import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import { ClientBootstrap } from "@/components/bootstrap/client-bootstrap";
 import { getAuthedUser } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/data/profile";
+import { BRAND_HEX } from "@/lib/theme/brand";
 import "./globals.css";
 
 const bodyFont = Plus_Jakarta_Sans({
@@ -46,8 +47,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf6f0" },
-    { media: "(prefers-color-scheme: dark)", color: "#1d1b18" },
+    { media: "(prefers-color-scheme: light)", color: BRAND_HEX.cream },
+    { media: "(prefers-color-scheme: dark)", color: BRAND_HEX.creamDark },
   ],
   // Resizes the visual viewport when the on-screen keyboard opens instead
   // of the keyboard simply overlaying fixed-position content (the bottom

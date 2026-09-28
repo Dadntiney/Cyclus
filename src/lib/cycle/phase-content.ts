@@ -63,7 +63,11 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
     phase: "menstruatie",
     label: "Menstruatie",
     shortDescription: "Een moment om het rustiger aan te doen en op te warmen naar de rest van je cyclus.",
-    colors: { bg: "bg-peach-soft", text: "text-ink", dot: "bg-peach" },
+    colors: {
+      bg: "bg-phase-menstruatie-soft",
+      text: "text-phase-menstruatie-text",
+      dot: "bg-phase-menstruatie",
+    },
     nutrition: {
       focusLabel: "IJzer & warme, voedzame maaltijden",
       focusText:
@@ -91,7 +95,11 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
     phase: "folliculair",
     label: "Folliculaire fase",
     shortDescription: "Je energie bouwt zich voor veel vrouwen geleidelijk op in deze fase.",
-    colors: { bg: "bg-sage-soft", text: "text-sage-dark", dot: "bg-sage-dark" },
+    colors: {
+      bg: "bg-phase-folliculair-soft",
+      text: "text-phase-folliculair-text",
+      dot: "bg-phase-folliculair",
+    },
     nutrition: {
       focusLabel: "Verse, lichte voeding",
       focusText:
@@ -119,7 +127,11 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
     phase: "ovulatie",
     label: "Ovulatie",
     shortDescription: "Voor veel vrouwen een piekmoment in energie rond het midden van de cyclus.",
-    colors: { bg: "bg-info-soft", text: "text-info", dot: "bg-info" },
+    colors: {
+      bg: "bg-phase-ovulatie-soft",
+      text: "text-phase-ovulatie-text",
+      dot: "bg-phase-ovulatie",
+    },
     nutrition: {
       focusLabel: "Kleurrijke, antioxidantrijke voeding",
       focusText:
@@ -147,7 +159,11 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
     phase: "luteaal",
     label: "Luteale fase",
     shortDescription: "Je lichaam bouwt voor veel vrouwen geleidelijk toe naar meer rust in deze fase.",
-    colors: { bg: "bg-warning-soft", text: "text-warning", dot: "bg-warning" },
+    colors: {
+      bg: "bg-phase-luteaal-soft",
+      text: "text-phase-luteaal-text",
+      dot: "bg-phase-luteaal",
+    },
     nutrition: {
       focusLabel: "Magnesiumrijke, stabiliserende voeding",
       focusText:

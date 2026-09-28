@@ -35,7 +35,7 @@ export function MenstruationQuickAction({ isActive, day }: { isActive: boolean; 
     <div
       className={cn(
         "rounded-2xl border border-line/70 p-4 flex items-center gap-3.5 transition-colors",
-        isActive && "bg-peach-soft border-transparent",
+        isActive && "bg-phase-menstruatie-soft border-transparent",
       )}
     >
       <div className="relative shrink-0">
@@ -54,7 +54,7 @@ export function MenstruationQuickAction({ isActive, day }: { isActive: boolean; 
         </span>
         {isActive && (
           <span
-            className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-danger ring-2 ring-peach-soft motion-safe:animate-pulse"
+            className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-danger ring-2 ring-phase-menstruatie-soft motion-safe:animate-pulse"
             aria-hidden
           />
         )}

@@ -7,6 +7,7 @@
  */
 
 import { Capacitor } from "@capacitor/core"
+import { BRAND_HEX } from "@/lib/theme/brand"
 
 export function isStandalone(): boolean {
   if (typeof window === "undefined") return false
@@ -57,7 +58,9 @@ export async function syncNativeStatusBar() {
     // Style names the icon/text color, not the background: Dark = light
     // icons for a dark background, Light = dark icons for a light one.
     StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light }).catch(() => {}),
-    StatusBar.setBackgroundColor({ color: dark ? "#1d1b18" : "#faf6f0" }).catch(() => {}),
+    StatusBar.setBackgroundColor({
+      color: dark ? BRAND_HEX.creamDark : BRAND_HEX.cream,
+    }).catch(() => {}),
   ])
 }
 
