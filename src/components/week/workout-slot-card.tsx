@@ -73,14 +73,20 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
             sizes="48px"
           />
           <div className="min-w-0">
-            {swapped || !workout ? (
-              <p className="text-sm font-medium text-ink">{effectiveWorkout.title}</p>
-            ) : (
+            {swapped ? (
+              <Link href={`/training/${swapped.workoutId}`} className="block group touch-manipulation">
+                <p className="text-sm font-medium text-ink group-hover:text-sage-dark transition-colors">
+                  {effectiveWorkout.title}
+                </p>
+              </Link>
+            ) : workout ? (
               <Link href={`/training/${workout.id}`} className="block group touch-manipulation">
                 <p className="text-sm font-medium text-ink group-hover:text-sage-dark transition-colors">
                   {workout.title}
                 </p>
               </Link>
+            ) : (
+              <p className="text-sm font-medium text-ink">{effectiveWorkout.title}</p>
             )}
             <p className="text-xs text-ink-soft mt-0.5">
               {effectiveWorkout.duration} min

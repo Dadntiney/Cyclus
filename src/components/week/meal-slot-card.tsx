@@ -61,15 +61,25 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
       ) : custom ? (
         <p className="text-sm font-medium text-ink">{custom.text}</p>
       ) : swapped ? (
-        <div className="flex items-center gap-3">
+        <Link href={`/voeding/${swapped.recipeId}`} className="flex items-center gap-3 group touch-manipulation">
           <RecipeImage
             title={swapped.title}
             imageUrl={swappedRecipe?.image_url ?? null}
             className="h-14 w-14 rounded-xl shrink-0"
             sizes="56px"
           />
-          <p className="text-sm font-medium text-ink">{swapped.title}</p>
-        </div>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-ink group-hover:text-sage-dark transition-colors">
+              {swapped.title}
+            </p>
+            {swappedRecipe?.preparation_time && (
+              <p className="text-xs text-ink-soft mt-0.5 inline-flex items-center gap-1">
+                <ChefHat className="h-3 w-3" strokeWidth={1.75} />
+                {swappedRecipe.preparation_time} min
+              </p>
+            )}
+          </div>
+        </Link>
       ) : recipe ? (
         <Link href={`/voeding/${recipe.id}`} className="flex items-center gap-3 group touch-manipulation">
           <RecipeImage
