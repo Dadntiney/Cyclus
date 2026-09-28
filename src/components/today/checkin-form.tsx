@@ -16,9 +16,11 @@ type Checkin = Tables<"daily_checkins">
 export function CheckinForm({
   initial,
   mentalWellbeingEnabled = false,
+  sleepTrackingEnabled = false,
 }: {
   initial: Checkin | null
   mentalWellbeingEnabled?: boolean
+  sleepTrackingEnabled?: boolean
 }) {
   const symptomOptions = mentalWellbeingEnabled ? [...SYMPTOM_OPTIONS, ...MENTAL_SYMPTOM_OPTIONS] : SYMPTOM_OPTIONS
   const [energy, setEnergy] = useState<number | null>(initial?.energy ?? null)
@@ -85,7 +87,15 @@ export function CheckinForm({
         {showMore ? (
           <>
             <RatingScale label="Stemming" value={mood} onChange={setMood} lowLabel="Somber" highLabel="Blij" />
-            <RatingScale label="Slaap" value={sleep} onChange={setSleep} lowLabel="Slecht" highLabel="Goed" />
+            <div>
+              <RatingScale label="Slaap" value={sleep} onChange={setSleep} lowLabel="Slecht" highLabel="Goed" />
+              {sleepTrackingEnabled && (
+                <p className="text-xs text-ink-soft mt-1.5 px-1">
+                  Je algemene gevoel — voor je exacte slaapduur en hoe je wakker werd, gebruik je de
+                  Slaap-kaart verderop op deze pagina.
+                </p>
+              )}
+            </div>
             <RatingScale label="Stress" value={stress} onChange={setStress} lowLabel="Rustig" highLabel="Gespannen" />
 
             <div>

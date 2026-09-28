@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import Link from "next/link"
-import { BookOpen, Calendar, ChevronRight, ClipboardList, NotebookPen } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { getDailyTip } from "@/lib/data/daily-tip"
@@ -156,18 +156,11 @@ export default async function VandaagPage() {
             <MentalWellbeingSuggestionCard suggestion={mentalWellbeingSuggestion} />
           )}
 
-          <Link
-            href="/deze-week"
-            className="flex items-center justify-between rounded-2xl bg-surface border border-line/70 px-4 py-3.5 touch-manipulation"
-          >
-            <span className="text-sm font-medium text-ink inline-flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-              Bekijk je hele week
-            </span>
-            <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
-          </Link>
-
-          <CheckinForm initial={checkin ?? null} mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true} />
+          <CheckinForm
+            initial={checkin ?? null}
+            mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
+            sleepTrackingEnabled={profile?.sleep_tracking_enabled === true}
+          />
         </div>
 
         <div className="lg:grid lg:grid-cols-3 lg:gap-6 lg:items-start">
@@ -204,30 +197,6 @@ export default async function VandaagPage() {
                 recentSymptoms={checkin?.symptoms}
               />
             </Suspense>
-
-            <div className="grid grid-cols-3 gap-2">
-              <Link
-                href="/kennis"
-                className="rounded-2xl bg-cream-soft px-2 py-2.5 text-center text-xs font-medium text-ink touch-manipulation"
-              >
-                <BookOpen className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
-                Kennis
-              </Link>
-              <Link
-                href="/dagboek"
-                className="rounded-2xl bg-cream-soft px-2 py-2.5 text-center text-xs font-medium text-ink touch-manipulation"
-              >
-                <NotebookPen className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
-                Dagboek
-              </Link>
-              <Link
-                href="/cyclus/samenvatting"
-                className="rounded-2xl bg-cream-soft px-2 py-2.5 text-center text-xs font-medium text-ink touch-manipulation"
-              >
-                <ClipboardList className="h-4 w-4 mx-auto mb-1 text-sage-dark" />
-                Voor arts
-              </Link>
-            </div>
           </div>
         </div>
       </div>
