@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState, useTransition } from "react"
-import { Check, ChevronDown, Pin, Plus } from "lucide-react"
+import { Check, ChevronDown, ChevronUp, Pin, Plus } from "lucide-react"
 import { RatingScale } from "@/components/ui/rating-scale"
 import { Chip } from "@/components/ui/chip"
 import { Input, Textarea, Label } from "@/components/ui/input"
@@ -20,6 +20,19 @@ import type { CheckinInput, SymptomDetail } from "@/lib/validations/checkin"
 import type { Tables } from "@/types/database"
 
 type Checkin = Tables<"daily_checkins">
+
+function checkinHasContent(checkin: Checkin | null): boolean {
+  if (!checkin) return false
+  return Boolean(
+    checkin.energy ||
+      checkin.mood ||
+      checkin.sleep ||
+      checkin.stress ||
+      (checkin.symptoms?.length ?? 0) > 0 ||
+      (checkin.notes?.trim()?.length ?? 0) > 0 ||
+      Object.keys(parseSymptomDetails(checkin.symptom_details)).length > 0,
+  )
+}
 
 export function CheckinForm({
   initial,
@@ -66,21 +79,44 @@ export function CheckinForm({
   const [notes, setNotes] = useState(initial?.notes ?? "")
   const [customDraft, setCustomDraft] = useState("")
   const [pinned, setPinned] = useState<string[]>(preferredSymptoms)
-  // Always start collapsed on Vandaag so a morning check-in doesn't leave a
-  // long open list for the rest of the day. Expand via "Aanpassen" / "Meer…".
-  const [showMore, setShowMore] = useState(false)
+
+  // Compact summary when she already checked in; editor otherwise.
+  const [editing, setEditing] = useState(!checkinHasContent(initial))
+  // Within the editor: show mood/symptoms/notes (true when opening via Aanpassen).
+  const [showDetails, setShowDetails] = useState(checkinHasContent(initial))
+
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle")
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  const hasExtraDetails = Boolean(
-    mood ||
+  const hasAnyInput = Boolean(
+    energy ||
+      mood ||
       sleep ||
       stress ||
       symptoms.length ||
       notes.trim() ||
       Object.keys(symptomDetails).length,
   )
+
+  const summaryChips = useMemo(() => {
+    const chips: string[] = []
+    if (energy != null) chips.push(`Energie ${energy}/5`)
+    if (mood != null) chips.push(`Stemming ${mood}/5`)
+    if (sleep != null) chips.push(`Slaap ${sleep}/5`)
+    if (stress != null) chips.push(`Stress ${stress}/5`)
+    for (const s of symptoms) {
+      if (s === "Anders") continue
+      chips.push(symptomLabel(s))
+    }
+    if (notes.trim()) chips.push("Notitie")
+    return chips
+  }, [energy, mood, sleep, stress, symptoms, notes])
+
+  function openEditor({ withDetails }: { withDetails: boolean }) {
+    setShowDetails(withDetails)
+    setEditing(true)
+  }
 
   function toggleSymptom(value: string) {
     setSymptoms((prev) => {
@@ -165,7 +201,8 @@ export function CheckinForm({
         setErrorMsg(result.error)
       } else {
         setStatus("saved")
-        setShowMore(false)
+        setEditing(false)
+        setShowDetails(false)
       }
     })
   }
@@ -177,18 +214,81 @@ export function CheckinForm({
   }, [status])
 
   const detailSymptoms = symptoms.filter(
-    (s) => s !== "Geen klachten" && s !== "Anders" && (SYMPTOMS_WITH_SEVERITY.has(s) || SYMPTOMS_WITH_COUNT.has(s) || allCustoms.includes(s)),
+    (s) =>
+      s !== "Geen klachten" &&
+      s !== "Anders" &&
+      (SYMPTOMS_WITH_SEVERITY.has(s) || SYMPTOMS_WITH_COUNT.has(s) || allCustoms.includes(s)),
   )
 
+  // ── Compact summary after check-in ─────────────────────────────────────
+  if (hasAnyInput && !editing) {
+    const visible = summaryChips.slice(0, 5)
+    const overflow = summaryChips.length - visible.length
+
+    return (
+      <div className="rounded-2xl border border-line/70 px-4 py-3.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-1.5">
+              <h3 className="font-display text-base text-ink leading-tight">Hoe voel je je vandaag?</h3>
+              {status === "saved" && (
+                <span className="animate-pop-in inline-flex items-center gap-1 text-xs font-medium text-sage-dark shrink-0">
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                  Opgeslagen
+                </span>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {visible.map((chip) => (
+                <span key={chip} className="text-xs text-ink bg-cream-soft rounded-full px-2.5 py-1">
+                  {chip}
+                </span>
+              ))}
+              {overflow > 0 && (
+                <span className="text-xs text-ink-soft px-1 py-1">+{overflow}</span>
+              )}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => openEditor({ withDetails: true })}
+            className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-sage-dark min-h-11 px-1 touch-manipulation rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            aria-expanded={false}
+          >
+            Aanpassen
+            <ChevronDown className="h-4 w-4" strokeWidth={2} />
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Editor ─────────────────────────────────────────────────────────────
   return (
     <div className="rounded-2xl border border-line/70 p-4">
-      <h3 className="font-display text-lg text-ink mb-1">Hoe voel je je vandaag?</h3>
-      <p className="text-ink-soft text-sm mb-3.5">Helemaal optioneel — vul in wat je wilt bijhouden.</p>
+      <div className="flex items-start justify-between gap-3 mb-1">
+        <h3 className="font-display text-lg text-ink">Hoe voel je je vandaag?</h3>
+        {hasAnyInput && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditing(false)
+              setShowDetails(false)
+            }}
+            className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-ink-soft min-h-11 px-1 touch-manipulation"
+            aria-expanded={true}
+          >
+            Inklappen
+            <ChevronUp className="h-4 w-4" strokeWidth={2} />
+          </button>
+        )}
+      </div>
+      <p className="text-ink-soft text-sm mb-3">Helemaal optioneel — vul in wat je wilt bijhouden.</p>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3.5">
         <RatingScale label="Energie" value={energy} onChange={setEnergy} lowLabel="Laag" highLabel="Hoog" />
 
-        {showMore ? (
+        {showDetails ? (
           <>
             <RatingScale label="Stemming" value={mood} onChange={setMood} lowLabel="Somber" highLabel="Blij" />
             <div>
@@ -257,7 +357,8 @@ export function CheckinForm({
                               selected={symptomDetails[symptom]?.severity === opt.value}
                               onClick={() =>
                                 setDetail(symptom, {
-                                  severity: symptomDetails[symptom]?.severity === opt.value ? undefined : opt.value,
+                                  severity:
+                                    symptomDetails[symptom]?.severity === opt.value ? undefined : opt.value,
                                 })
                               }
                             >
@@ -305,54 +406,10 @@ export function CheckinForm({
               />
             </div>
           </>
-        ) : hasExtraDetails ? (
-          <div className="rounded-xl bg-cream-soft/80 px-3 py-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-ink-soft mb-1.5">Ingevuld voor vandaag</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {mood != null && (
-                    <span className="text-xs text-ink bg-surface rounded-full px-2.5 py-1">
-                      Stemming {mood}/5
-                    </span>
-                  )}
-                  {sleep != null && (
-                    <span className="text-xs text-ink bg-surface rounded-full px-2.5 py-1">
-                      Slaap {sleep}/5
-                    </span>
-                  )}
-                  {stress != null && (
-                    <span className="text-xs text-ink bg-surface rounded-full px-2.5 py-1">
-                      Stress {stress}/5
-                    </span>
-                  )}
-                  {symptoms.slice(0, 4).map((s) => (
-                    <span key={s} className="text-xs text-ink bg-surface rounded-full px-2.5 py-1">
-                      {symptomLabel(s)}
-                    </span>
-                  ))}
-                  {symptoms.length > 4 && (
-                    <span className="text-xs text-ink-soft px-1 py-1">+{symptoms.length - 4}</span>
-                  )}
-                  {notes.trim() && (
-                    <span className="text-xs text-ink bg-surface rounded-full px-2.5 py-1">Notitie</span>
-                  )}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowMore(true)}
-                className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-sage-dark min-h-11 px-1 touch-manipulation rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-              >
-                Aanpassen
-                <ChevronDown className="h-4 w-4" strokeWidth={2} />
-              </button>
-            </div>
-          </div>
         ) : (
           <button
             type="button"
-            onClick={() => setShowMore(true)}
+            onClick={() => setShowDetails(true)}
             className="self-start inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-11 py-1 touch-manipulation"
           >
             Meer over vandaag toevoegen
@@ -364,23 +421,6 @@ export function CheckinForm({
           <Button onClick={handleSave} disabled={isPending}>
             {isPending ? "Bezig met opslaan..." : "Check-in opslaan"}
           </Button>
-          {showMore && hasExtraDetails && (
-            <button
-              type="button"
-              onClick={() => setShowMore(false)}
-              className="text-sm font-medium text-ink-soft min-h-11 px-1 touch-manipulation"
-            >
-              Inklappen
-            </button>
-          )}
-          {status === "saved" && (
-            <span className="animate-pop-in inline-flex items-center gap-1.5 text-sm text-sage-dark font-medium">
-              <span className="h-5 w-5 rounded-full bg-sage-soft flex items-center justify-center">
-                <Check className="h-3 w-3" strokeWidth={3} />
-              </span>
-              Opgeslagen
-            </span>
-          )}
           {status === "error" && <span className="text-sm text-danger">{errorMsg}</span>}
         </div>
       </div>
