@@ -3,7 +3,6 @@ import { ChevronRight, UserRound, Sparkles, CalendarHeart, Bell } from "lucide-r
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfileOverview } from "@/lib/data/profile"
 import { ProfileHero } from "@/components/profile/profile-hero"
-import { ProfileSectionNav } from "@/components/profile/profile-section-nav"
 import { ThemeSection } from "@/components/profile/theme-section"
 import type { ThemePreference } from "@/lib/actions/profile"
 import { ProgressSection } from "@/components/profile/progress-section"
@@ -62,8 +61,6 @@ export default async function ProfielPage() {
         avatarUrl={profile.avatar_url}
         memberSince={stats.memberSince}
       />
-
-      <ProfileSectionNav />
 
       <ThemeSection initial={themePreference} />
 

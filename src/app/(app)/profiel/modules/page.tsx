@@ -2,7 +2,6 @@ import Link from "next/link"
 import dynamic from "next/dynamic"
 import { ChevronRight } from "lucide-react"
 import { BackButton } from "@/components/ui/back-button"
-import { ProfileSectionNav } from "@/components/profile/profile-section-nav"
 import { loadProfileSettings } from "@/lib/data/profile-settings-page"
 
 const ProfileForm = dynamic(
@@ -32,7 +31,6 @@ export default async function ProfielModulesPage() {
           <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden />
         </Link>
       </div>
-      <ProfileSectionNav />
       <ProfileForm
         profile={data.profile!}
         cycleProfile={data.cycleProfile}

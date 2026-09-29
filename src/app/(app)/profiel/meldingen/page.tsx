@@ -1,6 +1,5 @@
 import dynamic from "next/dynamic"
 import { BackButton } from "@/components/ui/back-button"
-import { ProfileSectionNav } from "@/components/profile/profile-section-nav"
 import { RemindersSection } from "@/components/profile/reminders-section"
 import { PushNotificationsCard } from "@/components/notifications/push-notifications-card"
 import { loadProfileSettings } from "@/lib/data/profile-settings-page"
@@ -25,7 +24,6 @@ export default async function ProfielMeldingenPage() {
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Meldingen & Buddy</h1>
         <p className="text-sm text-ink-soft mt-1">Wanneer Cyclus zich laat horen — en in welke toon.</p>
       </div>
-      <ProfileSectionNav />
       <ProfileForm
         profile={data.profile}
         cycleProfile={data.cycleProfile}

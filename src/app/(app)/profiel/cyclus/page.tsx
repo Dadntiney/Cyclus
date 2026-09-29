@@ -1,6 +1,5 @@
 import dynamic from "next/dynamic"
 import { BackButton } from "@/components/ui/back-button"
-import { ProfileSectionNav } from "@/components/profile/profile-section-nav"
 import { loadProfileSettings } from "@/lib/data/profile-settings-page"
 
 const ProfileForm = dynamic(
@@ -23,7 +22,6 @@ export default async function ProfielCyclusPage() {
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Cyclus</h1>
         <p className="text-sm text-ink-soft mt-1">Lengte, levensfase en wat je merkt in je lichaam.</p>
       </div>
-      <ProfileSectionNav />
       <ProfileForm
         profile={data.profile!}
         cycleProfile={data.cycleProfile}

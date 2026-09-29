@@ -194,6 +194,13 @@ export default async function VoorJouPage() {
         <p className="text-xs text-ink-soft mt-3">
           Cyclus-tools zoals je arts-samenvatting en klachtenlast vind je onder Cyclus.
         </p>
+        <Link
+          href="/profiel/modules"
+          className="mt-1 inline-flex items-center gap-0.5 min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
+        >
+          Modules aan- of uitzetten
+          <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden />
+        </Link>
       </div>
 
       {disabledKeys.length > 0 && (
