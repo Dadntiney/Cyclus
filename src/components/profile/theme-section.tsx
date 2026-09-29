@@ -38,7 +38,7 @@ export function ThemeSection({ initial }: { initial: ThemePreference }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-base font-medium text-ink">Weergave</p>
-          <p className="text-sm text-ink-soft mt-0.5">Licht, donker of zoals je telefoon.</p>
+          <p className="text-sm text-ink-soft mt-0.5">Dag, nacht of zoals je telefoon.</p>
         </div>
         <div className="flex flex-wrap gap-1.5 shrink-0">
           {THEME_OPTIONS.map((opt) => (
