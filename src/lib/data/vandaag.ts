@@ -6,7 +6,6 @@ import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } fr
 import {
   computeCycleLengthTrend,
   computePhaseSymptomInsights,
-  getTopPhaseSymptomInsight,
 } from "@/lib/cycle/patterns"
 import { computeSymptomCoOccurrences } from "@/lib/cycle/co-occurrence"
 import { composeBodyRecognition } from "@/lib/cycle/body-translator"
@@ -193,16 +192,17 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
 
   // One personal recognition line for Vandaag — phase pattern, co-occurrence,
   // or cycle-length nod. Null when history isn't rich enough yet.
-  const phaseInsight = cycleEstimate
-    ? getTopPhaseSymptomInsight(
-        computePhaseSymptomInsights(cycleHistory, checkinsForPatterns),
-        cycleEstimate.phase,
+  const phaseInsightsForToday = cycleEstimate
+    ? computePhaseSymptomInsights(cycleHistory, checkinsForPatterns).filter(
+        (insight) => insight.phase === cycleEstimate.phase,
       )
-    : null
+    : []
+  const phaseInsight = phaseInsightsForToday[0] ?? null
   const bodyRecognition = composeBodyRecognition({
     phase: cycleEstimate?.phase ?? null,
     phaseLabel: cycleEstimate?.phaseLabel ?? null,
     phaseInsight,
+    phaseInsights: phaseInsightsForToday,
     cycleLengthTrend: computeCycleLengthTrend(cycleHistory),
     coOccurrences: computeSymptomCoOccurrences(checkinsForPatterns),
     todaySymptoms: checkin?.symptoms ?? [],

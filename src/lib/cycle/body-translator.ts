@@ -33,6 +33,13 @@ export interface ComposeBodyRecognitionInput {
   phaseLabel: string | null
   /** Strongest phase/symptom pattern for *today's* phase, if any. */
   phaseInsight: PhaseSymptomInsight | null
+  /**
+   * All phase insights for today's phase (strongest first). When present,
+   * preferred over `phaseInsight` so a today-logged symptom can match any
+   * of her known patterns for this phase — not only the alphabetically-
+   * first strongest one.
+   */
+  phaseInsights?: PhaseSymptomInsight[]
   cycleLengthTrend: CycleLengthTrendInsight | null
   coOccurrences: SymptomCoOccurrence[]
   todaySymptoms: string[]
@@ -71,27 +78,40 @@ function shortCycleLength(insight: CycleLengthTrendInsight): string | null {
  * 2. Known phase pattern (no today match needed)
  * 3. Co-occurrence triggered by something she logged today
  * 4. Cycle-length becoming more variable (peri signal)
+ *
+ * When several phase insights exist for today, prefer one whose symptom
+ * she also logged today — otherwise the strongest (caller-ordered) pattern.
  */
 export function composeBodyRecognition(input: ComposeBodyRecognitionInput): BodyRecognition | null {
   const {
     phaseLabel,
     phaseInsight,
+    phaseInsights = [],
     cycleLengthTrend,
     coOccurrences,
     todaySymptoms,
   } = input
 
   const today = cleanToday(todaySymptoms)
+  const candidates =
+    phaseInsights.length > 0
+      ? phaseInsights
+      : phaseInsight
+        ? [phaseInsight]
+        : []
 
-  if (phaseInsight && phaseLabel) {
-    const match = today.find((s) => s === phaseInsight.symptom)
-    if (match) {
-      return { kind: "phase_today", text: phaseTodayMatch(match, phaseLabel) }
-    }
+  const matchedInsight =
+    (phaseLabel && today.length
+      ? candidates.find((insight) => today.includes(insight.symptom))
+      : null) ?? null
+
+  if (matchedInsight && phaseLabel) {
+    return { kind: "phase_today", text: phaseTodayMatch(matchedInsight.symptom, phaseLabel) }
   }
 
-  if (phaseInsight && phaseLabel) {
-    return { kind: "phase_pattern", text: shortPhasePattern(phaseInsight, phaseLabel) }
+  const fallbackInsight = candidates[0] ?? null
+  if (fallbackInsight && phaseLabel) {
+    return { kind: "phase_pattern", text: shortPhasePattern(fallbackInsight, phaseLabel) }
   }
 
   const coToday = getCoOccurrenceForToday(coOccurrences, today)
