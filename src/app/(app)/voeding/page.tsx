@@ -50,7 +50,7 @@ export default async function VoedingPage() {
           </div>
           <Link
             href="/voeding/favorieten"
-            className="flex items-center gap-1.5 text-sm font-medium text-sage-dark"
+            className="inline-flex items-center gap-1.5 min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
           >
             <Heart className="h-4 w-4" />
             Favorieten

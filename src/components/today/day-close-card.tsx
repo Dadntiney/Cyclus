@@ -161,7 +161,7 @@ export function DayCloseCard({
             {item.key === "sleep" && !item.done && (
               <a
                 href="#slaap-vandaag"
-                className="ml-auto text-xs font-medium text-sage-dark touch-manipulation"
+                className="ml-auto inline-flex items-center min-h-11 text-xs font-medium text-sage-dark touch-manipulation"
               >
                 Naar slaap
               </a>
@@ -175,7 +175,7 @@ export function DayCloseCard({
       <button
         type="button"
         onClick={markClosed}
-        className="w-full inline-flex items-center justify-center min-h-11 rounded-xl border border-line/70 bg-cream-soft/60 text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+        className="w-full inline-flex items-center justify-center min-h-11 rounded-xl bg-sage-fill text-sm font-medium text-white touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 motion-safe:active:scale-[0.99] transition-transform"
       >
         Markeer dag als afgesloten
       </button>

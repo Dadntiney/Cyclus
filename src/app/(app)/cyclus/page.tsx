@@ -10,7 +10,7 @@ import {
 } from "@/lib/cycle/history"
 import {
   computePhaseSymptomInsights,
-  formatPhaseSymptomInsight,
+  formatPhaseSymptomInsightShort,
   computeCycleLengthTrend,
   formatCycleLengthTrendInsight,
 } from "@/lib/cycle/patterns"
@@ -167,9 +167,9 @@ export default async function CyclusPage() {
   )
 
   const insightLines: string[] = [
-    ...phaseInsights.map((i) => formatPhaseSymptomInsight(i, phaseLabel(i.phase))),
+    ...phaseInsights.map((i) => formatPhaseSymptomInsightShort(i, phaseLabel(i.phase))),
     ...personalInsights.map((i) => i.text),
-  ].slice(0, 4)
+  ].slice(0, 2)
 
   const changeItems: { title: string; body: string }[] = [
     ...deviationAlerts.map((a) => ({ title: a.title, body: a.body })),
@@ -297,8 +297,7 @@ export default async function CyclusPage() {
       {/* 3. Calendar — primary action */}
       {!postCycleMode && (
         <section>
-          <h2 className="font-display text-lg text-ink mb-1">Kalender</h2>
-          <p className="text-sm text-ink-soft mb-3">Tik op een dag om menstruatie aan of uit te zetten.</p>
+          <h2 className="font-display text-lg text-ink mb-3">Kalender</h2>
           <Card>
             <Calendar
               menstruationDates={menstruationDates}

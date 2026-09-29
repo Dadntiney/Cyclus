@@ -1,10 +1,10 @@
+import dynamic from "next/dynamic"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfileOverview } from "@/lib/data/profile"
 import { getReminders } from "@/lib/data/reminders"
 import { ProfileHero } from "@/components/profile/profile-hero"
 import { ProfileJumpNav } from "@/components/profile/profile-jump-nav"
 import { ThemeSection } from "@/components/profile/theme-section"
-import { ProfileForm } from "@/components/profile/profile-form"
 import type { ThemePreference } from "@/lib/actions/profile"
 import { RemindersSection } from "@/components/profile/reminders-section"
 import { PushNotificationsCard } from "@/components/notifications/push-notifications-card"
@@ -13,6 +13,15 @@ import { FavoritesSection } from "@/components/profile/favorites-section"
 import { PrivacySection } from "@/components/profile/privacy-section"
 import { logout } from "@/lib/actions/auth"
 import { Button } from "@/components/ui/button"
+
+const ProfileForm = dynamic(
+  () => import("@/components/profile/profile-form").then((m) => ({ default: m.ProfileForm })),
+  {
+    loading: () => (
+      <div className="rounded-2xl border border-line/70 bg-surface p-5 min-h-48 skeleton" aria-hidden />
+    ),
+  },
+)
 
 export default async function ProfielPage() {
   const user = await getAuthedUser()

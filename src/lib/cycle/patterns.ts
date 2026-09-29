@@ -103,6 +103,16 @@ export function formatPhaseSymptomInsight(insight: PhaseSymptomInsight, phaseLab
   return `Je gaf bij ${cycleWord} cycli vaker "${symptomLabel(insight.symptom).toLowerCase()}" aan rond de ${phaseLabel.toLowerCase()} — mogelijk een patroon dat bij jou past.`
 }
 
+/** Shorter list form for the Cyclus hub — same claim, less template weight. */
+export function formatPhaseSymptomInsightShort(insight: PhaseSymptomInsight, phaseLabel: string): string {
+  const symptom = symptomLabel(insight.symptom).toLowerCase()
+  const phase = phaseLabel.toLowerCase()
+  if (insight.cyclesWithSymptom === insight.cyclesConsidered) {
+    return `Rond de ${phase} noteer je vaker "${symptom}" — zo in al je laatste cycli.`
+  }
+  return `Rond de ${phase} noteer je vaker "${symptom}" (${insight.cyclesWithSymptom} van ${insight.cyclesConsidered} cycli).`
+}
+
 /**
  * Whether her cycle length is swinging more or less than before — the
  * "wordt mijn cyclus onregelmatiger, of juist stabieler?" question, most

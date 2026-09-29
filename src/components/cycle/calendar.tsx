@@ -182,6 +182,10 @@ export function Calendar({
               type="button"
               disabled={future}
               onClick={() => handleDayClick(day)}
+              aria-label={`${format(day, "d MMMM yyyy", { locale: nl })}${
+                isMenstruation ? ", menstruatie — tik om uit te zetten" : ", tik om menstruatie te markeren"
+              }${isToday(day) ? ", vandaag" : ""}${future ? ", toekomst" : ""}`}
+              aria-pressed={isMenstruation}
               className={cn(
                 "relative h-11 rounded-full text-sm mx-auto w-11 flex items-center justify-center transition-colors touch-manipulation",
                 isSameMonth(day, month) ? "text-ink" : "text-ink-soft/40",

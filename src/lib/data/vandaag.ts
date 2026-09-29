@@ -53,13 +53,19 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
   ] = await Promise.all([
     supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
     supabase.from("daily_checkins").select("*").eq("user_id", userId).eq("date", today).maybeSingle(),
+    // Bounded catalogs — recommendation only needs a shortlist, not the full
+    // library (that lives on /training and /voeding). Keeps Vandaag fast.
     movementEnabled
-      ? supabase.from("workouts").select("id, title, type, duration, difficulty, image_url")
+      ? supabase
+          .from("workouts")
+          .select("id, title, type, duration, difficulty, image_url")
+          .limit(48)
       : Promise.resolve({ data: [] }),
     nutritionEnabled
       ? supabase
           .from("recipes")
-          .select("id, title, category, preparation_time, nutrition_information, image_url, ingredients")
+          .select("id, title, category, preparation_time, nutrition_information, image_url")
+          .limit(64)
       : Promise.resolve({ data: [] }),
     supabase
       .from("daily_checkins")

@@ -15,7 +15,7 @@ export interface PersonalSleepPattern {
 type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty" | "image_url">
 type Recipe = Pick<
   Tables<"recipes">,
-  "id" | "title" | "category" | "preparation_time" | "nutrition_information" | "image_url" | "ingredients"
+  "id" | "title" | "category" | "preparation_time" | "nutrition_information" | "image_url"
 >
 type Profile = Tables<"profiles">
 type Checkin = Tables<"daily_checkins">

@@ -59,9 +59,9 @@
   --color-danger-fill-darker: #8f3f47;
   --color-warning: #8a5a1e;
   --color-warning-soft: #f5e6cf;
-  /* Muted plum for informational banners (overgang, mentale rust) — not ovulation */
-  --color-info: #5b4a80;
-  --color-info-soft: #ede8f4;
+  /* Soft ink-sage for informational banners — stays on-brand, not purple */
+  --color-info: #5a6354;
+  --color-info-soft: #e8ebe4;
   --color-success: var(--color-sage-dark);
   --color-success-soft: var(--color-sage-soft);
 
@@ -126,9 +126,8 @@
     --color-danger-soft: #3a2225;
     --color-warning: #d9a54a;
     --color-warning-soft: #3a2f1a;
-    /* Less neon than previous lilac */
-    --color-info: #a89cc4;
-    --color-info-soft: #2a2438;
+    --color-info: #a8b39c;
+    --color-info-soft: #2a2e26;
 
     --color-phase-menstruatie: #e0a37e;
     --color-phase-menstruatie-soft: #3d2c22;
@@ -174,8 +173,8 @@
   --color-danger-soft: #3a2225;
   --color-warning: #d9a54a;
   --color-warning-soft: #3a2f1a;
-  --color-info: #a89cc4;
-  --color-info-soft: #2a2438;
+  --color-info: #a8b39c;
+  --color-info-soft: #2a2e26;
 
   --color-phase-menstruatie: #e0a37e;
   --color-phase-menstruatie-soft: #3d2c22;

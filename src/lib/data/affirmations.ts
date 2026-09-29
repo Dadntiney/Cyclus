@@ -92,3 +92,31 @@ export function getAffirmationsByThemes(themes: string[]): Affirmation[] {
   const filtered = AFFIRMATIONS.filter((a) => themes.includes(a.theme))
   return filtered.length ? filtered : AFFIRMATIONS
 }
+
+/**
+ * Maps mental-wellbeing preference categories (profile) onto affirmation
+ * themes so "Een klein moment voor jezelf" actually reflects what she chose.
+ */
+const CATEGORY_TO_AFFIRMATION_THEMES: Record<string, AffirmationTheme[]> = {
+  rust: ["rust"],
+  angst_spanning: ["rust", "loslaten"],
+  overprikkeling: ["rust", "loslaten"],
+  prikkelbaarheid: ["zelfcompassie", "rust"],
+  somberheid: ["moeilijke_dagen", "zelfcompassie"],
+  eenzaamheid: ["zelfcompassie"],
+  piekeren: ["loslaten", "rust"],
+  zelfvertrouwen: ["zelfvertrouwen"],
+  slaap: ["rust"],
+  positiviteit: ["energie", "zelfvertrouwen"],
+  zelfzorg: ["zelfcompassie", "lichaam"],
+}
+
+export function affirmationThemesForCategories(categories: string[]): AffirmationTheme[] {
+  const themes = new Set<AffirmationTheme>()
+  for (const category of categories) {
+    for (const theme of CATEGORY_TO_AFFIRMATION_THEMES[category] ?? []) {
+      themes.add(theme)
+    }
+  }
+  return [...themes]
+}

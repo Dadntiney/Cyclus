@@ -27,9 +27,12 @@ function isLowCarb(recipe: RecipeCardData): boolean {
   return match ? Number(match[0]) <= 20 : false
 }
 
+const INITIAL_VISIBLE = 12
+
 export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [timeFilter, setTimeFilter] = useState<number | null>(null)
+  const [showAll, setShowAll] = useState(false)
 
   const filtered = useMemo(() => {
     let result = recipes
@@ -56,27 +59,40 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
     return result
   }, [recipes, activeFilter, timeFilter])
 
+  // Reset pagination when filters change so she isn't stuck past the fold.
+  const visible = showAll ? filtered : filtered.slice(0, INITIAL_VISIBLE)
+  const hiddenCount = Math.max(0, filtered.length - visible.length)
+
   return (
     <div>
-      <div className="flex w-full gap-2 mb-4 overflow-x-auto lg:flex-wrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex w-full gap-2 mb-4 overflow-x-auto safe-x lg:flex-wrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <Chip
           className="shrink-0"
           selected={activeFilter === null}
-          onClick={() => setActiveFilter(null)}
+          onClick={() => {
+            setActiveFilter(null)
+            setShowAll(false)
+          }}
         >
           Alles
         </Chip>
         <Chip
           className="shrink-0"
           selected={activeFilter === BUDGET_FILTER}
-          onClick={() => setActiveFilter(BUDGET_FILTER)}
+          onClick={() => {
+            setActiveFilter(BUDGET_FILTER)
+            setShowAll(false)
+          }}
         >
           {BUDGET_FILTER}
         </Chip>
         <Chip
           className="shrink-0"
           selected={activeFilter === LOW_CARB_FILTER}
-          onClick={() => setActiveFilter(LOW_CARB_FILTER)}
+          onClick={() => {
+            setActiveFilter(LOW_CARB_FILTER)
+            setShowAll(false)
+          }}
         >
           {LOW_CARB_FILTER}
         </Chip>
@@ -85,7 +101,10 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
             key={category}
             className="shrink-0"
             selected={activeFilter === category}
-            onClick={() => setActiveFilter(category)}
+            onClick={() => {
+              setActiveFilter(category)
+              setShowAll(false)
+            }}
           >
             {category}
           </Chip>
@@ -95,7 +114,10 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
             key={cuisine}
             className="shrink-0"
             selected={activeFilter === cuisine}
-            onClick={() => setActiveFilter(cuisine)}
+            onClick={() => {
+              setActiveFilter(cuisine)
+              setShowAll(false)
+            }}
           >
             {cuisine}
           </Chip>
@@ -119,11 +141,22 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
       </div>
 
       {filtered.length ? (
-        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filtered.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {visible.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
+          </div>
+          {hiddenCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowAll(true)}
+              className="mt-4 w-full inline-flex items-center justify-center min-h-11 rounded-xl border border-line text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            >
+              Toon {hiddenCount} recepten meer
+            </button>
+          )}
+        </>
       ) : (
         <EmptyState
           icon={<Salad className="h-6 w-6" />}
