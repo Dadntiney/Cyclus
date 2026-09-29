@@ -130,20 +130,12 @@ export function WeekView({
             {format(parseISO(day.date), "d MMMM", { locale: nl })}
           </span>
         </div>
-        {day.isToday && (
-          <p className="text-xs text-ink-soft mb-2.5">
-            Weekplan voor vandaag.{" "}
-            <Link href="/vandaag" className="font-medium text-sage-dark underline-offset-2 hover:underline">
-              Check-in en snelle tips staan op Vandaag
-            </Link>
-            .
-          </p>
-        )}
-        {!day.isToday && !day.anticipationNote && <div className="mb-2.5" />}
-        {!day.isToday && day.anticipationNote && (
+        {!day.isToday && day.anticipationNote ? (
           <p className="text-xs text-ink-soft mb-2.5 leading-relaxed">
             Bij jou vaak een zwaardere dag — plan staat iets zachter.
           </p>
+        ) : (
+          <div className="mb-2.5" />
         )}
 
         <div className="flex flex-col gap-4">
