@@ -19,7 +19,7 @@ export default async function TrainingPage() {
   if (profile && !profile.movement_enabled) {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <BackButton href="/voor-jou" label="Modules" />
+        <BackButton href="/vandaag" label="Vandaag" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Beweging</h1>
         <p className="text-sm text-ink-soft mb-6">Jouw weekplanning en trainingsbibliotheek.</p>
         <Card>
@@ -49,7 +49,7 @@ export default async function TrainingPage() {
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
-        <BackButton href="/voor-jou" label="Modules" />
+        <BackButton href="/vandaag" label="Vandaag" />
         <div className="flex items-start justify-between">
           <div>
             <h1 className="font-display text-2xl lg:text-3xl text-ink">Beweging</h1>

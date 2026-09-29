@@ -492,6 +492,13 @@ export function ProfileForm({
               Kies welke vormen van bewegen relevant voor je zijn — daarop stemmen we Vandaag,
               Beweging en Deze week af.
             </p>
+            <Link
+              href="/training"
+              className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mb-3 min-h-11 touch-manipulation"
+            >
+              Open bewegingsbibliotheek
+              <span aria-hidden>→</span>
+            </Link>
             <div className="flex flex-wrap gap-2 mb-4">
               {TRAINING_OPTIONS.map((opt) => (
                 <Chip
@@ -554,6 +561,13 @@ export function ProfileForm({
               Kies een stijl en eventuele voorkeuren — daarop stemmen we Vandaag, Voeding en
               Deze week af.
             </p>
+            <Link
+              href="/voeding"
+              className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mb-3 min-h-11 touch-manipulation"
+            >
+              Open recepten
+              <span aria-hidden>→</span>
+            </Link>
             <div className="flex flex-wrap gap-2 mb-4">
               {NUTRITION_STYLE_OPTIONS.map((opt) => (
                 <Chip
@@ -660,8 +674,15 @@ export function ProfileForm({
           <>
             <p className="text-xs text-ink-soft mb-3">
               Korte meditaties, mindfulness-oefeningen en affirmaties. Kies waar je behoefte aan
-              hebt — je vindt alles terug bij Mijn mentale rust.
+              hebt — je vindt alles terug bij Mentale rust.
             </p>
+            <Link
+              href="/mentale-rust"
+              className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mb-3 min-h-11 touch-manipulation"
+            >
+              Open mentale rust
+              <span aria-hidden>→</span>
+            </Link>
             <div className="flex flex-wrap gap-2">
               {MENTAL_WELLBEING_CATEGORY_OPTIONS.map((opt) => (
                 <Chip
@@ -792,10 +813,19 @@ export function ProfileForm({
           </div>
         </div>
         {state.sleepTrackingEnabled ? (
-          <p className="text-xs text-ink-soft mt-2">
-            Je ziet nu op Vandaag een snelle manier om je bedtijd en opsta-tijd in te vullen, en bij
-            Slaap je eigen slaapduur en eenvoudige inzichten.
-          </p>
+          <>
+            <p className="text-xs text-ink-soft mt-2">
+              Je ziet nu op Vandaag een snelle manier om je bedtijd en opsta-tijd in te vullen, en bij
+              Slaap je eigen slaapduur en eenvoudige inzichten.
+            </p>
+            <Link
+              href="/slaap"
+              className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mt-2 min-h-11 touch-manipulation"
+            >
+              Open slaap
+              <span aria-hidden>→</span>
+            </Link>
+          </>
         ) : (
           <p className="text-xs text-ink-soft mt-2">
             Slaap bijhouden staat uit — je ziet nergens slaapvragen of slaapkaarten. Zet dit weer

@@ -451,6 +451,22 @@ export default async function CyclusPage() {
           </Link>
 
           <Link
+            href="/kennis"
+            className="flex items-center justify-between rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation"
+          >
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-ink inline-flex items-center gap-1.5">
+                <Lightbulb className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
+                Kennis
+              </span>
+              <span className="block text-xs text-ink-soft mt-0.5">
+                Uitleg over hormonen, overgang en leefstijl.
+              </span>
+            </span>
+            <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
+          </Link>
+
+          <Link
             href="/cyclus/overgang"
             className="flex items-center justify-between rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation"
           >

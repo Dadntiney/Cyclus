@@ -6,6 +6,7 @@ import {
   MessageCircle,
   BarChart3,
   Shield,
+  NotebookPen,
 } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfileOverview } from "@/lib/data/profile"
@@ -20,7 +21,7 @@ import { Button } from "@/components/ui/button"
  * Profiel hub — doors only.
  *
  * Job: “waar moet ik zijn?” in <5s. Content lives on subpages.
- * Favorites live on /voor-jou (not duplicated here).
+ * Favorites live inside Voeding / Beweging (not duplicated here).
  */
 const OVER_MIJ = [
   {
@@ -55,6 +56,12 @@ const APP = [
     icon: MessageCircle,
     title: "Buddy",
     description: "Welke toon en hoe vaak je Buddy zich laat horen.",
+  },
+  {
+    href: "/dagboek",
+    icon: NotebookPen,
+    title: "Dagboek",
+    description: "Schrijf van je af — alleen jij ziet dit.",
   },
 ] as const
 

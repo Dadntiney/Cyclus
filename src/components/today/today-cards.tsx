@@ -134,6 +134,27 @@ export function TodayCards({
           </div>
         )}
       </div>
+
+      {(movementEnabled || nutritionEnabled) && (
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+          {movementEnabled && (
+            <Link
+              href="/training"
+              className="inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
+            >
+              Alle trainingen
+            </Link>
+          )}
+          {nutritionEnabled && (
+            <Link
+              href="/voeding"
+              className="inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
+            >
+              Alle recepten
+            </Link>
+          )}
+        </div>
+      )}
     </section>
   )
 }

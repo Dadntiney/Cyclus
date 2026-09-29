@@ -35,7 +35,7 @@ export default async function SlaapPage() {
   if (!profile || profile.sleep_tracking_enabled !== true) {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <BackButton href="/voor-jou" label="Modules" />
+        <BackButton href="/vandaag" label="Vandaag" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Slaap</h1>
         <p className="text-sm text-ink-soft mb-6">Je slaapduur en eenvoudige inzichten.</p>
         <Card>
@@ -73,7 +73,7 @@ export default async function SlaapPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <BackButton href="/voor-jou" label="Modules" />
+      <BackButton href="/vandaag" label="Vandaag" />
 
       <h1 className="font-display text-2xl text-ink mb-1">Slaap</h1>
       <p className="text-sm text-ink-soft mb-6">Je slaapduur en eenvoudige inzichten, puur voor jezelf.</p>

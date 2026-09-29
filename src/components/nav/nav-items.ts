@@ -1,8 +1,8 @@
 import { Sun, CalendarDays, CalendarHeart, MessageCircle, User } from "lucide-react"
 
 /**
- * Five primary tabs. Module browsing lives at /voor-jou (from Profiel), not
- * as a sixth tab or a launcher strip on Vandaag — Vandaag stays one day job.
+ * Five primary tabs. Libraries open from Vandaag / Deze week; toggles under
+ * Profiel → Wat ik gebruik. No separate modules home.
  */
 export const NAV_ITEMS = [
   { href: "/vandaag", label: "Vandaag", icon: Sun },
