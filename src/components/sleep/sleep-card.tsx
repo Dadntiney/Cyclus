@@ -17,6 +17,7 @@ export function SleepCard({ date, entry }: { date: string; entry: SleepEntry | n
   const [open, setOpen] = useState(false)
   const hasDuration = Boolean(entry?.bedtime && entry?.wake_time)
   const durationMinutes = hasDuration ? computeSleepDurationMinutes(entry!.bedtime!, entry!.wake_time!) : null
+  const showDuration = durationMinutes != null && durationMinutes > 0
 
   return (
     <>
@@ -30,7 +31,7 @@ export function SleepCard({ date, entry }: { date: string; entry: SleepEntry | n
             <Moon className="h-4.5 w-4.5 text-sage-dark" strokeWidth={1.75} />
           </span>
           <div className="min-w-0 flex-1">
-            {hasDuration ? (
+            {showDuration ? (
               <>
                 <p className="font-medium text-ink text-sm">{formatSleepDuration(durationMinutes!)} geslapen</p>
                 {entry?.wake_feeling && WAKE_FEELING_BY_VALUE.has(entry.wake_feeling) && (

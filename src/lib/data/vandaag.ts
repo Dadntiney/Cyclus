@@ -12,10 +12,7 @@ import { computeSleepDurationMinutes } from "@/lib/sleep/duration"
 import { pickSleepObservation } from "@/lib/sleep/insights"
 import { getPersonalSleepContext } from "@/lib/data/sleep"
 import type { BuddyStyle } from "@/lib/buddy/styles"
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { todayISO } from "@/lib/dates"
 
 /** Deduped per request — Vandaag (and any co-loader) only pays once. */
 export const getVandaagData = cache(async function getVandaagData(userId: string) {
@@ -103,6 +100,9 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     sleepEntry?.bedtime && sleepEntry?.wake_time
       ? computeSleepDurationMinutes(sleepEntry.bedtime, sleepEntry.wake_time)
       : null
+  // Equal bed/wake clocks to 0 — treat as “not a real night” for insights.
+  const todaySleepDurationMinutes =
+    sleepDurationMinutes != null && sleepDurationMinutes > 0 ? sleepDurationMinutes : null
 
   const personalSleepPattern = sleepEnabled ? personalSleepContext.personalSleepPattern : null
 
@@ -133,7 +133,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
         profile,
         cycleEstimate,
         latestCheckin: checkin ?? null,
-        todaySleepDurationMinutes: sleepDurationMinutes,
+        todaySleepDurationMinutes,
         personalSleepPattern,
         workouts: workouts ?? [],
         recipes: recipes ?? [],
@@ -158,7 +158,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
   const sleepObservation =
     sleepEnabled
       ? pickSleepObservation({
-          durationMinutes: sleepDurationMinutes,
+          durationMinutes: todaySleepDurationMinutes,
           wakeFeeling: sleepEntry?.wake_feeling ?? null,
           energy: checkin?.energy ?? null,
         })

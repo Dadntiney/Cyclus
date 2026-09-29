@@ -2,10 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
+import { todayISO } from "@/lib/dates"
 
 export async function fetchAlternativeExercise(muscleGroup: string | null, excludeId: string) {
   if (!muscleGroup) return null

@@ -13,8 +13,10 @@ function toMinutes(time: string): number {
 export function computeSleepDurationMinutes(bedtime: string, wakeTime: string): number {
   const bed = toMinutes(bedtime)
   const wake = toMinutes(wakeTime)
+  // Same clock time can't mean a full 24h night in this UI — treat as 0.
+  if (wake === bed) return 0
   // Wake at/before bedtime (clock-wise) means she slept past midnight.
-  return wake <= bed ? wake + 24 * 60 - bed : wake - bed
+  return wake < bed ? wake + 24 * 60 - bed : wake - bed
 }
 
 export function formatSleepDuration(minutes: number): string {

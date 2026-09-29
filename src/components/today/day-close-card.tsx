@@ -1,9 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
 import { Moon, CheckCircle2, Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { CHECKIN_SAVED_EVENT } from "@/lib/client/checkin-events"
 import {
   loadWeekOverrides,
   WEEK_OVERRIDES_CHANGED_EVENT,
@@ -16,6 +16,9 @@ import {
  *
  * Always available (not hour-gated): an evening-only gate hid the card when
  * hydration lagged, and users who close their day earlier still need it.
+ *
+ * Check-in status updates live via CHECKIN_SAVED_EVENT so autosave flips
+ * “nog open” → “ingevuld” without waiting for a full navigation.
  */
 export function DayCloseCard({
   userId,
@@ -37,6 +40,10 @@ export function DayCloseCard({
   hasSleepEntry: boolean
 }) {
   const [closed, setClosed] = useState(false)
+  // Optimistic flip after autosave; server `hasCheckin` wins once refresh lands.
+  // Remount via key={date} on the parent so a new day starts clean.
+  const [optimisticCheckin, setOptimisticCheckin] = useState(false)
+  const checkinDone = hasCheckin || optimisticCheckin
   const [movementHandled, setMovementHandled] = useState(movementDone)
   const [hydrated, setHydrated] = useState(false)
   const storageKey = `cyclus:day-closed:${date}`
@@ -58,12 +65,19 @@ export function DayCloseCard({
       }
       setHydrated(true)
     }
+    function onCheckinSaved(event: Event) {
+      const detail = (event as CustomEvent<{ date?: string }>).detail
+      if (detail?.date && detail.date !== date) return
+      setOptimisticCheckin(true)
+    }
     syncFromClient()
     window.addEventListener(WEEK_OVERRIDES_CHANGED_EVENT, syncFromClient)
     window.addEventListener("focus", syncFromClient)
+    window.addEventListener(CHECKIN_SAVED_EVENT, onCheckinSaved)
     return () => {
       window.removeEventListener(WEEK_OVERRIDES_CHANGED_EVENT, syncFromClient)
       window.removeEventListener("focus", syncFromClient)
+      window.removeEventListener(CHECKIN_SAVED_EVENT, onCheckinSaved)
     }
   }, [storageKey, userId, weekStartISO, date, movementDone])
 
@@ -88,8 +102,8 @@ export function DayCloseCard({
   const items = [
     {
       key: "checkin",
-      done: hasCheckin,
-      label: hasCheckin ? "Check-in ingevuld" : "Check-in nog open",
+      done: checkinDone,
+      label: checkinDone ? "Check-in ingevuld" : "Check-in nog open",
       href: null as string | null,
     },
     ...(movementEnabled
@@ -157,6 +171,11 @@ export function DayCloseCard({
               <Circle className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
             )}
             <span className={cn(item.done ? "text-ink" : "text-ink-soft")}>{item.label}</span>
+            {item.key === "checkin" && !item.done && (
+              <a href="#checkin-vandaag" className="ml-auto text-xs font-medium text-sage-dark touch-manipulation">
+                Naar check-in
+              </a>
+            )}
             {item.key === "sleep" && !item.done && (
               <a href="#slaap-vandaag" className="ml-auto text-xs font-medium text-sage-dark touch-manipulation">
                 Naar slaap

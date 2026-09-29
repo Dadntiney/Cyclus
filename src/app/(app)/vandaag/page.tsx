@@ -4,11 +4,15 @@ import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { TodayCards } from "@/components/today/today-cards"
 import { CheckinForm } from "@/components/today/checkin-form"
+import { DayCloseCard } from "@/components/today/day-close-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
 import { MenstruationQuickAction } from "@/components/cycle/menstruation-quick-action"
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import type { CyclePhase } from "@/lib/cycle/estimate"
+import { checkinHasContent } from "@/lib/checkin-content"
+import { todayISO } from "@/lib/dates"
+import { computeSleepDurationMinutes } from "@/lib/sleep/duration"
 import { cn } from "@/lib/utils"
 import { greeting } from "@/lib/greeting"
 
@@ -44,13 +48,14 @@ const PHASE_TAGLINE: Record<CyclePhase, string> = {
  * 1. Hello + cycle context (incl. menstruatie-actie hier — vindbaar, niet luid)
  * 2. One “voor jou vandaag” surface with a single primary CTA
  * 3. Light check-in
- * 4. Optional sleep / meds only
+ * 4. Optional sleep / meds
+ * 5. Soft day wrap-up (checklist, not a second form)
  */
 export default async function VandaagPage() {
   const user = await getAuthedUser()
   if (!user) return null
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayISO()
 
   const {
     profile,
@@ -180,12 +185,14 @@ export default async function VandaagPage() {
             />
           )}
 
-          <CheckinForm
-            initial={checkin ?? null}
-            mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
-            sleepTrackingEnabled={sleepEnabled}
-            customSymptoms={profile?.custom_symptoms ?? []}
-          />
+          <div id="checkin-vandaag">
+            <CheckinForm
+              initial={checkin ?? null}
+              mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
+              sleepTrackingEnabled={sleepEnabled}
+              customSymptoms={profile?.custom_symptoms ?? []}
+            />
+          </div>
 
           {(sleepEnabled || showMedicationCard) && (
             <section aria-label="Extra voor vandaag" className="flex flex-col gap-3">
@@ -206,6 +213,22 @@ export default async function VandaagPage() {
               {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
             </section>
           )}
+
+          <DayCloseCard
+            key={today}
+            userId={user.id}
+            date={today}
+            weekStartISO={weekStartISO}
+            hasCheckin={checkinHasContent(checkin ?? null)}
+            movementEnabled={profile?.movement_enabled ?? true}
+            movementDone={Boolean(completedWorkout)}
+            sleepTrackingEnabled={sleepEnabled}
+            hasSleepEntry={Boolean(
+              sleepEntry?.bedtime &&
+                sleepEntry?.wake_time &&
+                computeSleepDurationMinutes(sleepEntry.bedtime, sleepEntry.wake_time) > 0,
+            )}
+          />
         </div>
       </div>
     </PullToRefresh>
