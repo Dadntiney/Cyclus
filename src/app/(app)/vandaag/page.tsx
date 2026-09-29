@@ -54,8 +54,6 @@ export default async function VandaagPage() {
   const user = await getAuthedUser()
   if (!user) return null
 
-  const today = new Date().toISOString().slice(0, 10)
-
   const {
     profile,
     cycleProfile,
@@ -66,6 +64,7 @@ export default async function VandaagPage() {
     bodyRecognition,
     anticipation,
     checkin,
+    today,
     weekStartISO,
     completedWorkout,
     workoutAlternatives,
@@ -73,6 +72,7 @@ export default async function VandaagPage() {
     mentalWellbeingSuggestion,
     sleepEntry,
     sleepObservation,
+    recipeImageById,
   } = await getVandaagData(user.id)
 
   const showMedicationCard =
@@ -185,6 +185,7 @@ export default async function VandaagPage() {
               mentalSuggestion={mentalWellbeingSuggestion}
               focusLine={personalizedFocus}
               showRecovery={wantRecoveryRow}
+              recipeImageById={recipeImageById}
             />
           )}
 

@@ -31,11 +31,13 @@ export function TodayMealsRows({
   date,
   weekStartISO,
   meals,
+  recipeImageById = {},
 }: {
   userId: string
   date: string
   weekStartISO: string
   meals: TodayMeal[]
+  recipeImageById?: Record<string, string | null>
 }) {
   const [overrides, setOverrides] = useState<Record<string, DayOverride>>({})
 
@@ -87,6 +89,10 @@ export function TodayMealsRows({
           )
         }
 
+        const imageUrl = swapped
+          ? (recipeImageById[recipeId] ?? null)
+          : (meal.recipe?.image_url ?? recipeImageById[recipeId] ?? null)
+
         return (
           <Link
             key={meal.slot}
@@ -95,7 +101,7 @@ export function TodayMealsRows({
           >
             <RecipeImage
               title={title}
-              imageUrl={swapped ? null : meal.recipe?.image_url ?? null}
+              imageUrl={imageUrl}
               className="h-11 w-11 rounded-xl shrink-0"
               sizes="44px"
             />

@@ -261,5 +261,8 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     mentalWellbeingSuggestion,
     sleepEntry,
     sleepObservation,
+    recipeImageById: Object.fromEntries(
+      (weekCtx?.recipes ?? []).map((r) => [r.id, r.image_url ?? null]),
+    ) as Record<string, string | null>,
   }
 })

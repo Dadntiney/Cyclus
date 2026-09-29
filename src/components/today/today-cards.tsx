@@ -6,8 +6,9 @@ import type { Recommendation } from "@/lib/recommendations/engine"
 import type { MentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
 
 /**
- * One composition for today’s plan — same meals + workout as Deze week’s
- * current day, plus check-in framing and mental/recovery rows.
+ * Vandaag plan: movement first (today’s primary action), then the same
+ * meals as Deze week. No library footer — Week is in the nav; full
+ * libraries stay reachable from Profiel → Wat ik gebruik and recipe/workout detail.
  */
 export function TodayCards({
   recommendation,
@@ -19,6 +20,7 @@ export function TodayCards({
   mentalSuggestion = null,
   focusLine = null,
   showRecovery = true,
+  recipeImageById = {},
 }: {
   recommendation: Recommendation
   userId: string
@@ -28,8 +30,8 @@ export function TodayCards({
   completedWorkout: { workoutId: string; title: string; duration: number } | null
   mentalSuggestion?: MentalWellbeingSuggestion | null
   focusLine?: string | null
-  /** When false, hide the generic recovery row (keeps mental suggestion). */
   showRecovery?: boolean
+  recipeImageById?: Record<string, string | null>
 }) {
   const { training, nutrition, recovery, movementEnabled, nutritionEnabled } = recommendation
 
@@ -78,6 +80,7 @@ export function TodayCards({
                 userId={userId}
                 date={date}
                 weekStartISO={weekStartISO}
+                recipeImageById={recipeImageById}
                 meals={meals.map((m) => ({
                   slot: m.slot,
                   label: m.label,
@@ -134,33 +137,6 @@ export function TodayCards({
           </div>
         )}
       </div>
-
-      {(movementEnabled || nutritionEnabled) && (
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-          {movementEnabled && (
-            <Link
-              href="/training"
-              className="inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
-            >
-              Alle trainingen
-            </Link>
-          )}
-          {nutritionEnabled && (
-            <Link
-              href="/voeding"
-              className="inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
-            >
-              Alle recepten
-            </Link>
-          )}
-          <Link
-            href="/deze-week"
-            className="inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
-          >
-            Weekplan
-          </Link>
-        </div>
-      )}
     </section>
   )
 }
