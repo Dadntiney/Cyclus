@@ -1,15 +1,13 @@
 import { getWorkoutVisual, type WorkoutTone } from "@/lib/training/workout-visual"
 import { cn } from "@/lib/utils"
 
-const TONE_CLASSES: Record<WorkoutTone, { bg: string; ring: string; icon: string }> = {
+const TONE_CLASSES: Record<WorkoutTone, { bg: string; icon: string }> = {
   sage: {
     bg: "bg-[linear-gradient(135deg,var(--color-sage-soft)_0%,var(--color-cream)_100%)]",
-    ring: "bg-surface/70",
     icon: "text-sage-dark",
   },
   peach: {
     bg: "bg-[linear-gradient(135deg,var(--color-peach-soft)_0%,var(--color-cream)_100%)]",
-    ring: "bg-surface/70",
     icon: "text-peach",
   },
 }
@@ -25,6 +23,9 @@ interface WorkoutMediaProps {
  * RecipeMedia (see its comment), keyed by `workouts.type` instead of title
  * so every workout of the same kind (yoga, hardlopen, ...) reads
  * consistently even before it has a real photo.
+ *
+ * The icon sits directly on the tinted thumbnail (no white disc), so small
+ * square thumbs on Vandaag / week stay clean and photo-like.
  */
 export function WorkoutMedia({ type, className, iconClassName }: WorkoutMediaProps) {
   const { icon: Icon, tone } = getWorkoutVisual(type)
@@ -43,15 +44,10 @@ export function WorkoutMedia({ type, className, iconClassName }: WorkoutMediaPro
           <rect width="100%" height="100%" fill={`url(#workout-grain-${tone})`} />
         </svg>
       </div>
-      <div
-        className={cn(
-          "relative flex items-center justify-center rounded-full shadow-sm",
-          tones.ring,
-          iconClassName ?? "h-14 w-14",
-        )}
-      >
-        <Icon className={cn(tones.icon, iconClassName ? "h-1/2 w-1/2" : "h-6 w-6")} strokeWidth={1.5} />
-      </div>
+      <Icon
+        className={cn("relative", tones.icon, iconClassName ?? "h-7 w-7")}
+        strokeWidth={1.5}
+      />
     </div>
   )
 }

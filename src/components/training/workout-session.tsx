@@ -98,7 +98,7 @@ export function WorkoutSession({
           title={workout.title}
           imageUrl={workout.image_url}
           className="aspect-[16/9] lg:aspect-[21/9] w-full rounded-3xl"
-          iconClassName="h-20 w-20"
+          iconClassName="h-10 w-10"
           sizes="(min-width: 1024px) 768px, 100vw"
           priority
         />
