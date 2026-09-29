@@ -28,7 +28,7 @@ export default async function TrainingPage() {
             title="Beweging staat nu uit"
             description="Je ziet hierdoor nergens trainingsadvies. Wil je dit toch weer gebruiken?"
             action={
-              <Link href="/profiel/modules#beweging" className={buttonVariants({ variant: "secondary" })}>
+              <Link href="/profiel/gebruik#beweging" className={buttonVariants({ variant: "secondary" })}>
                 Zet aan in mijn profiel
               </Link>
             }
@@ -73,7 +73,7 @@ export default async function TrainingPage() {
             {rawPreferences.length ? "Trainingen voor jou" : "Alle trainingen"}
           </h2>
           <Link
-            href="/profiel/modules#beweging"
+            href="/profiel/gebruik#beweging"
             className="inline-flex items-center gap-1 text-xs font-medium text-sage-dark touch-manipulation"
           >
             <Settings2 className="h-3.5 w-3.5" strokeWidth={1.75} />

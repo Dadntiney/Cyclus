@@ -25,7 +25,7 @@ export function ProgressSection({
 }) {
   return (
     <Card>
-      <h2 className="font-display text-lg text-ink mb-1">Mijn voortgang</h2>
+      <h2 className="font-display text-lg text-ink mb-1">Voortgang</h2>
       <p className="text-sm text-ink-soft mb-4">
         Geen scores, geen druk — gewoon een overzicht van wat je al hebt opgebouwd.
       </p>

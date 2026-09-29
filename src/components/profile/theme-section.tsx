@@ -11,6 +11,7 @@ const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
   { value: "auto", label: "Automatisch" },
 ]
 
+/** Compact Weergave control for the profile hub — not a marketing card. */
 export function ThemeSection({ initial }: { initial: ThemePreference }) {
   const [theme, setTheme] = useState<ThemePreference>(initial)
   const [error, setError] = useState<string | null>(null)
@@ -33,22 +34,24 @@ export function ThemeSection({ initial }: { initial: ThemePreference }) {
   }
 
   return (
-    <div className="rounded-2xl border border-line/70 p-4">
-      <h2 className="font-display text-lg text-ink mb-1">Weergave</h2>
-      <p className="text-xs text-ink-soft mb-3">
-        Kies hoe Cyclus eruitziet. Automatisch volgt de instelling van je apparaat.
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {THEME_OPTIONS.map((opt) => (
-          <Chip
-            key={opt.value}
-            selected={theme === opt.value}
-            disabled={isPending}
-            onClick={() => handleSelect(opt.value)}
-          >
-            {opt.label}
-          </Chip>
-        ))}
+    <div className="rounded-2xl border border-line/70 bg-surface px-4 py-3.5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-base font-medium text-ink">Weergave</p>
+          <p className="text-sm text-ink-soft mt-0.5">Licht, donker of zoals je telefoon.</p>
+        </div>
+        <div className="flex flex-wrap gap-1.5 shrink-0">
+          {THEME_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value}
+              selected={theme === opt.value}
+              disabled={isPending}
+              onClick={() => handleSelect(opt.value)}
+            >
+              {opt.label}
+            </Chip>
+          ))}
+        </div>
       </div>
       {error && <p className="text-xs text-danger mt-2">{error}</p>}
     </div>

@@ -27,7 +27,7 @@ export default async function VoedingPage() {
             title="Voeding staat nu uit"
             description="Je ziet hierdoor nergens voedingsadvies. Wil je dit toch weer gebruiken?"
             action={
-              <Link href="/profiel/modules#voeding" className={buttonVariants({ variant: "secondary" })}>
+              <Link href="/profiel/gebruik#voeding" className={buttonVariants({ variant: "secondary" })}>
                 Zet aan in mijn profiel
               </Link>
             }

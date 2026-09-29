@@ -81,7 +81,7 @@ interface FormState {
   buddyMessageFrequency: string
 }
 
-export type ProfileFormGroup = "account" | "modules" | "cyclus" | "meldingen"
+export type ProfileFormGroup = "account" | "modules" | "cyclus" | "meldingen" | "buddy"
 
 const MAX_RETRIES = 2
 const RETRY_DELAYS_MS = [600, 1500]
@@ -329,7 +329,7 @@ export function ProfileForm({
       <div className={group === "all" ? "grid gap-5 lg:grid-cols-2 lg:items-start" : "flex flex-col gap-5"}>
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-3">Mijn gegevens</h2>
+        <h2 className="font-display text-lg text-ink mb-3">Naam & leeftijd</h2>
         <div className="flex flex-col gap-4">
           <div>
             <Label htmlFor="name">Naam</Label>
@@ -356,7 +356,7 @@ export function ProfileForm({
 
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-1">Mijn motivatie</h2>
+        <h2 className="font-display text-lg text-ink mb-1">Motivatie</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Waarom doe jij dit voor jezelf? Dit lees jij later terug, voor niemand
           anders zichtbaar.
@@ -373,7 +373,7 @@ export function ProfileForm({
 
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-1">Mijn lichaam</h2>
+        <h2 className="font-display text-lg text-ink mb-1">Lichaam</h2>
         <p className="text-xs text-ink-soft mb-3">Optioneel — helpt om je advies preciezer te maken.</p>
         <div className="flex flex-col gap-4">
           <div>
@@ -415,7 +415,7 @@ export function ProfileForm({
 
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-3">Mijn doelen</h2>
+        <h2 className="font-display text-lg text-ink mb-3">Doelen</h2>
         <div className="flex flex-wrap gap-2">
           {GOAL_OPTIONS.map((opt) => (
             <Chip
@@ -432,7 +432,7 @@ export function ProfileForm({
 
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-3">Mijn aandachtspunten</h2>
+        <h2 className="font-display text-lg text-ink mb-3">Aandachtspunten</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Geen diagnoses — puur om je advies passender te maken.
         </p>
@@ -470,7 +470,7 @@ export function ProfileForm({
       {is("modules") && (
       <Card id="beweging" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-lg text-ink">Mijn beweging</h2>
+          <h2 className="font-display text-lg text-ink">Beweging</h2>
           <div className="flex gap-1.5">
             <Chip
               selected={state.movementEnabled}
@@ -532,7 +532,7 @@ export function ProfileForm({
       {is("modules") && (
       <Card id="voeding" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-lg text-ink">Mijn voeding</h2>
+          <h2 className="font-display text-lg text-ink">Voeding</h2>
           <div className="flex gap-1.5">
             <Chip
               selected={state.nutritionEnabled}
@@ -640,7 +640,7 @@ export function ProfileForm({
       {is("modules") && (
       <Card id="mentale-rust" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-lg text-ink">Mijn mentale rust</h2>
+          <h2 className="font-display text-lg text-ink">Mentale rust</h2>
           <div className="flex gap-1.5">
             <Chip
               selected={state.mentalWellbeingEnabled}
@@ -714,9 +714,7 @@ export function ProfileForm({
         {state.morningReminderEnabled ? (
           <>
             <p className="text-xs text-ink-soft mb-3">
-              Een ochtendmelding op een tijdstip en dagen die jij kiest. Let op: op ons hostingplan
-              kan de push soms iets later of eerder aankomen dan het exacte tijdstip — terwijl je
-              de app open hebt, klopt het tijdstip wel altijd precies.
+              Een kort bericht in de ochtend, op dagen die jij kiest.
             </p>
             <Label htmlFor="morning-time">Tijdstip</Label>
             <Input
@@ -863,15 +861,14 @@ export function ProfileForm({
       </Card>
       )}
 
-      {is("meldingen") && (
+      {is("buddy") && (
       <Card id="buddy" className="scroll-mt-24">
         <div className="flex items-center gap-2 mb-1">
           <BuddyMark size="sm" decorative />
-          <h2 className="font-display text-lg text-ink">Mijn Buddy</h2>
+          <h2 className="font-display text-lg text-ink">Buddy</h2>
         </div>
         <p className="text-xs text-ink-soft mb-3">
-          Optioneel. Kies één of meerdere stijlen die bij je passen — je berichten, tips en
-          weetjes krijgen dan die toon. Kies niets voor de standaard, warme toon.
+          Kies hoe je Buddy klinkt. Niets kiezen = de standaard, warme toon.
         </p>
         <div className="flex flex-wrap gap-2 mb-4">
           <Chip
@@ -894,7 +891,7 @@ export function ProfileForm({
           ))}
         </div>
 
-        <p className="text-sm font-medium text-ink mb-2">Hoe vaak wil je berichten van je Buddy?</p>
+        <p className="text-sm font-medium text-ink mb-2">Hoe vaak?</p>
         <div className="flex flex-wrap gap-2">
           {BUDDY_FREQUENCY_OPTIONS.map((opt) => (
             <Chip
@@ -908,10 +905,9 @@ export function ProfileForm({
         </div>
       </Card>
       )}
-
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-1">Mijn notitie</h2>
+        <h2 className="font-display text-lg text-ink mb-1">Notitie voor mezelf</h2>
         <p className="text-xs text-ink-soft mb-3">
           Een plekje voor jezelf. Alleen jij ziet dit terug.
         </p>
@@ -927,7 +923,7 @@ export function ProfileForm({
 
       {is("cyclus") && (
       <Card id="cyclus" className="scroll-mt-24">
-        <h2 className="font-display text-lg text-ink mb-3">Mijn cyclus</h2>
+        <h2 className="font-display text-lg text-ink mb-3">Cyclusgegevens</h2>
         <div className="flex flex-col gap-4">
           <div>
             <p className="text-sm font-medium text-ink mb-2">Heb je momenteel een menstruatiecyclus?</p>

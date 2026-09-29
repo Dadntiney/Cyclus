@@ -27,7 +27,7 @@ export default async function BoodschappenPage() {
             title="Voeding staat nu uit"
             description="Er is geen boodschappenlijst omdat voeding niet aanstaat in je profiel."
             action={
-              <Link href="/profiel/modules#voeding" className={buttonVariants({ variant: "secondary" })}>
+              <Link href="/profiel/gebruik#voeding" className={buttonVariants({ variant: "secondary" })}>
                 Zet aan in mijn profiel
               </Link>
             }

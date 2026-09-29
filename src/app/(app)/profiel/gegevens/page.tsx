@@ -11,7 +11,7 @@ const ProfileForm = dynamic(
   },
 )
 
-export default async function ProfielCyclusPage() {
+export default async function ProfielGegevensPage() {
   const data = await loadProfileSettings()
   if (!data) return null
 
@@ -19,14 +19,14 @@ export default async function ProfielCyclusPage() {
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-5">
       <div>
         <BackButton href="/profiel" label="Profiel" />
-        <h1 className="font-display text-2xl lg:text-3xl text-ink">Mijn cyclus</h1>
-        <p className="text-sm text-ink-soft mt-1">Lengte, levensfase en wat je in je lichaam merkt.</p>
+        <h1 className="font-display text-2xl lg:text-3xl text-ink">Mijn gegevens</h1>
+        <p className="text-sm text-ink-soft mt-1">Wat jij over jezelf deelt — alleen voor jou.</p>
       </div>
       <ProfileForm
         profile={data.profile!}
         cycleProfile={data.cycleProfile}
         hasMedications={data.hasMedications}
-        group="cyclus"
+        group="account"
       />
     </div>
   )

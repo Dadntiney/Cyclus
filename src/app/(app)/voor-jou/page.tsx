@@ -56,10 +56,10 @@ const DISABLED_HINTS: Record<string, string> = {
 }
 
 const DISABLED_PROFILE_ANCHORS: Record<string, string> = {
-  movement_enabled: "/profiel/modules#beweging",
-  nutrition_enabled: "/profiel/modules#voeding",
-  mental_wellbeing_enabled: "/profiel/modules#mentale-rust",
-  sleep_tracking_enabled: "/profiel/modules#slaap",
+  movement_enabled: "/profiel/gebruik#beweging",
+  nutrition_enabled: "/profiel/gebruik#voeding",
+  mental_wellbeing_enabled: "/profiel/gebruik#mentale-rust",
+  sleep_tracking_enabled: "/profiel/gebruik#slaap",
 }
 
 /**
@@ -195,7 +195,7 @@ export default async function VoorJouPage() {
           Cyclus-tools zoals je arts-samenvatting en klachtenlast vind je onder Cyclus.
         </p>
         <Link
-          href="/profiel/modules"
+          href="/profiel/gebruik"
           className="mt-1 inline-flex items-center gap-0.5 min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
         >
           Modules aan- of uitzetten
