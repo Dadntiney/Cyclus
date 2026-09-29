@@ -11,8 +11,8 @@ import {
 
 /**
  * Compact day wrap-up — not a second questionnaire. Lives at the bottom of
- * Vandaag so she can confirm what still needs a note (check-in, movement,
- * sleep) and mark the day “afgerond” without guilt or extra forms.
+ * Vandaag so she can gently close the day: confirm what was noted (check-in,
+ * movement, sleep) and mark today “afgerond” without guilt or extra forms.
  *
  * Always available (not hour-gated): an evening-only gate hid the card when
  * hydration lagged, and users who close their day earlier still need it.
@@ -123,8 +123,8 @@ export function DayCloseCard({
           <div className="flex items-center gap-2 min-w-0">
             <CheckCircle2 className="h-5 w-5 text-sage-dark shrink-0" strokeWidth={1.75} />
             <div>
-              <p className="text-sm font-medium text-ink">Dag afgerond</p>
-              <p className="text-xs text-ink-soft mt-0.5">Je kunt later nog iets aanpassen.</p>
+              <p className="text-sm font-medium text-ink">Dag afgesloten</p>
+              <p className="text-xs text-ink-soft mt-0.5">Fijn. Je kunt later nog iets aanpassen.</p>
             </div>
           </div>
           <button
@@ -143,10 +143,10 @@ export function DayCloseCard({
     <div className="rounded-2xl border border-line/70 p-4">
       <div className="flex items-center gap-2 mb-1">
         <Moon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-        <h2 className="font-display text-lg text-ink">Dag afronden</h2>
+        <h2 className="font-display text-lg text-ink">Dag afsluiten</h2>
       </div>
       <p className="text-sm text-ink-soft mb-3">
-        Korte check of alles klopt — geen extra vragenlijst.
+        Even checken of vandaag klopt — daarna kun je de dag loslaten.
       </p>
       <ul className="flex flex-col gap-2 mb-3">
         {items.map((item) => (
@@ -173,7 +173,7 @@ export function DayCloseCard({
         onClick={markClosed}
         className="w-full inline-flex items-center justify-center min-h-11 rounded-xl border border-line/70 bg-cream-soft/60 text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
       >
-        Markeer als afgerond
+        Markeer dag als afgesloten
       </button>
     </div>
   )

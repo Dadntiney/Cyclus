@@ -64,8 +64,9 @@ function stateFromCheckin(initial: Checkin | null): FormState {
 /**
  * Light daily check-in for Vandaag.
  *
- * Cold open: energy + need only. Details stay behind “Meer toevoegen”.
- * Autosave like Profiel — no Opslaan button.
+ * Cold open: energy only. Details (mood, stress, klachten, behoefte, notes)
+ * stay behind “Meer toevoegen”. Behoefte comes after klachten — first how
+ * you feel, then what you need. Autosave like Profiel — no Opslaan button.
  */
 export function CheckinForm({
   initial,
@@ -100,7 +101,7 @@ export function CheckinForm({
   const stateRef = useRef(state)
   stateRef.current = state
 
-  // Filled → compact summary. Empty → light editor (energy + need), details closed.
+  // Filled → compact summary. Empty → light editor (energy), details closed.
   const [editing, setEditing] = useState(!checkinHasContent(initial))
   const [showDetails, setShowDetails] = useState(false)
   const [customDraft, setCustomDraft] = useState("")
@@ -136,16 +137,16 @@ export function CheckinForm({
   const summaryChips = useMemo(() => {
     const chips: string[] = []
     if (state.energy != null) chips.push(`Energie ${state.energy}/5`)
-    if (state.need) {
-      const label = NEED_OPTIONS.find((o) => o.value === state.need)?.label
-      if (label) chips.push(label)
-    }
     if (state.mood != null) chips.push(`Stemming ${state.mood}/5`)
     if (!sleepTrackingEnabled && state.sleep != null) chips.push(`Slaap ${state.sleep}/5`)
     if (state.stress != null) chips.push(`Stress ${state.stress}/5`)
     for (const s of state.symptoms) {
       if (s === "Anders") continue
       chips.push(symptomLabel(s))
+    }
+    if (state.need) {
+      const label = NEED_OPTIONS.find((o) => o.value === state.need)?.label
+      if (label) chips.push(label)
     }
     if (state.notes.trim()) chips.push("Notitie")
     return chips
@@ -408,22 +409,6 @@ export function CheckinForm({
           highLabel="Hoog"
         />
 
-        <div>
-          <p className="text-sm font-medium text-ink mb-2">Waar heb je behoefte aan?</p>
-          <div className="flex flex-wrap gap-2">
-            {NEED_OPTIONS.map((opt) => (
-              <Chip
-                key={opt.value}
-                selected={state.need === opt.value}
-                onClick={() => selectNeed(opt.value)}
-              >
-                <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
-                {opt.label}
-              </Chip>
-            ))}
-          </div>
-        </div>
-
         {showDetails ? (
           <>
             <RatingScale
@@ -484,6 +469,22 @@ export function CheckinForm({
                   </Button>
                 </div>
               )}
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-ink mb-2">Waar heb je behoefte aan?</p>
+              <div className="flex flex-wrap gap-2">
+                {NEED_OPTIONS.map((opt) => (
+                  <Chip
+                    key={opt.value}
+                    selected={state.need === opt.value}
+                    onClick={() => selectNeed(opt.value)}
+                  >
+                    <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
+                    {opt.label}
+                  </Chip>
+                ))}
+              </div>
             </div>
 
             <div>

@@ -4,6 +4,7 @@ import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { TodayCards } from "@/components/today/today-cards"
 import { CheckinForm } from "@/components/today/checkin-form"
+import { DayCloseCard } from "@/components/today/day-close-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
 import { MenstruationQuickAction } from "@/components/cycle/menstruation-quick-action"
@@ -45,6 +46,7 @@ const PHASE_TAGLINE: Record<CyclePhase, string> = {
  * 2. One “voor jou vandaag” surface with a single primary CTA
  * 3. Light check-in
  * 4. Optional sleep / meds only
+ * 5. Soft day checkout — close the day without a second form
  */
 export default async function VandaagPage() {
   const user = await getAuthedUser()
@@ -206,6 +208,26 @@ export default async function VandaagPage() {
               {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
             </section>
           )}
+
+          <DayCloseCard
+            userId={user.id}
+            date={today}
+            weekStartISO={weekStartISO}
+            hasCheckin={Boolean(
+              checkin &&
+                (checkin.energy ||
+                  checkin.mood ||
+                  checkin.sleep ||
+                  checkin.stress ||
+                  (checkin.symptoms?.length ?? 0) > 0 ||
+                  checkin.need ||
+                  (checkin.notes?.trim()?.length ?? 0) > 0),
+            )}
+            movementEnabled={profile?.movement_enabled ?? true}
+            movementDone={Boolean(completedWorkout)}
+            sleepTrackingEnabled={sleepEnabled}
+            hasSleepEntry={Boolean(sleepEntry)}
+          />
         </div>
       </div>
     </PullToRefresh>
