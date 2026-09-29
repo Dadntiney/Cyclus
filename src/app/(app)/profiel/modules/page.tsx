@@ -1,4 +1,6 @@
+import Link from "next/link"
 import dynamic from "next/dynamic"
+import { ChevronRight } from "lucide-react"
 import { BackButton } from "@/components/ui/back-button"
 import { ProfileSectionNav } from "@/components/profile/profile-section-nav"
 import { loadProfileSettings } from "@/lib/data/profile-settings-page"
@@ -22,6 +24,13 @@ export default async function ProfielModulesPage() {
         <BackButton href="/profiel" label="Profiel" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Modules</h1>
         <p className="text-sm text-ink-soft mt-1">Zet aan wat je wilt gebruiken — niets is verplicht.</p>
+        <Link
+          href="/voor-jou"
+          className="mt-2 inline-flex items-center gap-0.5 min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
+        >
+          Open jouw modules
+          <ChevronRight className="h-4 w-4" strokeWidth={2} aria-hidden />
+        </Link>
       </div>
       <ProfileSectionNav />
       <ProfileForm

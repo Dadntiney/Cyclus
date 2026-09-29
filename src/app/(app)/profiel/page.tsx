@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronRight, UserRound, Layers, CalendarHeart, Bell } from "lucide-react"
+import { ChevronRight, UserRound, Sparkles, CalendarHeart, Bell } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfileOverview } from "@/lib/data/profile"
 import { ProfileHero } from "@/components/profile/profile-hero"
@@ -21,10 +21,10 @@ const HUB_LINKS = [
     description: "Naam, lichaam, doelen en aandachtspunten.",
   },
   {
-    href: "/profiel/modules",
-    icon: Layers,
-    title: "Modules",
-    description: "Beweging, voeding, mentale rust, slaap en medicatie.",
+    href: "/voor-jou",
+    icon: Sparkles,
+    title: "Jouw modules",
+    description: "Beweging, voeding, mentale rust, slaap, kennis en dagboek.",
   },
   {
     href: "/profiel/cyclus",

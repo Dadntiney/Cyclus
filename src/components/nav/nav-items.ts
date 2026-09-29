@@ -1,9 +1,8 @@
 import { Sun, CalendarDays, CalendarHeart, MessageCircle, User } from "lucide-react"
 
 /**
- * Five primary tabs — "Voor jou" stays as a module hub at /voor-jou but is
- * no longer a peer of Vandaag (that duplication made the bar crowded and the
- * product feel like it had two homes).
+ * Five primary tabs. Module browsing lives at /voor-jou (from Profiel), not
+ * as a sixth tab or a launcher strip on Vandaag — Vandaag stays one day job.
  */
 export const NAV_ITEMS = [
   { href: "/vandaag", label: "Vandaag", icon: Sun },
