@@ -59,6 +59,7 @@ export default async function VandaagPage() {
     isMenstruationActive,
     menstruationDay,
     recommendation,
+    bodyRecognition,
     checkin,
     weekStartISO,
     completedWorkout,
@@ -124,8 +125,8 @@ export default async function VandaagPage() {
                   <span className={cn("block text-sm font-medium", tone.text)}>
                     {cycleEstimate.phaseLabel}
                   </span>
-                  <span className="block text-xs text-ink-soft mt-0.5">
-                    {PHASE_TAGLINE[cycleEstimate.phase]}
+                  <span className="block text-xs text-ink-soft mt-0.5 leading-relaxed">
+                    {bodyRecognition?.text ?? PHASE_TAGLINE[cycleEstimate.phase]}
                   </span>
                 </span>
                 <ChevronRight

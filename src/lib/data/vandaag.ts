@@ -3,6 +3,13 @@ import { differenceInCalendarDays, parseISO, startOfWeek, subDays } from "date-f
 import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
+import {
+  computeCycleLengthTrend,
+  computePhaseSymptomInsights,
+  getTopPhaseSymptomInsight,
+} from "@/lib/cycle/patterns"
+import { computeSymptomCoOccurrences } from "@/lib/cycle/co-occurrence"
+import { composeBodyRecognition } from "@/lib/cycle/body-translator"
 import { buildRecommendation } from "@/lib/recommendations/engine"
 import { computeStreak } from "@/lib/data/streak"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
@@ -56,9 +63,9 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
       : Promise.resolve({ data: [] }),
     supabase
       .from("daily_checkins")
-      .select("date")
+      .select("date, symptoms")
       .eq("user_id", userId)
-      .gte("date", weekAgo)
+      .gte("date", sixMonthsAgo)
       .lte("date", today),
     movementEnabled
       ? supabase
@@ -84,7 +91,15 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
       : Promise.resolve({ todaySleepDurationMinutes: null, personalSleepPattern: null }),
   ])
 
-  const streak = computeStreak((recentCheckins ?? []).map((c) => c.date), today)
+  const checkinsForPatterns = (recentCheckins ?? []).map((c) => ({
+    date: c.date,
+    symptoms: c.symptoms ?? [],
+  }))
+  // Streak still only looks at the last week — filter the longer window.
+  const streak = computeStreak(
+    checkinsForPatterns.filter((c) => c.date >= weekAgo).map((c) => c.date),
+    today,
+  )
   const completedThisWeek = (weekSessions ?? []).length
   const todaySession = (weekSessions ?? []).find((s) => s.date === today) ?? null
   const completedWorkoutMeta = todaySession
@@ -176,6 +191,23 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
       image_url: w.image_url,
     }))
 
+  // One personal recognition line for Vandaag — phase pattern, co-occurrence,
+  // or cycle-length nod. Null when history isn't rich enough yet.
+  const phaseInsight = cycleEstimate
+    ? getTopPhaseSymptomInsight(
+        computePhaseSymptomInsights(cycleHistory, checkinsForPatterns),
+        cycleEstimate.phase,
+      )
+    : null
+  const bodyRecognition = composeBodyRecognition({
+    phase: cycleEstimate?.phase ?? null,
+    phaseLabel: cycleEstimate?.phaseLabel ?? null,
+    phaseInsight,
+    cycleLengthTrend: computeCycleLengthTrend(cycleHistory),
+    coOccurrences: computeSymptomCoOccurrences(checkinsForPatterns),
+    todaySymptoms: checkin?.symptoms ?? [],
+  })
+
   return {
     profile,
     cycleProfile,
@@ -184,6 +216,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     isMenstruationActive: activePeriodStart !== null,
     menstruationDay,
     recommendation,
+    bodyRecognition,
     today,
     weekStartISO,
     streak,
