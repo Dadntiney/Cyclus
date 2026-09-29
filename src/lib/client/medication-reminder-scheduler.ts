@@ -1,4 +1,5 @@
 import { isDosingDay, isScheduleStartDay, isScheduleStopDay, type MedicationSchedule } from "@/lib/medication/schedule"
+import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
 
 /**
  * Same in-app-only scheduling model as reminder-scheduler.ts, but "is this
@@ -25,7 +26,7 @@ export function getDueMedicationReminders(
   now: Date,
   wasShown: (id: string, dateISO: string) => boolean,
 ): MedicationReminderLike[] {
-  const todayISO = now.toISOString().slice(0, 10)
+  const todayISO = amsterdamTodayISO(now)
   const nowMinutes = now.getHours() * 60 + now.getMinutes()
 
   return medications.filter((m) => {

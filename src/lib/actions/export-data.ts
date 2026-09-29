@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { todayISO } from "@/lib/dates/amsterdam"
 
 export async function exportUserData(): Promise<
   { error: string; data?: undefined } | { error?: undefined; data: string; filename: string }
@@ -54,7 +55,7 @@ export async function exportUserData(): Promise<
     favorites: favorites.data ?? [],
   }
 
-  const date = new Date().toISOString().slice(0, 10)
+  const date = todayISO()
   return {
     data: JSON.stringify(payload, null, 2),
     filename: `cyclus-gegevens-${date}.json`,

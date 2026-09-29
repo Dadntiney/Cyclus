@@ -24,6 +24,7 @@ import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { format, parseISO, subDays } from "date-fns"
 import { nl } from "date-fns/locale"
+import { todayDate, todayISO } from "@/lib/dates/amsterdam"
 import {
   Droplet,
   Sparkles,
@@ -48,7 +49,7 @@ export default async function CyclusPage() {
   const user = await getAuthedUser()
   if (!user) return null
 
-  const sixMonthsAgo = format(subDays(new Date(), 200), "yyyy-MM-dd")
+  const sixMonthsAgo = format(subDays(todayDate(), 200), "yyyy-MM-dd")
 
   const [profile, { data: cycleProfile }, { data: logs }, { data: checkins }, { data: periRows }] =
     await Promise.all([
@@ -76,7 +77,7 @@ export default async function CyclusPage() {
   const periLatest = periRows?.[0] ?? null
 
   const trackFlowEnabled = profile?.track_flow_intensity ?? false
-  const today = format(new Date(), "yyyy-MM-dd")
+  const today = todayISO()
   const lifeStage = cycleProfile?.life_stage ?? null
   const lifeStageLabel = LIFE_STAGE_OPTIONS.find((o) => o.value === lifeStage)?.label
   const postCycleMode = lifeStage === "menopauze" || cycleProfile?.has_cycle === false

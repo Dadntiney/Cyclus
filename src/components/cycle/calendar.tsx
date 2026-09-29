@@ -15,6 +15,7 @@ import {
 import { nl } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, X, Droplet, Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
 import { toggleMenstruationDay, setCycleLogFlow } from "@/lib/actions/cycle"
 import { FLOW_OPTIONS } from "@/lib/constants"
 
@@ -50,7 +51,7 @@ export function Calendar({
   }, [month])
 
   const leadingBlanks = (getDay(startOfMonth(month)) + 6) % 7
-  const todayISO = format(new Date(), "yyyy-MM-dd")
+  const todayISO = amsterdamTodayISO()
 
   function handleDayClick(day: Date) {
     const iso = format(day, "yyyy-MM-dd")

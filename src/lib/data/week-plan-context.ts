@@ -1,6 +1,7 @@
 import { cache } from "react"
 import { format, startOfWeek, subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
+import { todayDate, todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
 import { getProfile } from "@/lib/data/profile"
 import {
   buildWeekPlan,
@@ -37,11 +38,12 @@ export interface WeekPlanContext {
  */
 export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPlanContext | null> => {
   const supabase = await createClient()
-  const now = new Date()
-  const weekStart = startOfWeek(now, { weekStartsOn: 1 })
+  // Calendar day in Europe/Amsterdam — not the UTC server clock.
+  const today = todayDate()
+  const todayISO = amsterdamTodayISO()
+  const weekStart = startOfWeek(today, { weekStartsOn: 1 })
   const weekStartISO = format(weekStart, "yyyy-MM-dd")
-  const todayISO = format(now, "yyyy-MM-dd")
-  const sixMonthsAgo = format(subDays(now, 200), "yyyy-MM-dd")
+  const sixMonthsAgo = format(subDays(today, 200), "yyyy-MM-dd")
 
   const [
     profile,
@@ -107,7 +109,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
 
   const days = buildWeekPlan({
     weekStart,
-    today: now,
+    today,
     profile,
     cycleProfile: effectiveCycleProfile,
     workouts: workoutRows,

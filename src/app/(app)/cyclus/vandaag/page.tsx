@@ -3,6 +3,7 @@ import { format, subDays } from "date-fns"
 import { Droplet, CalendarDays } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
+import { todayDate, todayISO } from "@/lib/dates/amsterdam"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import {
   computeCycleHistory,
@@ -26,7 +27,7 @@ export default async function CyclusdagPage() {
   const user = await getAuthedUser()
   if (!user) return null
 
-  const sixMonthsAgo = format(subDays(new Date(), 200), "yyyy-MM-dd")
+  const sixMonthsAgo = format(subDays(todayDate(), 200), "yyyy-MM-dd")
 
   const [profile, { data: cycleProfile }, { data: checkins }, { data: logs }] = await Promise.all([
     getProfile(user.id),
@@ -66,7 +67,7 @@ export default async function CyclusdagPage() {
     )
   }
 
-  const today = format(new Date(), "yyyy-MM-dd")
+  const today = todayISO()
   const cycleHistory = computeCycleHistory(
     withActivePeriod(
       (logs ?? []).map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),

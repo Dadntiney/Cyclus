@@ -3,13 +3,14 @@ import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
 import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { symptomLabel } from "@/lib/constants"
-import { startOfWeek, subDays } from "date-fns"
+import { format, startOfWeek, subDays } from "date-fns"
+import { todayDate, todayISO } from "@/lib/dates/amsterdam"
 
 export async function buildBuddyContext(userId: string): Promise<string[]> {
   const supabase = await createClient()
-  const today = new Date().toISOString().slice(0, 10)
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString().slice(0, 10)
-  const sixMonthsAgo = subDays(new Date(), 200).toISOString().slice(0, 10)
+  const today = todayISO()
+  const weekStart = format(startOfWeek(todayDate(), { weekStartsOn: 1 }), "yyyy-MM-dd")
+  const sixMonthsAgo = format(subDays(todayDate(), 200), "yyyy-MM-dd")
 
   const [
     { data: profile },

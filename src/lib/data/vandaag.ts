@@ -1,6 +1,7 @@
 import { cache } from "react"
 import { differenceInCalendarDays, format, parseISO, startOfWeek, subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
+import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
 import {
@@ -21,14 +22,10 @@ import { pickSleepObservation } from "@/lib/sleep/insights"
 import { getPersonalSleepContext } from "@/lib/data/sleep"
 import type { BuddyStyle } from "@/lib/buddy/styles"
 
-function todayISO() {
-  return format(new Date(), "yyyy-MM-dd")
-}
-
 /** Deduped per request — Vandaag (and any co-loader) only pays once. */
 export const getVandaagData = cache(async function getVandaagData(userId: string) {
   const supabase = await createClient()
-  const today = todayISO()
+  const today = amsterdamTodayISO()
   const weekAgo = subDays(new Date(`${today}T12:00:00`), 6)
   const weekAgoISO = format(weekAgo, "yyyy-MM-dd")
   const sixMonthsAgo = format(subDays(new Date(`${today}T12:00:00`), 200), "yyyy-MM-dd")

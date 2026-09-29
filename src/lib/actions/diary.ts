@@ -2,16 +2,13 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { todayISO } from "@/lib/dates/amsterdam"
 import { z } from "zod"
 
 const entrySchema = z.object({
   body: z.string().trim().min(1, "Schrijf iets op").max(8000),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 })
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 export async function createDiaryEntry(input: z.infer<typeof entrySchema>) {
   const parsed = entrySchema.safeParse(input)

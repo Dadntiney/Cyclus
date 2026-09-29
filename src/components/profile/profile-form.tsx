@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Input, Label, Textarea } from "@/components/ui/input"
 import { Chip } from "@/components/ui/chip"
 import { TagListInput } from "@/components/ui/tag-list-input"
+import { todayISO } from "@/lib/dates/amsterdam"
 import {
   GOAL_OPTIONS,
   TRAINING_OPTIONS,
@@ -981,7 +982,7 @@ export function ProfileForm({
                   id="lastPeriodStart"
                   type="date"
                   value={state.lastPeriodStart}
-                  max={new Date().toISOString().slice(0, 10)}
+                  max={todayISO()}
                   onChange={(e) => applyUpdate((s) => ({ ...s, lastPeriodStart: e.target.value }), "debounced")}
                   onBlur={onBlurFlush}
                 />

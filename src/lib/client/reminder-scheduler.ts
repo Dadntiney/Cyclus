@@ -9,6 +9,8 @@
  * without native push infrastructure.
  */
 
+import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
+
 export interface ReminderLike {
   id: string
   type: string
@@ -40,7 +42,7 @@ export function getDueReminders(
   now: Date,
   wasShown: (reminderId: string, dateISO: string) => boolean,
 ): ReminderLike[] {
-  const todayISO = now.toISOString().slice(0, 10)
+  const todayISO = amsterdamTodayISO(now)
   const weekday = isoWeekday(now)
   const nowMinutes = now.getHours() * 60 + now.getMinutes()
 

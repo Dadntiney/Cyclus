@@ -6,6 +6,7 @@ import { isDosingDay, isScheduleStartDay, isScheduleStopDay, type MedicationSche
 import { resolveReminderText } from "@/lib/buddy/reminder-labels"
 import { getMorningMessage } from "@/lib/data/morning-messages"
 import { REMINDER_TYPE_OPTIONS, type MorningReminderContentType } from "@/lib/constants"
+import { todayDate, todayISO } from "@/lib/dates/amsterdam"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 60
@@ -23,18 +24,8 @@ export const maxDuration = 60
 // for today — a day-level match, not a time-of-day match. Upgrading to
 // Vercel Pro and tightening vercel.json's schedule (e.g. every 15 minutes)
 // is what would be needed for exact per-user times.
-const TIMEZONE = "Europe/Amsterdam"
-
 function todayInTimezone(): { date: Date; dateISO: string } {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date())
-  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "00"
-  const dateISO = `${get("year")}-${get("month")}-${get("day")}`
-  return { date: new Date(`${dateISO}T00:00:00`), dateISO }
+  return { date: todayDate(), dateISO: todayISO() }
 }
 
 const REMINDER_TYPE_URL: Record<string, string> = {
@@ -235,7 +226,7 @@ export async function GET(request: NextRequest) {
       // Day-level match only, same honest limitation as generic reminders
       // above: her chosen time is respected exactly by the in-app toast
       // while Cyclus is open, but this once-daily cron can only send around
-      // its own fixed run time (see vercel.json / the TIMEZONE comment).
+      // its own fixed run time (see vercel.json / the Amsterdam-timezone comment).
       if (
         profile?.morning_reminder_enabled === true &&
         profile.morning_reminder_days.includes(weekday) &&

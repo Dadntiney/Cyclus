@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input"
 import { TagListInput } from "@/components/ui/tag-list-input"
+import { todayISO } from "@/lib/dates/amsterdam"
 import {
   GOAL_OPTIONS,
   TRAINING_OPTIONS,
@@ -598,7 +599,7 @@ function CycleStep({
               id="lastPeriodStart"
               type="date"
               value={data.lastPeriodStart}
-              max={new Date().toISOString().slice(0, 10)}
+              max={todayISO()}
               onChange={(e) => setData((d) => ({ ...d, lastPeriodStart: e.target.value }))}
             />
           </div>

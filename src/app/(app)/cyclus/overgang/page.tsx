@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Stethoscope } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
+import { todayISO } from "@/lib/dates/amsterdam"
 import { LIFE_STAGE_KNOWLEDGE } from "@/lib/cycle/life-stage-knowledge"
 import { Card } from "@/components/ui/card"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
@@ -28,7 +29,7 @@ export default async function OvergangPage() {
     .eq("user_id", user.id)
     .maybeSingle()
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayISO()
   const funFact =
     LIFE_STAGE_KNOWLEDGE.funFacts[seededIndex(`${user.id}-${today}-lifestage`, LIFE_STAGE_KNOWLEDGE.funFacts.length)]
 

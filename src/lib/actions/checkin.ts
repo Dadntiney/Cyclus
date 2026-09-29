@@ -2,11 +2,8 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { todayISO } from "@/lib/dates/amsterdam"
 import { checkinSchema, type CheckinInput } from "@/lib/validations/checkin"
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
-}
 
 function cleanSymptomDetails(
   symptoms: string[],

@@ -2,6 +2,7 @@ import { cache } from "react"
 import { Sprout, Footprints, Dumbbell, Flame, Trophy, Zap, Star, Crown, Heart } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
+import { todayISO } from "@/lib/dates/amsterdam"
 import { computeStreak } from "@/lib/data/streak"
 import { getFavoriteRecipes } from "@/lib/data/nutrition"
 import { getFavoriteExercises } from "@/lib/data/training"
@@ -20,10 +21,6 @@ export interface Milestone {
   id: string
   icon: LucideIcon
   label: string
-}
-
-function todayISO() {
-  return new Date().toISOString().slice(0, 10)
 }
 
 /** Longest run of consecutive calendar days in a (possibly unordered) date list. */

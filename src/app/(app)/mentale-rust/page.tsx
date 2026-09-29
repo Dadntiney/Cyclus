@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Brain } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
+import { todayISO } from "@/lib/dates/amsterdam"
 import { MINDFUL_EXERCISES } from "@/lib/data/mindful-exercises"
 import { affirmationThemesForCategories, getAffirmationsByThemes } from "@/lib/data/affirmations"
 import { ExerciseLibrary } from "@/components/mental-wellbeing/exercise-library"
@@ -40,7 +41,7 @@ export default async function MentaleRustPage() {
     )
   }
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayISO()
   const preferredCategories = (profile.mental_wellbeing_categories ?? []) as MentalWellbeingCategory[]
   const affirmations = getAffirmationsByThemes(affirmationThemesForCategories(preferredCategories))
 
