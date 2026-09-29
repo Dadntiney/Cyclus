@@ -22,9 +22,7 @@ export function ProfileHubGroup({
 }) {
   return (
     <section className="flex flex-col gap-2">
-      {title ? (
-        <h2 className="px-1 text-xs font-medium uppercase tracking-wide text-ink-soft">{title}</h2>
-      ) : null}
+      {title ? <h2 className="px-1 text-sm font-medium text-ink-soft">{title}</h2> : null}
       <ul className="overflow-hidden rounded-2xl border border-line/70 bg-surface divide-y divide-line/70">
         {items.map((item) => (
           <li key={item.href}>

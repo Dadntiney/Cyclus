@@ -81,7 +81,7 @@ export default async function ProfielPage() {
 
       <ProfileHubGroup title="Over mij" items={OVER_MIJ} />
 
-      <ProfileHubGroup title="App" items={APP} />
+      <ProfileHubGroup title="In de app" items={APP} />
 
       <ThemeSection initial={themePreference} />
 
