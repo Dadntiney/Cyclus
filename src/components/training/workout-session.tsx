@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ExerciseFavoriteButton } from "@/components/training/exercise-favorite-button"
 import { ExerciseDemo } from "@/components/training/exercise-demo"
-import { ExerciseVideoPlayer } from "@/components/training/exercise-video"
+import { ExerciseInstructionPlayer } from "@/components/training/exercise-instruction-player"
 import { WorkoutImage } from "@/components/training/workout-image"
 import { completeWorkoutSession, fetchAlternativeExercise } from "@/lib/actions/training"
-import { lookupExerciseVideo } from "@/lib/data/exercise-videos"
+import { lookupExerciseInstruction } from "@/lib/training/exercise-instructions"
 import { formatExercisePrescription } from "@/lib/training/prescription"
 import { triggerHaptic } from "@/lib/platform"
 import type { Tables } from "@/types/database"
@@ -22,10 +22,9 @@ function parseSteps(steps: Exercise["steps"]): string[] {
   return Array.isArray(steps) ? steps.filter((s): s is string => typeof s === "string") : []
 }
 
-/** Own media (self-hosted, scalable) always wins; the curated YouTube
- * library is only a stand-in for exercises that don't have real media yet. */
-function ownDemo(ex: Exercise) {
-  return ex.demo_video_url || ex.demo_image_url ? true : false
+/** Self-hosted photo/video wins; otherwise the Cyclus instruction figure. */
+function hasSelfHostedMedia(ex: Exercise) {
+  return Boolean(ex.demo_video_url || ex.demo_image_url)
 }
 
 export function WorkoutSession({
@@ -116,9 +115,9 @@ export function WorkoutSession({
             <p className="text-sm font-medium text-ink mb-3">Wat ga je doen?</p>
             <ul className="flex flex-col gap-3">
               {exercises.map((ex, i) => {
-                const hasOwnDemo = ownDemo(ex)
-                const video = hasOwnDemo ? null : lookupExerciseVideo(ex.name)
-                const hasPreview = hasOwnDemo || Boolean(video)
+                const selfHosted = hasSelfHostedMedia(ex)
+                const instruction = selfHosted ? null : lookupExerciseInstruction(ex.name)
+                const hasPreview = selfHosted || Boolean(instruction)
                 const expanded = previewId === ex.id
                 return (
                   <li key={ex.id} className="flex flex-col gap-2.5">
@@ -144,7 +143,7 @@ export function WorkoutSession({
                         )}
                       </div>
                     </div>
-                    {expanded && hasOwnDemo && (
+                    {expanded && selfHosted && (
                       <ExerciseDemo
                         name={ex.name}
                         muscleGroup={ex.muscle_group}
@@ -153,9 +152,9 @@ export function WorkoutSession({
                         className="ml-8 aspect-video w-[calc(100%-2rem)] rounded-2xl"
                       />
                     )}
-                    {expanded && !hasOwnDemo && video && (
+                    {expanded && !selfHosted && instruction && (
                       <div className="pl-8">
-                        <ExerciseVideoPlayer video={video} exerciseName={ex.name} />
+                        <ExerciseInstructionPlayer instruction={instruction} compact />
                       </div>
                     )}
                   </li>
@@ -191,8 +190,8 @@ export function WorkoutSession({
   if (!current) return null
 
   const steps = parseSteps(current.steps)
-  const currentHasOwnDemo = ownDemo(current)
-  const currentVideo = currentHasOwnDemo ? null : lookupExerciseVideo(current.name)
+  const currentSelfHosted = hasSelfHostedMedia(current)
+  const currentInstruction = currentSelfHosted ? null : lookupExerciseInstruction(current.name)
 
   return (
     <Card>
@@ -200,9 +199,9 @@ export function WorkoutSession({
         Oefening {index + 1} van {exercises.length}
         {current.muscle_group ? ` · ${current.muscle_group}` : ""}
       </p>
-      {currentVideo ? (
+      {currentInstruction ? (
         <div className="mb-3">
-          <ExerciseVideoPlayer video={currentVideo} exerciseName={current.name} />
+          <ExerciseInstructionPlayer instruction={currentInstruction} />
         </div>
       ) : (
         <ExerciseDemo
