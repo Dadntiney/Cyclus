@@ -84,7 +84,9 @@ export function WeekView({
             {phaseContent.label}
             {day.cycleEstimate && ` · cyclusdag ${day.cycleEstimate.cycleDay}`}
           </p>
-          <p className="text-sm text-ink-soft mt-1">{phaseContent.shortDescription}</p>
+          <p className="text-sm text-ink-soft mt-1">
+            {day.anticipationNote ?? phaseContent.shortDescription}
+          </p>
         </div>
       )}
 
@@ -92,16 +94,18 @@ export function WeekView({
         {days.map((d, i) => {
           const dPhase = d.cycleEstimate ? getPhaseContent(d.cycleEstimate.phase) : null
           const selected = i === selectedIndex
+          const anticipated = Boolean(d.anticipationNote)
           return (
             <button
               key={d.date}
               type="button"
               onClick={() => setSelectedIndex(i)}
               aria-pressed={selected}
-              aria-label={`${d.weekday} ${format(parseISO(d.date), "d MMMM", { locale: nl })}${d.isToday ? ", vandaag" : ""}`}
+              aria-label={`${d.weekday} ${format(parseISO(d.date), "d MMMM", { locale: nl })}${d.isToday ? ", vandaag" : ""}${anticipated ? ", bij jou vaak zwaarder" : ""}`}
               className={cn(
                 "flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 min-h-11 touch-manipulation transition-colors",
                 selected ? "bg-sage-fill text-white" : "bg-surface border border-line text-ink",
+                anticipated && !selected && "border-sage/50",
               )}
             >
               <span className="text-[10px] font-medium uppercase opacity-80">{d.weekdayShort}</span>
@@ -135,7 +139,12 @@ export function WeekView({
             .
           </p>
         )}
-        {!day.isToday && <div className="mb-2.5" />}
+        {!day.isToday && !day.anticipationNote && <div className="mb-2.5" />}
+        {!day.isToday && day.anticipationNote && (
+          <p className="text-xs text-ink-soft mb-2.5 leading-relaxed">
+            Bij jou vaak een zwaardere dag — plan staat iets zachter.
+          </p>
+        )}
 
         <div className="flex flex-col gap-4">
           {nutritionEnabled && (

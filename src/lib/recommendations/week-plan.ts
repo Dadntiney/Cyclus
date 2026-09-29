@@ -56,6 +56,11 @@ export interface WeekDayPlan {
   meals: WeekMealSlot[]
   workout: WeekWorkoutSlot
   focusTips: string[]
+  /**
+   * Personal forward-looking note when this day falls in her anticipated
+   * harder stretch — see composeAnticipation. Null on ordinary days.
+   */
+  anticipationNote: string | null
 }
 
 export interface BuildWeekPlanInput {
@@ -76,6 +81,12 @@ export interface BuildWeekPlanInput {
   workouts: Workout[]
   recipes: Recipe[]
   seed: string
+  /**
+   * Dates (ISO) from composeAnticipation.softDates — those days get a
+   * gentler workout tilt and a personal focus tip.
+   */
+  anticipationSoftDates?: string[]
+  anticipationTip?: string | null
 }
 
 function seededIndex(seed: string, length: number): number {
@@ -131,18 +142,33 @@ function pickMeal(
  * user's own data (profile, check-ins) changes.
  */
 export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
-  const { weekStart, today, profile, cycleProfile, workouts, recipes, seed } = input
+  const {
+    weekStart,
+    today,
+    profile,
+    cycleProfile,
+    workouts,
+    recipes,
+    seed,
+    anticipationSoftDates = [],
+    anticipationTip = null,
+  } = input
   const todayISO = format(today, "yyyy-MM-dd")
+  const softDateSet = new Set(anticipationSoftDates)
 
   const gentlerDayIndexes = new Set<number>()
   const phaseByIndex: (CycleEstimate | null)[] = []
   for (let i = 0; i < 7; i++) {
     const date = addDays(weekStart, i)
+    const dateISO = format(date, "yyyy-MM-dd")
     const estimate = cycleProfile
       ? estimateCycle(cycleProfile.last_period_start, cycleProfile.average_cycle_length, cycleProfile.has_cycle, date)
       : null
     phaseByIndex.push(estimate)
-    if (estimate && getPhaseContent(estimate.phase).movement.preferGentler) {
+    if (
+      softDateSet.has(dateISO) ||
+      (estimate && getPhaseContent(estimate.phase).movement.preferGentler)
+    ) {
       gentlerDayIndexes.add(i)
     }
   }
@@ -183,15 +209,21 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
       ),
     }))
 
+    const isAnticipated = softDateSet.has(dateISO)
+
     let workoutReason = "Onderdeel van je weekprogramma."
     if (day.focus === "rust") {
       workoutReason = "Een geplande rustdag."
+    } else if (isAnticipated) {
+      workoutReason = "Iets rustiger getild — rond deze dagen valt het bij jou vaker zwaarder."
     } else if (phaseContent?.movement.preferGentler) {
       workoutReason = `Iets rustiger getild vanwege de ${phaseContent.label.toLowerCase()}.`
     }
 
     const focusTips: string[] = []
-    if (phaseContent) {
+    if (isAnticipated && anticipationTip) {
+      focusTips.push(anticipationTip)
+    } else if (phaseContent) {
       const tips = phaseContent.lifestyleTips
       const first = tips[seededIndex(`${seed}-${dateISO}-tip1`, tips.length)]
       if (first) focusTips.push(`${first.title}: ${first.text}`)
@@ -207,6 +239,7 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
       meals,
       workout: { focus: day.focus, workout: day.workout, reason: workoutReason },
       focusTips,
+      anticipationNote: isAnticipated ? anticipationTip : null,
     }
   })
 }

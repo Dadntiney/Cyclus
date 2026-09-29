@@ -9,6 +9,7 @@ import {
 } from "@/lib/cycle/patterns"
 import { computeSymptomCoOccurrences } from "@/lib/cycle/co-occurrence"
 import { composeBodyRecognition } from "@/lib/cycle/body-translator"
+import { composeAnticipation } from "@/lib/cycle/anticipation"
 import { buildRecommendation } from "@/lib/recommendations/engine"
 import { computeStreak } from "@/lib/data/streak"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
@@ -190,12 +191,11 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
       image_url: w.image_url,
     }))
 
-  // One personal recognition line for Vandaag — phase pattern, co-occurrence,
-  // or cycle-length nod. Null when history isn't rich enough yet.
+  // Personal recognition (today) + anticipation (1–3 days ahead). Both stay
+  // null until history clears a real bar — Vandaag stays calm.
+  const allPhaseInsights = computePhaseSymptomInsights(cycleHistory, checkinsForPatterns)
   const phaseInsightsForToday = cycleEstimate
-    ? computePhaseSymptomInsights(cycleHistory, checkinsForPatterns).filter(
-        (insight) => insight.phase === cycleEstimate.phase,
-      )
+    ? allPhaseInsights.filter((insight) => insight.phase === cycleEstimate.phase)
     : []
   const phaseInsight = phaseInsightsForToday[0] ?? null
   const bodyRecognition = composeBodyRecognition({
@@ -207,6 +207,15 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     coOccurrences: computeSymptomCoOccurrences(checkinsForPatterns),
     todaySymptoms: checkin?.symptoms ?? [],
   })
+  const effectiveLastStart = cycleProfile
+    ? getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory)
+    : null
+  const anticipation = composeAnticipation({
+    lastPeriodStart: effectiveLastStart,
+    averageCycleLength: cycleProfile?.average_cycle_length ?? null,
+    hasCycle: Boolean(cycleProfile?.has_cycle),
+    phaseInsights: allPhaseInsights,
+  })
 
   return {
     profile,
@@ -217,6 +226,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     menstruationDay,
     recommendation,
     bodyRecognition,
+    anticipation,
     today,
     weekStartISO,
     streak,

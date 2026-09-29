@@ -12,6 +12,8 @@ import {
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
 import { filterRecipesByCuisinePrefs } from "@/lib/nutrition/cuisine"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
+import { computePhaseSymptomInsights } from "@/lib/cycle/patterns"
+import { composeAnticipation } from "@/lib/cycle/anticipation"
 import type { Tables } from "@/types/database"
 
 const RECIPE_COLUMNS =
@@ -38,19 +40,30 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
   const sixMonthsAgo = subDays(new Date(), 200).toISOString().slice(0, 10)
 
-  const [profile, { data: cycleProfile }, { data: workouts }, { data: recipes }, { data: cycleLogs }] =
-    await Promise.all([
-      getProfile(userId),
-      supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
-      supabase.from("workouts").select(WORKOUT_COLUMNS),
-      supabase.from("recipes").select(RECIPE_COLUMNS),
-      supabase
-        .from("cycle_logs")
-        .select("date, menstruation, symptoms")
-        .eq("user_id", userId)
-        .gte("date", sixMonthsAgo)
-        .order("date", { ascending: true }),
-    ])
+  const [
+    profile,
+    { data: cycleProfile },
+    { data: workouts },
+    { data: recipes },
+    { data: cycleLogs },
+    { data: recentCheckins },
+  ] = await Promise.all([
+    getProfile(userId),
+    supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
+    supabase.from("workouts").select(WORKOUT_COLUMNS),
+    supabase.from("recipes").select(RECIPE_COLUMNS),
+    supabase
+      .from("cycle_logs")
+      .select("date, menstruation, symptoms")
+      .eq("user_id", userId)
+      .gte("date", sixMonthsAgo)
+      .order("date", { ascending: true }),
+    supabase
+      .from("daily_checkins")
+      .select("date, symptoms")
+      .eq("user_id", userId)
+      .gte("date", sixMonthsAgo),
+  ])
 
   if (!profile) return null
 
@@ -66,12 +79,26 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
       today,
     ),
   )
+  const effectiveLastStart = cycleProfile
+    ? getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory)
+    : null
   const effectiveCycleProfile = cycleProfile
     ? {
         ...cycleProfile,
-        last_period_start: getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory),
+        last_period_start: effectiveLastStart,
       }
     : null
+
+  const phaseInsights = computePhaseSymptomInsights(
+    cycleHistory,
+    (recentCheckins ?? []).map((c) => ({ date: c.date, symptoms: c.symptoms ?? [] })),
+  )
+  const anticipation = composeAnticipation({
+    lastPeriodStart: effectiveLastStart,
+    averageCycleLength: cycleProfile?.average_cycle_length ?? null,
+    hasCycle: Boolean(cycleProfile?.has_cycle),
+    phaseInsights,
+  })
 
   const workoutRows = (workouts ?? []) as WeekPlanWorkout[]
   const recipeRows = (recipes ?? []) as WeekPlanRecipe[]
@@ -84,6 +111,10 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
     workouts: workoutRows,
     recipes: recipeRows,
     seed: userId,
+    anticipationSoftDates: anticipation?.softDates ?? [],
+    anticipationTip: anticipation
+      ? `${anticipation.headline}. ${anticipation.body}`
+      : null,
   })
 
   const availableRecipes = filterRecipesByCuisinePrefs(

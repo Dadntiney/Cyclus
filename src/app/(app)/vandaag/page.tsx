@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { TodayCards } from "@/components/today/today-cards"
+import { AnticipationNote } from "@/components/today/anticipation-note"
 import { CheckinForm } from "@/components/today/checkin-form"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
@@ -42,9 +43,10 @@ const PHASE_TAGLINE: Record<CyclePhase, string> = {
  * Vandaag = one calm composition, not a widget dashboard.
  *
  * 1. Hello + cycle context (incl. menstruatie-actie hier — vindbaar, niet luid)
- * 2. One “voor jou vandaag” surface with a single primary CTA
- * 3. Light check-in
- * 4. Optional sleep / meds only
+ * 2. Optional vooruitkijken note (her harder days approaching)
+ * 3. One “voor jou vandaag” surface with a single primary CTA
+ * 4. Light check-in
+ * 5. Optional sleep / meds only
  */
 export default async function VandaagPage() {
   const user = await getAuthedUser()
@@ -60,6 +62,7 @@ export default async function VandaagPage() {
     menstruationDay,
     recommendation,
     bodyRecognition,
+    anticipation,
     checkin,
     weekStartISO,
     completedWorkout,
@@ -167,6 +170,8 @@ export default async function VandaagPage() {
         </header>
 
         <div className="flex flex-col gap-8">
+          {anticipation && <AnticipationNote anticipation={anticipation} />}
+
           {recommendation && (
             <TodayCards
               recommendation={recommendation}
