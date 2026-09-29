@@ -56,10 +56,10 @@ const DISABLED_HINTS: Record<string, string> = {
 }
 
 const DISABLED_PROFILE_ANCHORS: Record<string, string> = {
-  movement_enabled: "/profiel#beweging",
-  nutrition_enabled: "/profiel#voeding",
-  mental_wellbeing_enabled: "/profiel#mentale-rust",
-  sleep_tracking_enabled: "/profiel#slaap",
+  movement_enabled: "/profiel/modules#beweging",
+  nutrition_enabled: "/profiel/modules#voeding",
+  mental_wellbeing_enabled: "/profiel/modules#mentale-rust",
+  sleep_tracking_enabled: "/profiel/modules#slaap",
 }
 
 /**
@@ -113,13 +113,9 @@ export default async function VoorJouPage() {
           Voor jou{profile.name ? `, ${profile.name}` : ""}
         </h1>
         <p className="text-sm text-ink-soft mt-1">{goalLine}</p>
-        <Link
-          href="/vandaag"
-          className="mt-2 inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
-        >
-          Naar Vandaag
-          <ChevronRight className="h-4 w-4" strokeWidth={2} />
-        </Link>
+        <p className="text-xs text-ink-soft mt-2">
+          Dagplan staat op Vandaag — hier vind je je modules en favorieten.
+        </p>
       </div>
 
       {enabledKeys.length > 0 && (

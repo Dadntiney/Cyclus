@@ -81,6 +81,8 @@ interface FormState {
   buddyMessageFrequency: string
 }
 
+export type ProfileFormGroup = "account" | "modules" | "cyclus" | "meldingen"
+
 const MAX_RETRIES = 2
 const RETRY_DELAYS_MS = [600, 1500]
 const DEBOUNCE_MS = 800
@@ -90,11 +92,15 @@ export function ProfileForm({
   profile,
   cycleProfile,
   hasMedications,
+  group = "all",
 }: {
   profile: Profile
   cycleProfile: CycleProfile | null
   hasMedications: boolean
+  /** Which settings cluster to show — used by /profiel sub-routes. */
+  group?: ProfileFormGroup | "all"
 }) {
+  const is = (g: ProfileFormGroup) => group === "all" || group === g
   const [state, setState] = useState<FormState>(() => ({
     name: profile.name ?? "",
     age: profile.age ? String(profile.age) : "",
@@ -320,7 +326,8 @@ export function ProfileForm({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+      <div className={group === "all" ? "grid gap-5 lg:grid-cols-2 lg:items-start" : "flex flex-col gap-5"}>
+      {is("account") && (
       <Card>
         <h2 className="font-display text-lg text-ink mb-3">Mijn gegevens</h2>
         <div className="flex flex-col gap-4">
@@ -345,7 +352,9 @@ export function ProfileForm({
           </div>
         </div>
       </Card>
+      )}
 
+      {is("account") && (
       <Card>
         <h2 className="font-display text-lg text-ink mb-1">Mijn motivatie</h2>
         <p className="text-xs text-ink-soft mb-3">
@@ -360,7 +369,9 @@ export function ProfileForm({
           onBlur={onBlurFlush}
         />
       </Card>
+      )}
 
+      {is("account") && (
       <Card>
         <h2 className="font-display text-lg text-ink mb-1">Mijn lichaam</h2>
         <p className="text-xs text-ink-soft mb-3">Optioneel — helpt om je advies preciezer te maken.</p>
@@ -400,7 +411,9 @@ export function ProfileForm({
           </div>
         </div>
       </Card>
+      )}
 
+      {is("account") && (
       <Card>
         <h2 className="font-display text-lg text-ink mb-3">Mijn doelen</h2>
         <div className="flex flex-wrap gap-2">
@@ -415,7 +428,9 @@ export function ProfileForm({
           ))}
         </div>
       </Card>
+      )}
 
+      {is("account") && (
       <Card>
         <h2 className="font-display text-lg text-ink mb-3">Mijn aandachtspunten</h2>
         <p className="text-xs text-ink-soft mb-3">
@@ -450,7 +465,9 @@ export function ProfileForm({
           ))}
         </div>
       </Card>
+      )}
 
+      {is("modules") && (
       <Card id="beweging" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-display text-lg text-ink">Mijn beweging</h2>
@@ -510,7 +527,9 @@ export function ProfileForm({
           </p>
         )}
       </Card>
+      )}
 
+      {is("modules") && (
       <Card id="voeding" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-display text-lg text-ink">Mijn voeding</h2>
@@ -616,7 +635,9 @@ export function ProfileForm({
           </p>
         )}
       </Card>
+      )}
 
+      {is("modules") && (
       <Card id="mentale-rust" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-display text-lg text-ink">Mijn mentale rust</h2>
@@ -669,7 +690,9 @@ export function ProfileForm({
           </p>
         )}
       </Card>
+      )}
 
+      {is("meldingen") && (
       <Card id="goedemorgen" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-display text-lg text-ink">Goedemorgen</h2>
@@ -749,7 +772,9 @@ export function ProfileForm({
           </p>
         )}
       </Card>
+      )}
 
+      {is("modules") && (
       <Card id="slaap" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-display text-lg text-ink">Slaap bijhouden</h2>
@@ -780,7 +805,9 @@ export function ProfileForm({
           </p>
         )}
       </Card>
+      )}
 
+      {is("modules") && (
       <Card id="medicatie" className="scroll-mt-24">
         <h2 className="font-display text-lg text-ink mb-1">Medicatie & hormonen</h2>
         <p className="text-xs text-ink-soft mb-3">
@@ -834,7 +861,9 @@ export function ProfileForm({
           </div>
         )}
       </Card>
+      )}
 
+      {is("meldingen") && (
       <Card id="buddy" className="scroll-mt-24">
         <div className="flex items-center gap-2 mb-1">
           <BuddyMark size="sm" decorative />
@@ -878,7 +907,9 @@ export function ProfileForm({
           ))}
         </div>
       </Card>
+      )}
 
+      {is("account") && (
       <Card>
         <h2 className="font-display text-lg text-ink mb-1">Mijn notitie</h2>
         <p className="text-xs text-ink-soft mb-3">
@@ -892,7 +923,9 @@ export function ProfileForm({
           onBlur={onBlurFlush}
         />
       </Card>
+      )}
 
+      {is("cyclus") && (
       <Card id="cyclus" className="scroll-mt-24">
         <h2 className="font-display text-lg text-ink mb-3">Mijn cyclus</h2>
         <div className="flex flex-col gap-4">
@@ -1038,6 +1071,7 @@ export function ProfileForm({
           </div>
         </div>
       </Card>
+      )}
       </div>
 
       <AutosaveStatusPill status={status} errorMessage={errorMessage} onRetry={handleRetryNow} />

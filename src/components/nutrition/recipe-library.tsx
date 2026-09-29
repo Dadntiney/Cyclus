@@ -27,12 +27,12 @@ function isLowCarb(recipe: RecipeCardData): boolean {
   return match ? Number(match[0]) <= 20 : false
 }
 
-const INITIAL_VISIBLE = 12
+const PAGE_SIZE = 12
 
 export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [timeFilter, setTimeFilter] = useState<number | null>(null)
-  const [showAll, setShowAll] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   const filtered = useMemo(() => {
     let result = recipes
@@ -59,8 +59,7 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
     return result
   }, [recipes, activeFilter, timeFilter])
 
-  // Reset pagination when filters change so she isn't stuck past the fold.
-  const visible = showAll ? filtered : filtered.slice(0, INITIAL_VISIBLE)
+  const visible = filtered.slice(0, visibleCount)
   const hiddenCount = Math.max(0, filtered.length - visible.length)
 
   return (
@@ -71,7 +70,7 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
           selected={activeFilter === null}
           onClick={() => {
             setActiveFilter(null)
-            setShowAll(false)
+            setVisibleCount(PAGE_SIZE)
           }}
         >
           Alles
@@ -81,7 +80,7 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
           selected={activeFilter === BUDGET_FILTER}
           onClick={() => {
             setActiveFilter(BUDGET_FILTER)
-            setShowAll(false)
+            setVisibleCount(PAGE_SIZE)
           }}
         >
           {BUDGET_FILTER}
@@ -91,7 +90,7 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
           selected={activeFilter === LOW_CARB_FILTER}
           onClick={() => {
             setActiveFilter(LOW_CARB_FILTER)
-            setShowAll(false)
+            setVisibleCount(PAGE_SIZE)
           }}
         >
           {LOW_CARB_FILTER}
@@ -103,7 +102,7 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
             selected={activeFilter === category}
             onClick={() => {
               setActiveFilter(category)
-              setShowAll(false)
+              setVisibleCount(PAGE_SIZE)
             }}
           >
             {category}
@@ -116,7 +115,7 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
             selected={activeFilter === cuisine}
             onClick={() => {
               setActiveFilter(cuisine)
-              setShowAll(false)
+              setVisibleCount(PAGE_SIZE)
             }}
           >
             {cuisine}
@@ -150,10 +149,11 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
           {hiddenCount > 0 && (
             <button
               type="button"
-              onClick={() => setShowAll(true)}
+              onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
               className="mt-4 w-full inline-flex items-center justify-center min-h-11 rounded-xl border border-line text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
             >
-              Toon {hiddenCount} recepten meer
+              Toon {Math.min(PAGE_SIZE, hiddenCount)} recepten meer
+              {hiddenCount > PAGE_SIZE ? ` (${hiddenCount} resterend)` : ""}
             </button>
           )}
         </>

@@ -111,7 +111,7 @@ export default async function OvergangPage() {
                 {cycleProfile.perimenopause_information}
               </p>
               <Link
-                href="/profiel#cyclus"
+                href="/profiel/cyclus"
                 className="inline-block text-xs font-medium text-sage-dark mt-3 touch-manipulation"
               >
                 Aanpassen in je profiel

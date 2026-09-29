@@ -4,6 +4,7 @@ import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { TodayCards } from "@/components/today/today-cards"
 import { AnticipationNote } from "@/components/today/anticipation-note"
+import { ModulesStrip } from "@/components/today/modules-strip"
 import { CheckinForm } from "@/components/today/checkin-form"
 import { DayCloseCard } from "@/components/today/day-close-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
@@ -187,6 +188,13 @@ export default async function VandaagPage() {
               showRecovery={wantRecoveryRow}
             />
           )}
+
+          <ModulesStrip
+            movementEnabled={profile?.movement_enabled ?? true}
+            nutritionEnabled={profile?.nutrition_enabled ?? true}
+            mentalEnabled={profile?.mental_wellbeing_enabled === true}
+            sleepEnabled={sleepEnabled}
+          />
 
           <CheckinForm
             initial={checkin ?? null}

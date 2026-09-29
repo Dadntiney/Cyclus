@@ -204,7 +204,7 @@ export default async function CyclusPage() {
         </p>
         {lifeStageLabel && (
           <Link
-            href="/profiel#cyclus"
+            href="/profiel/cyclus"
             className="inline-block text-xs text-ink-soft mt-2 touch-manipulation"
           >
             Levensfase: {lifeStageLabel}
@@ -218,7 +218,7 @@ export default async function CyclusPage() {
           <p className="text-sm text-ink-soft mb-3">
             Regelmatig, veranderend, overgang of daarna — dan past de uitleg beter. Geen diagnose.
           </p>
-          <Link href="/profiel#cyclus" className="text-sm font-medium text-sage-dark underline">
+          <Link href="/profiel/cyclus" className="text-sm font-medium text-sage-dark underline">
             Levensfase kiezen
           </Link>
         </Card>

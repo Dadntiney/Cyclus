@@ -21,7 +21,7 @@ export default async function MentaleRustPage() {
   if (!profile || profile.mental_wellbeing_enabled !== true) {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <BackButton href="/voor-jou" label="Voor jou" />
+        <BackButton href="/voor-jou" label="Modules" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Mijn mentale rust</h1>
         <p className="text-sm text-ink-soft mb-6">Korte oefeningen en affirmaties voor meer rust.</p>
         <Card>
@@ -30,7 +30,7 @@ export default async function MentaleRustPage() {
             title="Mentale rust staat nu uit"
             description="Je ziet hierdoor nergens meditaties, mindfulness of affirmaties. Wil je dit toch gebruiken?"
             action={
-              <Link href="/profiel#mentale-rust" className={buttonVariants({ variant: "secondary" })}>
+              <Link href="/profiel/modules#mentale-rust" className={buttonVariants({ variant: "secondary" })}>
                 Zet aan in mijn profiel
               </Link>
             }
@@ -47,7 +47,7 @@ export default async function MentaleRustPage() {
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
-        <BackButton href="/voor-jou" label="Voor jou" />
+        <BackButton href="/voor-jou" label="Modules" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Mijn mentale rust</h1>
         <p className="text-sm text-ink-soft mt-1">
           Korte oefeningen en affirmaties. Een tip op basis van je check-in staat op Vandaag.

@@ -70,38 +70,72 @@ export async function GET(request: NextRequest) {
   let notificationsSent = 0
   let usersProcessed = 0
 
+  if (userIds.length === 0) {
+    return NextResponse.json({ ok: true, usersChecked: 0, usersNotified: 0, notificationsSent: 0 })
+  }
+
+  // One round-trip per table (not per user) — avoids N+1 as the subscriber
+  // count grows. Sends below still run per user; the expensive reads don't.
+  const [
+    { data: profileRows },
+    { data: allReminderRows },
+    { data: allMedicationRows },
+    { data: allLogRows },
+  ] = await Promise.all([
+    service
+      .from("profiles")
+      .select(
+        "id, buddy_styles, nutrition_enabled, movement_enabled, mental_wellbeing_enabled, morning_reminder_enabled, morning_reminder_time, morning_reminder_days, morning_reminder_content_type",
+      )
+      .in("id", userIds),
+    service.from("reminders").select("*").in("user_id", userIds).eq("enabled", true),
+    service
+      .from("medications")
+      .select(
+        "id, user_id, name, reminder_enabled, time_of_day, schedule_type, schedule_days, schedule_days_on, schedule_days_off, start_date, end_date, remind_on_start, remind_daily, remind_on_stop",
+      )
+      .in("user_id", userIds)
+      .eq("reminder_enabled", true),
+    service
+      .from("push_notification_log")
+      .select("user_id, source_type, source_id")
+      .in("user_id", userIds)
+      .eq("date", dateISO),
+  ])
+
+  const profileById = new Map((profileRows ?? []).map((p) => [p.id, p]))
+  const remindersByUser = new Map<string, NonNullable<typeof allReminderRows>>()
+  for (const row of allReminderRows ?? []) {
+    const list = remindersByUser.get(row.user_id) ?? []
+    list.push(row)
+    remindersByUser.set(row.user_id, list)
+  }
+  const medicationsByUser = new Map<string, NonNullable<typeof allMedicationRows>>()
+  for (const row of allMedicationRows ?? []) {
+    const list = medicationsByUser.get(row.user_id) ?? []
+    list.push(row)
+    medicationsByUser.set(row.user_id, list)
+  }
+  const logsByUser = new Map<string, LogRow[]>()
+  for (const row of allLogRows ?? []) {
+    const list = logsByUser.get(row.user_id) ?? []
+    list.push({ source_type: row.source_type, source_id: row.source_id })
+    logsByUser.set(row.user_id, list)
+  }
+
   for (const userId of userIds) {
     try {
-      const [{ data: profile }, { data: reminderRows }, { data: medicationRows }, { data: logRows }] =
-        await Promise.all([
-          service
-            .from("profiles")
-            .select(
-              "buddy_styles, nutrition_enabled, movement_enabled, mental_wellbeing_enabled, morning_reminder_enabled, morning_reminder_time, morning_reminder_days, morning_reminder_content_type",
-            )
-            .eq("id", userId)
-            .single(),
-          service.from("reminders").select("*").eq("user_id", userId).eq("enabled", true),
-          service
-            .from("medications")
-            .select(
-              "id, name, reminder_enabled, time_of_day, schedule_type, schedule_days, schedule_days_on, schedule_days_off, start_date, end_date, remind_on_start, remind_daily, remind_on_stop",
-            )
-            .eq("user_id", userId)
-            .eq("reminder_enabled", true),
-          service
-            .from("push_notification_log")
-            .select("source_type, source_id")
-            .eq("user_id", userId)
-            .eq("date", dateISO),
-        ])
+      const profile = profileById.get(userId) ?? null
+      const reminderRows = remindersByUser.get(userId) ?? []
+      const medicationRows = medicationsByUser.get(userId) ?? []
+      const logRows = logsByUser.get(userId) ?? []
 
-      const alreadySent = new Set((logRows as LogRow[] | null ?? []).map((l) => `${l.source_type}:${l.source_id}`))
+      const alreadySent = new Set(logRows.map((l) => `${l.source_type}:${l.source_id}`))
       const buddyStyles = profile?.buddy_styles ?? []
       let userHasSend = false
 
       // ---- Generic reminders (check-in, movement, nutrition, cycle, rest, routine, custom) ----
-      const reminders: ReminderLike[] = (reminderRows ?? []).map((r) => ({
+      const reminders: ReminderLike[] = reminderRows.map((r) => ({
         id: r.id,
         type: r.type,
         label: r.label,
