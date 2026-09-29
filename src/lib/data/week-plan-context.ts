@@ -112,9 +112,9 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
     recipes: recipeRows,
     seed: userId,
     anticipationSoftDates: anticipation?.softDates ?? [],
-    anticipationTip: anticipation
-      ? `${anticipation.headline}. ${anticipation.body}`
-      : null,
+    // Week view uses a date-agnostic line — the Vandaag headline ("Morgen…")
+    // would read oddly when she opens woensdag itself.
+    anticipationTip: anticipation ? anticipation.body : null,
   })
 
   const availableRecipes = filterRecipesByCuisinePrefs(
