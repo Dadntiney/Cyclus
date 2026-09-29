@@ -1,13 +1,13 @@
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
-import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { TodayMovementCard, type TodayWorkoutOption } from "@/components/today/today-movement-card"
+import { TodayMealsRows } from "@/components/today/today-meals-rows"
 import type { Recommendation } from "@/lib/recommendations/engine"
 import type { MentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
 
 /**
- * One composition for today’s plan — primary action + secondary rows
- * inside a single surface. Not a stack of equal dashboard cards.
+ * One composition for today’s plan — same meals + workout as Deze week’s
+ * current day, plus check-in framing and mental/recovery rows.
  */
 export function TodayCards({
   recommendation,
@@ -33,10 +33,11 @@ export function TodayCards({
 }) {
   const { training, nutrition, recovery, movementEnabled, nutritionEnabled } = recommendation
 
-  const showNutrition = nutritionEnabled && Boolean(nutrition.recipe)
+  const meals = nutrition.meals ?? []
+  const showMeals = nutritionEnabled && meals.length > 0
   const showMental = Boolean(mentalSuggestion)
   const showRecoveryRow = showRecovery && !showMental && Boolean(recovery.title)
-  const hasSecondary = showNutrition || showMental || showRecoveryRow
+  const hasSecondary = showMeals || showMental || showRecoveryRow
 
   return (
     <section aria-labelledby="voor-vandaag-heading">
@@ -72,25 +73,24 @@ export function TodayCards({
 
         {hasSecondary && (
           <div className="border-t border-sage/15 divide-y divide-sage/15">
-            {showNutrition && nutrition.recipe && (
-              <Link
-                href={`/voeding/${nutrition.recipe.id}`}
-                className="flex items-center gap-3 px-4 py-3 touch-manipulation motion-safe:active:bg-sage-soft/80 transition-colors"
-              >
-                <RecipeImage
-                  title={nutrition.recipe.title}
-                  imageUrl={nutrition.recipe.image_url}
-                  className="h-11 w-11 rounded-xl shrink-0"
-                  sizes="44px"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium text-sage-dark">Voeding</p>
-                  <p className="text-sm font-medium text-ink leading-snug truncate">
-                    {nutrition.recipe.title}
-                  </p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
-              </Link>
+            {showMeals && (
+              <TodayMealsRows
+                userId={userId}
+                date={date}
+                weekStartISO={weekStartISO}
+                meals={meals.map((m) => ({
+                  slot: m.slot,
+                  label: m.label,
+                  recipe: m.recipe
+                    ? {
+                        id: m.recipe.id,
+                        title: m.recipe.title,
+                        image_url: m.recipe.image_url,
+                        preparation_time: m.recipe.preparation_time,
+                      }
+                    : null,
+                }))}
+              />
             )}
 
             {showMental && mentalSuggestion && (
@@ -153,6 +153,12 @@ export function TodayCards({
               Alle recepten
             </Link>
           )}
+          <Link
+            href="/deze-week"
+            className="inline-flex items-center min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
+          >
+            Weekplan
+          </Link>
         </div>
       )}
     </section>

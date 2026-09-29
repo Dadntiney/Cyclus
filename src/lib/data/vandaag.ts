@@ -1,5 +1,5 @@
 import { cache } from "react"
-import { differenceInCalendarDays, parseISO, startOfWeek, subDays } from "date-fns"
+import { differenceInCalendarDays, format, parseISO, startOfWeek, subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
@@ -14,6 +14,7 @@ import { buildRecommendation } from "@/lib/recommendations/engine"
 import { computeStreak } from "@/lib/data/streak"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
 import { getProfile } from "@/lib/data/profile"
+import { loadWeekPlanContext } from "@/lib/data/week-plan-context"
 import { pickMentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
 import { computeSleepDurationMinutes } from "@/lib/sleep/duration"
 import { pickSleepObservation } from "@/lib/sleep/insights"
@@ -21,15 +22,17 @@ import { getPersonalSleepContext } from "@/lib/data/sleep"
 import type { BuddyStyle } from "@/lib/buddy/styles"
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10)
+  return format(new Date(), "yyyy-MM-dd")
 }
 
 /** Deduped per request — Vandaag (and any co-loader) only pays once. */
 export const getVandaagData = cache(async function getVandaagData(userId: string) {
   const supabase = await createClient()
   const today = todayISO()
-  const weekAgo = subDays(new Date(today), 6).toISOString().slice(0, 10)
-  const sixMonthsAgo = subDays(new Date(today), 200).toISOString().slice(0, 10)
+  const weekAgo = subDays(new Date(`${today}T12:00:00`), 6)
+  const weekAgoISO = format(weekAgo, "yyyy-MM-dd")
+  const sixMonthsAgo = format(subDays(new Date(`${today}T12:00:00`), 200), "yyyy-MM-dd")
+  const weekStartISO = format(startOfWeek(new Date(`${today}T12:00:00`), { weekStartsOn: 1 }), "yyyy-MM-dd")
 
   // Profile is React-cached from the app layout — usually a cache hit, then
   // we skip whole optional datasets (workouts, recipes, meds, sleep history).
@@ -39,11 +42,15 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
   const sleepEnabled = profile?.sleep_tracking_enabled === true
   const medsEnabled = Boolean(profile?.show_medication_on_dashboard)
 
+  // Week plan is the calendar source of truth for today's meals + workout —
+  // same computation as Deze week (React-cached within the request).
+  const weekCtxPromise =
+    movementEnabled || nutritionEnabled ? loadWeekPlanContext(userId) : Promise.resolve(null)
+
   const [
     { data: cycleProfile },
     { data: checkin },
-    { data: workouts },
-    { data: recipes },
+    weekCtx,
     { data: recentCheckins },
     { data: weekSessions },
     { data: cycleLogs },
@@ -53,20 +60,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
   ] = await Promise.all([
     supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
     supabase.from("daily_checkins").select("*").eq("user_id", userId).eq("date", today).maybeSingle(),
-    // Bounded catalogs — recommendation only needs a shortlist, not the full
-    // library (that lives on /training and /voeding). Keeps Vandaag fast.
-    movementEnabled
-      ? supabase
-          .from("workouts")
-          .select("id, title, type, duration, difficulty, image_url")
-          .limit(48)
-      : Promise.resolve({ data: [] }),
-    nutritionEnabled
-      ? supabase
-          .from("recipes")
-          .select("id, title, category, preparation_time, nutrition_information, image_url")
-          .limit(64)
-      : Promise.resolve({ data: [] }),
+    weekCtxPromise,
     supabase
       .from("daily_checkins")
       .select("date, symptoms")
@@ -79,7 +73,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
           .select("date, completed, workout_id")
           .eq("user_id", userId)
           .eq("completed", true)
-          .gte("date", weekAgo)
+          .gte("date", weekAgoISO)
           .lte("date", today)
       : Promise.resolve({ data: [] }),
     supabase
@@ -101,15 +95,25 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     date: c.date,
     symptoms: c.symptoms ?? [],
   }))
-  // Streak still only looks at the last week — filter the longer window.
   const streak = computeStreak(
-    checkinsForPatterns.filter((c) => c.date >= weekAgo).map((c) => c.date),
+    checkinsForPatterns.filter((c) => c.date >= weekAgoISO).map((c) => c.date),
     today,
   )
-  const completedThisWeek = (weekSessions ?? []).length
+
+  const todayPlan = weekCtx?.days.find((d) => d.date === today) ?? weekCtx?.days.find((d) => d.isToday) ?? null
+  const workouts = weekCtx?.workouts ?? []
+  const recipes = (weekCtx?.recipes ?? []).map((r) => ({
+    id: r.id,
+    title: r.title,
+    category: r.category,
+    preparation_time: r.preparation_time,
+    nutrition_information: r.nutrition_information,
+    image_url: r.image_url,
+  }))
+
   const todaySession = (weekSessions ?? []).find((s) => s.date === today) ?? null
   const completedWorkoutMeta = todaySession
-    ? (workouts ?? []).find((w) => w.id === todaySession.workout_id) ?? null
+    ? workouts.find((w) => w.id === todaySession.workout_id) ?? null
     : null
   const completedWorkout = completedWorkoutMeta
     ? {
@@ -118,7 +122,6 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
         duration: completedWorkoutMeta.duration,
       }
     : null
-  const weekStartISO = startOfWeek(new Date(today), { weekStartsOn: 1 }).toISOString().slice(0, 10)
 
   const sleepDurationMinutes =
     sleepEntry?.bedtime && sleepEntry?.wake_time
@@ -142,9 +145,9 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
         cycleProfile.has_cycle,
       )
     : null
-  // "Dag 2 van je menstruatie" on Vandaag's quick-action widget — the day
-  // count within the CURRENT period specifically, computed directly from the
-  // explicit active_period_start, not the whole-cycle estimate above.
+  // Prefer the week-plan estimate for today when present — same phase as Deze week.
+  const dayCycleEstimate = todayPlan?.cycleEstimate ?? cycleEstimate
+
   const menstruationDay = activePeriodStart
     ? differenceInCalendarDays(parseISO(today), parseISO(activePeriodStart)) + 1
     : null
@@ -152,20 +155,38 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
   const recommendation = profile
     ? buildRecommendation({
         profile,
-        cycleEstimate,
+        cycleEstimate: dayCycleEstimate,
         latestCheckin: checkin ?? null,
         todaySleepDurationMinutes: sleepDurationMinutes,
         personalSleepPattern,
-        workouts: workouts ?? [],
-        recipes: recipes ?? [],
+        workouts,
+        recipes,
         seed: `${userId}-${today}`,
+        dayPlan: todayPlan
+          ? {
+              meals: todayPlan.meals.map((m) => ({
+                slot: m.slot,
+                label: m.label,
+                recipe: m.recipe
+                  ? {
+                      id: m.recipe.id,
+                      title: m.recipe.title,
+                      category: m.recipe.category,
+                      preparation_time: m.recipe.preparation_time,
+                      nutrition_information: m.recipe.nutrition_information,
+                      image_url: m.recipe.image_url,
+                    }
+                  : null,
+              })),
+              workout: {
+                workout: todayPlan.workout.workout,
+                reason: todayPlan.workout.reason,
+              },
+            }
+          : null,
       })
     : null
 
-  // Derived purely from her existing check-in (mood + the optional mental
-  // symptom checkboxes) — never a second question. Only computed when she
-  // opted in, and null on any day nothing relevant was reported, so the
-  // Vandaag card simply doesn't render rather than showing something empty.
   const mentalWellbeingSuggestion =
     profile?.mental_wellbeing_enabled === true
       ? pickMentalWellbeingSuggestion({
@@ -176,17 +197,16 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
         })
       : null
 
-  const sleepObservation =
-    sleepEnabled
-      ? pickSleepObservation({
-          durationMinutes: sleepDurationMinutes,
-          wakeFeeling: sleepEntry?.wake_feeling ?? null,
-          energy: checkin?.energy ?? null,
-        })
-      : null
+  const sleepObservation = sleepEnabled
+    ? pickSleepObservation({
+        durationMinutes: sleepDurationMinutes,
+        wakeFeeling: sleepEntry?.wake_feeling ?? null,
+        energy: checkin?.energy ?? null,
+      })
+    : null
 
   const suggestedId = recommendation?.training.workout?.id ?? null
-  const workoutAlternatives = (workouts ?? [])
+  const workoutAlternatives = workouts
     .filter((w) => w.id !== suggestedId)
     .slice(0, 6)
     .map((w) => ({
@@ -197,16 +217,14 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
       image_url: w.image_url,
     }))
 
-  // Personal recognition (today) + anticipation (1–3 days ahead). Both stay
-  // null until history clears a real bar — Vandaag stays calm.
   const allPhaseInsights = computePhaseSymptomInsights(cycleHistory, checkinsForPatterns)
-  const phaseInsightsForToday = cycleEstimate
-    ? allPhaseInsights.filter((insight) => insight.phase === cycleEstimate.phase)
+  const phaseInsightsForToday = dayCycleEstimate
+    ? allPhaseInsights.filter((insight) => insight.phase === dayCycleEstimate.phase)
     : []
   const phaseInsight = phaseInsightsForToday[0] ?? null
   const bodyRecognition = composeBodyRecognition({
-    phase: cycleEstimate?.phase ?? null,
-    phaseLabel: cycleEstimate?.phaseLabel ?? null,
+    phase: dayCycleEstimate?.phase ?? null,
+    phaseLabel: dayCycleEstimate?.phaseLabel ?? null,
     phaseInsight,
     phaseInsights: phaseInsightsForToday,
     cycleLengthTrend: computeCycleLengthTrend(cycleHistory),
@@ -227,7 +245,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     profile,
     cycleProfile,
     checkin,
-    cycleEstimate,
+    cycleEstimate: dayCycleEstimate,
     isMenstruationActive: activePeriodStart !== null,
     menstruationDay,
     recommendation,
@@ -236,7 +254,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     today,
     weekStartISO,
     streak,
-    completedThisWeek,
+    completedThisWeek: (weekSessions ?? []).length,
     completedWorkout,
     workoutAlternatives,
     medicationItems,

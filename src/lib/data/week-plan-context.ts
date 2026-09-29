@@ -1,5 +1,5 @@
 import { cache } from "react"
-import { startOfWeek, subDays } from "date-fns"
+import { format, startOfWeek, subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import {
@@ -32,13 +32,16 @@ export interface WeekPlanContext {
 }
 
 /**
- * Shared loader for Deze week + Boodschappen so both pages resolve the same
- * plan from one query set (and React cache() dedupes within a request).
+ * Shared loader for Deze week + Boodschappen + Vandaag so all surfaces
+ * resolve the same plan from one query set (React cache() dedupes).
  */
 export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPlanContext | null> => {
   const supabase = await createClient()
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 })
-  const sixMonthsAgo = subDays(new Date(), 200).toISOString().slice(0, 10)
+  const now = new Date()
+  const weekStart = startOfWeek(now, { weekStartsOn: 1 })
+  const weekStartISO = format(weekStart, "yyyy-MM-dd")
+  const todayISO = format(now, "yyyy-MM-dd")
+  const sixMonthsAgo = format(subDays(now, 200), "yyyy-MM-dd")
 
   const [
     profile,
@@ -67,7 +70,6 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
 
   if (!profile) return null
 
-  const today = new Date().toISOString().slice(0, 10)
   const cycleHistory = computeCycleHistory(
     withActivePeriod(
       (cycleLogs ?? []).map((l) => ({
@@ -76,7 +78,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
         symptoms: l.symptoms,
       })),
       cycleProfile?.active_period_start ?? null,
-      today,
+      todayISO,
     ),
   )
   const effectiveLastStart = cycleProfile
@@ -105,15 +107,13 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
 
   const days = buildWeekPlan({
     weekStart,
-    today: new Date(),
+    today: now,
     profile,
     cycleProfile: effectiveCycleProfile,
     workouts: workoutRows,
     recipes: recipeRows,
     seed: userId,
     anticipationSoftDates: anticipation?.softDates ?? [],
-    // Week view uses a date-agnostic line — the Vandaag headline ("Morgen…")
-    // would read oddly when she opens woensdag itself.
     anticipationTip: anticipation ? anticipation.body : null,
   })
 
@@ -130,7 +130,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
   return {
     userId,
     weekStart,
-    weekStartISO: weekStart.toISOString().slice(0, 10),
+    weekStartISO,
     profile,
     days,
     workouts: workoutRows,

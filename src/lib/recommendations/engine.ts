@@ -46,6 +46,18 @@ export interface RecommendationInput {
   workouts: Workout[]
   recipes: Recipe[]
   seed: string
+  /**
+   * Today's row from buildWeekPlan — when set, training + meals come from the
+   * week calendar (same source as Deze week) instead of a separate pick.
+   */
+  dayPlan?: {
+    meals: Array<{
+      slot: "ontbijt" | "lunch" | "diner"
+      label: string
+      recipe: Recipe | null
+    }>
+    workout: { workout: Workout | null; reason: string }
+  } | null
 }
 
 export interface TrainingRecommendation {
@@ -63,6 +75,13 @@ export interface TrainingPickInput {
 }
 
 export interface NutritionRecommendation {
+  /** Week-plan meals for today (ontbijt → lunch → diner). Source of truth with Deze week. */
+  meals: Array<{
+    slot: "ontbijt" | "lunch" | "diner"
+    label: string
+    recipe: Recipe | null
+  }>
+  /** @deprecated Prefer meals — kept as the first available recipe for callers. */
   recipe: Recipe | null
   reason: string
 }
@@ -282,12 +301,27 @@ export function pickTodaysRecipe(input: NutritionPickInput): NutritionRecommenda
     ? candidateRecipes[seededIndex(`${seed}-nutrition`, candidateRecipes.length)]
     : null
 
-  return { recipe, reason }
+  return {
+    meals: recipe
+      ? [{ slot: "diner" as const, label: "Voorstel", recipe }]
+      : [],
+    recipe,
+    reason,
+  }
 }
 
 export function buildRecommendation(input: RecommendationInput): Recommendation {
-  const { profile, cycleEstimate, latestCheckin, todaySleepDurationMinutes, personalSleepPattern, workouts, recipes, seed } =
-    input
+  const {
+    profile,
+    cycleEstimate,
+    latestCheckin,
+    todaySleepDurationMinutes,
+    personalSleepPattern,
+    workouts,
+    recipes,
+    seed,
+    dayPlan = null,
+  } = input
 
   const need = latestCheckin?.need ?? null
   const wantsMoreActive = need === "beweging"
@@ -295,13 +329,23 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
   const lowerIntensity = wantsLowerIntensityToday(latestCheckin, todaySleepDurationMinutes, personalSleepPattern)
   const matchesSleepPattern = shortNightMatchesPersonalPattern(todaySleepDurationMinutes, personalSleepPattern)
 
+  // Week calendar is the source of truth when available — Vandaag and Deze
+  // week must show the same meals/workout for the same date.
   const { workout, reason: trainingReason } = profile.movement_enabled
-    ? pickTodaysWorkout({ profile, latestCheckin, todaySleepDurationMinutes, personalSleepPattern, workouts, seed })
+    ? dayPlan
+      ? { workout: dayPlan.workout.workout, reason: dayPlan.workout.reason }
+      : pickTodaysWorkout({ profile, latestCheckin, todaySleepDurationMinutes, personalSleepPattern, workouts, seed })
     : { workout: null, reason: "" }
 
-  const { recipe, reason: nutritionReason } = profile.nutrition_enabled
-    ? pickTodaysRecipe({ profile, latestCheckin, recipes, seed })
-    : { recipe: null, reason: "" }
+  const nutrition: NutritionRecommendation = profile.nutrition_enabled
+    ? dayPlan
+      ? {
+          meals: dayPlan.meals,
+          recipe: dayPlan.meals.find((m) => m.recipe)?.recipe ?? null,
+          reason: "Zelfde weekplan als op Deze week.",
+        }
+      : pickTodaysRecipe({ profile, latestCheckin, recipes, seed })
+    : { meals: [], recipe: null, reason: "" }
 
   const mentalEnabled = profile.mental_wellbeing_enabled === true
   const recoveryCta = mentalEnabled
@@ -369,7 +413,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
 
   return {
     training: { workout, reason: trainingReason },
-    nutrition: { recipe, reason: nutritionReason },
+    nutrition,
     recovery,
     dayFocus,
     buddyContext,
