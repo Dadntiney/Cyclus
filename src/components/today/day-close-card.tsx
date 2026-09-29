@@ -1,9 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
 import { Moon, CheckCircle2, Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getDayCloseLine } from "@/lib/data/day-close-notes"
 import {
   loadWeekOverrides,
   WEEK_OVERRIDES_CHANGED_EVENT,
@@ -11,11 +11,12 @@ import {
 
 /**
  * Compact day wrap-up — not a second questionnaire. Lives at the bottom of
- * Vandaag so she can confirm what still needs a note (check-in, movement,
- * sleep) and mark the day “afgerond” without guilt or extra forms.
+ * Vandaag so she can gently close the day: confirm what was noted (check-in,
+ * movement, sleep) and mark today closed without guilt or extra forms.
  *
- * Always available (not hour-gated): an evening-only gate hid the card when
- * hydration lagged, and users who close their day earlier still need it.
+ * After closing, a single soft line for today lands in the closed state —
+ * optional warmth, no interaction, no extra card. Always available (not
+ * hour-gated): users who close earlier still need it.
  */
 export function DayCloseCard({
   userId,
@@ -40,6 +41,7 @@ export function DayCloseCard({
   const [movementHandled, setMovementHandled] = useState(movementDone)
   const [hydrated, setHydrated] = useState(false)
   const storageKey = `cyclus:day-closed:${date}`
+  const closeLine = getDayCloseLine(date)
 
   useEffect(() => {
     function syncFromClient() {
@@ -90,7 +92,6 @@ export function DayCloseCard({
       key: "checkin",
       done: hasCheckin,
       label: hasCheckin ? "Check-in ingevuld" : "Check-in nog open",
-      href: null as string | null,
     },
     ...(movementEnabled
       ? [
@@ -98,7 +99,6 @@ export function DayCloseCard({
             key: "movement",
             done: movementHandled,
             label: movementHandled ? "Beweging genoteerd" : "Beweging nog open",
-            href: null,
           },
         ]
       : []),
@@ -108,7 +108,6 @@ export function DayCloseCard({
             key: "sleep",
             done: hasSleepEntry,
             label: hasSleepEntry ? "Slaap ingevuld" : "Slaap nog invullen",
-            href: hasSleepEntry ? null : "#",
           },
         ]
       : []),
@@ -118,14 +117,16 @@ export function DayCloseCard({
   // so SSR and first paint match. Closed state applies after localStorage read.
   if (hydrated && closed) {
     return (
-      <div className="rounded-2xl border border-line/70 bg-sage-soft/60 p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <CheckCircle2 className="h-5 w-5 text-sage-dark shrink-0" strokeWidth={1.75} />
-            <div>
-              <p className="text-sm font-medium text-ink">Dag afgerond</p>
-              <p className="text-xs text-ink-soft mt-0.5">Je kunt later nog iets aanpassen.</p>
+      <div className="rounded-2xl bg-sage-soft/55 px-4 py-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle2 className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} />
+              <p className="text-sm font-medium text-ink">Dag afgesloten</p>
             </div>
+            <p className="font-display text-[1.05rem] leading-snug text-ink/90 pl-6">
+              {closeLine}
+            </p>
           </div>
           <button
             type="button"
@@ -143,10 +144,10 @@ export function DayCloseCard({
     <div className="rounded-2xl border border-line/70 p-4">
       <div className="flex items-center gap-2 mb-1">
         <Moon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-        <h2 className="font-display text-lg text-ink">Dag afronden</h2>
+        <h2 className="font-display text-lg text-ink">Dag afsluiten</h2>
       </div>
       <p className="text-sm text-ink-soft mb-3">
-        Korte check of alles klopt — geen extra vragenlijst.
+        Even checken of vandaag klopt — daarna kun je de dag loslaten.
       </p>
       <ul className="flex flex-col gap-2 mb-3">
         {items.map((item) => (
@@ -158,7 +159,10 @@ export function DayCloseCard({
             )}
             <span className={cn(item.done ? "text-ink" : "text-ink-soft")}>{item.label}</span>
             {item.key === "sleep" && !item.done && (
-              <a href="#slaap-vandaag" className="ml-auto text-xs font-medium text-sage-dark touch-manipulation">
+              <a
+                href="#slaap-vandaag"
+                className="ml-auto text-xs font-medium text-sage-dark touch-manipulation"
+              >
                 Naar slaap
               </a>
             )}
@@ -173,7 +177,7 @@ export function DayCloseCard({
         onClick={markClosed}
         className="w-full inline-flex items-center justify-center min-h-11 rounded-xl border border-line/70 bg-cream-soft/60 text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
       >
-        Markeer als afgerond
+        Markeer dag als afgesloten
       </button>
     </div>
   )
