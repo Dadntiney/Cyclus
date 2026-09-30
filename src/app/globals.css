@@ -414,6 +414,19 @@ select {
   }
 }
 
+/* Soft “live” breath for active menstruatie — calm, not alarming */
+@keyframes menstruatie-adem {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.88;
+  }
+  50% {
+    transform: scale(1.14);
+    opacity: 1;
+  }
+}
+
 @layer utilities {
   .animate-pop-in {
     animation: pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -423,9 +436,16 @@ select {
     animation: page-in 0.22s ease-out both;
   }
 
+  .animate-menstruatie-adem {
+    animation: menstruatie-adem 2.8s ease-in-out infinite;
+    transform-origin: center bottom;
+    will-change: transform, opacity;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-pop-in,
-    .animate-page-in {
+    .animate-page-in,
+    .animate-menstruatie-adem {
       animation: none;
     }
   }

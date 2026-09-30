@@ -101,16 +101,31 @@ export function PhaseContextCard({
 
       {hasCycle && (
         <div className="border-t border-black/5 px-3.5 py-1 flex items-center justify-between gap-3">
-          <span className="text-xs text-ink-soft inline-flex items-center gap-1.5 min-h-11">
-            <Droplet
-              className={cn(
-                "h-3.5 w-3.5 shrink-0",
-                isMenstruationActive ? "text-danger" : "text-ink-soft",
+          <span
+            className={cn(
+              "text-xs inline-flex items-center gap-1.5 min-h-11",
+              isMenstruationActive ? "text-danger font-medium" : "text-ink-soft",
+            )}
+          >
+            <span className="relative inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+              {isMenstruationActive && (
+                <span
+                  className="absolute inset-0 rounded-full bg-danger/25 motion-safe:animate-menstruatie-adem"
+                  aria-hidden
+                />
               )}
-              fill={isMenstruationActive ? "currentColor" : "none"}
-              strokeWidth={1.75}
-              aria-hidden
-            />
+              <Droplet
+                className={cn(
+                  "relative h-3.5 w-3.5",
+                  isMenstruationActive
+                    ? "text-danger motion-safe:animate-menstruatie-adem"
+                    : "text-ink-soft",
+                )}
+                fill={isMenstruationActive ? "currentColor" : "none"}
+                strokeWidth={1.75}
+                aria-hidden
+              />
+            </span>
             {isMenstruationActive ? "Bezig" : "Nog niet gestart"}
           </span>
           <button

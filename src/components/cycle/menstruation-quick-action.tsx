@@ -98,11 +98,24 @@ export function MenstruationQuickAction({
           )}
           aria-hidden
         >
-          <Droplet
-            className={cn("h-4.5 w-4.5", isActive ? "text-danger" : "text-sage-dark")}
-            fill={isActive ? "currentColor" : "none"}
-            strokeWidth={1.75}
-          />
+          <span className="relative inline-flex h-4.5 w-4.5 items-center justify-center">
+            {isActive && (
+              <span
+                className="absolute inset-0 rounded-full bg-danger/20 motion-safe:animate-menstruatie-adem"
+                aria-hidden
+              />
+            )}
+            <Droplet
+              className={cn(
+                "relative h-4.5 w-4.5",
+                isActive
+                  ? "text-danger motion-safe:animate-menstruatie-adem"
+                  : "text-sage-dark",
+              )}
+              fill={isActive ? "currentColor" : "none"}
+              strokeWidth={1.75}
+            />
+          </span>
         </span>
       </div>
 
