@@ -1,17 +1,24 @@
 "use client"
 
-import { useRef } from "react"
+import { useLayoutEffect, useRef } from "react"
 import Link from "next/link"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
+import { useVisualViewportFrame } from "@/lib/hooks/use-visual-viewport-frame"
 
 /**
- * Fixed (not sticky): iOS Safari scrolls the document when the soft keyboard
- * opens, which used to yank a sticky header off-screen — and after dismiss
- * "Cyclus" stayed gone. Fixed chrome stays pinned like BottomNav.
+ * Fixed to the visual viewport top so iOS keyboard / visual-viewport scroll
+ * cannot leave "Cyclus" stranded above the visible area.
  */
 export function MobileHeader() {
   const ref = useRef<HTMLElement>(null)
+  const { offsetTop } = useVisualViewportFrame()
   useMeasuredHeightVar(ref, "--mobile-header-h")
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.top = `${offsetTop}px`
+  }, [offsetTop])
 
   return (
     <header

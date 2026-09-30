@@ -1,23 +1,37 @@
 "use client"
 
-import { useRef } from "react"
+import { useLayoutEffect, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
-import { useVirtualKeyboardOpen } from "@/lib/hooks/use-virtual-keyboard-open"
+import { useVisualViewportFrame } from "@/lib/hooks/use-visual-viewport-frame"
 import { BuddyGlyph } from "@/components/buddy/buddy-mark"
 import { NAV_ITEMS } from "./nav-items"
 
 export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
   const pathname = usePathname()
   const ref = useRef<HTMLElement>(null)
-  const keyboardOpen = useVirtualKeyboardOpen()
-  // Collapse the published inset while the keyboard is open so Buddy's
-  // composer (and any other bottom-aware layout) sits on the keyboard
-  // instead of stacking above this tab bar.
+  // Viewport shrink (not input focus): iOS can dismiss the keyboard while
+  // leaving the field focused — focus-based hiding left the tab bar gone.
+  const { offsetTop, height, keyboardOpen } = useVisualViewportFrame()
   useMeasuredHeightVar(ref, "--bottom-nav-h", keyboardOpen)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    // Sit on the bottom edge of the visual viewport so we track keyboard
+    // and browser chrome instead of the layout viewport.
+    if (keyboardOpen) {
+      el.style.top = ""
+      el.style.bottom = "0px"
+      return
+    }
+    const top = offsetTop + height - el.offsetHeight
+    el.style.top = `${Math.max(0, top)}px`
+    el.style.bottom = "auto"
+  }, [offsetTop, height, keyboardOpen])
 
   return (
     <nav
@@ -25,7 +39,7 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
       aria-label="Hoofdnavigatie"
       aria-hidden={keyboardOpen || undefined}
       className={cn(
-        "md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-line safe-bottom safe-x",
+        "md:hidden fixed inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-line safe-bottom safe-x",
         "transition-transform duration-200 ease-out motion-reduce:transition-none",
         keyboardOpen && "translate-y-full pointer-events-none",
       )}

@@ -1,21 +1,25 @@
 "use client"
 
-import { useEffect, type ReactNode } from "react"
-import { useKeyboardInsetVar } from "@/lib/hooks/use-keyboard-inset-var"
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react"
+import { useVisualViewportFrame } from "@/lib/hooks/use-visual-viewport-frame"
+
+function readCssPx(varName: string, fallback: number) {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(varName).trim()
+  const n = Number.parseFloat(raw)
+  return Number.isFinite(n) ? n : fallback
+}
 
 /**
- * Locks Buddy into the viewport strip between MobileHeader and BottomNav.
- * Only the message list scrolls — title and composer stay put. Without this,
- * main's bottom-nav padding + a full-viewport chat height made the whole
- * page (title + input) scroll together, which feels broken in a chat.
+ * Locks Buddy into the visible strip between MobileHeader and BottomNav /
+ * soft keyboard. Only the message list scrolls.
  *
- * `--bottom-nav-h` collapses to 0 while a text field is focused (see
- * BottomNav). `--keyboard-inset` lifts the shell above the soft keyboard on
- * iOS, where the layout viewport often does not shrink — so the composer
- * stays visible without scrolling the Cyclus header away.
+ * Sized from `visualViewport` (top + height). Document scroll is clamped so
+ * Safari cannot yank the page under the fixed header.
  */
 export function BuddyShell({ children }: { children: ReactNode }) {
-  useKeyboardInsetVar()
+  const ref = useRef<HTMLDivElement>(null)
+  const lastNavH = useRef(82)
+  const frame = useVisualViewportFrame()
 
   useEffect(() => {
     const html = document.documentElement
@@ -32,27 +36,41 @@ export function BuddyShell({ children }: { children: ReactNode }) {
     }
     pinScroll()
     window.addEventListener("scroll", pinScroll, { passive: true })
-    window.visualViewport?.addEventListener("resize", pinScroll)
-    window.visualViewport?.addEventListener("scroll", pinScroll)
-    window.addEventListener("focusout", pinScroll)
 
     return () => {
       html.style.overflow = prevHtmlOverflow
       body.style.overflow = prevBodyOverflow
       window.removeEventListener("scroll", pinScroll)
-      window.visualViewport?.removeEventListener("resize", pinScroll)
-      window.visualViewport?.removeEventListener("scroll", pinScroll)
-      window.removeEventListener("focusout", pinScroll)
     }
   }, [])
 
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const headerH = readCssPx("--mobile-header-h", 77)
+    const measuredNav = readCssPx("--bottom-nav-h", lastNavH.current)
+    // When the tab bar collapses for the keyboard it publishes 0 — keep the
+    // last real height so closing the keyboard does not leave the shell
+    // covering the nav for a stuck frame (BuddyShell effects run before
+    // BottomNav restores the CSS var).
+    if (measuredNav > 0) lastNavH.current = measuredNav
+    const navH = frame.keyboardOpen ? 0 : lastNavH.current
+    const top = frame.offsetTop + headerH
+    const height = Math.max(0, frame.height - headerH - navH)
+
+    el.style.top = `${top}px`
+    el.style.height = `${height}px`
+    el.style.bottom = "auto"
+  }, [frame.offsetTop, frame.height, frame.keyboardOpen])
+
   return (
     <div
-      className="fixed inset-x-0 z-10 flex flex-col bg-cream max-w-3xl mx-auto md:static md:inset-auto md:z-auto md:h-[calc(100dvh-2.5rem)]"
+      ref={ref}
+      className="fixed inset-x-0 z-10 flex flex-col bg-cream max-w-3xl mx-auto md:static md:inset-auto md:z-auto md:top-auto md:bottom-auto md:h-[calc(100dvh-2.5rem)]"
       style={{
         top: "var(--mobile-header-h, 77px)",
-        // Prefer the larger of tab-bar clearance and keyboard coverage.
-        bottom: "max(var(--bottom-nav-h, 82px), var(--keyboard-inset, 0px))",
+        bottom: "var(--bottom-nav-h, 82px)",
       }}
     >
       {children}
