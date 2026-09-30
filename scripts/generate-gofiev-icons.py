@@ -1,4 +1,9 @@
-"""GoFiev app icons from the glossy 3D droplet brand asset."""
+"""GoFiev app icons from the glossy 3D droplet brand asset.
+
+Source JPG is white-backed; we key out near-white and composite onto a
+brand background. Cream read too white on home screens — sage-soft
+(#e4e9de) keeps beige-green brand tone and lets the rose-gold drop pop.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +13,8 @@ from PIL import Image
 
 ROOT = Path("/workspace/public/icons")
 SRC = Path("/workspace/public/brand/gofiev-droplet-source.jpg")
-CREAM = (250, 246, 240, 255)
+# Brand --color-sage-soft (globals.css). Beige-green, not white.
+BG = (228, 233, 222, 255)
 
 
 def load_drop() -> Image.Image:
@@ -27,7 +33,7 @@ def load_drop() -> Image.Image:
 
 
 def make(size: int, drop: Image.Image, *, pad_ratio: float) -> Image.Image:
-    canvas = Image.new("RGBA", (size, size), CREAM)
+    canvas = Image.new("RGBA", (size, size), BG)
     target = int(size * (1 - 2 * pad_ratio))
     layer = drop.copy()
     layer.thumbnail((target, target), Image.Resampling.LANCZOS)
@@ -44,7 +50,7 @@ def main() -> None:
     make(512, drop, pad_ratio=0.08).save(ROOT / "icon-512.png", optimize=True)
     make(512, drop, pad_ratio=0.18).save(ROOT / "icon-512-maskable.png", optimize=True)
     make(180, drop, pad_ratio=0.08).save(ROOT / "apple-touch-icon.png", optimize=True)
-    print("wrote 3D droplet app icons to", ROOT)
+    print("wrote 3D droplet app icons (sage-soft bg) to", ROOT)
 
 
 if __name__ == "__main__":
