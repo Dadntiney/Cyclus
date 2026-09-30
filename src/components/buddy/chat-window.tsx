@@ -121,7 +121,11 @@ export function ChatWindow({
 
       <form
         onSubmit={handleSubmit}
-        className="shrink-0 flex items-center gap-2 px-5 lg:px-8 py-3 border-t border-sage/20 bg-cream safe-x"
+        className="shrink-0 flex items-center gap-2 py-3 border-t border-sage/20 bg-cream"
+        style={{
+          paddingLeft: "max(1.25rem, env(safe-area-inset-left))",
+          paddingRight: "max(1.25rem, env(safe-area-inset-right))",
+        }}
       >
         <Input
           value={input}
