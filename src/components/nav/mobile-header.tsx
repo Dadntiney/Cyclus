@@ -4,6 +4,11 @@ import { useRef } from "react"
 import Link from "next/link"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
 
+/**
+ * Fixed (not sticky): iOS Safari scrolls the document when the soft keyboard
+ * opens, which used to yank a sticky header off-screen — and after dismiss
+ * "Cyclus" stayed gone. Fixed chrome stays pinned like BottomNav.
+ */
 export function MobileHeader() {
   const ref = useRef<HTMLElement>(null)
   useMeasuredHeightVar(ref, "--mobile-header-h")
@@ -11,7 +16,7 @@ export function MobileHeader() {
   return (
     <header
       ref={ref}
-      className="md:hidden sticky top-0 z-20 flex items-center bg-cream/90 backdrop-blur border-b border-line/60 pb-4"
+      className="md:hidden fixed top-0 inset-x-0 z-20 flex items-center bg-cream/90 backdrop-blur border-b border-line/60 pb-4"
       style={{
         paddingTop: "max(1rem, env(safe-area-inset-top))",
         paddingLeft: "max(1.5rem, env(safe-area-inset-left))",

@@ -11,6 +11,9 @@ import { useEffect, type ReactNode } from "react"
  * `--bottom-nav-h` collapses to 0 while the virtual keyboard is open (see
  * BottomNav), so the composer slides down against the keyboard instead of
  * stacking above the tab bar.
+ *
+ * iOS still tries to scroll the document to the focused input — clamp that
+ * so the fixed Cyclus header never ends up above the viewport after dismiss.
  */
 export function BuddyShell({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -20,9 +23,25 @@ export function BuddyShell({ children }: { children: ReactNode }) {
     const prevBodyOverflow = body.style.overflow
     html.style.overflow = "hidden"
     body.style.overflow = "hidden"
+
+    const pinScroll = () => {
+      if (window.scrollY !== 0 || window.scrollX !== 0) {
+        window.scrollTo(0, 0)
+      }
+    }
+    pinScroll()
+    window.addEventListener("scroll", pinScroll, { passive: true })
+    window.visualViewport?.addEventListener("resize", pinScroll)
+    window.visualViewport?.addEventListener("scroll", pinScroll)
+    window.addEventListener("focusout", pinScroll)
+
     return () => {
       html.style.overflow = prevHtmlOverflow
       body.style.overflow = prevBodyOverflow
+      window.removeEventListener("scroll", pinScroll)
+      window.visualViewport?.removeEventListener("resize", pinScroll)
+      window.visualViewport?.removeEventListener("scroll", pinScroll)
+      window.removeEventListener("focusout", pinScroll)
     }
   }, [])
 
