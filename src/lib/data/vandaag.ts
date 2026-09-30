@@ -214,6 +214,33 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
       image_url: w.image_url,
     }))
 
+  const mealAlternativesBySlot = {
+    ontbijt: (weekCtx?.recipePoolBySlot.ontbijt ?? [])
+      .slice(0, 8)
+      .map((r) => ({
+        id: r.id,
+        title: r.title,
+        image_url: r.image_url,
+        preparation_time: r.preparation_time,
+      })),
+    lunch: (weekCtx?.recipePoolBySlot.lunch ?? [])
+      .slice(0, 8)
+      .map((r) => ({
+        id: r.id,
+        title: r.title,
+        image_url: r.image_url,
+        preparation_time: r.preparation_time,
+      })),
+    diner: (weekCtx?.recipePoolBySlot.diner ?? [])
+      .slice(0, 8)
+      .map((r) => ({
+        id: r.id,
+        title: r.title,
+        image_url: r.image_url,
+        preparation_time: r.preparation_time,
+      })),
+  }
+
   const allPhaseInsights = computePhaseSymptomInsights(cycleHistory, checkinsForPatterns)
   const phaseInsightsForToday = dayCycleEstimate
     ? allPhaseInsights.filter((insight) => insight.phase === dayCycleEstimate.phase)
@@ -254,6 +281,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     completedThisWeek: (weekSessions ?? []).length,
     completedWorkout,
     workoutAlternatives,
+    mealAlternativesBySlot,
     medicationItems,
     mentalWellbeingSuggestion,
     sleepEntry,

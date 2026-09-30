@@ -1,9 +1,13 @@
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import { TodayMovementCard, type TodayWorkoutOption } from "@/components/today/today-movement-card"
-import { TodayMealsRows } from "@/components/today/today-meals-rows"
+import {
+  TodayMealsRows,
+  type TodayMealAlternative,
+} from "@/components/today/today-meals-rows"
 import type { Recommendation } from "@/lib/recommendations/engine"
 import type { MentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
+import type { MealSlotKey } from "@/lib/client/week-plan-storage"
 
 /**
  * Vandaag plan: movement first (today’s primary action), then the same
@@ -16,6 +20,7 @@ export function TodayCards({
   date,
   weekStartISO,
   workoutAlternatives,
+  mealAlternativesBySlot = {},
   completedWorkout,
   mentalSuggestion = null,
   focusLine = null,
@@ -27,6 +32,7 @@ export function TodayCards({
   date: string
   weekStartISO: string
   workoutAlternatives: TodayWorkoutOption[]
+  mealAlternativesBySlot?: Partial<Record<MealSlotKey, TodayMealAlternative[]>>
   completedWorkout: { workoutId: string; title: string; duration: number } | null
   mentalSuggestion?: MentalWellbeingSuggestion | null
   focusLine?: string | null
@@ -81,6 +87,7 @@ export function TodayCards({
                 date={date}
                 weekStartISO={weekStartISO}
                 recipeImageById={recipeImageById}
+                alternativesBySlot={mealAlternativesBySlot}
                 meals={meals.map((m) => ({
                   slot: m.slot,
                   label: m.label,

@@ -68,6 +68,7 @@ export default async function VandaagPage() {
     weekStartISO,
     completedWorkout,
     workoutAlternatives,
+    mealAlternativesBySlot,
     medicationItems,
     mentalWellbeingSuggestion,
     sleepEntry,
@@ -190,6 +191,7 @@ export default async function VandaagPage() {
               date={today}
               weekStartISO={weekStartISO}
               workoutAlternatives={workoutAlternatives}
+              mealAlternativesBySlot={mealAlternativesBySlot}
               completedWorkout={completedWorkout}
               mentalSuggestion={mentalWellbeingSuggestion}
               focusLine={personalizedFocus}
