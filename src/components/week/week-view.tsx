@@ -277,7 +277,7 @@ export function WeekView({
               href="/deze-week/boodschappen?modus=dag"
               className="text-xs font-medium text-sage-dark px-1 min-h-11 inline-flex items-center touch-manipulation"
             >
-              Alleen vandaag →
+              Boodschappen voor vandaag →
             </Link>
           )}
         </div>
