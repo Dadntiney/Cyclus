@@ -190,6 +190,12 @@ export default async function CyclusPage() {
   const isIrregular =
     cycleProfile?.regularity === "onregelmatig" || cycleProfile?.regularity === "onbekend"
   const phaseTone = cycleEstimate ? getPhaseContent(cycleEstimate.phase).colors : null
+  const lastPeriod = history.length ? history[history.length - 1] : null
+  const lastPeriodIsActive = Boolean(
+    lastPeriod &&
+      (cycleProfile?.active_period_start != null ||
+        (lastPeriod.end === today && menstruationDates.has(today))),
+  )
 
   return (
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
@@ -253,8 +259,31 @@ export default async function CyclusPage() {
             </p>
           )}
 
-          {nextPeriod && (
+          {lastPeriod && (
             <div className="mt-4 rounded-xl bg-surface/70 px-3 py-2.5">
+              <p className="text-sm font-medium text-ink">Laatste menstruatie</p>
+              <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-sm">
+                <dt className="text-ink-soft">Start</dt>
+                <dd className="text-ink">
+                  {format(parseISO(lastPeriod.start), "d MMMM yyyy", { locale: nl })}
+                </dd>
+                <dt className="text-ink-soft">Stop</dt>
+                <dd className="text-ink">
+                  {lastPeriodIsActive
+                    ? "Nog bezig"
+                    : format(parseISO(lastPeriod.end), "d MMMM yyyy", { locale: nl })}
+                </dd>
+                <dt className="text-ink-soft">Duur</dt>
+                <dd className="text-ink">
+                  {lastPeriod.days} {lastPeriod.days === 1 ? "dag" : "dagen"}
+                  {lastPeriodIsActive ? " tot nu" : ""}
+                </dd>
+              </dl>
+            </div>
+          )}
+
+          {nextPeriod && (
+            <div className="mt-3 rounded-xl bg-surface/70 px-3 py-2.5">
               <p className="text-sm font-medium text-ink">Volgende menstruatie</p>
               <p className="text-sm text-ink-soft mt-1 leading-relaxed">
                 {formatNextPeriodEstimate(nextPeriod)}
