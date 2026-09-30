@@ -230,6 +230,7 @@ export default async function VandaagPage() {
             movementDone={Boolean(completedWorkout)}
             sleepTrackingEnabled={sleepEnabled}
             hasSleepEntry={Boolean(sleepEntry)}
+            mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
           />
         </div>
       </div>

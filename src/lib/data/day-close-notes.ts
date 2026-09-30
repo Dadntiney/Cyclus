@@ -1,3 +1,5 @@
+import { AFFIRMATIONS } from "@/lib/data/affirmations"
+
 /**
  * Soft evening lines shown only after she marks the day closed.
  *
@@ -33,6 +35,14 @@ const DAY_CLOSE_LINES = [
   "De dag is rond. Jij mag nu ook.",
 ] as const
 
+const EVENING_AFFIRMATION_THEMES = new Set([
+  "rust",
+  "loslaten",
+  "zelfcompassie",
+  "energie",
+  "moeilijke_dagen",
+])
+
 function daySeed(date: string): number {
   // Stable hash of YYYY-MM-DD — same day → same line, no flicker on refresh.
   let hash = 0
@@ -44,4 +54,11 @@ function daySeed(date: string): number {
 
 export function getDayCloseLine(date: string): string {
   return DAY_CLOSE_LINES[daySeed(date) % DAY_CLOSE_LINES.length]
+}
+
+/** Short evening affirmation for the day-close moment — grounded, not pushy. */
+export function getEveningAffirmation(date: string): string {
+  const pool = AFFIRMATIONS.filter((a) => EVENING_AFFIRMATION_THEMES.has(a.theme))
+  const list = pool.length ? pool : AFFIRMATIONS
+  return list[daySeed(`${date}-evening`) % list.length].text
 }
