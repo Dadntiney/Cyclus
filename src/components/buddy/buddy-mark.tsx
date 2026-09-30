@@ -3,52 +3,66 @@ import { cn } from "@/lib/utils"
 type BuddyMarkSize = "sm" | "md" | "lg" | "xl"
 
 const SIZE: Record<BuddyMarkSize, { box: string; icon: string }> = {
-  sm: { box: "h-5 w-5", icon: "h-3 w-3" },
-  md: { box: "h-7 w-7", icon: "h-4 w-4" },
-  lg: { box: "h-11 w-11", icon: "h-5 w-5" },
-  xl: { box: "h-16 w-16", icon: "h-7 w-7" },
+  sm: { box: "h-5 w-5", icon: "h-3.5 w-3.5" },
+  md: { box: "h-7 w-7", icon: "h-4.5 w-4.5" },
+  lg: { box: "h-11 w-11", icon: "h-6 w-6" },
+  xl: { box: "h-16 w-16", icon: "h-9 w-9" },
+}
+
+/** Full circles as subpaths for evenodd eye cutouts. */
+function eyeCutout(cx: number, cy: number, r: number) {
+  return `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${r * 2} 0a${r} ${r} 0 1 0 ${-r * 2} 0`
 }
 
 /**
- * Buddy’s visual signature — a soft companion presence, not a cartoon face.
+ * Buddy’s visual signature — a plump soft dewdrop companion in brand peach.
  *
- * Soft ring + crescent orb: warm, adult, calm. Used only where Buddy speaks
- * or is named as a presence — never as generic decoration.
+ * Rounder than a sharp teardrop: wide calm belly, gentle tip. Quiet eyes +
+ * soft smile cut out of the fill. No arms. Used only where Buddy speaks or
+ * is named — never as the menstruation status droplet.
  */
 export function BuddyGlyph({
   className,
   strokeWidth = 1.75,
+  face = true,
 }: {
   className?: string
-  /** Kept for Lucide-like call sites in nav. */
+  /** Kept for Lucide-like call sites in nav; nudges silhouette weight. */
   strokeWidth?: number
+  /** Face cutouts — keep on for Buddy presence. */
+  face?: boolean
 }) {
+  const weight = Math.min(1.08, Math.max(0.92, strokeWidth / 1.75))
+
+  // Plump dewdrop: fuller sides, softer tip (less “blood drop”, more companion).
+  const droplet =
+    "M12 3.1C14.8 5.6 18.7 10.4 18.7 15.15a6.7 6.7 0 1 1-13.4 0C5.3 10.4 9.2 5.6 12 3.1Z"
+
+  const halo =
+    "M12 2.35C15.15 5.1 19.45 10.1 19.45 15.15a7.45 7.45 0 1 1-14.9 0C4.55 10.1 8.85 5.1 12 2.35Z"
+
+  // Face sits in the round belly.
+  const smile = "M10.05 16.85Q12 18.55 13.95 16.85Q12 17.85 10.05 16.85Z"
+
+  const body = face
+    ? [droplet, eyeCutout(9.8, 14.55, 1.15), eyeCutout(14.2, 14.55, 1.15), smile].join("")
+    : droplet
+
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden
       className={cn("shrink-0", className)}
+      style={{ transform: weight !== 1 ? `scale(${weight})` : undefined }}
     >
-      <circle
-        cx="12"
-        cy="12"
-        r="9"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        opacity="0.32"
-      />
-      {/* Crescent via evenodd cut — reads in light and dark without hard-coded fills */}
-      <path
-        fill="currentColor"
-        fillRule="evenodd"
-        d="M12 6.75a5.25 5.25 0 1 0 0 10.5 5.25 5.25 0 0 0 0-10.5Zm2.35 1.2a3.55 3.55 0 1 0 0 7.6 5.25 5.25 0 0 1 0-7.6Z"
-      />
+      <path d={halo} stroke="currentColor" strokeWidth={1.1} opacity="0.28" />
+      <path fill="currentColor" fillRule="evenodd" d={body} />
     </svg>
   )
 }
 
-/** Soft sage badge with Buddy glyph — primary attribution mark. */
+/** Soft peach badge with Buddy glyph — primary attribution mark, app-wide. */
 export function BuddyMark({
   size = "md",
   className,
@@ -70,7 +84,7 @@ export function BuddyMark({
       aria-label={decorative ? undefined : label}
       aria-hidden={decorative || undefined}
       className={cn(
-        "inline-flex items-center justify-center rounded-full bg-sage-soft text-sage-dark shrink-0",
+        "inline-flex items-center justify-center rounded-full bg-peach-soft text-peach shrink-0",
         s.box,
         className,
       )}
