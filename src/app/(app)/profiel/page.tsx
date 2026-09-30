@@ -49,7 +49,7 @@ const APP = [
     href: "/favorieten",
     icon: Heart,
     title: "Favorieten",
-    description: "Opgeslagen recepten en oefeningen.",
+    description: "Recepten, oefeningen, tips, quotes en affirmaties.",
   },
   {
     href: "/profiel/meldingen",
