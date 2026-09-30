@@ -1,25 +1,17 @@
 "use client"
 
-import { useLayoutEffect, useRef } from "react"
+import { useRef } from "react"
 import Link from "next/link"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
-import { useVisualViewportFrame } from "@/lib/hooks/use-visual-viewport-frame"
 
 /**
- * Fixed header. Only tracks visualViewport.offsetTop while the soft keyboard
- * is open (Buddy) — otherwise stays at top:0 so rubber-band overscroll on
- * Vandaag cannot drag "Cyclus" around.
+ * Always `fixed top-0`. Do not sync to visualViewport — rubber-band
+ * overscroll was dragging "Cyclus" down the screen. Buddy keyboard layout
+ * is owned by BuddyShell; the header stays a stable layout-top anchor.
  */
 export function MobileHeader() {
   const ref = useRef<HTMLElement>(null)
-  const { offsetTop, keyboardOpen } = useVisualViewportFrame()
   useMeasuredHeightVar(ref, "--mobile-header-h")
-
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    el.style.top = keyboardOpen ? `${offsetTop}px` : "0px"
-  }, [offsetTop, keyboardOpen])
 
   return (
     <header

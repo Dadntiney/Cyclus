@@ -56,8 +56,12 @@ export function BuddyShell({ children }: { children: ReactNode }) {
     // BottomNav restores the CSS var).
     if (measuredNav > 0) lastNavH.current = measuredNav
     const navH = frame.keyboardOpen ? 0 : lastNavH.current
-    const top = frame.offsetTop + headerH
-    const height = Math.max(0, frame.height - headerH - navH)
+    // Header stays fixed at layout top:0. Pin the shell under it and end at
+    // the bottom of the visual viewport so the composer clears the keyboard
+    // without moving the Cyclus header during overscroll.
+    const top = headerH
+    const vvBottom = frame.offsetTop + frame.height
+    const height = Math.max(0, vvBottom - headerH - navH)
 
     el.style.top = `${top}px`
     el.style.height = `${height}px`
