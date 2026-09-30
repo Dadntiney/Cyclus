@@ -13,8 +13,13 @@ import {
   formatPhaseSymptomInsightShort,
   computeCycleLengthTrend,
   formatCycleLengthTrendInsight,
+  getTopPhaseSymptomInsight,
 } from "@/lib/cycle/patterns"
 import { computePersonalInsights } from "@/lib/cycle/insights"
+import { computeSymptomCoOccurrences } from "@/lib/cycle/co-occurrence"
+import { computeWhatHelpedInsights } from "@/lib/cycle/what-helped"
+import { composeYourStory } from "@/lib/cycle/your-story"
+import { YourStoryCard } from "@/components/cycle/your-story-card"
 import { estimateNextPeriod, formatNextPeriodEstimate } from "@/lib/cycle/next-period"
 import { computeCycleDeviationAlerts } from "@/lib/cycle/deviation"
 import { computeMonthChangeInsights } from "@/lib/cycle/month-change"
@@ -51,7 +56,7 @@ export default async function CyclusPage() {
 
   const sixMonthsAgo = format(subDays(todayDate(), 200), "yyyy-MM-dd")
 
-  const [profile, { data: cycleProfile }, { data: logs }, { data: checkins }, { data: periRows }] =
+  const [profile, { data: cycleProfile }, { data: logs }, { data: checkins }, { data: periRows }, { data: historySessions }] =
     await Promise.all([
       getProfile(user.id),
       supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
@@ -63,7 +68,7 @@ export default async function CyclusPage() {
         .order("date", { ascending: true }),
       supabase
         .from("daily_checkins")
-        .select("date, energy, mood, sleep, stress, symptoms")
+        .select("date, energy, mood, sleep, stress, symptoms, needs")
         .eq("user_id", user.id)
         .gte("date", sixMonthsAgo)
         .order("date", { ascending: false }),
@@ -73,8 +78,23 @@ export default async function CyclusPage() {
         .eq("user_id", user.id)
         .order("assessed_on", { ascending: false })
         .limit(1),
+      supabase
+        .from("workout_sessions")
+        .select("date, workout_id")
+        .eq("user_id", user.id)
+        .eq("completed", true)
+        .gte("date", sixMonthsAgo),
     ])
   const periLatest = periRows?.[0] ?? null
+
+  const workoutTypeById = new Map<string, string>()
+  const sessionIds = [...new Set((historySessions ?? []).map((s) => s.workout_id).filter(Boolean))]
+  if (sessionIds.length) {
+    const { data: workoutRows } = await supabase.from("workouts").select("id, type").in("id", sessionIds)
+    for (const w of workoutRows ?? []) {
+      workoutTypeById.set(w.id, w.type)
+    }
+  }
 
   const trackFlowEnabled = profile?.track_flow_intensity ?? false
   const today = todayISO()
@@ -142,8 +162,36 @@ export default async function CyclusPage() {
     symptoms: c.symptoms ?? [],
   }))
   const patterns = computeSymptomFrequency(checkinsForPatterns)
-  const phaseInsights = computePhaseSymptomInsights(history, checkinsForPatterns).slice(0, 2)
+  const allPhaseInsights = computePhaseSymptomInsights(history, checkinsForPatterns)
+  const phaseInsights = allPhaseInsights.slice(0, 2)
   const cycleLengthTrend = computeCycleLengthTrend(history)
+  const coOccurrences = computeSymptomCoOccurrences(checkinsForPatterns)
+  const whatHelpedInsights = computeWhatHelpedInsights(
+    (checkins ?? []).map((c) => ({
+      date: c.date,
+      needs: c.needs ?? null,
+      energy: c.energy ?? null,
+      mood: c.mood ?? null,
+    })),
+    (historySessions ?? []).map((s) => ({
+      date: s.date,
+      workoutType: workoutTypeById.get(s.workout_id) ?? null,
+    })),
+  )
+  const yourStory = composeYourStory({
+    phase: cycleEstimate?.phase ?? null,
+    phaseLabel: cycleEstimate?.phaseLabel ?? null,
+    cycleDay: cycleEstimate?.cycleDay ?? null,
+    hasCycle: Boolean(cycleProfile?.has_cycle) && !postCycleMode,
+    lifeStageLabel: lifeStageLabel ?? null,
+    cycleLengthTrend,
+    phaseInsight: cycleEstimate
+      ? getTopPhaseSymptomInsight(allPhaseInsights, cycleEstimate.phase)
+      : null,
+    coOccurrence: coOccurrences[0] ?? null,
+    whatHelped: whatHelpedInsights.slice(0, 2),
+    includeWeekGuide: Boolean(cycleEstimate) && !postCycleMode,
+  })
   const deviationAlerts = computeCycleDeviationAlerts({
     history,
     lengthTrend: cycleLengthTrend,
@@ -170,7 +218,9 @@ export default async function CyclusPage() {
   const insightLines: string[] = [
     ...phaseInsights.map((i) => formatPhaseSymptomInsightShort(i, phaseLabel(i.phase))),
     ...personalInsights.map((i) => i.text),
-  ].slice(0, 2)
+  ]
+    .filter((text) => !(yourStory?.whatWorks.includes(text)))
+    .slice(0, 2)
 
   const changeItems: { title: string; body: string }[] = [
     ...deviationAlerts.map((a) => ({ title: a.title, body: a.body })),
@@ -383,12 +433,18 @@ export default async function CyclusPage() {
         </section>
       )}
 
-      {/* 5. Insights — one section */}
+      {/* 5. Insights — your story first, then detail lines */}
       <section>
         <h2 className="font-display text-lg text-ink mb-1">Jouw inzichten</h2>
         <p className="text-sm text-ink-soft mb-3">
           Op basis van je check-ins — geen diagnose, wel herkenning.
         </p>
+
+        {yourStory && (
+          <div className="mb-3">
+            <YourStoryCard story={yourStory} />
+          </div>
+        )}
 
         {insightLines.length > 0 ? (
           <Card className="p-0 divide-y divide-line mb-3">
@@ -399,7 +455,7 @@ export default async function CyclusPage() {
               </div>
             ))}
           </Card>
-        ) : (
+        ) : !yourStory ? (
           <Card className="mb-3">
             <EmptyState
               icon={<Sparkles className="h-6 w-6" />}
@@ -407,7 +463,7 @@ export default async function CyclusPage() {
               description="Vul een aantal check-ins in op Vandaag. Daarna verschijnen hier verbanden."
             />
           </Card>
-        )}
+        ) : null}
 
         {patterns.length > 0 && (
           <Card>

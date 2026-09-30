@@ -12,6 +12,10 @@ import { computeSymptomCoOccurrences } from "@/lib/cycle/co-occurrence"
 import { composeBodyRecognition } from "@/lib/cycle/body-translator"
 import { composeAnticipation } from "@/lib/cycle/anticipation"
 import { composeTodayRoadmap } from "@/lib/cycle/today-roadmap"
+import {
+  computeWhatHelpedInsights,
+  getWhatHelpedForToday,
+} from "@/lib/cycle/what-helped"
 import { buildRecommendation } from "@/lib/recommendations/engine"
 import { computeStreak } from "@/lib/data/streak"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
@@ -31,6 +35,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
   const weekAgo = subDays(new Date(`${today}T12:00:00`), 6)
   const weekAgoISO = format(weekAgo, "yyyy-MM-dd")
   const sixMonthsAgo = format(subDays(new Date(`${today}T12:00:00`), 200), "yyyy-MM-dd")
+  const ninetyDaysAgo = format(subDays(new Date(`${today}T12:00:00`), 90), "yyyy-MM-dd")
   const weekStartISO = format(startOfWeek(new Date(`${today}T12:00:00`), { weekStartsOn: 1 }), "yyyy-MM-dd")
 
   // Profile is React-cached from the app layout — usually a cache hit, then
@@ -51,7 +56,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     { data: checkin },
     weekCtx,
     { data: recentCheckins },
-    { data: weekSessions },
+    { data: historySessions },
     { data: cycleLogs },
     medicationItems,
     { data: sleepEntry },
@@ -62,7 +67,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     weekCtxPromise,
     supabase
       .from("daily_checkins")
-      .select("date, symptoms")
+      .select("date, symptoms, needs, energy, mood")
       .eq("user_id", userId)
       .gte("date", sixMonthsAgo)
       .lte("date", today),
@@ -72,9 +77,9 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
           .select("date, completed, workout_id")
           .eq("user_id", userId)
           .eq("completed", true)
-          .gte("date", weekAgoISO)
+          .gte("date", ninetyDaysAgo)
           .lte("date", today)
-      : Promise.resolve({ data: [] }),
+      : Promise.resolve({ data: [] as { date: string; completed: boolean; workout_id: string }[] }),
     supabase
       .from("cycle_logs")
       .select("date, menstruation, symptoms")
@@ -89,6 +94,30 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
       ? getPersonalSleepContext(userId, today)
       : Promise.resolve({ todaySleepDurationMinutes: null, personalSleepPattern: null }),
   ])
+
+  const weekSessions = (historySessions ?? []).filter((s) => s.date >= weekAgoISO)
+
+  const workoutTypeById = new Map<string, string>()
+  // Prefer types already loaded for the week plan; fill gaps for older sessions.
+  for (const w of weekCtx?.workouts ?? []) {
+    workoutTypeById.set(w.id, w.type)
+  }
+  const missingWorkoutIds = [
+    ...new Set(
+      (historySessions ?? [])
+        .map((s) => s.workout_id)
+        .filter((id): id is string => Boolean(id) && !workoutTypeById.has(id)),
+    ),
+  ]
+  if (missingWorkoutIds.length) {
+    const { data: workoutRows } = await supabase
+      .from("workouts")
+      .select("id, type")
+      .in("id", missingWorkoutIds)
+    for (const w of workoutRows ?? []) {
+      workoutTypeById.set(w.id, w.type)
+    }
+  }
 
   const checkinsForPatterns = (recentCheckins ?? []).map((c) => ({
     date: c.date,
@@ -110,7 +139,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     image_url: r.image_url,
   }))
 
-  const todaySession = (weekSessions ?? []).find((s) => s.date === today) ?? null
+  const todaySession = weekSessions.find((s) => s.date === today) ?? null
   const completedWorkoutMeta = todaySession
     ? workouts.find((w) => w.id === todaySession.workout_id) ?? null
     : null
@@ -279,6 +308,20 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     phaseInsights: allPhaseInsights,
   })
 
+  const whatHelpedInsights = computeWhatHelpedInsights(
+    (recentCheckins ?? []).map((c) => ({
+      date: c.date,
+      needs: c.needs ?? null,
+      energy: c.energy ?? null,
+      mood: c.mood ?? null,
+    })),
+    (historySessions ?? []).map((s) => ({
+      date: s.date,
+      workoutType: workoutTypeById.get(s.workout_id) ?? null,
+    })),
+  )
+  const whatHelpedToday = getWhatHelpedForToday(whatHelpedInsights, checkin?.needs ?? [])
+
   const dailyTip = dayCycleEstimate
     ? await getDailyTip(today, {
         userId,
@@ -299,6 +342,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
         energy: checkin?.energy ?? null,
         stress: checkin?.stress ?? null,
         bodyRecognition,
+        whatHelped: whatHelpedToday,
         dailyTip: dailyTip
           ? { title: dailyTip.title, short_explanation: dailyTip.short_explanation }
           : null,
@@ -318,10 +362,11 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     bodyRecognition,
     anticipation,
     hormoneRoadmap,
+    whatHelped: whatHelpedToday,
     today,
     weekStartISO,
     streak,
-    completedThisWeek: (weekSessions ?? []).length,
+    completedThisWeek: weekSessions.length,
     completedWorkout,
     workoutAlternatives,
     mealAlternativesBySlot,

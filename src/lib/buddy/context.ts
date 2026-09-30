@@ -1,7 +1,18 @@
 import { createClient } from "@/lib/supabase/server"
 import { estimateCycle } from "@/lib/cycle/estimate"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
-import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
+import {
+  computeCycleLengthTrend,
+  computePhaseSymptomInsights,
+  formatCycleLengthTrendInsight,
+  getTopPhaseSymptomInsight,
+} from "@/lib/cycle/patterns"
+import { computeSymptomCoOccurrences, formatCoOccurrenceInsight } from "@/lib/cycle/co-occurrence"
+import {
+  computeWhatHelpedInsights,
+  formatWhatHelpedInsight,
+  getWhatHelpedForToday,
+} from "@/lib/cycle/what-helped"
 import { symptomLabel } from "@/lib/constants"
 import { format, startOfWeek, subDays } from "date-fns"
 import { todayDate, todayISO } from "@/lib/dates/amsterdam"
@@ -11,6 +22,7 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
   const today = todayISO()
   const weekStart = format(startOfWeek(todayDate(), { weekStartsOn: 1 }), "yyyy-MM-dd")
   const sixMonthsAgo = format(subDays(todayDate(), 200), "yyyy-MM-dd")
+  const ninetyDaysAgo = format(subDays(todayDate(), 90), "yyyy-MM-dd")
 
   const [
     { data: profile },
@@ -18,6 +30,7 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
     { data: checkin },
     { data: weekSessions },
     { data: recentCheckins },
+    { data: historySessions },
     { data: logs },
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).single(),
@@ -29,7 +42,17 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
       .eq("user_id", userId)
       .gte("date", weekStart)
       .eq("completed", true),
-    supabase.from("daily_checkins").select("date, symptoms").eq("user_id", userId).gte("date", sixMonthsAgo),
+    supabase
+      .from("daily_checkins")
+      .select("date, symptoms, needs, energy, mood")
+      .eq("user_id", userId)
+      .gte("date", sixMonthsAgo),
+    supabase
+      .from("workout_sessions")
+      .select("date, workout_id")
+      .eq("user_id", userId)
+      .eq("completed", true)
+      .gte("date", ninetyDaysAgo),
     supabase
       .from("cycle_logs")
       .select("date, menstruation, symptoms")
@@ -37,6 +60,18 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
       .gte("date", sixMonthsAgo)
       .order("date", { ascending: true }),
   ])
+
+  const workoutTypeById = new Map<string, string>()
+  const sessionWorkoutIds = [...new Set((historySessions ?? []).map((s) => s.workout_id).filter(Boolean))]
+  if (sessionWorkoutIds.length) {
+    const { data: workoutRows } = await supabase
+      .from("workouts")
+      .select("id, type")
+      .in("id", sessionWorkoutIds)
+    for (const w of workoutRows ?? []) {
+      workoutTypeById.set(w.id, w.type)
+    }
+  }
 
   const lines: string[] = []
 
@@ -76,16 +111,29 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
         cycleProfile.has_cycle,
       )
     : null
+
+  const checkinsForPatterns = (recentCheckins ?? []).map((c) => ({
+    date: c.date,
+    symptoms: c.symptoms ?? [],
+  }))
+
   if (cycleEstimate) {
     lines.push(`Cyclusdag ${cycleEstimate.cycleDay} (${cycleEstimate.phaseLabel}, schatting)`)
 
     const insight = getTopPhaseSymptomInsight(
-      computePhaseSymptomInsights(cycleHistory, recentCheckins ?? []),
+      computePhaseSymptomInsights(cycleHistory, checkinsForPatterns),
       cycleEstimate.phase,
     )
     if (insight) {
       lines.push(
         `Herkend patroon: bij ${insight.cyclesWithSymptom} van haar laatste ${insight.cyclesConsidered} cycli gaf ze "${symptomLabel(insight.symptom).toLowerCase()}" vaker aan rond de ${cycleEstimate.phaseLabel.toLowerCase()} — je mag hier subtiel naar verwijzen als het gesprek daar natuurlijk toe leidt, maar dring het niet op.`,
+      )
+    }
+
+    const lengthTrend = computeCycleLengthTrend(cycleHistory)
+    if (lengthTrend) {
+      lines.push(
+        `Cyclusduur-trend: ${formatCycleLengthTrendInsight(lengthTrend)} — alleen subtiel noemen als relevant.`,
       )
     }
   } else if (cycleProfile && !cycleProfile.has_cycle) {
@@ -103,6 +151,35 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
     if (checkin.stress) parts.push(`stress ${checkin.stress}/5`)
     if (parts.length) lines.push(`Laatste check-in: ${parts.join(", ")}`)
     if (checkin.symptoms?.length) lines.push(`Klachten: ${checkin.symptoms.map(symptomLabel).join(", ")}`)
+    if (checkin.needs?.length) lines.push(`Behoeften vandaag: ${checkin.needs.join(", ")}`)
+  }
+
+  const coOccurrence = computeSymptomCoOccurrences(checkinsForPatterns)[0]
+  if (coOccurrence) {
+    lines.push(
+      `Samenhang: ${formatCoOccurrenceInsight(coOccurrence)} — alleen subtiel noemen als het gesprek ertoe leidt.`,
+    )
+  }
+
+  const whatHelped = getWhatHelpedForToday(
+    computeWhatHelpedInsights(
+      (recentCheckins ?? []).map((c) => ({
+        date: c.date,
+        needs: c.needs ?? null,
+        energy: c.energy ?? null,
+        mood: c.mood ?? null,
+      })),
+      (historySessions ?? []).map((s) => ({
+        date: s.date,
+        workoutType: workoutTypeById.get(s.workout_id) ?? null,
+      })),
+    ),
+    checkin?.needs ?? [],
+  )
+  if (whatHelped) {
+    lines.push(
+      `Wat eerder hielp: ${formatWhatHelpedInsight(whatHelped)} — noem dit alleen subtiel als ze vraagt wat kan helpen of als het gesprek daar natuurlijk toe leidt.`,
+    )
   }
 
   if (profile?.movement_enabled !== false) {

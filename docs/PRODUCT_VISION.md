@@ -166,8 +166,10 @@ De Buddy-chat (`src/lib/buddy/context.ts`) krijgt het sterkste patroon voor
 de huidige fase ook mee in haar context, met de instructie dit alleen
 subtiel te noemen als het gesprek daar natuurlijk toe leidt.
 
-Bekende gaps ten opzichte van deze visie (voor vervolgwerk, niet nu
-opgepakt): de patroonherkenning kijkt per klacht per fase, maar nog niet
-naar samenhang tussen klachten (bijv. "als X, dan vaak ook Y") of naar
-cyclusduur-trends zelf (wordt je cyclus over meerdere maanden onregelmatiger
-of stabieler?).
+Bekende gaps ten opzichte van deze visie (voor vervolgwerk):
+fase×klacht-patronen, klacht-samenhang en cyclusduur-trends bestaan;
+de buddy-laag kan nog dieper leren van *wat bij háár werkt* (behoeften /
+beweging gekoppeld aan betere dagen) en dat consequenter terugbrengen in
+Vandaag, Buddy en één rustig “Jouw verhaal”-overzicht op Cyclus. Die
+laag is gestart — verdere verfijning (maaltijd-afronding, dag-afsluit
+server-side, sterkere Buddy-geheugen over gesprekken) blijft open.

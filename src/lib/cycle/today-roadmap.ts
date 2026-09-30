@@ -3,6 +3,11 @@ import type { CyclePhase } from "@/lib/cycle/estimate"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { getPhaseKnowledge } from "@/lib/cycle/phase-knowledge"
 import type { BodyRecognition } from "@/lib/cycle/body-translator"
+import {
+  type WhatHelpedInsight,
+  whatHelpedSupportWhy,
+  whatHelpedTitle,
+} from "@/lib/cycle/what-helped"
 
 /**
  * Hormone-roadmap for Vandaag: phase physiology + today's lived symptoms/
@@ -12,7 +17,7 @@ import type { BodyRecognition } from "@/lib/cycle/body-translator"
  * Keeps Vandaag as one calm composition: understand → then act on the plan.
  */
 
-export type RoadmapSupportKind = "beweging" | "voeding" | "rust" | "tip"
+export type RoadmapSupportKind = "beweging" | "voeding" | "rust" | "tip" | "helped"
 
 export interface RoadmapSupport {
   kind: RoadmapSupportKind
@@ -139,6 +144,8 @@ export interface ComposeTodayRoadmapInput {
   energy?: number | null
   stress?: number | null
   bodyRecognition?: BodyRecognition | null
+  /** Personal “wat hielp eerder” signal, if strong enough. */
+  whatHelped?: WhatHelpedInsight | null
   /** Optional personalized tip from daily_tips (goals/symptoms). */
   dailyTip?: { title: string; short_explanation: string } | null
   movementEnabled?: boolean
@@ -159,6 +166,7 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
     energy = null,
     stress = null,
     bodyRecognition = null,
+    whatHelped = null,
     dailyTip = null,
     movementEnabled = true,
     nutritionEnabled = true,
@@ -178,6 +186,16 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
 
   const supports: RoadmapSupport[] = []
   const usedKinds = new Set<RoadmapSupportKind>()
+
+  // 0) What helped before — personal signal before generic phase support
+  if (whatHelped) {
+    supports.push({
+      kind: "helped",
+      title: whatHelpedTitle(whatHelped),
+      why: whatHelpedSupportWhy(whatHelped),
+    })
+    usedKinds.add("helped")
+  }
 
   // 1) Symptom-specific support (highest personal signal)
   for (const symptom of todaySymptoms) {

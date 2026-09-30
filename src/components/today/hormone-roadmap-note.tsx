@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronRight, Footprints, Salad, Leaf, Lightbulb } from "lucide-react"
+import { ChevronRight, Footprints, Salad, Leaf, Lightbulb, Heart } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { RoadmapSupportKind, TodayRoadmap } from "@/lib/cycle/today-roadmap"
 import { cn } from "@/lib/utils"
@@ -9,11 +9,13 @@ const KIND_ICON: Record<RoadmapSupportKind, LucideIcon> = {
   voeding: Salad,
   rust: Leaf,
   tip: Lightbulb,
+  helped: Heart,
 }
 
 /**
  * Compact “hormoonwegwijzer” on Vandaag: why her body may feel this way,
- * plus 1–3 soft support points that move with phase + today’s check-in.
+ * plus 1–3 soft support points that move with phase + today’s check-in
+ * (and optionally what helped her before).
  */
 export function HormoneRoadmapNote({
   roadmap,
@@ -46,8 +48,14 @@ export function HormoneRoadmapNote({
               <li key={`${support.kind}-${support.title}`} className="flex gap-2.5">
                 <span className="mt-0.5 shrink-0 h-7 w-7 rounded-full bg-surface/70 flex items-center justify-center">
                   <Icon
-                    className={cn("h-3.5 w-3.5", phaseTone?.text ?? "text-sage-dark")}
-                    strokeWidth={1.75}
+                    className={cn(
+                      "h-3.5 w-3.5",
+                      support.kind === "helped"
+                        ? "text-peach"
+                        : (phaseTone?.text ?? "text-sage-dark"),
+                    )}
+                    strokeWidth={support.kind === "helped" ? 0 : 1.75}
+                    fill={support.kind === "helped" ? "currentColor" : "none"}
                     aria-hidden
                   />
                 </span>
@@ -64,13 +72,13 @@ export function HormoneRoadmapNote({
       )}
 
       <Link
-        href="/cyclus/vandaag"
+        href="/cyclus"
         className={cn(
           "mt-3 inline-flex items-center gap-1 min-h-11 text-xs font-medium touch-manipulation",
           phaseTone?.text ?? "text-sage-dark",
         )}
       >
-        Meer over deze fase
+        Jouw verhaal op Cyclus
         <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
       </Link>
     </section>
