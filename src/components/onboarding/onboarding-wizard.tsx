@@ -25,6 +25,7 @@ import {
   MENTAL_WELLBEING_CATEGORY_OPTIONS,
 } from "@/lib/constants"
 import { completeOnboarding } from "@/lib/actions/onboarding"
+import { acceptHealthDataConsent } from "@/lib/actions/consent"
 import { cn } from "@/lib/utils"
 
 interface FormData {
@@ -104,6 +105,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
   const [step, setStep] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [healthConsent, setHealthConsent] = useState(false)
   const [data, setData] = useState<FormData>({
     name: initialName,
     age: "",
@@ -141,6 +143,10 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
 
   function validateStep(): string | null {
     switch (stepId) {
+      case "welcome":
+        return healthConsent
+          ? null
+          : "Bevestig even de verwerking van je gezondheidsgegevens om verder te gaan."
       case "name":
         return data.name.trim().length > 0 ? null : "Vul je naam in."
       case "age": {
@@ -184,6 +190,13 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
       return
     }
     setError(null)
+    if (stepId === "welcome" && healthConsent) {
+      startTransition(async () => {
+        await acceptHealthDataConsent()
+        setStep((s) => Math.min(s + 1, totalSteps - 1))
+      })
+      return
+    }
     setStep((s) => Math.min(s + 1, totalSteps - 1))
   }
 
@@ -280,7 +293,9 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
       )}
 
       <div className="flex-1 flex flex-col justify-center">
-        {stepId === "welcome" && <WelcomeStep />}
+        {stepId === "welcome" && (
+          <WelcomeStep healthConsent={healthConsent} onHealthConsentChange={setHealthConsent} />
+        )}
         {stepId === "name" && (
           <NameStep value={data.name} onChange={(name) => setData((d) => ({ ...d, name }))} />
         )}
@@ -454,10 +469,16 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
   )
 }
 
-function WelcomeStep() {
+function WelcomeStep({
+  healthConsent,
+  onHealthConsentChange,
+}: {
+  healthConsent: boolean
+  onHealthConsentChange: (v: boolean) => void
+}) {
   return (
     <div className="text-center">
-      <p className="text-sage-dark font-medium mb-3">Welkom bij Cyclus</p>
+      <p className="text-sage-dark font-medium mb-3">Welkom bij GoFiev</p>
       <h1 className="font-display text-3xl leading-snug text-ink mb-4">
         Jouw lichaam.
         <br />
@@ -465,10 +486,30 @@ function WelcomeStep() {
         <br />
         Jouw dag.
       </h1>
-      <p className="text-ink-soft text-sm">
+      <p className="text-ink-soft text-sm mb-5">
         Een paar korte vragen — ongeveer 2 minuten. Alles kun je later nog aanpassen in je
-        profiel.
+        profiel. Jij houdt de regie; niets hoeft perfect.
       </p>
+      <label className="flex items-start gap-2.5 text-left text-sm text-ink leading-snug cursor-pointer rounded-2xl bg-sage-soft/40 px-3.5 py-3">
+        <input
+          type="checkbox"
+          checked={healthConsent}
+          onChange={(e) => onHealthConsentChange(e.target.checked)}
+          className="mt-1 h-4 w-4 rounded border-line accent-sage-fill shrink-0"
+        />
+        <span>
+          Ik bevestig dat mijn gezondheids- en cyclusgegevens mogen worden verwerkt om GoFiev
+          persoonlijker te maken.{" "}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noreferrer"
+            className="text-sage-dark font-medium underline-offset-2 hover:underline"
+          >
+            Privacyverklaring
+          </a>
+        </span>
+      </label>
     </div>
   )
 }

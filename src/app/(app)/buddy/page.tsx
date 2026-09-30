@@ -1,14 +1,22 @@
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getActiveConversation } from "@/lib/data/buddy"
+import { getProfile } from "@/lib/data/profile"
 import { ChatWindow } from "@/components/buddy/chat-window"
 import { BuddyMark } from "@/components/buddy/buddy-mark"
 import { BuddyShell } from "@/components/buddy/buddy-shell"
+import { BuddyAiConsentCard } from "@/components/buddy/buddy-ai-consent-card"
+import { isBuddyAiConfigured } from "@/lib/buddy"
 
 export default async function BuddyPage() {
   const user = await getAuthedUser()
   if (!user) return null
 
-  const { conversationId, messages } = await getActiveConversation(user.id)
+  const [{ conversationId, messages }, profile] = await Promise.all([
+    getActiveConversation(user.id),
+    getProfile(user.id),
+  ])
+
+  const needsAiConsent = isBuddyAiConfigured() && !profile?.buddy_ai_consent_at
 
   return (
     <BuddyShell>
@@ -22,6 +30,7 @@ export default async function BuddyPage() {
           zorgprofessional.
         </p>
       </div>
+      {needsAiConsent && <BuddyAiConsentCard />}
       <ChatWindow initialConversationId={conversationId} initialMessages={messages} />
     </BuddyShell>
   )

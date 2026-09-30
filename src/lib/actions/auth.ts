@@ -58,9 +58,14 @@ export async function login(_prev: ActionState, formData: FormData): Promise<Act
 }
 
 export async function register(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const consentRaw = formData.get("healthDataConsent")
+  const termsRaw = formData.get("acceptTerms")
   const parsed = registerSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
+    healthDataConsent: consentRaw === "on" || consentRaw === "true" ? true : consentRaw,
+    acceptTerms: termsRaw === "on" || termsRaw === "true" ? true : termsRaw,
+    privacyPolicyVersion: formData.get("privacyPolicyVersion"),
   })
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer." }
@@ -75,6 +80,10 @@ export async function register(_prev: ActionState, formData: FormData): Promise<
     password: parsed.data.password,
     options: {
       emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
+      data: {
+        health_data_consent: true,
+        health_data_consent_version: parsed.data.privacyPolicyVersion,
+      },
     },
   })
 
@@ -83,6 +92,17 @@ export async function register(_prev: ActionState, formData: FormData): Promise<
       return { error: "Er bestaat al een account met dit e-mailadres." }
     }
     return { error: "Registreren is niet gelukt. Probeer het opnieuw." }
+  }
+
+  // Ensure consent is stored even if the trigger missed metadata (e.g. older DB).
+  if (data.user) {
+    await supabase
+      .from("profiles")
+      .update({
+        health_data_consent_at: new Date().toISOString(),
+        health_data_consent_version: parsed.data.privacyPolicyVersion,
+      })
+      .eq("id", data.user.id)
   }
 
   if (!data.session) {

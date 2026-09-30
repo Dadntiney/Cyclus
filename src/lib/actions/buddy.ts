@@ -67,7 +67,15 @@ export async function sendBuddyMessage(conversationId: string | null, message: s
   }))
 
   const contextLines = await buildBuddyContext(user.id)
-  const provider = getBuddyProvider()
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("buddy_ai_consent_at")
+    .eq("id", user.id)
+    .maybeSingle()
+
+  const allowAi = Boolean(profile?.buddy_ai_consent_at)
+  const provider = getBuddyProvider({ allowAi })
 
   let reply
   try {

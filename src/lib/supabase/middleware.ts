@@ -7,6 +7,8 @@ const PUBLIC_PATHS = [
   "/wachtwoord-vergeten",
   "/wachtwoord-resetten",
   "/auth/callback",
+  "/privacy",
+  "/voorwaarden",
 ]
 
 function isPublicPath(pathname: string) {

@@ -687,6 +687,8 @@ export type Database = {
           goal_weight_kg: number | null
           goals: string[]
           health_conditions: string[]
+          health_data_consent_at: string | null
+          health_data_consent_version: string | null
           height_cm: number | null
           hormonal_medication_status: string | null
           id: string
@@ -715,6 +717,8 @@ export type Database = {
           updated_at: string
           weight_kg: number | null
           wellness_preference: string | null
+          buddy_ai_consent_at: string | null
+          buddy_ai_consent_version: string | null
         }
         Insert: {
           age?: number | null
@@ -723,12 +727,16 @@ export type Database = {
           avatar_url?: string | null
           buddy_message_frequency?: string | null
           buddy_styles?: string[]
+          buddy_ai_consent_at?: string | null
+          buddy_ai_consent_version?: string | null
           created_at?: string
           disliked_foods?: string[]
           food_allergies?: string[]
           goal_weight_kg?: number | null
           goals?: string[]
           health_conditions?: string[]
+          health_data_consent_at?: string | null
+          health_data_consent_version?: string | null
           height_cm?: number | null
           hormonal_medication_status?: string | null
           id: string
@@ -762,6 +770,8 @@ export type Database = {
           avatar_url?: string | null
           buddy_message_frequency?: string | null
           buddy_styles?: string[]
+          buddy_ai_consent_at?: string | null
+          buddy_ai_consent_version?: string | null
           created_at?: string
           custom_symptoms?: string[]
           disliked_foods?: string[]
@@ -769,6 +779,8 @@ export type Database = {
           goal_weight_kg?: number | null
           goals?: string[]
           health_conditions?: string[]
+          health_data_consent_at?: string | null
+          health_data_consent_version?: string | null
           height_cm?: number | null
           hormonal_medication_status?: string | null
           id?: string
