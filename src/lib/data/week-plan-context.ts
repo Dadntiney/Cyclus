@@ -21,6 +21,14 @@ const RECIPE_COLUMNS =
   "id, title, category, preparation_time, ingredients, nutrition_information, image_url"
 const WORKOUT_COLUMNS = "id, title, type, duration, difficulty, image_url"
 
+export type CompletedWorkoutInfo = {
+  workoutId: string
+  title: string
+  duration: number
+  type: string
+  imageUrl: string | null
+}
+
 export interface WeekPlanContext {
   userId: string
   weekStart: Date
@@ -30,6 +38,8 @@ export interface WeekPlanContext {
   workouts: WeekPlanWorkout[]
   recipes: WeekPlanRecipe[]
   recipePoolBySlot: Record<MealSlot, WeekPlanRecipe[]>
+  /** Completed workouts keyed by date (yyyy-MM-dd) — shared with Vandaag. */
+  completedWorkoutsByDate: Record<string, CompletedWorkoutInfo>
 }
 
 /**
@@ -52,6 +62,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
     { data: recipes },
     { data: cycleLogs },
     { data: recentCheckins },
+    { data: weekSessions },
   ] = await Promise.all([
     getProfile(userId),
     supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
@@ -68,6 +79,14 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
       .select("date, symptoms")
       .eq("user_id", userId)
       .gte("date", sixMonthsAgo),
+    supabase
+      .from("workout_sessions")
+      .select("date, workout_id, created_at")
+      .eq("user_id", userId)
+      .eq("completed", true)
+      .gte("date", weekStartISO)
+      .lte("date", todayISO)
+      .order("created_at", { ascending: false }),
   ])
 
   if (!profile) return null
@@ -106,7 +125,22 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
   })
 
   const workoutRows = (workouts ?? []) as WeekPlanWorkout[]
+  const workoutById = new Map(workoutRows.map((w) => [w.id, w]))
   const recipeRows = (recipes ?? []) as WeekPlanRecipe[]
+
+  const completedWorkoutsByDate: Record<string, CompletedWorkoutInfo> = {}
+  for (const session of weekSessions ?? []) {
+    if (completedWorkoutsByDate[session.date]) continue // newest first
+    const workout = workoutById.get(session.workout_id)
+    if (!workout) continue
+    completedWorkoutsByDate[session.date] = {
+      workoutId: workout.id,
+      title: workout.title,
+      duration: workout.duration,
+      type: workout.type,
+      imageUrl: workout.image_url,
+    }
+  }
 
   const days = buildWeekPlan({
     weekStart,
@@ -139,5 +173,6 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
     workouts: workoutRows,
     recipes: recipeRows,
     recipePoolBySlot,
+    completedWorkoutsByDate,
   }
 })

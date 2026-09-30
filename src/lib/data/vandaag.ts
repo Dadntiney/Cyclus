@@ -74,12 +74,15 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     movementEnabled
       ? supabase
           .from("workout_sessions")
-          .select("date, completed, workout_id")
+          .select("date, completed, workout_id, created_at")
           .eq("user_id", userId)
           .eq("completed", true)
           .gte("date", ninetyDaysAgo)
           .lte("date", today)
-      : Promise.resolve({ data: [] as { date: string; completed: boolean; workout_id: string }[] }),
+          .order("created_at", { ascending: false })
+      : Promise.resolve({
+          data: [] as { date: string; completed: boolean; workout_id: string; created_at: string }[],
+        }),
     supabase
       .from("cycle_logs")
       .select("date, menstruation, symptoms")
@@ -140,16 +143,23 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
   }))
 
   const todaySession = weekSessions.find((s) => s.date === today) ?? null
-  const completedWorkoutMeta = todaySession
+  const completedFromWeek = weekCtx?.completedWorkoutsByDate?.[today] ?? null
+  const completedWorkoutMeta = !completedFromWeek && todaySession
     ? workouts.find((w) => w.id === todaySession.workout_id) ?? null
     : null
-  const completedWorkout = completedWorkoutMeta
+  const completedWorkout = completedFromWeek
     ? {
-        workoutId: completedWorkoutMeta.id,
-        title: completedWorkoutMeta.title,
-        duration: completedWorkoutMeta.duration,
+        workoutId: completedFromWeek.workoutId,
+        title: completedFromWeek.title,
+        duration: completedFromWeek.duration,
       }
-    : null
+    : completedWorkoutMeta
+      ? {
+          workoutId: completedWorkoutMeta.id,
+          title: completedWorkoutMeta.title,
+          duration: completedWorkoutMeta.duration,
+        }
+      : null
 
   const sleepDurationMinutes =
     sleepEntry?.bedtime && sleepEntry?.wake_time
@@ -351,6 +361,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
           : null,
         movementEnabled: profile?.movement_enabled ?? true,
         nutritionEnabled: profile?.nutrition_enabled ?? true,
+        hasConcreteWorkout: Boolean(recommendation?.training.workout) || Boolean(completedWorkout),
       })
     : null
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 import Link from "next/link"
 import { Repeat, X, Check, ChevronDown } from "lucide-react"
 import { WorkoutImage } from "@/components/training/workout-image"
@@ -8,6 +8,7 @@ import { Chip } from "@/components/ui/chip"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { workoutTypeLabel } from "@/lib/constants"
+import { undoTodaysWorkoutSession } from "@/lib/actions/training"
 import {
   loadWeekOverrides,
   setDayOverride,
@@ -56,6 +57,7 @@ export function TodayMovementCard({
   const [swapping, setSwapping] = useState(false)
   const [showAdjust, setShowAdjust] = useState(false)
   const [swapType, setSwapType] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
     const overrides = loadWeekOverrides(userId, weekStartISO)
@@ -94,10 +96,22 @@ export function TodayMovementCard({
           <span className="h-10 w-10 rounded-full bg-surface/70 flex items-center justify-center shrink-0">
             <Check className="h-5 w-5 text-sage-dark" strokeWidth={2} />
           </span>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
             <p className="text-sm font-medium text-ink">Afgerond: {completed.title}</p>
             <p className="text-xs text-ink-soft mt-0.5">{completed.duration} minuten</p>
+            <button
+              type="button"
+              disabled={isPending}
+              onClick={() => {
+                startTransition(async () => {
+                  await undoTodaysWorkoutSession()
+                })
+              }}
+              className="mt-1.5 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation min-h-11"
+            >
+              {isPending ? "Bezig…" : "Ongedaan maken"}
+            </button>
           </div>
         </div>
       </div>

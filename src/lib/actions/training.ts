@@ -42,6 +42,32 @@ export async function completeWorkoutSession(workoutId: string) {
 
   revalidatePath("/training")
   revalidatePath("/vandaag")
+  revalidatePath("/deze-week")
+  revalidatePath("/profiel")
+  return { success: true }
+}
+
+/** Undo today's completed session(s) — e.g. accidental finish. */
+export async function undoTodaysWorkoutSession() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: "Je bent niet ingelogd." }
+
+  const today = todayISO()
+  const { error } = await supabase
+    .from("workout_sessions")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("date", today)
+    .eq("completed", true)
+
+  if (error) return { error: "Ongedaan maken is niet gelukt." }
+
+  revalidatePath("/training")
+  revalidatePath("/vandaag")
+  revalidatePath("/deze-week")
   revalidatePath("/profiel")
   return { success: true }
 }

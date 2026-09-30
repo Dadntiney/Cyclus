@@ -1,13 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import Link from "next/link"
-import { Moon, Repeat, X, ChevronDown } from "lucide-react"
+import { Moon, Repeat, X, ChevronDown, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { WorkoutImage } from "@/components/training/workout-image"
 import type { DayFocus } from "@/lib/recommendations/weekly-program"
 import type { WeekPlanWorkout } from "@/lib/recommendations/week-plan"
 import type { DayOverride } from "@/lib/client/week-plan-storage"
+import type { CompletedWorkoutInfo } from "@/lib/data/week-plan-context"
+import { undoTodaysWorkoutSession } from "@/lib/actions/training"
 
 const FOCUS_LABELS: Record<DayFocus, string> = {
   kracht: "Kracht",
@@ -24,11 +26,55 @@ interface WorkoutSlotCardProps {
   alternatives: WeekPlanWorkout[]
   override: DayOverride | null
   onOverride: (override: DayOverride | null) => void
+  completed?: CompletedWorkoutInfo | null
+  /** Only today's completion can be undone. */
+  canUndoCompleted?: boolean
 }
 
-export function WorkoutSlotCard({ focus, workout, reason, alternatives, override, onOverride }: WorkoutSlotCardProps) {
+export function WorkoutSlotCard({
+  focus,
+  workout,
+  reason,
+  alternatives,
+  override,
+  onOverride,
+  completed = null,
+  canUndoCompleted = false,
+}: WorkoutSlotCardProps) {
   const [open, setOpen] = useState(false)
   const [swapping, setSwapping] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  if (completed) {
+    return (
+      <div className="rounded-3xl bg-sage-soft/50 p-3.5">
+        <div className="flex items-start gap-3">
+          <span className="h-12 w-12 rounded-xl bg-surface/70 flex items-center justify-center shrink-0">
+            <Check className="h-5 w-5 text-sage-dark" strokeWidth={2} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-sage-dark mb-0.5">Afgerond</p>
+            <p className="text-sm font-medium text-ink">{completed.title}</p>
+            <p className="text-xs text-ink-soft mt-0.5">{completed.duration} min</p>
+            {canUndoCompleted && (
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => {
+                  startTransition(async () => {
+                    await undoTodaysWorkoutSession()
+                  })
+                }}
+                className="mt-1.5 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation min-h-11"
+              >
+                {isPending ? "Bezig…" : "Ongedaan maken"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const skipped = override?.type === "skip-workout"
   const swapped = override?.type === "swap-workout" ? override : null

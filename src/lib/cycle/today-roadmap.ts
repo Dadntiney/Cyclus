@@ -150,6 +150,8 @@ export interface ComposeTodayRoadmapInput {
   dailyTip?: { title: string; short_explanation: string } | null
   movementEnabled?: boolean
   nutritionEnabled?: boolean
+  /** When Vandaag already shows a concrete workout, skip generic beweging support. */
+  hasConcreteWorkout?: boolean
 }
 
 /**
@@ -170,6 +172,7 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
     dailyTip = null,
     movementEnabled = true,
     nutritionEnabled = true,
+    hasConcreteWorkout = false,
   } = input
 
   const knowledge = getPhaseKnowledge(phase)
@@ -215,7 +218,12 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
     (stress !== null && stress >= 4) ||
     content.movement.preferGentler
 
-  if (movementEnabled && !usedKinds.has("beweging") && supports.length < 2) {
+  if (
+    movementEnabled &&
+    !hasConcreteWorkout &&
+    !usedKinds.has("beweging") &&
+    supports.length < 2
+  ) {
     supports.push({
       kind: "beweging",
       title: wantsRest ? "Zachtere beweging" : content.movement.intensityLabel,

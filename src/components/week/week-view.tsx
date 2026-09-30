@@ -16,6 +16,7 @@ import {
 } from "@/lib/client/week-plan-storage"
 import { MealSlotCard } from "@/components/week/meal-slot-card"
 import { WorkoutSlotCard } from "@/components/week/workout-slot-card"
+import type { CompletedWorkoutInfo } from "@/lib/data/week-plan-context"
 
 interface WeekViewProps {
   userId: string
@@ -26,6 +27,7 @@ interface WeekViewProps {
   groceryItemCount: number
   movementEnabled: boolean
   nutritionEnabled: boolean
+  completedWorkoutsByDate?: Record<string, CompletedWorkoutInfo>
 }
 
 export function WeekView({
@@ -37,6 +39,7 @@ export function WeekView({
   groceryItemCount,
   movementEnabled,
   nutritionEnabled,
+  completedWorkoutsByDate = {},
 }: WeekViewProps) {
   const todayIndex = Math.max(
     0,
@@ -184,6 +187,8 @@ export function WeekView({
                 alternatives={workoutAlternatives}
                 override={overrides[`${day.date}:workout`] ?? null}
                 onOverride={(o) => updateOverride("workout", o)}
+                completed={completedWorkoutsByDate[day.date] ?? null}
+                canUndoCompleted={Boolean(day.isToday && completedWorkoutsByDate[day.date])}
               />
             </section>
           )}
