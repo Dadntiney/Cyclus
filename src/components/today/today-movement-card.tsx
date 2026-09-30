@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react"
 import Link from "next/link"
-import { Repeat, X, Check, ChevronDown } from "lucide-react"
+import { Repeat, X, Check, ChevronDown, Moon } from "lucide-react"
 import { WorkoutImage } from "@/components/training/workout-image"
 import { Chip } from "@/components/ui/chip"
 import { buttonVariants } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import { undoTodaysWorkoutSession } from "@/lib/actions/training"
 import {
   loadWeekOverrides,
   setDayOverride,
+  WEEK_OVERRIDES_CHANGED_EVENT,
   type DayOverride,
 } from "@/lib/client/week-plan-storage"
 
@@ -35,6 +36,8 @@ export function TodayMovementCard({
   completed,
   emphasis = "default",
   embedded = false,
+  canUndoCompleted = true,
+  restDay = false,
 }: {
   userId: string
   date: string
@@ -44,8 +47,12 @@ export function TodayMovementCard({
   alternatives: TodayWorkoutOption[]
   completed: { workoutId: string; title: string; duration: number } | null
   emphasis?: "default" | "primary"
-  /** Inside TodayCards surface — no outer shell. */
+  /** Inside TodayCards / Week soft panel — no outer shell. */
   embedded?: boolean
+  /** Only today’s completion can be undone via the session action. */
+  canUndoCompleted?: boolean
+  /** Planned rest day (week program) — soft Moon row unless swapped. */
+  restDay?: boolean
 }) {
   const shell = embedded
     ? "px-4 pt-4 pb-3"
@@ -60,9 +67,12 @@ export function TodayMovementCard({
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    const overrides = loadWeekOverrides(userId, weekStartISO)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setOverride(overrides[`${date}:workout`] ?? null)
+    function refresh() {
+      setOverride(loadWeekOverrides(userId, weekStartISO)[`${date}:workout`] ?? null)
+    }
+    refresh()
+    window.addEventListener(WEEK_OVERRIDES_CHANGED_EVENT, refresh)
+    return () => window.removeEventListener(WEEK_OVERRIDES_CHANGED_EVENT, refresh)
   }, [userId, weekStartISO, date])
 
   function applyOverride(next: DayOverride | null) {
@@ -100,18 +110,20 @@ export function TodayMovementCard({
             <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
             <p className="text-sm font-medium text-ink">Afgerond: {completed.title}</p>
             <p className="text-xs text-ink-soft mt-0.5">{completed.duration} minuten</p>
-            <button
-              type="button"
-              disabled={isPending}
-              onClick={() => {
-                startTransition(async () => {
-                  await undoTodaysWorkoutSession()
-                })
-              }}
-              className="mt-1.5 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation min-h-11"
-            >
-              {isPending ? "Bezig…" : "Ongedaan maken"}
-            </button>
+            {canUndoCompleted && (
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => {
+                  startTransition(async () => {
+                    await undoTodaysWorkoutSession()
+                  })
+                }}
+                className="mt-1.5 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation min-h-11"
+              >
+                {isPending ? "Bezig…" : "Ongedaan maken"}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -130,12 +142,29 @@ export function TodayMovementCard({
       }
     : suggested
 
+  if (restDay && !swapped && !skipped) {
+    return (
+      <div className={shell}>
+        <div className="flex items-center gap-3">
+          <span className="h-14 w-14 rounded-xl bg-surface/70 flex items-center justify-center shrink-0">
+            <Moon className="h-5 w-5 text-ink-soft" strokeWidth={1.75} />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
+            <p className="font-display text-lg text-ink leading-snug">Rustdag</p>
+            <p className="text-sm text-ink-soft mt-0.5">Geen beweging gepland</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={shell}>
       {skipped ? (
         <div>
           <p className="text-[11px] font-medium text-sage-dark mb-1">Beweging</p>
-          <p className="text-sm text-ink-soft italic">Vandaag overgeslagen</p>
+          <p className="text-sm text-ink-soft italic">Overgeslagen</p>
           <button
             type="button"
             onClick={() => applyOverride(null)}

@@ -1,21 +1,19 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { format, parseISO } from "date-fns"
 import { nl } from "date-fns/locale"
-import { ShoppingCart, ChevronRight, Salad, Footprints, Lightbulb } from "lucide-react"
+import { ShoppingCart, ChevronRight, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import type { WeekDayPlan, WeekPlanRecipe, WeekPlanWorkout, MealSlot } from "@/lib/recommendations/week-plan"
+import { TodayMovementCard } from "@/components/today/today-movement-card"
 import {
-  loadWeekOverrides,
-  setDayOverride,
-  type DayOverride,
-  type WeekOverrides,
-} from "@/lib/client/week-plan-storage"
-import { MealSlotCard } from "@/components/week/meal-slot-card"
-import { WorkoutSlotCard } from "@/components/week/workout-slot-card"
+  TodayMealsRows,
+  type TodayMealAlternative,
+} from "@/components/today/today-meals-rows"
+import type { MealSlotKey } from "@/lib/client/week-plan-storage"
 import type { CompletedWorkoutInfo } from "@/lib/data/week-plan-context"
 
 interface WeekViewProps {
@@ -46,30 +44,37 @@ export function WeekView({
     days.findIndex((d) => d.isToday),
   )
   const [selectedIndex, setSelectedIndex] = useState(todayIndex)
-  const [overrides, setOverrides] = useState<WeekOverrides>({})
-
-  useEffect(() => {
-    // Reads localStorage, which isn't available during SSR — deliberately
-    // deferred to an effect so the first client render matches the
-    // server-rendered (override-free) HTML, then updates once mounted.
-    // Also re-runs if the visible week changes (e.g. future "vorige/volgende
-    // week" navigation), since overrides are keyed per week.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setOverrides(loadWeekOverrides(userId, weekStartISO))
-  }, [userId, weekStartISO])
 
   const day = days[selectedIndex]
   const phaseContent = day?.cycleEstimate ? getPhaseContent(day.cycleEstimate.phase) : null
 
-  function updateOverride(key: string, override: DayOverride | null) {
-    const next = setDayOverride(userId, weekStartISO, day.date, key, override)
-    setOverrides(next)
-  }
-
-  const alternativesFor = useMemo(() => {
-    return (slot: MealSlot, currentId: string | undefined) =>
-      (recipePoolBySlot[slot] ?? []).filter((r) => r.id !== currentId).slice(0, 4)
+  const alternativesBySlot = useMemo(() => {
+    const next: Partial<Record<MealSlotKey, TodayMealAlternative[]>> = {}
+    for (const slot of ["ontbijt", "lunch", "diner"] as const) {
+      next[slot] = (recipePoolBySlot[slot] ?? []).map((r) => ({
+        id: r.id,
+        title: r.title,
+        image_url: r.image_url,
+        preparation_time: r.preparation_time,
+      }))
+    }
+    return next
   }, [recipePoolBySlot])
+
+  const recipeImageById = useMemo(() => {
+    const map: Record<string, string | null> = {}
+    for (const slot of Object.keys(recipePoolBySlot) as MealSlot[]) {
+      for (const r of recipePoolBySlot[slot] ?? []) {
+        map[r.id] = r.image_url
+      }
+    }
+    if (day) {
+      for (const meal of day.meals) {
+        if (meal.recipe) map[meal.recipe.id] = meal.recipe.image_url
+      }
+    }
+    return map
+  }, [recipePoolBySlot, day])
 
   const workoutAlternatives = useMemo(() => {
     if (!day) return []
@@ -83,10 +88,21 @@ export function WeekView({
         byType.set(w.type, list)
       }
     }
-    return Array.from(byType.values()).flat()
+    return Array.from(byType.values()).flat().map((w) => ({
+      id: w.id,
+      title: w.title,
+      type: w.type,
+      duration: w.duration,
+      image_url: w.image_url,
+    }))
   }, [workoutPool, day])
 
   if (!day) return null
+
+  const completed = completedWorkoutsByDate[day.date] ?? null
+  const showMeals = nutritionEnabled && day.meals.length > 0
+  const showMovement = movementEnabled
+  const hasPlan = showMovement || showMeals
 
   return (
     <div className="flex flex-col gap-5">
@@ -151,55 +167,79 @@ export function WeekView({
           <div className="mb-2.5" />
         )}
 
-        <div className="flex flex-col gap-4">
-          {nutritionEnabled && (
-            <section>
-              <p className="text-xs font-medium text-ink-soft mb-2 inline-flex items-center gap-1.5">
-                <Salad className="h-3.5 w-3.5" strokeWidth={1.75} />
-                Voeding
-              </p>
-              <div className="flex flex-col gap-2">
-                {day.meals.map((meal) => (
-                  <MealSlotCard
-                    key={meal.slot}
-                    slot={meal.slot}
-                    label={meal.label}
-                    recipe={meal.recipe}
-                    alternatives={alternativesFor(meal.slot, meal.recipe?.id)}
-                    override={overrides[`${day.date}:${meal.slot}`] ?? null}
-                    onOverride={(o) => updateOverride(meal.slot, o)}
-                  />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {movementEnabled && (
-            <section>
-              <p className="text-xs font-medium text-ink-soft mb-2 inline-flex items-center gap-1.5">
-                <Footprints className="h-3.5 w-3.5" strokeWidth={1.75} />
-                Beweging
-              </p>
-              <WorkoutSlotCard
-                focus={day.workout.focus}
-                workout={day.workout.workout}
+        {hasPlan ? (
+          <div className="rounded-3xl bg-sage-soft/55 overflow-hidden">
+            {showMovement && (
+              <TodayMovementCard
+                userId={userId}
+                date={day.date}
+                weekStartISO={weekStartISO}
+                suggested={
+                  day.workout.workout
+                    ? {
+                        id: day.workout.workout.id,
+                        title: day.workout.workout.title,
+                        type: day.workout.workout.type,
+                        duration: day.workout.workout.duration,
+                        image_url: day.workout.workout.image_url,
+                      }
+                    : null
+                }
                 reason={day.workout.reason}
                 alternatives={workoutAlternatives}
-                override={overrides[`${day.date}:workout`] ?? null}
-                onOverride={(o) => updateOverride("workout", o)}
-                completed={completedWorkoutsByDate[day.date] ?? null}
-                canUndoCompleted={Boolean(day.isToday && completedWorkoutsByDate[day.date])}
+                completed={
+                  completed
+                    ? {
+                        workoutId: completed.workoutId,
+                        title: completed.title,
+                        duration: completed.duration,
+                      }
+                    : null
+                }
+                emphasis="primary"
+                embedded
+                canUndoCompleted={Boolean(day.isToday && completed)}
+                restDay={day.workout.focus === "rust"}
               />
-            </section>
-          )}
+            )}
 
-          {day.focusTips[0] && (
-            <p className="text-sm text-ink-soft leading-relaxed px-0.5 inline-flex gap-2">
-              <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5 text-sage-dark" strokeWidth={1.75} aria-hidden />
-              <span>{day.focusTips[0]}</span>
-            </p>
-          )}
-        </div>
+            {showMeals && (
+              <div
+                className={cn(
+                  "divide-y divide-sage/15",
+                  showMovement && "border-t border-sage/15",
+                )}
+              >
+                <TodayMealsRows
+                  userId={userId}
+                  date={day.date}
+                  weekStartISO={weekStartISO}
+                  recipeImageById={recipeImageById}
+                  alternativesBySlot={alternativesBySlot}
+                  meals={day.meals.map((m) => ({
+                    slot: m.slot,
+                    label: m.label,
+                    recipe: m.recipe
+                      ? {
+                          id: m.recipe.id,
+                          title: m.recipe.title,
+                          image_url: m.recipe.image_url,
+                          preparation_time: m.recipe.preparation_time,
+                        }
+                      : null,
+                  }))}
+                />
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {day.focusTips[0] && (
+          <p className="text-sm text-ink-soft leading-relaxed px-0.5 mt-4 inline-flex gap-2">
+            <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5 text-sage-dark" strokeWidth={1.75} aria-hidden />
+            <span>{day.focusTips[0]}</span>
+          </p>
+        )}
       </div>
 
       {nutritionEnabled && (
