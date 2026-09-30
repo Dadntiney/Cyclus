@@ -104,7 +104,8 @@ export function WeekView({
   const completed = completedWorkoutsByDate[day.date] ?? null
   const showMeals = nutritionEnabled && day.meals.length > 0
   const showMovement = movementEnabled
-  const hasPlan = showMovement || showMeals
+  const showGrocery = nutritionEnabled
+  const hasPlan = showMovement || showMeals || showGrocery
 
   return (
     <div className="flex flex-col gap-5">
@@ -212,32 +213,65 @@ export function WeekView({
               />
             )}
 
-            {showMeals && (
+            {(showMeals || showGrocery) && (
               <div
                 className={cn(
                   "divide-y divide-sage/15",
                   showMovement && "border-t border-sage/15",
                 )}
               >
-                <TodayMealsRows
-                  userId={userId}
-                  date={day.date}
-                  weekStartISO={weekStartISO}
-                  recipeImageById={recipeImageById}
-                  alternativesBySlot={alternativesBySlot}
-                  meals={day.meals.map((m) => ({
-                    slot: m.slot,
-                    label: m.label,
-                    recipe: m.recipe
-                      ? {
-                          id: m.recipe.id,
-                          title: m.recipe.title,
-                          image_url: m.recipe.image_url,
-                          preparation_time: m.recipe.preparation_time,
-                        }
-                      : null,
-                  }))}
-                />
+                {showMeals && (
+                  <TodayMealsRows
+                    userId={userId}
+                    date={day.date}
+                    weekStartISO={weekStartISO}
+                    recipeImageById={recipeImageById}
+                    alternativesBySlot={alternativesBySlot}
+                    meals={day.meals.map((m) => ({
+                      slot: m.slot,
+                      label: m.label,
+                      recipe: m.recipe
+                        ? {
+                            id: m.recipe.id,
+                            title: m.recipe.title,
+                            image_url: m.recipe.image_url,
+                            preparation_time: m.recipe.preparation_time,
+                          }
+                        : null,
+                    }))}
+                  />
+                )}
+
+                {showGrocery && (
+                  <div className="flex items-center justify-between gap-3 px-4 py-2.5 min-h-11">
+                    <Link
+                      href="/deze-week/boodschappen"
+                      className="inline-flex items-center gap-2 text-sm font-medium text-ink touch-manipulation min-h-11"
+                    >
+                      <ShoppingCart className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} />
+                      Boodschappen
+                      {groceryItemCount > 0 && (
+                        <span className="text-xs text-ink-soft font-normal">({groceryItemCount})</span>
+                      )}
+                    </Link>
+                    {day.isToday ? (
+                      <Link
+                        href="/deze-week/boodschappen?modus=dag"
+                        className="text-xs font-medium text-sage-dark touch-manipulation min-h-11 inline-flex items-center shrink-0"
+                      >
+                        Voor vandaag →
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/deze-week/boodschappen"
+                        aria-label="Open boodschappenlijst"
+                        className="min-h-11 inline-flex items-center shrink-0 touch-manipulation"
+                      >
+                        <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
+                      </Link>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -256,32 +290,6 @@ export function WeekView({
           </p>
         )}
       </div>
-
-      {nutritionEnabled && (
-        <div className="flex flex-col gap-1.5">
-          <Link
-            href="/deze-week/boodschappen"
-            className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
-          >
-            <span className="inline-flex items-center gap-2.5 text-sm font-medium text-ink">
-              <ShoppingCart className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-              Boodschappen voor deze week
-              {groceryItemCount > 0 && (
-                <span className="text-xs text-ink-soft">({groceryItemCount})</span>
-              )}
-            </span>
-            <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
-          </Link>
-          {day.isToday && (
-            <Link
-              href="/deze-week/boodschappen?modus=dag"
-              className="text-xs font-medium text-sage-dark px-1 min-h-11 inline-flex items-center touch-manipulation"
-            >
-              Boodschappen voor vandaag →
-            </Link>
-          )}
-        </div>
-      )}
 
       {phaseContent && (
         <p className="text-xs text-ink-soft px-0.5 leading-relaxed">{phaseContent.whyText}</p>
