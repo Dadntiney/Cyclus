@@ -75,10 +75,26 @@ export function RemindersSection({
   const [error, setError] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  // Ids removed locally while a stale router.refresh() may still include them.
+  const deletedIdsRef = useRef<Set<string>>(new Set())
 
-  // Keep list in sync when the server page re-renders after refresh.
+  // Adopt server props without clobbering optimistic creates, and without
+  // resurrecting rows we just deleted before the cache catches up.
   useEffect(() => {
-    setReminders(initialReminders)
+    for (const id of [...deletedIdsRef.current]) {
+      if (!initialReminders.some((r) => r.id === id)) deletedIdsRef.current.delete(id)
+    }
+    setReminders((local) => {
+      const serverVisible = initialReminders.filter((r) => !deletedIdsRef.current.has(r.id))
+      const serverIds = new Set(serverVisible.map((r) => r.id))
+      const pendingLocal = local.filter(
+        (r) => !serverIds.has(r.id) && !deletedIdsRef.current.has(r.id),
+      )
+      if (pendingLocal.length === 0 && deletedIdsRef.current.size === 0) {
+        return initialReminders
+      }
+      return sortByTime([...serverVisible, ...pendingLocal])
+    })
   }, [initialReminders])
 
   const showForm = adding || editingId !== null
@@ -167,10 +183,14 @@ export function RemindersSection({
           return
         }
         if (result.reminder) {
-          setReminders((prev) => sortByTime([...prev, result.reminder!]))
+          setReminders((prev) => {
+            if (prev.some((r) => r.id === result.reminder!.id)) return prev
+            return sortByTime([...prev, result.reminder!])
+          })
         }
       }
       cancelForm()
+      // Refresh shell data (toast host); local list already updated above.
       router.refresh()
     })
   }
@@ -180,10 +200,12 @@ export function RemindersSection({
     setConfirmDeleteId(null)
     const removed = reminders.find((r) => r.id === id)
     const removedIndex = reminders.findIndex((r) => r.id === id)
+    deletedIdsRef.current.add(id)
     setReminders((prev) => prev.filter((r) => r.id !== id))
     startTransition(async () => {
       const result = await deleteReminder(id)
       if (result?.error) {
+        deletedIdsRef.current.delete(id)
         // Roll back: put the reminder back where it was.
         if (removed) {
           setReminders((prev) => {
