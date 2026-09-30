@@ -7,6 +7,7 @@ import { Chip } from "@/components/ui/chip"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { WorkoutImage } from "@/components/training/workout-image"
+import { workoutTypeLabel } from "@/lib/constants"
 import type { Tables } from "@/types/database"
 
 type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty" | "image_url">
@@ -15,10 +16,6 @@ const DIFFICULTY_LABELS: Record<string, string> = {
   makkelijk: "Makkelijk",
   gemiddeld: "Gemiddeld",
   pittig: "Pittig",
-}
-
-function typeLabel(type: string): string {
-  return type.charAt(0).toUpperCase() + type.slice(1)
 }
 
 export function WorkoutLibrary({ workouts }: { workouts: Workout[] }) {
@@ -40,7 +37,7 @@ export function WorkoutLibrary({ workouts }: { workouts: Workout[] }) {
             selected={activeType === type}
             onClick={() => setActiveType(type)}
           >
-            {typeLabel(type)}
+            {workoutTypeLabel(type)}
           </Chip>
         ))}
       </div>

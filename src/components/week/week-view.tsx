@@ -71,7 +71,17 @@ export function WeekView({
 
   const workoutAlternatives = useMemo(() => {
     if (!day) return []
-    return workoutPool.filter((w) => w.id !== day.workout.workout?.id).slice(0, 4)
+    const currentId = day.workout.workout?.id
+    const pool = workoutPool.filter((w) => w.id !== currentId)
+    const byType = new Map<string, typeof pool>()
+    for (const w of pool) {
+      const list = byType.get(w.type) ?? []
+      if (list.length < 3) {
+        list.push(w)
+        byType.set(w.type, list)
+      }
+    }
+    return Array.from(byType.values()).flat()
   }, [workoutPool, day])
 
   if (!day) return null

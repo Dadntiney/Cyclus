@@ -69,6 +69,21 @@ export const TRAINING_PREFERENCE_TO_TYPE: Record<string, string> = {
   Mobiliteit: "mobiliteit",
 }
 
+/** Dutch labels for `workouts.type` values. */
+export const WORKOUT_TYPE_LABELS: Record<string, string> = {
+  krachttraining: "Krachttraining",
+  pilates: "Pilates",
+  yoga: "Yoga",
+  wandelen: "Wandelen",
+  fietsen: "Fietsen",
+  hardlopen: "Hardlopen",
+  mobiliteit: "Mobiliteit",
+}
+
+export function workoutTypeLabel(type: string): string {
+  return WORKOUT_TYPE_LABELS[type] ?? type.charAt(0).toUpperCase() + type.slice(1)
+}
+
 export const NUTRITION_OPTIONS = [
   "Geen voorkeur",
   "Vegetarisch",

@@ -1,11 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { Repeat, X, Check, ChevronDown } from "lucide-react"
 import { WorkoutImage } from "@/components/training/workout-image"
+import { Chip } from "@/components/ui/chip"
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { workoutTypeLabel } from "@/lib/constants"
 import {
   loadWeekOverrides,
   setDayOverride,
@@ -53,6 +55,7 @@ export function TodayMovementCard({
   const [override, setOverride] = useState<DayOverride | null>(null)
   const [swapping, setSwapping] = useState(false)
   const [showAdjust, setShowAdjust] = useState(false)
+  const [swapType, setSwapType] = useState<string | null>(null)
 
   useEffect(() => {
     const overrides = loadWeekOverrides(userId, weekStartISO)
@@ -65,7 +68,24 @@ export function TodayMovementCard({
     setOverride(next)
     setSwapping(false)
     setShowAdjust(false)
+    setSwapType(null)
   }
+
+  const typeOptions = useMemo(() => {
+    const types = [...new Set(alternatives.map((a) => a.type))]
+    // Prefer types other than today's suggestion first, then the rest.
+    const suggestedType = suggested?.type
+    return types.sort((a, b) => {
+      if (a === suggestedType) return 1
+      if (b === suggestedType) return -1
+      return workoutTypeLabel(a).localeCompare(workoutTypeLabel(b), "nl")
+    })
+  }, [alternatives, suggested?.type])
+
+  const filteredAlternatives = useMemo(() => {
+    if (!swapType) return alternatives
+    return alternatives.filter((a) => a.type === swapType)
+  }, [alternatives, swapType])
 
   if (completed) {
     return (
@@ -124,7 +144,9 @@ export function TodayMovementCard({
             <div className="min-w-0 flex-1">
               <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
               <p className="font-display text-lg text-ink leading-snug">{effective.title}</p>
-              <p className="text-sm text-ink-soft mt-0.5">{effective.duration} minuten</p>
+              <p className="text-sm text-ink-soft mt-0.5">
+                {workoutTypeLabel(effective.type)} · {effective.duration} minuten
+              </p>
               {swapped && suggested && (
                 <p className="text-xs text-ink-soft mt-1">Jouw keuze · advies was {suggested.title}</p>
               )}
@@ -137,13 +159,15 @@ export function TodayMovementCard({
             Start training
           </Link>
 
-          {/* Secondary actions stay behind one control — less CTA soup. */}
           <div className="mt-1">
             <button
               type="button"
               onClick={() => {
                 setShowAdjust((s) => !s)
-                if (showAdjust) setSwapping(false)
+                if (showAdjust) {
+                  setSwapping(false)
+                  setSwapType(null)
+                }
               }}
               className="inline-flex items-center gap-1 min-h-11 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
               aria-expanded={showAdjust}
@@ -160,11 +184,20 @@ export function TodayMovementCard({
                 {alternatives.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => setSwapping((s) => !s)}
+                    onClick={() => {
+                      setSwapping((s) => !s)
+                      if (!swapping) {
+                        // Default to a different activity type when available.
+                        const other = typeOptions.find((t) => t !== effective.type) ?? typeOptions[0] ?? null
+                        setSwapType(other)
+                      } else {
+                        setSwapType(null)
+                      }
+                    }}
                     className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
                   >
                     <Repeat className="h-3.5 w-3.5" strokeWidth={1.75} />
-                    Andere oefening
+                    Andere beweging
                   </button>
                 )}
                 <button
@@ -189,29 +222,51 @@ export function TodayMovementCard({
           </div>
 
           {swapping && (
-            <div className="mt-2 flex flex-col gap-1.5">
-              <p className="text-[11px] text-ink-soft mb-0.5">Wat ga je doen?</p>
-              {alternatives.map((alt) => (
-                <button
-                  key={alt.id}
-                  type="button"
-                  onClick={() =>
-                    applyOverride({
-                      type: "swap-workout",
-                      workoutId: alt.id,
-                      title: alt.title,
-                      duration: alt.duration,
-                    })
-                  }
-                  className="text-left text-sm text-ink rounded-xl px-3 py-2.5 min-h-11 bg-surface/70 hover:bg-surface transition-colors touch-manipulation flex items-center justify-between gap-2"
-                >
-                  <span>{alt.title}</span>
-                  <span className="text-xs text-ink-soft shrink-0">{alt.duration} min</span>
-                </button>
-              ))}
+            <div className="mt-2 flex flex-col gap-2">
+              <p className="text-[11px] text-ink-soft">Kies een soort beweging:</p>
+              <div className="flex w-full gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {typeOptions.map((type) => (
+                  <Chip
+                    key={type}
+                    className="shrink-0"
+                    selected={swapType === type}
+                    onClick={() => setSwapType(type)}
+                  >
+                    {workoutTypeLabel(type)}
+                  </Chip>
+                ))}
+              </div>
+              <p className="text-[11px] text-ink-soft mb-0.5">
+                {swapType ? `${workoutTypeLabel(swapType)} — wat ga je doen?` : "Wat ga je doen?"}
+              </p>
+              {filteredAlternatives.length ? (
+                filteredAlternatives.map((alt) => (
+                  <button
+                    key={alt.id}
+                    type="button"
+                    onClick={() =>
+                      applyOverride({
+                        type: "swap-workout",
+                        workoutId: alt.id,
+                        title: alt.title,
+                        duration: alt.duration,
+                      })
+                    }
+                    className="text-left text-sm text-ink rounded-xl px-3 py-2.5 min-h-11 bg-surface/70 hover:bg-surface transition-colors touch-manipulation flex items-center justify-between gap-2"
+                  >
+                    <span className="truncate">{alt.title}</span>
+                    <span className="text-xs text-ink-soft shrink-0">{alt.duration} min</span>
+                  </button>
+                ))
+              ) : (
+                <p className="text-sm text-ink-soft">Geen opties in deze categorie.</p>
+              )}
               <button
                 type="button"
-                onClick={() => setSwapping(false)}
+                onClick={() => {
+                  setSwapping(false)
+                  setSwapType(null)
+                }}
                 className="text-[11px] font-medium text-ink-soft self-start touch-manipulation min-h-11"
               >
                 Annuleren

@@ -203,16 +203,28 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     : null
 
   const suggestedId = recommendation?.training.workout?.id ?? null
-  const workoutAlternatives = workouts
-    .filter((w) => w.id !== suggestedId)
-    .slice(0, 6)
-    .map((w) => ({
-      id: w.id,
-      title: w.title,
-      type: w.type,
-      duration: w.duration,
-      image_url: w.image_url,
-    }))
+  // Diversify across activity types so she can switch e.g. from yoga to
+  // wandelen/pilates — not only near-duplicates of today's suggestion.
+  const workoutAlternatives = (() => {
+    const pool = workouts.filter((w) => w.id !== suggestedId)
+    const byType = new Map<string, typeof pool>()
+    for (const w of pool) {
+      const list = byType.get(w.type) ?? []
+      if (list.length < 4) {
+        list.push(w)
+        byType.set(w.type, list)
+      }
+    }
+    return Array.from(byType.values())
+      .flat()
+      .map((w) => ({
+        id: w.id,
+        title: w.title,
+        type: w.type,
+        duration: w.duration,
+        image_url: w.image_url,
+      }))
+  })()
 
   const mealAlternativesBySlot = {
     ontbijt: (weekCtx?.recipePoolBySlot.ontbijt ?? [])
