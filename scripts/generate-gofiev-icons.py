@@ -1,4 +1,4 @@
-"""Generate GoFiev / Buddy peach-droplet app icons — open looking eyes only."""
+"""Generate GoFiev Buddy icons — softer rounded dewdrop + looking eyes."""
 
 from __future__ import annotations
 
@@ -8,12 +8,12 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path("/workspace/public/icons")
-PEACH = (232, 163, 126, 255)  # #e8a37e
-CREAM = (250, 246, 240, 255)  # #faf6f0
-PUPIL = (184, 108, 78, 255)  # deeper peach for pupil contrast
+PEACH = (232, 163, 126, 255)
+CREAM = (250, 246, 240, 255)
+PUPIL = (184, 108, 78, 255)
 
 
-def cubic(p0, p1, p2, p3, n=24):
+def cubic(p0, p1, p2, p3, n=28):
     pts = []
     for i in range(n + 1):
         t = i / n
@@ -25,11 +25,30 @@ def cubic(p0, p1, p2, p3, n=24):
 
 
 def droplet_points(cx: float, cy: float, scale: float) -> list[tuple[float, float]]:
-    tip = (12, 3.1)
-    right = cubic(tip, (14.8, 5.6), (18.7, 10.4), (18.7, 15.15), 20)
-    arc = [(12 + 6.7 * math.cos((i / 32) * math.pi), 15.15 + 6.7 * math.sin((i / 32) * math.pi)) for i in range(33)]
-    left = cubic((5.3, 15.15), (5.3, 10.4), (9.2, 5.6), tip, 20)
-    raw = right + arc[1:] + left[1:]
+    """
+    Soft dewdrop matching BuddyGlyph:
+    M12 3.6
+    C14.35 3.6 16.9 6.55 18.35 10.15
+    C19.45 12.85 19.7 14.85 19.7 15.85
+    a7.7 7.7 0 1 1 -15.4 0
+    C4.3 14.85 4.55 12.85 5.65 10.15
+    C7.1 6.55 9.65 3.6 12 3.6Z
+    """
+    # Right upper: 12,3.6 → 14.35,3.6 → 16.9,6.55 → 18.35,10.15
+    r1 = cubic((12, 3.6), (14.35, 3.6), (16.9, 6.55), (18.35, 10.15), 20)
+    # Right mid: 18.35,10.15 → 19.45,12.85 → 19.7,14.85 → 19.7,15.85
+    r2 = cubic((18.35, 10.15), (19.45, 12.85), (19.7, 14.85), (19.7, 15.85), 16)
+    # Bottom arc from east (19.7,15.85) around center (12,15.85) r=7.7, angles 0→π
+    arc = []
+    for i in range(40):
+        a = (i / 39) * math.pi
+        arc.append((12 + 7.7 * math.cos(a), 15.85 + 7.7 * math.sin(a)))
+    # Left mid reverse: 4.3,15.85 → 4.3,14.85 → 4.55,12.85 → 5.65,10.15
+    l2 = cubic((4.3, 15.85), (4.3, 14.85), (4.55, 12.85), (5.65, 10.15), 16)
+    # Left upper: 5.65,10.15 → 7.1,6.55 → 9.65,3.6 → 12,3.6
+    l1 = cubic((5.65, 10.15), (7.1, 6.55), (9.65, 3.6), (12, 3.6), 20)
+
+    raw = r1 + r2[1:] + arc[1:] + l2[1:] + l1[1:]
     return [(cx + (x - 12) * scale, cy + (y - 12) * scale) for x, y in raw]
 
 
@@ -37,21 +56,20 @@ def draw_icon(size: int, *, maskable: bool = False) -> Image.Image:
     img = Image.new("RGBA", (size, size), PEACH)
     draw = ImageDraw.Draw(img)
 
-    scale = size / 24 * (0.62 if maskable else 0.68)
+    scale = size / 24 * (0.60 if maskable else 0.66)
     cx = size / 2
-    cy = size * 0.52
+    cy = size * 0.51
 
     draw.polygon(droplet_points(cx, cy, scale), fill=CREAM)
 
-    eye_r = max(2.2, 1.55 * scale)
-    eye_y = cy + (14.35 - 12) * scale
-    eye_lx = cx + (9.5 - 12) * scale
-    eye_rx = cx + (14.5 - 12) * scale
+    eye_r = max(2.2, 1.5 * scale)
+    eye_y = cy + (14.55 - 12) * scale
+    eye_lx = cx + (9.45 - 12) * scale
+    eye_rx = cx + (14.55 - 12) * scale
     for ex in (eye_lx, eye_rx):
         draw.ellipse([ex - eye_r, eye_y - eye_r, ex + eye_r, eye_y + eye_r], fill=PEACH)
 
-    pupil_r = max(1.4, 0.78 * scale)
-    # Pupils toward center — looking at you
+    pupil_r = max(1.35, 0.75 * scale)
     for ex, toward in ((eye_lx, 0.2), (eye_rx, -0.2)):
         px = ex + toward * scale
         py = eye_y

@@ -15,11 +15,10 @@ function eyeCutout(cx: number, cy: number, r: number) {
 }
 
 /**
- * Buddy’s visual signature — a plump soft dewdrop companion in brand peach.
+ * Buddy’s visual signature — a soft, lovable dewdrop in brand peach.
  *
- * Open looking eyes with pupils (no mouth — smiles read muddy at icon size).
- * No arms. Used only where Buddy speaks or is named — never as the
- * menstruation status droplet.
+ * Shape: rounded tip, wide calm belly (less “sharp tear”, more companion).
+ * Face: open looking eyes with pupils. No arms, no mouth.
  */
 export function BuddyGlyph({
   className,
@@ -27,24 +26,23 @@ export function BuddyGlyph({
   face = true,
 }: {
   className?: string
-  /** Kept for Lucide-like call sites in nav; nudges silhouette weight. */
   strokeWidth?: number
-  /** Face cutouts — keep on for Buddy presence. */
   face?: boolean
 }) {
   const weight = Math.min(1.08, Math.max(0.92, strokeWidth / 1.75))
 
+  // Soft dewdrop: blunt rounded tip + plump sides + round belly.
   const droplet =
-    "M12 3.1C14.8 5.6 18.7 10.4 18.7 15.15a6.7 6.7 0 1 1-13.4 0C5.3 10.4 9.2 5.6 12 3.1Z"
+    "M12 3.6C14.35 3.6 16.9 6.55 18.35 10.15C19.45 12.85 19.7 14.85 19.7 15.85a7.7 7.7 0 1 1-15.4 0C4.3 14.85 4.55 12.85 5.65 10.15C7.1 6.55 9.65 3.6 12 3.6Z"
 
   const halo =
-    "M12 2.35C15.15 5.1 19.45 10.1 19.45 15.15a7.45 7.45 0 1 1-14.9 0C4.55 10.1 8.85 5.1 12 2.35Z"
+    "M12 2.85C14.75 2.85 17.55 5.95 19.15 9.85C20.35 12.75 20.55 14.85 20.55 15.85a8.55 8.55 0 1 1-17.1 0C3.45 14.85 3.65 12.75 4.85 9.85C6.45 5.95 9.25 2.85 12 2.85Z"
 
-  // Big open eyes — “kijken”, blij zonder mond
-  const eyeR = 1.55
-  const eyeY = 14.35
-  const eyeL = 9.5
-  const eyeRgt = 14.5
+  // Eyes sit in the soft belly
+  const eyeR = 1.5
+  const eyeY = 14.55
+  const eyeL = 9.45
+  const eyeRgt = 14.55
 
   const body = face
     ? [droplet, eyeCutout(eyeL, eyeY, eyeR), eyeCutout(eyeRgt, eyeY, eyeR)].join("")
@@ -58,13 +56,12 @@ export function BuddyGlyph({
       className={cn("shrink-0", className)}
       style={{ transform: weight !== 1 ? `scale(${weight})` : undefined }}
     >
-      <path d={halo} stroke="currentColor" strokeWidth={1.1} opacity="0.28" />
+      <path d={halo} stroke="currentColor" strokeWidth={1.05} opacity="0.24" />
       <path fill="currentColor" fillRule="evenodd" d={body} />
       {face && (
         <>
-          {/* Round pupils, slightly toward center — looking at you */}
-          <circle cx={eyeL + 0.2} cy={eyeY} r="0.78" fill="currentColor" />
-          <circle cx={eyeRgt - 0.2} cy={eyeY} r="0.78" fill="currentColor" />
+          <circle cx={eyeL + 0.2} cy={eyeY} r="0.75" fill="currentColor" />
+          <circle cx={eyeRgt - 0.2} cy={eyeY} r="0.75" fill="currentColor" />
         </>
       )}
     </svg>
@@ -83,7 +80,6 @@ export function BuddyMark({
   className?: string
   glyphClassName?: string
   label?: string
-  /** When true, hide from assistive tech (e.g. next to a labeled message). */
   decorative?: boolean
 }) {
   const s = SIZE[size]
