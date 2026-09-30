@@ -22,6 +22,29 @@ let frame: VisualViewportFrame = {
 const listeners = new Set<() => void>()
 let attached = false
 
+function isTextEntryElement(el: EventTarget | null): boolean {
+  if (!(el instanceof HTMLElement)) return false
+  if (el.isContentEditable) return true
+  if (el instanceof HTMLTextAreaElement) return !el.disabled && !el.readOnly
+  if (el instanceof HTMLInputElement) {
+    if (el.disabled || el.readOnly) return false
+    const type = (el.type || "text").toLowerCase()
+    return ![
+      "button",
+      "checkbox",
+      "radio",
+      "submit",
+      "reset",
+      "file",
+      "image",
+      "range",
+      "color",
+      "hidden",
+    ].includes(type)
+  }
+  return false
+}
+
 function readFrame(): VisualViewportFrame {
   return frame
 }
@@ -36,11 +59,16 @@ function publish() {
   const height = vv?.height ?? window.innerHeight
   if (!baseline || height > baseline) baseline = height
   const covered = Math.max(0, baseline - height)
+  // Require both a real shrink AND a focused text field. Rubber-band
+  // overscroll can briefly shorten the visual viewport — without focus
+  // that must not hide the tab bar. Focus alone is also not enough: iOS
+  // can dismiss the keyboard while leaving the input focused.
+  const editing = isTextEntryElement(document.activeElement)
   const next: VisualViewportFrame = {
     offsetTop,
     height,
     covered,
-    keyboardOpen: covered > KEYBOARD_THRESHOLD_PX,
+    keyboardOpen: editing && covered > KEYBOARD_THRESHOLD_PX,
   }
   frame = next
   listeners.forEach((l) => l())
@@ -60,6 +88,8 @@ function ensureAttached() {
   window.visualViewport?.addEventListener("scroll", publish)
   window.addEventListener("resize", publish)
   window.addEventListener("orientationchange", onOrientation)
+  window.addEventListener("focusin", publish)
+  window.addEventListener("focusout", publish)
 }
 
 function subscribe(listener: () => void) {
@@ -71,13 +101,10 @@ function subscribe(listener: () => void) {
 }
 
 /**
- * Shared visual-viewport frame for mobile keyboard chrome.
+ * Shared visual-viewport frame for mobile keyboard chrome (Buddy).
  *
- * iOS Safari often overlays the keyboard without a trustworthy
- * `innerHeight - vv.height` delta (especially with
- * `interactive-widget: resizes-content`). Comparing against the tallest
- * recent `vv.height` detects the keyboard. Consumers size fixed chrome
- * with `offsetTop` + `height` so the Buddy composer stays in view.
+ * Compares `vv.height` to a rising baseline to detect the soft keyboard,
+ * gated on a focused text field so pull-to-overscroll cannot yank chrome.
  */
 export function useVisualViewportFrame(): VisualViewportFrame {
   return useSyncExternalStore(subscribe, readFrame, serverFrame)

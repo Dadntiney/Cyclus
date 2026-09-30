@@ -1,6 +1,6 @@
 "use client"
 
-import { useLayoutEffect, useRef } from "react"
+import { useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
@@ -10,28 +10,16 @@ import { useVisualViewportFrame } from "@/lib/hooks/use-visual-viewport-frame"
 import { BuddyGlyph } from "@/components/buddy/buddy-mark"
 import { NAV_ITEMS } from "./nav-items"
 
+/**
+ * Always `fixed bottom-0` — never synced to visualViewport top/height.
+ * Rubber-band overscroll on Vandaag was moving a vv-pinned tab bar up the
+ * screen. Keyboard open still hides it (Buddy composer needs that space).
+ */
 export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
   const pathname = usePathname()
   const ref = useRef<HTMLElement>(null)
-  // Viewport shrink (not input focus): iOS can dismiss the keyboard while
-  // leaving the field focused — focus-based hiding left the tab bar gone.
-  const { offsetTop, height, keyboardOpen } = useVisualViewportFrame()
+  const { keyboardOpen } = useVisualViewportFrame()
   useMeasuredHeightVar(ref, "--bottom-nav-h", keyboardOpen)
-
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    // Sit on the bottom edge of the visual viewport so we track keyboard
-    // and browser chrome instead of the layout viewport.
-    if (keyboardOpen) {
-      el.style.top = ""
-      el.style.bottom = "0px"
-      return
-    }
-    const top = offsetTop + height - el.offsetHeight
-    el.style.top = `${Math.max(0, top)}px`
-    el.style.bottom = "auto"
-  }, [offsetTop, height, keyboardOpen])
 
   return (
     <nav
@@ -39,7 +27,7 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
       aria-label="Hoofdnavigatie"
       aria-hidden={keyboardOpen || undefined}
       className={cn(
-        "md:hidden fixed inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-line safe-bottom safe-x",
+        "md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-line safe-bottom safe-x",
         "transition-transform duration-200 ease-out motion-reduce:transition-none",
         keyboardOpen && "translate-y-full pointer-events-none",
       )}

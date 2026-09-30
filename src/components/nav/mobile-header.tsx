@@ -6,19 +6,20 @@ import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
 import { useVisualViewportFrame } from "@/lib/hooks/use-visual-viewport-frame"
 
 /**
- * Fixed to the visual viewport top so iOS keyboard / visual-viewport scroll
- * cannot leave "Cyclus" stranded above the visible area.
+ * Fixed header. Only tracks visualViewport.offsetTop while the soft keyboard
+ * is open (Buddy) — otherwise stays at top:0 so rubber-band overscroll on
+ * Vandaag cannot drag "Cyclus" around.
  */
 export function MobileHeader() {
   const ref = useRef<HTMLElement>(null)
-  const { offsetTop } = useVisualViewportFrame()
+  const { offsetTop, keyboardOpen } = useVisualViewportFrame()
   useMeasuredHeightVar(ref, "--mobile-header-h")
 
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    el.style.top = `${offsetTop}px`
-  }, [offsetTop])
+    el.style.top = keyboardOpen ? `${offsetTop}px` : "0px"
+  }, [offsetTop, keyboardOpen])
 
   return (
     <header
