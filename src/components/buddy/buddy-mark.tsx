@@ -16,17 +16,17 @@ const DROPLET =
 /**
  * Buddy — peach dewdrop companion.
  *
- * Shape matches the menstruatie Droplet icon. Solid mark gets happy
- * white squint-eyes; outline is stroke-only for nav parity with Lucide.
+ * Shape matches the menstruatie Droplet icon. No face — clean droplet only.
+ * Outline variant is stroke-only for nav parity with Lucide icons.
  */
 export function BuddyGlyph({
   className,
   strokeWidth = 1.75,
-  face = true,
   variant = "solid",
 }: {
   className?: string
   strokeWidth?: number
+  /** @deprecated Eyes removed — kept so call sites keep compiling. */
   face?: boolean
   variant?: "solid" | "outline"
 }) {
@@ -57,13 +57,6 @@ export function BuddyGlyph({
       className={cn("shrink-0", className)}
     >
       <path fill="currentColor" d={DROPLET} />
-      {face && (
-        <>
-          {/* White eyes only — soft “knijp” ellipses (happy squint) */}
-          <ellipse cx="9.55" cy="14.1" rx="1.65" ry="1.05" fill="#fff" />
-          <ellipse cx="14.45" cy="14.1" rx="1.65" ry="1.05" fill="#fff" />
-        </>
-      )}
     </svg>
   )
 }
