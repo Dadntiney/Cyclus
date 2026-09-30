@@ -157,9 +157,22 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
       preferGentler: true,
     },
     lifestyleTips: [
-      { title: "Warmte kan fijn zijn", text: "Een warmwaterkruik of warm bad kan prettig aanvoelen bij krampen." },
-      { title: "Extra rust is oké", text: "Plan waar mogelijk iets minder vol — dit is geen zwakte, gewoon een fase." },
-      { title: "Drink voldoende water", text: "Voldoende vocht past goed bij deze fase, zeker bij vermoeidheid." },
+      {
+        title: "Warmte kan fijn zijn",
+        text: "Een warmwaterkruik, warm bad of warme thee kan prettig aanvoelen bij krampen — klein comfort mag hier groot zijn.",
+      },
+      {
+        title: "Extra rust is oké",
+        text: "Plan waar mogelijk iets minder vol. Dat is geen zwakte, gewoon een fase waarin je lichaam meer herstel vraagt.",
+      },
+      {
+        title: "Drink voldoende water",
+        text: "Rondom bloedverlies en vermoeidheid past voldoende vocht vaak goed. Een flesje in zicht helpt sneller dan ‘straks nog even’.",
+      },
+      {
+        title: "Zachtere avond",
+        text: "Iets eerder dimmen, scherm wat lager, en een vast moment om tot rust te komen — fijne slaaphygiëne, ook op menstruatiedagen.",
+      },
     ],
     whyText:
       "Deze suggesties zijn algemeen en informatief — geen medisch advies. Niet iedereen ervaart de menstruatiefase hetzelfde.",
@@ -228,9 +241,22 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
       preferGentler: false,
     },
     lifestyleTips: [
-      { title: "Goed moment om te plannen", text: "Met meer energie is dit vaak een fijn moment om je week vooruit te plannen." },
-      { title: "Bouw training rustig op", text: "Voel je meer energie, dan kun je intensiteit of gewicht geleidelijk verhogen." },
-      { title: "Blijf goed slapen", text: "Ook in een energieke fase blijft voldoende slaap de basis van herstel." },
+      {
+        title: "Goed moment om te plannen",
+        text: "Met meer energie is dit vaak een fijn moment om je week vooruit te plannen — zonder jezelf vol te zetten.",
+      },
+      {
+        title: "Bouw training rustig op",
+        text: "Voel je meer energie, dan kun je intensiteit of gewicht geleidelijk verhogen. Stap voor stap blijft fijner dan alles tegelijk.",
+      },
+      {
+        title: "Blijf goed slapen",
+        text: "Ook in een energieke fase blijft voldoende slaap de basis van herstel. Vaste bedtijden helpen je ritme stabiel houden.",
+      },
+      {
+        title: "Houd vocht bij",
+        text: "Als je actiever wordt, stijgt je vochtbehoefte mee. Water of thee tussendoor is een kleine gewoonte met groot effect.",
+      },
     ],
     whyText:
       "Deze suggesties zijn algemeen en informatief — geen medisch advies. Energieniveaus verschillen sterk per persoon.",
@@ -304,9 +330,22 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
       preferGentler: false,
     },
     lifestyleTips: [
-      { title: "Benut je energie", text: "Voelt dit als een sterk moment? Dan kan een uitdagendere training hier goed passen." },
-      { title: "Blijf goed gehydrateerd", text: "Zeker bij intensievere training is voldoende water belangrijk." },
-      { title: "Herstel blijft belangrijk", text: "Ook op een energieke dag helpt een korte cooling-down je lichaam." },
+      {
+        title: "Benut je energie — als die er is",
+        text: "Voelt dit als een sterk moment? Dan kan een uitdagendere training hier goed passen. Zo niet: je mag het ook laten.",
+      },
+      {
+        title: "Blijf goed gehydrateerd",
+        text: "Zeker bij intensievere training is voldoende water belangrijk — vóór, tijdens en na bewegen.",
+      },
+      {
+        title: "Herstel blijft belangrijk",
+        text: "Ook op een energieke dag helpt een korte cooling-down of wandeling je lichaam weer tot rust te komen.",
+      },
+      {
+        title: "Slaap niet ‘inleveren’",
+        text: "Een late, volle avond voelt soms verleidelijk bij veel energie. Een stevige nachtrust houdt die energie morgen ook beschikbaar.",
+      },
     ],
     whyText:
       "Deze suggesties zijn algemeen en informatief — geen medisch advies. Niet iedereen ervaart een energiepiek rond de ovulatie.",
@@ -396,9 +435,22 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
       preferGentler: true,
     },
     lifestyleTips: [
-      { title: "Extra aandacht voor slaap", text: "Voldoende slaap kan in deze fase extra prettig zijn voor je herstel." },
-      { title: "Rustiger trainingsvolume", text: "Het is oké om intensiteit of volume iets te verlagen richting het einde van deze fase." },
-      { title: "Stress waar mogelijk verminderen", text: "Korte ontspanningsmomenten kunnen in deze fase net dat beetje extra rust geven." },
+      {
+        title: "Extra aandacht voor slaap",
+        text: "Voldoende slaap kan in deze fase extra prettig zijn. Dim licht eerder, beperk cafeïne na de middag, en houd je slaapkamer wat koeler als je warm slaapt.",
+      },
+      {
+        title: "Rustiger trainingsvolume",
+        text: "Het is oké om intensiteit of volume iets te verlagen richting het einde van deze fase — zonder dat als ‘mislukt’ te zien.",
+      },
+      {
+        title: "Stress waar mogelijk verminderen",
+        text: "Korte ontspanningsmomenten — adem, wandeling, douche — kunnen in deze fase net dat beetje extra rust geven.",
+      },
+      {
+        title: "Drink ook bij vochtvasthouden",
+        text: "Een opgeblazen gevoel betekent niet dat je minder moet drinken. Regelmatig water of thee blijft voor veel vrouwen prettig.",
+      },
     ],
     whyText:
       "Deze suggesties zijn algemeen en informatief — geen medisch advies. Klachten en energie in de luteale fase verschillen sterk per persoon.",
