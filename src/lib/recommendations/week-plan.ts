@@ -108,6 +108,16 @@ function pickMeal(
   dislikedFoods: string[],
   nutritionPreferences: string[],
   seed: string,
+  /**
+   * Hard ban — e.g. anything served yesterday. Only ignored when it would
+   * empty the pool (tiny breakfast catalogues).
+   */
+  excludeIds: Set<string> = new Set(),
+  /**
+   * Soft ban — already used earlier this week. Applied only when enough
+   * alternatives remain after the hard exclude.
+   */
+  softExcludeIds: Set<string> = new Set(),
 ): Recipe | null {
   const availableRecipes = filterRecipesByCuisinePrefs(
     filterRecipesForNutritionPrefs(recipes, allergies, dislikedFoods),
@@ -128,7 +138,14 @@ function pickMeal(
   }
 
   if (!candidates.length) return null
-  return candidates[seededIndex(seed, candidates.length)]
+
+  const withoutYesterday = candidates.filter((r) => !excludeIds.has(r.id))
+  let pool = withoutYesterday.length ? withoutYesterday : candidates
+
+  const withoutEarlierInWeek = pool.filter((r) => !softExcludeIds.has(r.id))
+  if (withoutEarlierInWeek.length) pool = withoutEarlierInWeek
+
+  return pool[seededIndex(seed, pool.length)]
 }
 
 /**
@@ -187,6 +204,12 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
   const dietPrefs = dietPrefsForCategoryMatch(nutritionPreferences)
   const allergies = profile.food_allergies ?? []
   const dislikedFoods = profile.disliked_foods ?? []
+  const slots = ["ontbijt", "lunch", "diner"] as MealSlot[]
+
+  // Track picks so we never serve the same dish two days in a row, and
+  // prefer fresh recipes across the week when the catalogue allows it.
+  const usedEarlierInWeek = new Set<string>()
+  let previousDayRecipeIds = new Set<string>()
 
   return program.map((day, i) => {
     const date = addDays(weekStart, i)
@@ -194,10 +217,9 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
     const cycleEstimate = phaseByIndex[i]
     const phaseContent = cycleEstimate ? getPhaseContent(cycleEstimate.phase) : null
 
-    const meals: WeekMealSlot[] = (["ontbijt", "lunch", "diner"] as MealSlot[]).map((slot) => ({
-      slot,
-      label: MEAL_SLOT_LABELS[slot],
-      recipe: pickMeal(
+    const todayRecipeIds = new Set<string>()
+    const meals: WeekMealSlot[] = slots.map((slot) => {
+      const recipe = pickMeal(
         slot,
         recipes,
         dietPrefs,
@@ -206,8 +228,19 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
         dislikedFoods,
         nutritionPreferences,
         `${seed}-${dateISO}-${slot}`,
-      ),
-    }))
+        previousDayRecipeIds,
+        new Set([...usedEarlierInWeek, ...todayRecipeIds]),
+      )
+      if (recipe) todayRecipeIds.add(recipe.id)
+      return {
+        slot,
+        label: MEAL_SLOT_LABELS[slot],
+        recipe,
+      }
+    })
+
+    for (const id of todayRecipeIds) usedEarlierInWeek.add(id)
+    previousDayRecipeIds = todayRecipeIds
 
     const isAnticipated = softDateSet.has(dateISO)
 
