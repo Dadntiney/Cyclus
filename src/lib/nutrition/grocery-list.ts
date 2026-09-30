@@ -1,5 +1,5 @@
 import { parseIngredientLine, parseIngredientList } from "@/lib/nutrition/ingredient-parse"
-import { scaleQuantityString, tryAddQuantities } from "@/lib/nutrition/scale-ingredient"
+import { scaleQuantityForGrocery, tryAddQuantities } from "@/lib/nutrition/scale-ingredient"
 
 export interface GroceryItem {
   /** Stable id for React keys and localStorage checkbox state: `${category}:${normalized}`. */
@@ -98,6 +98,17 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
+/** Prefer a clean grocery label from the normalized key when plurals differ. */
+function groceryDisplayName(name: string, normalized: string): string {
+  if (normalized === "ei") return "Ei"
+  if (normalized === "ui") return "Ui"
+  if (normalized === "tomaat" && /tomaat/i.test(name)) return "Tomaat"
+  if (normalized === "avocado") return "Avocado"
+  if (normalized === "banaan") return "Banaan"
+  if (normalized === "wortel") return "Wortel"
+  return capitalize(name)
+}
+
 function normalizeInputs(recipeIngredients: Array<GroceryRecipeInput | unknown>): GroceryRecipeInput[] {
   return recipeIngredients.map((entry) => {
     if (entry && typeof entry === "object" && "ingredients" in (entry as object)) {
@@ -112,6 +123,9 @@ function normalizeInputs(recipeIngredients: Array<GroceryRecipeInput | unknown>)
  * Aggregates ingredients from planned meals into a categorized grocery list.
  * Pass one entry per meal occurrence; set `factor` to scale amounts to the
  * chosen number of porties relative to the recipe baseline.
+ *
+ * Quantity is kept separate from the name so "1/2 komkommer" becomes
+ * name=Komkommer + qty=1/2 — and then scales with basis-porties.
  */
 export function buildGroceryList(
   recipeIngredients: Array<GroceryRecipeInput | unknown>,
@@ -124,10 +138,17 @@ export function buildGroceryList(
       if (!parsed.normalized) continue
       const category = categorize(parsed.normalized)
       const id = `${category}:${parsed.normalized}`
-      const quantity = scaleQuantityString(parsed.quantity, factor)
+      const quantity = scaleQuantityForGrocery(parsed.quantity, factor)
+      const displayName = groceryDisplayName(parsed.name, parsed.normalized)
       const existing = byId.get(id)
       if (existing) {
         existing.count += 1
+        // Prefer the shorter clean name when merging ("avocado" over
+        // "rijpe avocado" if both normalize the same — they usually don't;
+        // still useful for "komkommer" vs longer variants).
+        if (displayName.length > 0 && displayName.length < existing.name.length) {
+          existing.name = displayName
+        }
         if (quantity) {
           if (existing.totalQuantity) {
             const summed = tryAddQuantities(existing.totalQuantity, quantity)
@@ -142,7 +163,7 @@ export function buildGroceryList(
       } else {
         byId.set(id, {
           id,
-          name: capitalize(parsed.name),
+          name: displayName,
           category,
           count: 1,
           quantities: quantity ? [quantity] : [],
