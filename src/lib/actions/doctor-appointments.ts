@@ -18,12 +18,14 @@ function toRow(userId: string, input: DoctorAppointmentInput) {
   const date = input.appointmentDate?.trim() || null
   const notes = input.notes?.trim() || null
   const reminderEnabled = Boolean(input.reminderEnabled && date && input.reminderTime)
+  const leadDays = input.reminderLeadDays ?? 0
   return {
     user_id: userId,
     appointment_date: date,
     notes,
     reminder_enabled: reminderEnabled,
     reminder_time: reminderEnabled && input.reminderTime ? normalizeReminderTime(input.reminderTime) : null,
+    reminder_lead_days: reminderEnabled ? leadDays : 0,
   }
 }
 
@@ -62,6 +64,7 @@ export async function updateDoctorAppointment(id: string, input: DoctorAppointme
       notes: row.notes,
       reminder_enabled: row.reminder_enabled,
       reminder_time: row.reminder_time,
+      reminder_lead_days: row.reminder_lead_days,
     })
     .eq("id", id)
     .eq("user_id", user.id)

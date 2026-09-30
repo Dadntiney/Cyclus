@@ -477,6 +477,7 @@ export type Database = {
           notes: string | null
           reminder_enabled: boolean
           reminder_time: string | null
+          reminder_lead_days: number
           created_at: string
           updated_at: string
         }
@@ -487,6 +488,7 @@ export type Database = {
           notes?: string | null
           reminder_enabled?: boolean
           reminder_time?: string | null
+          reminder_lead_days?: number
           created_at?: string
           updated_at?: string
         }
@@ -497,6 +499,7 @@ export type Database = {
           notes?: string | null
           reminder_enabled?: boolean
           reminder_time?: string | null
+          reminder_lead_days?: number
           created_at?: string
           updated_at?: string
         }

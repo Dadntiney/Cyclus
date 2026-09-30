@@ -52,6 +52,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       appointmentDate: a.appointment_date,
       reminderEnabled: a.reminder_enabled,
       reminderTime: a.reminder_time,
+      reminderLeadDays: a.reminder_lead_days ?? 0,
       notes: a.notes,
     }))
 

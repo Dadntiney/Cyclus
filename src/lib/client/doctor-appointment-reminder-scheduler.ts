@@ -1,19 +1,33 @@
+import { format, parseISO, subDays } from "date-fns"
 import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
 import { normalizeReminderTime } from "@/lib/validations/reminder"
+import { doctorReminderLeadLabel } from "@/lib/validations/doctor-appointment"
 
 /**
- * One-shot appointment reminders — fire only on the appointment date at
- * the chosen time (same grace window as other in-app reminders).
+ * One-shot appointment reminders — fire on appointment_date minus
+ * reminderLeadDays, at the chosen time (same grace window as other in-app
+ * reminders).
  */
 export interface DoctorAppointmentReminderLike {
   id: string
   appointmentDate: string
   reminderEnabled: boolean
   reminderTime: string | null
+  reminderLeadDays: number
   notes: string | null
 }
 
 const GRACE_WINDOW_MINUTES = 180
+
+/** Calendar day (yyyy-MM-dd) on which the reminder should fire. */
+export function doctorAppointmentReminderFireDate(
+  appointmentDate: string,
+  leadDays: number,
+): string {
+  const safeLead = Math.max(0, Math.min(30, Math.floor(leadDays) || 0))
+  if (safeLead === 0) return appointmentDate
+  return format(subDays(parseISO(appointmentDate), safeLead), "yyyy-MM-dd")
+}
 
 export function getDueDoctorAppointmentReminders(
   appointments: DoctorAppointmentReminderLike[],
@@ -25,7 +39,8 @@ export function getDueDoctorAppointmentReminders(
 
   return appointments.filter((a) => {
     if (!a.reminderEnabled || !a.reminderTime) return false
-    if (a.appointmentDate !== todayISO) return false
+    const fireDate = doctorAppointmentReminderFireDate(a.appointmentDate, a.reminderLeadDays)
+    if (fireDate !== todayISO) return false
 
     const time = normalizeReminderTime(a.reminderTime)
     const [h, min] = time.split(":").map(Number)
@@ -39,8 +54,12 @@ export function getDueDoctorAppointmentReminders(
 }
 
 export function doctorAppointmentReminderText(appointment: DoctorAppointmentReminderLike): string {
+  const lead = appointment.reminderLeadDays || 0
+  const when =
+    lead === 0 ? "vandaag" : lead === 1 ? "morgen" : lead === 7 ? "over een week" : `over ${lead} dagen`
   if (appointment.notes?.trim()) {
-    return `Herinnering: artsafspraak vandaag — ${appointment.notes.trim().slice(0, 80)}`
+    return `Herinnering: artsafspraak ${when} — ${appointment.notes.trim().slice(0, 80)}`
   }
-  return "Herinnering: je hebt vandaag een artsafspraak genoteerd."
+  if (lead === 0) return "Herinnering: je hebt vandaag een artsafspraak genoteerd."
+  return `Herinnering: artsafspraak ${when} (${doctorReminderLeadLabel(lead).toLowerCase()}).`
 }

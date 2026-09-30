@@ -8,6 +8,7 @@ import { Bell, CalendarDays, Plus, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { Chip } from "@/components/ui/chip"
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input"
 import {
   createDoctorAppointment,
@@ -15,6 +16,11 @@ import {
   deleteDoctorAppointment,
 } from "@/lib/actions/doctor-appointments"
 import type { DoctorAppointment } from "@/lib/data/doctor-appointments"
+import {
+  DOCTOR_REMINDER_LEAD_OPTIONS,
+  doctorReminderLeadLabel,
+  type DoctorReminderLeadDays,
+} from "@/lib/validations/doctor-appointment"
 import { todayISO } from "@/lib/dates/amsterdam"
 import { cn } from "@/lib/utils"
 
@@ -32,6 +38,11 @@ function normalizeTime(time: string | null): string {
   return time.slice(0, 5)
 }
 
+function normalizeLeadDays(value: number | null | undefined): DoctorReminderLeadDays {
+  const match = DOCTOR_REMINDER_LEAD_OPTIONS.find((o) => o.value === value)
+  return match?.value ?? 0
+}
+
 export function DoctorAppointmentsSection({
   appointments,
 }: {
@@ -44,6 +55,7 @@ export function DoctorAppointmentsSection({
   const [notes, setNotes] = useState("")
   const [reminderEnabled, setReminderEnabled] = useState(false)
   const [reminderTime, setReminderTime] = useState("09:00")
+  const [reminderLeadDays, setReminderLeadDays] = useState<DoctorReminderLeadDays>(0)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -53,6 +65,7 @@ export function DoctorAppointmentsSection({
     setNotes("")
     setReminderEnabled(false)
     setReminderTime("09:00")
+    setReminderLeadDays(0)
     setError(null)
   }
 
@@ -67,6 +80,7 @@ export function DoctorAppointmentsSection({
     setNotes(row.notes ?? "")
     setReminderEnabled(row.reminder_enabled)
     setReminderTime(normalizeTime(row.reminder_time))
+    setReminderLeadDays(normalizeLeadDays(row.reminder_lead_days))
     setError(null)
     setOpen(true)
   }
@@ -78,6 +92,7 @@ export function DoctorAppointmentsSection({
       notes,
       reminderEnabled,
       reminderTime: reminderEnabled ? reminderTime : undefined,
+      reminderLeadDays: reminderEnabled ? reminderLeadDays : 0,
     }
     startTransition(async () => {
       const result = editingId
@@ -157,7 +172,7 @@ export function DoctorAppointmentsSection({
               <p className="text-sm font-medium text-ink">Herinnering</p>
               <p className="text-xs text-ink-soft mt-0.5">
                 {appointmentDate
-                  ? "Op de afspraakdatum, op het tijdstip dat je kiest."
+                  ? "Kies hoe ver van tevoren en op welk tijdstip."
                   : "Vul eerst een afspraakdatum in."}
               </p>
             </div>
@@ -169,16 +184,32 @@ export function DoctorAppointmentsSection({
             />
           </div>
           {appointmentDate && reminderEnabled && (
-            <div>
-              <Label htmlFor="appt-time">Tijdstip herinnering</Label>
-              <Input
-                id="appt-time"
-                type="time"
-                value={reminderTime}
-                onChange={(e) => setReminderTime(e.target.value)}
-                className="max-w-[160px]"
-              />
-            </div>
+            <>
+              <div>
+                <p className="text-sm font-medium text-ink-soft mb-1.5">Hoe ver van tevoren?</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {DOCTOR_REMINDER_LEAD_OPTIONS.map((opt) => (
+                    <Chip
+                      key={opt.value}
+                      selected={reminderLeadDays === opt.value}
+                      onClick={() => setReminderLeadDays(opt.value)}
+                    >
+                      {opt.label}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="appt-time">Tijdstip herinnering</Label>
+                <Input
+                  id="appt-time"
+                  type="time"
+                  value={reminderTime}
+                  onChange={(e) => setReminderTime(e.target.value)}
+                  className="max-w-[160px]"
+                />
+              </div>
+            </>
           )}
           {error && <FieldError>{error}</FieldError>}
           <div className="flex flex-wrap gap-2 pt-1">
@@ -238,7 +269,8 @@ export function DoctorAppointmentsSection({
                   {row.reminder_enabled && row.appointment_date && row.appointment_date >= today && (
                     <p className="text-xs text-ink-soft mt-1.5 inline-flex items-center gap-1">
                       <Bell className="h-3 w-3" strokeWidth={1.75} />
-                      Herinnering om {normalizeTime(row.reminder_time)}
+                      {doctorReminderLeadLabel(row.reminder_lead_days ?? 0)} ·{" "}
+                      {normalizeTime(row.reminder_time)}
                     </p>
                   )}
                 </button>

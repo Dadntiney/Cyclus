@@ -3,6 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service"
 import { sendPushToUser } from "@/lib/push/send"
 import { isReminderDueToday, isoWeekday, type ReminderLike } from "@/lib/client/reminder-scheduler"
 import { isDosingDay, isScheduleStartDay, isScheduleStopDay, isAbsoluteMedicationEndDay, type MedicationSchedule } from "@/lib/medication/schedule"
+import { doctorAppointmentReminderFireDate } from "@/lib/client/doctor-appointment-reminder-scheduler"
 import { resolveReminderText } from "@/lib/buddy/reminder-labels"
 import { getMorningMessage } from "@/lib/data/morning-messages"
 import { REMINDER_TYPE_OPTIONS, type MorningReminderContentType } from "@/lib/constants"
@@ -90,10 +91,10 @@ export async function GET(request: NextRequest) {
       .eq("reminder_enabled", true),
     service
       .from("doctor_appointments")
-      .select("id, user_id, appointment_date, notes, reminder_enabled, reminder_time")
+      .select("id, user_id, appointment_date, notes, reminder_enabled, reminder_time, reminder_lead_days")
       .in("user_id", userIds)
       .eq("reminder_enabled", true)
-      .eq("appointment_date", dateISO),
+      .gte("appointment_date", dateISO),
     service
       .from("push_notification_log")
       .select("user_id, source_type, source_id")
@@ -241,13 +242,18 @@ export async function GET(request: NextRequest) {
         notificationsSent += sent
       }
 
-      // ---- Doctor appointment reminders (one-shot on appointment date) ----
+      // ---- Doctor appointment reminders (lead days before appointment) ----
       for (const appt of doctorAppointmentRows) {
-        if (alreadySent.has(`doctor_appointment:${appt.id}`)) continue
+        if (!appt.appointment_date || alreadySent.has(`doctor_appointment:${appt.id}`)) continue
+        const lead = appt.reminder_lead_days ?? 0
+        const fireDate = doctorAppointmentReminderFireDate(appt.appointment_date, lead)
+        if (fireDate !== dateISO) continue
         // Generic on the lock screen — no free-text visit notes in push preview.
+        const when =
+          lead === 0 ? "vandaag" : lead === 1 ? "morgen" : lead === 7 ? "over een week" : `over ${lead} dagen`
         const { sent } = await sendPushToUser(userId, {
           title: "Cyclus",
-          body: "Je hebt vandaag een artsafspraak genoteerd.",
+          body: `Je hebt ${when} een artsafspraak genoteerd.`,
           url: "/cyclus/samenvatting",
           tag: `doctor-appointment-${appt.id}`,
         })
