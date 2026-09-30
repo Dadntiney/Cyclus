@@ -3,47 +3,63 @@ import { cn } from "@/lib/utils"
 type BuddyMarkSize = "sm" | "md" | "lg" | "xl"
 
 const SIZE: Record<BuddyMarkSize, { box: string; icon: string }> = {
-  sm: { box: "h-5 w-5", icon: "h-3 w-3" },
-  md: { box: "h-7 w-7", icon: "h-4 w-4" },
-  lg: { box: "h-11 w-11", icon: "h-5 w-5" },
-  xl: { box: "h-16 w-16", icon: "h-7 w-7" },
+  sm: { box: "h-5 w-5", icon: "h-3.5 w-3.5" },
+  md: { box: "h-7 w-7", icon: "h-4.5 w-4.5" },
+  lg: { box: "h-11 w-11", icon: "h-6 w-6" },
+  xl: { box: "h-16 w-16", icon: "h-9 w-9" },
+}
+
+/** Full circles as subpaths for evenodd eye cutouts. */
+function eyeCutout(cx: number, cy: number, r: number) {
+  return `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${r * 2} 0a${r} ${r} 0 1 0 ${-r * 2} 0`
 }
 
 /**
- * Buddy’s visual signature — a soft companion presence, not a cartoon face.
+ * Buddy’s visual signature — a soft droplet companion.
  *
- * Soft ring + crescent orb: warm, adult, calm. Used only where Buddy speaks
- * or is named as a presence — never as generic decoration.
+ * Adult, calm, a little alive: rounded teardrop with quiet eyes and a soft
+ * smile cut out of the fill. No arms, no cartoon grin. Used only where Buddy
+ * speaks or is named as a presence — never as the menstruation status
+ * droplet, never as generic decoration.
  */
 export function BuddyGlyph({
   className,
   strokeWidth = 1.75,
+  face = true,
 }: {
   className?: string
-  /** Kept for Lucide-like call sites in nav. */
+  /** Kept for Lucide-like call sites in nav; nudges silhouette weight. */
   strokeWidth?: number
+  /** Face cutouts — keep on for Buddy presence. */
+  face?: boolean
 }) {
+  const weight = Math.min(1.08, Math.max(0.92, strokeWidth / 1.75))
+
+  const droplet =
+    "M12 3.35C12 3.35 5.1 10.8 5.1 15.05a6.9 6.9 0 0 0 13.8 0C18.9 10.8 12 3.35 12 3.35Z"
+
+  // Soft smile lens under the eyes (evenodd hole — reads on any badge color).
+  const smile = "M10.1 16.15Q12 17.9 13.9 16.15Q12 17.2 10.1 16.15Z"
+
+  const body = face
+    ? [droplet, eyeCutout(9.85, 14.05, 1.12), eyeCutout(14.15, 14.05, 1.12), smile].join("")
+    : droplet
+
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden
       className={cn("shrink-0", className)}
+      style={{ transform: weight !== 1 ? `scale(${weight})` : undefined }}
     >
-      <circle
-        cx="12"
-        cy="12"
-        r="9"
-        stroke="currentColor"
-        strokeWidth={strokeWidth}
-        opacity="0.32"
-      />
-      {/* Crescent via evenodd cut — reads in light and dark without hard-coded fills */}
       <path
-        fill="currentColor"
-        fillRule="evenodd"
-        d="M12 6.75a5.25 5.25 0 1 0 0 10.5 5.25 5.25 0 0 0 0-10.5Zm2.35 1.2a3.55 3.55 0 1 0 0 7.6 5.25 5.25 0 0 1 0-7.6Z"
+        d="M12 2.55C12 2.55 4.35 10.35 4.35 15.1a7.65 7.65 0 0 0 15.3 0C19.65 10.35 12 2.55 12 2.55Z"
+        stroke="currentColor"
+        strokeWidth={1.15}
+        opacity="0.26"
       />
+      <path fill="currentColor" fillRule="evenodd" d={body} />
     </svg>
   )
 }

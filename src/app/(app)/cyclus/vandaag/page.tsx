@@ -22,6 +22,7 @@ import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
 import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
 import { PhaseSnackTipCard } from "@/components/cycle/phase-snack-tip-card"
+import { BuddyMark } from "@/components/buddy/buddy-mark"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { getSavedMomentTexts } from "@/lib/data/moments"
 import { cn } from "@/lib/utils"
@@ -229,7 +230,7 @@ export default async function CyclusdagPage() {
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
                 <p className={cn("text-xs font-medium mb-1 inline-flex items-center gap-1.5", view.colors.text)}>
-                  <view.buddyMoment.icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+                  <BuddyMark size="sm" decorative className="bg-surface/70" />
                   {view.buddyMoment.title}
                 </p>
                 <p className="text-sm text-ink leading-relaxed">{view.buddyMoment.text}</p>
