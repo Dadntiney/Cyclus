@@ -5,8 +5,13 @@ import { Salad } from "lucide-react"
 import { Chip } from "@/components/ui/chip"
 import { RecipeCard } from "./recipe-card"
 import { EmptyState } from "@/components/ui/empty-state"
-import { CUISINE_OPTIONS, RECIPE_CATEGORIES } from "@/lib/constants"
-import { detectRecipeCuisines, isWorldCuisineLabel, recipeHasWorldCuisine } from "@/lib/nutrition/cuisine"
+import { RECIPE_CATEGORIES } from "@/lib/constants"
+import {
+  CUISINE_OPTIONS,
+  detectRecipeCuisines,
+  isWorldCuisineLabel,
+  recipeHasWorldCuisine,
+} from "@/lib/nutrition/cuisine"
 import type { RecipeCardData } from "@/lib/data/nutrition"
 
 const BUDGET_FILTER = "Budget"

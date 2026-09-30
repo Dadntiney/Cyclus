@@ -80,7 +80,7 @@ export const NUTRITION_OPTIONS = [
 ] as const
 
 /** Optional world cuisines — off by default in suggestions and library. */
-export const CUISINE_OPTIONS = ["Turks", "Marokkaans", "Libanees"] as const
+export { WORLD_CUISINE_OPTIONS as CUISINE_OPTIONS } from "@/lib/nutrition/cuisine"
 
 export const TRAINING_FREQUENCY_OPTIONS = [1, 2, 3, 4, 5, 6, 7] as const
 

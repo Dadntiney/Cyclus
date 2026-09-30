@@ -1,16 +1,69 @@
 /**
  * World-cuisine recipes are optional — not part of the default suggestion
- * pool. Users opt in via nutrition preferences (Turks / Marokkaans / Libanees)
- * or by picking a cuisine chip in the recipe library.
+ * pool. Users opt in via nutrition preferences (cuisine chips) or by
+ * picking a cuisine filter in the recipe library.
+ *
+ * Markers are title-based and deliberately strict (e.g. “Griekse yoghurt”
+ * must NOT count as Griekse wereldkeuken).
  */
 
-export const WORLD_CUISINE_OPTIONS = ["Turks", "Marokkaans", "Libanees"] as const
+export const WORLD_CUISINE_OPTIONS = [
+  "Turks",
+  "Marokkaans",
+  "Libanees",
+  "Grieks",
+  "Italiaans",
+  "Spaans",
+  "Portugees",
+  "Frans",
+  "Japans",
+  "Koreaans",
+  "Thais",
+  "Vietnamees",
+  "Indisch",
+  "Indonesisch",
+  "Mexicaans",
+  "Peruaans",
+  "Braziliaans",
+  "Caribisch",
+  "Ethiopisch",
+  "Perzisch",
+  "West-Afrikaans",
+  "Hongaars",
+  "Scandinavisch",
+] as const
+
 export type WorldCuisine = (typeof WORLD_CUISINE_OPTIONS)[number]
 
+/** @deprecated Prefer WORLD_CUISINE_OPTIONS — kept as alias for existing imports. */
+export const CUISINE_OPTIONS = WORLD_CUISINE_OPTIONS
+
 const TITLE_MARKERS: Record<WorldCuisine, RegExp> = {
-  Turks: /\bturk/i,
-  Marokkaans: /\bmarokka/i,
-  Libanees: /\blibane/i,
+  Turks: /\bturk(?:s|se)?\b|menemen|mücver|mercimek|\bmezze\b/i,
+  Marokkaans: /\bmarokka|\btajine\b|\bharira\b/i,
+  Libanees: /\blibane|\btabouleh\b|adas bi hamod|\bmujadara\b/i,
+  // Negative lookahead: “Griekse yoghurt …” stays in the default pool.
+  Grieks: /\bgriek(?:s|se)?\b(?!\s+yoghurt)|horiatiki|\bfakes\b|\bmoussaka\b/i,
+  Italiaans:
+    /\bitalia|\bcaprese\b|\bpanzanella\b|pasta e ceci|\btoscaanse\b|\brisotto\b|pasta primavera|spaghetti aglio/i,
+  Spaans: /\bspaans|\bgazpacho\b|\bpaella\b|aardappel-tortilla/i,
+  Portugees: /\bportuge|\bbacalhau\b|\bsardines\b|sopa de grão/i,
+  Frans: /\bfranse?\b|\bratatouille\b|ni[cç]oise/i,
+  Japans: /\bjapan|\bgyudon\b|\bmiso|\btamago|\bteriyaki\b|\bedamame\b/i,
+  Koreaans: /\bkorea|\bbibim|\bkimchi|\bdak-doritang|\bmiyeok/i,
+  Thais: /\bthai|\bsom tam\b/i,
+  Vietnamees: /\bvietnam|\bpho\b/i,
+  Indisch: /\bindisch|\bdal makhani\b|\bpalak paneer\b|\bdhal\b/i,
+  Indonesisch: /\bindones|\bnasi goreng\b|\bgado-gado\b/i,
+  Mexicaans: /\bmexica|\btacos\b|\benchilada|\bchili con carne\b/i,
+  Peruaans: /\bperua|\bceviche\b/i,
+  Braziliaans: /\bbrazil|\baçaí\b|\bacai\b/i,
+  Caribisch: /\bcaribisch|rice and peas/i,
+  Ethiopisch: /\bethiop|\bmisir wot\b/i,
+  Perzisch: /\bperzisch|\bfesenjan\b/i,
+  "West-Afrikaans": /\bwest-afrika|\bpindastoof\b/i,
+  Hongaars: /\bhongaar|\bgoulash\b/i,
+  Scandinavisch: /\bscandinav|\bzweedse?\b/i,
 }
 
 export function isWorldCuisineLabel(value: string): value is WorldCuisine {
