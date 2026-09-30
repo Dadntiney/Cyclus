@@ -1,34 +1,77 @@
 """GoFiev app icons from the glossy 3D droplet brand asset.
 
-Source JPG is white-backed; we key out near-white and composite onto a
-brand background. Cream read too white on home screens — sage-soft
-(#e4e9de) keeps beige-green brand tone and lets the rose-gold drop pop.
+Source JPG is white-backed. We remove only background white that is
+connected to the image edge (flood-fill) so specular gloss inside the
+droplet stays opaque — global near-white keying punched holes in the drop.
+
+Background: sage soft beige-green — brand-adjacent, calmer than cream on
+homescreens, enough contrast with the rose-gold droplet.
 """
 
 from __future__ import annotations
 
+from collections import deque
 from pathlib import Path
 
 from PIL import Image
 
 ROOT = Path("/workspace/public/icons")
 SRC = Path("/workspace/public/brand/gofiev-droplet-source.jpg")
-# Brand --color-sage-soft (globals.css). Beige-green, not white.
-BG = (228, 233, 222, 255)
+# Comparison tile "sage soft" — muted beige-green, not cream/white.
+BG = (214, 222, 208, 255)
+
+# Near-white thresholds for backdrop detection (edge-connected only).
+HARD_WHITE = 245
+SOFT_WHITE = 230
+
+
+def _is_near_white(r: int, g: int, b: int, threshold: int) -> bool:
+    return r > threshold and g > threshold and b > threshold
 
 
 def load_drop() -> Image.Image:
+    """Key out white backdrop via edge flood-fill; keep droplet gloss."""
     src = Image.open(SRC).convert("RGBA")
     pixels = src.load()
     w, h = src.size
+
+    # 1) Mark backdrop: near-white pixels reachable from the image border.
+    backdrop: set[tuple[int, int]] = set()
+    queue: deque[tuple[int, int]] = deque()
+
+    def try_seed(x: int, y: int) -> None:
+        r, g, b, _a = pixels[x, y]
+        if (x, y) not in backdrop and _is_near_white(r, g, b, SOFT_WHITE):
+            backdrop.add((x, y))
+            queue.append((x, y))
+
+    for x in range(w):
+        try_seed(x, 0)
+        try_seed(x, h - 1)
     for y in range(h):
-        for x in range(w):
-            r, g, b, a = pixels[x, y]
-            if r > 245 and g > 245 and b > 245:
-                pixels[x, y] = (r, g, b, 0)
-            elif r > 235 and g > 235 and b > 235:
-                alpha = int(255 * (1 - (min(r, g, b) - 235) / 20))
-                pixels[x, y] = (r, g, b, max(0, min(255, alpha)))
+        try_seed(0, y)
+        try_seed(w - 1, y)
+
+    while queue:
+        x, y = queue.popleft()
+        for nx, ny in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+            if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in backdrop:
+                r, g, b, _a = pixels[nx, ny]
+                if _is_near_white(r, g, b, SOFT_WHITE):
+                    backdrop.add((nx, ny))
+                    queue.append((nx, ny))
+
+    # 2) Make backdrop transparent; soft fringe only on backdrop pixels.
+    for x, y in backdrop:
+        r, g, b, _a = pixels[x, y]
+        if _is_near_white(r, g, b, HARD_WHITE):
+            pixels[x, y] = (r, g, b, 0)
+        else:
+            # Soft edge: fade alpha as we approach hard white.
+            t = (min(r, g, b) - SOFT_WHITE) / max(1, HARD_WHITE - SOFT_WHITE)
+            alpha = int(255 * (1 - max(0.0, min(1.0, t))))
+            pixels[x, y] = (r, g, b, alpha)
+
     return src
 
 
@@ -50,7 +93,7 @@ def main() -> None:
     make(512, drop, pad_ratio=0.08).save(ROOT / "icon-512.png", optimize=True)
     make(512, drop, pad_ratio=0.18).save(ROOT / "icon-512-maskable.png", optimize=True)
     make(180, drop, pad_ratio=0.08).save(ROOT / "apple-touch-icon.png", optimize=True)
-    print("wrote 3D droplet app icons (sage-soft bg) to", ROOT)
+    print("wrote 3D droplet app icons (sage soft bg, gloss preserved) to", ROOT)
 
 
 if __name__ == "__main__":
