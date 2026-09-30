@@ -7,6 +7,10 @@ import { useEffect, type ReactNode } from "react"
  * Only the message list scrolls — title and composer stay put. Without this,
  * main's bottom-nav padding + a full-viewport chat height made the whole
  * page (title + input) scroll together, which feels broken in a chat.
+ *
+ * `--bottom-nav-h` collapses to 0 while the virtual keyboard is open (see
+ * BottomNav), so the composer slides down against the keyboard instead of
+ * stacking above the tab bar.
  */
 export function BuddyShell({ children }: { children: ReactNode }) {
   useEffect(() => {

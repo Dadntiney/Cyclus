@@ -154,6 +154,9 @@ export function ChatWindow({
           placeholder="Typ een bericht..."
           aria-label="Typ een bericht aan je Buddy"
           maxLength={4000}
+          enterKeyHint="send"
+          autoComplete="off"
+          autoCorrect="on"
           className="rounded-full min-h-11"
         />
         <button

@@ -6,19 +6,29 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
+import { useVirtualKeyboardOpen } from "@/lib/hooks/use-virtual-keyboard-open"
 import { BuddyGlyph } from "@/components/buddy/buddy-mark"
 import { NAV_ITEMS } from "./nav-items"
 
 export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
   const pathname = usePathname()
   const ref = useRef<HTMLElement>(null)
-  useMeasuredHeightVar(ref, "--bottom-nav-h")
+  const keyboardOpen = useVirtualKeyboardOpen()
+  // Collapse the published inset while the keyboard is open so Buddy's
+  // composer (and any other bottom-aware layout) sits on the keyboard
+  // instead of stacking above this tab bar.
+  useMeasuredHeightVar(ref, "--bottom-nav-h", keyboardOpen)
 
   return (
     <nav
       ref={ref}
       aria-label="Hoofdnavigatie"
-      className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-line safe-bottom safe-x"
+      aria-hidden={keyboardOpen || undefined}
+      className={cn(
+        "md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-line safe-bottom safe-x",
+        "transition-transform duration-200 ease-out motion-reduce:transition-none",
+        keyboardOpen && "translate-y-full pointer-events-none",
+      )}
     >
       <ul className="flex items-stretch justify-between px-2">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
