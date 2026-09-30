@@ -117,7 +117,7 @@ export function DayCloseCard({
   // so SSR and first paint match. Closed state applies after localStorage read.
   if (hydrated && closed) {
     return (
-      <div className="rounded-2xl bg-sage-soft/55 px-4 py-4">
+      <div className="rounded-3xl bg-sage-soft/55 px-4 py-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-2">
@@ -141,7 +141,7 @@ export function DayCloseCard({
   }
 
   return (
-    <div className="rounded-2xl border border-line/70 p-4">
+    <div className="rounded-3xl bg-sage-soft/55 px-4 py-4">
       <div className="flex items-center gap-2 mb-1">
         <Moon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
         <h2 className="font-display text-lg text-ink">Dag afsluiten</h2>

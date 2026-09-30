@@ -31,7 +31,10 @@ export const SHORT_NIGHT_MINUTES = 6 * 60
 function withDuration(entries: SleepEntryLike[]): (SleepEntryLike & { durationMinutes: number })[] {
   return entries
     .filter((e): e is SleepEntryLike & { bedtime: string; wake_time: string } => Boolean(e.bedtime && e.wake_time))
-    .map((e) => ({ ...e, durationMinutes: computeSleepDurationMinutes(e.bedtime, e.wake_time) }))
+    .flatMap((e) => {
+      const durationMinutes = computeSleepDurationMinutes(e.bedtime, e.wake_time)
+      return durationMinutes == null ? [] : [{ ...e, durationMinutes }]
+    })
 }
 
 /** @param entries Recent sleep entries, oldest first. */

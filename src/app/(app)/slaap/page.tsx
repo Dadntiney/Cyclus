@@ -117,6 +117,7 @@ export default async function SlaapPage() {
               .reverse()
               .filter((e) => e.bedtime && e.wake_time)
               .map((e) => computeSleepDurationMinutes(e.bedtime!, e.wake_time!))
+              .filter((mins): mins is number => mins != null)
             if (durationMinutes.length < 2) return null
             return (
               <Card className="mb-3">
@@ -139,13 +140,11 @@ export default async function SlaapPage() {
                     {format(parseISO(entry.date), "EEEE d MMM", { locale: nl })}
                   </p>
                   <div className="flex items-center gap-2 text-sm text-ink-soft">
-                    {hasDuration && (
-                      <span>
-                        {formatSleepDuration(
-                          computeSleepDurationMinutes(entry.bedtime!, entry.wake_time!),
-                        )}
-                      </span>
-                    )}
+                    {hasDuration &&
+                      (() => {
+                        const mins = computeSleepDurationMinutes(entry.bedtime!, entry.wake_time!)
+                        return mins != null ? <span>{formatSleepDuration(mins)}</span> : null
+                      })()}
                     {feeling && <feeling.icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />}
                   </div>
                 </div>

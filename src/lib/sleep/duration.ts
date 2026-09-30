@@ -7,14 +7,25 @@
 
 function toMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number)
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return NaN
   return h * 60 + m
 }
 
-export function computeSleepDurationMinutes(bedtime: string, wakeTime: string): number {
+/**
+ * Returns null when times are missing/invalid or identical (identical
+ * clocks used to report “24 uur geslapen” via the overnight branch).
+ */
+export function computeSleepDurationMinutes(bedtime: string, wakeTime: string): number | null {
   const bed = toMinutes(bedtime)
   const wake = toMinutes(wakeTime)
-  // Wake at/before bedtime (clock-wise) means she slept past midnight.
-  return wake <= bed ? wake + 24 * 60 - bed : wake - bed
+  if (!Number.isFinite(bed) || !Number.isFinite(wake)) return null
+  // Same clock time is not a night of sleep — usually a half-filled form.
+  if (wake === bed) return null
+  // Wake earlier on the clock than bedtime → slept past midnight.
+  const minutes = wake < bed ? wake + 24 * 60 - bed : wake - bed
+  // Guard absurd spans (e.g. > 18u) so a typo never reads as a full day.
+  if (minutes <= 0 || minutes > 18 * 60) return null
+  return minutes
 }
 
 export function formatSleepDuration(minutes: number): string {

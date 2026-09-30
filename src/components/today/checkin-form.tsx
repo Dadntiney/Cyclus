@@ -339,7 +339,10 @@ export function CheckinForm({
     const overflow = summaryChips.length - visible.length
 
     return (
-      <section aria-labelledby="checkin-heading">
+      <section
+        aria-labelledby="checkin-heading"
+        className="rounded-3xl bg-sage-soft/55 px-4 py-4"
+      >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -350,7 +353,7 @@ export function CheckinForm({
             </div>
             <div className="flex flex-wrap gap-1.5">
               {visible.map((chip) => (
-                <span key={chip} className="text-xs text-ink bg-cream-soft rounded-full px-2.5 py-1">
+                <span key={chip} className="text-xs text-ink bg-surface/70 rounded-full px-2.5 py-1">
                   {chip}
                 </span>
               ))}
@@ -376,9 +379,12 @@ export function CheckinForm({
     )
   }
 
-  // ── Light editor — no card chrome; belongs to the page, not a widget. ─
+  // ── Light editor — same soft surface as Voor jou vandaag / slaap. ─
   return (
-    <section aria-labelledby="checkin-heading">
+    <section
+      aria-labelledby="checkin-heading"
+      className="rounded-3xl bg-sage-soft/55 px-4 py-4"
+    >
       <div className="flex items-start justify-between gap-3 mb-1">
         <div className="flex items-center gap-2 flex-wrap min-w-0">
           <h2 id="checkin-heading" className="font-display text-lg text-ink">

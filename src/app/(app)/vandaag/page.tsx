@@ -200,16 +200,12 @@ export default async function VandaagPage() {
             <section aria-label="Extra voor vandaag" className="flex flex-col gap-3">
               {sleepEnabled && (
                 <div id="slaap-vandaag">
-                  <SleepCard date={today} entry={sleepEntry} />
-                  {sleepObservation && (
-                    <p className="text-xs text-ink-soft mt-2 px-1 leading-relaxed">{sleepObservation}</p>
-                  )}
-                  <Link
-                    href="/slaap"
-                    className="text-xs font-medium text-sage-dark mt-0.5 px-1 inline-flex items-center min-h-11 touch-manipulation"
-                  >
-                    Slaapgeschiedenis
-                  </Link>
+                  <SleepCard
+                    date={today}
+                    entry={sleepEntry}
+                    observation={sleepObservation}
+                    historyHref="/slaap"
+                  />
                 </div>
               )}
               {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
