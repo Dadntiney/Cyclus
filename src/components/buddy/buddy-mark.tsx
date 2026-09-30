@@ -9,23 +9,15 @@ const SIZE: Record<BuddyMarkSize, { box: string; icon: string }> = {
   xl: { box: "h-16 w-16", icon: "h-9 w-9" },
 }
 
-/** Classic water-drop with gently leaning tip — shared by solid + outline. */
+/** Same silhouette as Lucide `Droplet` (menstruatie-status icon). */
 const DROPLET =
-  "M10.7 2.35C7.2 5.8 4.7 10.4 5.05 14.85a7.15 7.15 0 0 0 14.15 0.1C18.6 9.6 14.9 4.6 10.7 2.35Z"
-
-const HALO =
-  "M10.55 1.7C6.7 5.4 3.95 10.15 4.3 14.95a7.95 7.95 0 0 0 15.7 0.15C19.4 9.1 15.3 3.85 10.55 1.7Z"
-
-function eyeCutout(cx: number, cy: number, r: number) {
-  return `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${r * 2} 0a${r} ${r} 0 1 0 ${-r * 2} 0`
-}
+  "M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"
 
 /**
- * Buddy — soft peach dewdrop companion.
+ * Buddy — peach dewdrop companion.
  *
- * - `solid` (default): filled peach mark with looking eyes (brand / chat).
- * - `outline`: Lucide-style stroke only — for nav tabs so Buddy matches
- *   the other line icons. Same silhouette, no fill, inherits text color.
+ * Shape matches the menstruatie Droplet icon. Solid mark gets happy
+ * white squint-eyes; outline is stroke-only for nav parity with Lucide.
  */
 export function BuddyGlyph({
   className,
@@ -38,11 +30,6 @@ export function BuddyGlyph({
   face?: boolean
   variant?: "solid" | "outline"
 }) {
-  const eyeR = 1.55
-  const eyeY = 14.15
-  const eyeL = 9.5
-  const eyeRgt = 14.5
-
   if (variant === "outline") {
     return (
       <svg
@@ -62,25 +49,19 @@ export function BuddyGlyph({
     )
   }
 
-  const weight = Math.min(1.08, Math.max(0.92, strokeWidth / 1.75))
-  const body = face
-    ? [DROPLET, eyeCutout(eyeL, eyeY, eyeR), eyeCutout(eyeRgt, eyeY, eyeR)].join("")
-    : DROPLET
-
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden
       className={cn("shrink-0", className)}
-      style={{ transform: weight !== 1 ? `scale(${weight})` : undefined }}
     >
-      <path d={HALO} stroke="currentColor" strokeWidth={1.05} opacity="0.24" />
-      <path fill="currentColor" fillRule="evenodd" d={body} />
+      <path fill="currentColor" d={DROPLET} />
       {face && (
         <>
-          <circle cx={eyeL + 0.22} cy={eyeY} r="0.78" fill="currentColor" />
-          <circle cx={eyeRgt - 0.22} cy={eyeY} r="0.78" fill="currentColor" />
+          {/* White eyes only — soft “knijp” ellipses (happy squint) */}
+          <ellipse cx="9.55" cy="14.1" rx="1.65" ry="1.05" fill="#fff" />
+          <ellipse cx="14.45" cy="14.1" rx="1.65" ry="1.05" fill="#fff" />
         </>
       )}
     </svg>
