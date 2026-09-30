@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Bell, Plus, Trash2, X } from "lucide-react"
+import { Bell, Pencil, Plus, Trash2, X } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Switch } from "@/components/ui/switch"
@@ -131,6 +131,7 @@ export function RemindersSection({
     })
     setSelectedTypes([type])
     setError(null)
+    setConfirmDeleteId(null)
     setEditingId(reminder.id)
     setAdding(false)
   }
@@ -309,38 +310,52 @@ export function RemindersSection({
 
       {!showForm && error && <p className="text-xs text-danger mb-2">{error}</p>}
 
-      {reminders.length > 0 && !showForm && (
+      {reminders.length > 0 && (
         <div className="flex flex-col gap-2 mb-3">
           {reminders.map((reminder) => {
             const typeOption = REMINDER_TYPE_OPTIONS.find((t) => t.value === reminder.type)
+            const isEditingThis = editingId === reminder.id
+            if (isEditingThis) {
+              return (
+                <div key={reminder.id} className="rounded-2xl border border-sage/40 bg-sage-soft/30 p-1">
+                  {renderForm()}
+                </div>
+              )
+            }
+            if (showForm) return null
             return (
               <div
                 key={reminder.id}
                 className="flex flex-col gap-2 rounded-2xl border border-line px-3.5 py-3"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   {(() => {
                     const Icon = typeOption?.icon ?? Bell
                     return <Icon className="h-5 w-5 shrink-0 text-sage-dark" strokeWidth={1.75} aria-hidden />
                   })()}
-                  <button
-                    type="button"
-                    onClick={() => startEdit(reminder)}
-                    className="min-w-0 flex-1 text-left touch-manipulation"
-                  >
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-ink truncate">
                       {reminder.label?.trim() || typeOption?.label || "Herinnering"}
                     </p>
                     <p className="text-xs text-ink-soft mt-0.5">
                       {formatTime(reminder.time)} · {daysLabel(reminder.days)}
                     </p>
-                  </button>
+                  </div>
                   <Switch
                     checked={reminder.enabled}
                     onChange={() => handleToggle(reminder)}
                     disabled={isPending}
                     aria-label={reminder.enabled ? "Herinnering uitzetten" : "Herinnering aanzetten"}
                   />
+                  <button
+                    type="button"
+                    onClick={() => startEdit(reminder)}
+                    disabled={isPending}
+                    className="shrink-0 h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                    aria-label="Herinnering wijzigen"
+                  >
+                    <Pencil className="h-4 w-4" strokeWidth={1.75} />
+                  </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDeleteId(reminder.id)}
@@ -385,104 +400,110 @@ export function RemindersSection({
         />
       )}
 
-      {showForm && (
-        <div
-          ref={formRef}
-          className="flex flex-col gap-4 rounded-2xl border border-line p-4 scroll-mb-[calc(var(--bottom-nav-h,5.5rem)+1rem)]"
-        >
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-ink">
-              {editingId ? "Herinnering bewerken" : "Nieuwe herinnering"}
-            </p>
-            <button
-              type="button"
-              onClick={cancelForm}
-              className="h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-              aria-label="Sluiten"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-
-          <div>
-            <p className="text-sm font-medium text-ink mb-1">Waarvoor?</p>
-            {!editingId && (
-              <p className="text-xs text-ink-soft mb-2">
-                Je mag er meerdere tegelijk kiezen — dan maak je in één keer meerdere herinneringen
-                (zelfde dagen en tijdstip).
-              </p>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {availableTypeOptions.map((opt) => (
-                <Chip
-                  key={opt.value}
-                  selected={selectedTypes.includes(opt.value)}
-                  onClick={() => toggleType(opt.value)}
-                >
-                  <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
-                  {opt.label}
-                </Chip>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="reminder-label">
-              {selectedTypes.length === 1 && selectedTypes[0] === "anders"
-                ? "Waar wil je aan herinnerd worden?"
-                : "Eigen omschrijving (optioneel)"}
-            </Label>
-            <Input
-              id="reminder-label"
-              value={draft.label ?? ""}
-              onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
-              placeholder={
-                selectedTypes.length === 1 && selectedTypes[0] === "anders"
-                  ? "Bijvoorbeeld: yoga-oefeningen doen"
-                  : "Laat leeg voor de standaardtekst"
-              }
-            />
-          </div>
-
-          <div>
-            <p className="text-sm font-medium text-ink mb-1">Op welke dagen?</p>
-            <p className="text-xs text-ink-soft mb-2">Meerdere dagen mogelijk.</p>
-            <div className="flex flex-wrap gap-2">
-              {REMINDER_DAY_OPTIONS.map((opt) => (
-                <Chip key={opt.value} selected={draft.days.includes(opt.value)} onClick={() => toggleDay(opt.value)}>
-                  {opt.label}
-                </Chip>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="reminder-time">Op welk tijdstip?</Label>
-            <Input
-              id="reminder-time"
-              type="time"
-              value={draft.time}
-              onChange={(e) => setDraft((d) => ({ ...d, time: normalizeReminderTime(e.target.value) }))}
-              className="max-w-[160px]"
-            />
-          </div>
-
-          <FieldError>{error}</FieldError>
-
-          <div className="flex gap-2">
-            <Button onClick={handleSave} disabled={isPending}>
-              {isPending
-                ? "Bezig..."
-                : !editingId && selectedTypes.length > 1
-                  ? `${selectedTypes.length} herinneringen opslaan`
-                  : "Opslaan"}
-            </Button>
-            <Button variant="secondary" onClick={cancelForm} disabled={isPending}>
-              Annuleren
-            </Button>
-          </div>
-        </div>
-      )}
+      {adding && renderForm()}
     </Card>
   )
+
+  function renderForm() {
+    return (
+      <div
+        ref={formRef}
+        className="flex flex-col gap-4 rounded-2xl border border-line p-4 scroll-mb-[calc(var(--bottom-nav-h,5.5rem)+1rem)] bg-surface"
+      >
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-ink">
+            {editingId ? "Herinnering wijzigen" : "Nieuwe herinnering"}
+          </p>
+          <button
+            type="button"
+            onClick={cancelForm}
+            className="h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            aria-label="Sluiten"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-ink mb-1">Waarvoor?</p>
+          {!editingId && (
+            <p className="text-xs text-ink-soft mb-2">
+              Je mag er meerdere tegelijk kiezen — dan maak je in één keer meerdere herinneringen
+              (zelfde dagen en tijdstip).
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {availableTypeOptions.map((opt) => (
+              <Chip
+                key={opt.value}
+                selected={selectedTypes.includes(opt.value)}
+                onClick={() => toggleType(opt.value)}
+              >
+                <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
+                {opt.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="reminder-label">
+            {selectedTypes.length === 1 && selectedTypes[0] === "anders"
+              ? "Waar wil je aan herinnerd worden?"
+              : "Eigen omschrijving (optioneel)"}
+          </Label>
+          <Input
+            id="reminder-label"
+            value={draft.label ?? ""}
+            onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
+            placeholder={
+              selectedTypes.length === 1 && selectedTypes[0] === "anders"
+                ? "Bijvoorbeeld: yoga-oefeningen doen"
+                : "Laat leeg voor de standaardtekst"
+            }
+          />
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-ink mb-1">Op welke dagen?</p>
+          <p className="text-xs text-ink-soft mb-2">Meerdere dagen mogelijk.</p>
+          <div className="flex flex-wrap gap-2">
+            {REMINDER_DAY_OPTIONS.map((opt) => (
+              <Chip key={opt.value} selected={draft.days.includes(opt.value)} onClick={() => toggleDay(opt.value)}>
+                {opt.label}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="reminder-time">Op welk tijdstip?</Label>
+          <Input
+            id="reminder-time"
+            type="time"
+            value={draft.time}
+            onChange={(e) => setDraft((d) => ({ ...d, time: normalizeReminderTime(e.target.value) }))}
+            className="max-w-[160px]"
+          />
+        </div>
+
+        <FieldError>{error}</FieldError>
+
+        <div className="flex gap-2">
+          <Button onClick={handleSave} disabled={isPending}>
+            {isPending
+              ? "Bezig..."
+              : editingId
+                ? "Wijzigingen opslaan"
+                : selectedTypes.length > 1
+                  ? `${selectedTypes.length} herinneringen opslaan`
+                  : "Opslaan"}
+          </Button>
+          <Button variant="secondary" onClick={cancelForm} disabled={isPending}>
+            Annuleren
+          </Button>
+        </div>
+      </div>
+    )
+  }
 }
