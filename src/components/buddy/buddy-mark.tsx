@@ -9,16 +9,16 @@ const SIZE: Record<BuddyMarkSize, { box: string; icon: string }> = {
   xl: { box: "h-16 w-16", icon: "h-9 w-9" },
 }
 
-/** Full circles as subpaths for evenodd eye-white cutouts. */
 function eyeCutout(cx: number, cy: number, r: number) {
   return `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${r * 2} 0a${r} ${r} 0 1 0 ${-r * 2} 0`
 }
 
 /**
- * Buddy’s visual signature — a soft, lovable dewdrop in brand peach.
+ * Buddy — soft peach dewdrop companion.
  *
- * Shape: rounded tip, wide calm belly (less “sharp tear”, more companion).
- * Face: open looking eyes with pupils. No arms, no mouth.
+ * Classic water-drop silhouette with a gently leaning tip and a plump
+ * round belly (lovable character shape). Looking eyes only — big cartoon
+ * mouths don’t survive at nav/icon sizes. Original mark, not a stock asset.
  */
 export function BuddyGlyph({
   className,
@@ -31,18 +31,17 @@ export function BuddyGlyph({
 }) {
   const weight = Math.min(1.08, Math.max(0.92, strokeWidth / 1.75))
 
-  // Soft dewdrop: blunt rounded tip + plump sides + round belly.
+  // Tip leans slightly left; belly is a full round base — classic “drop character”.
   const droplet =
-    "M12 3.6C14.35 3.6 16.9 6.55 18.35 10.15C19.45 12.85 19.7 14.85 19.7 15.85a7.7 7.7 0 1 1-15.4 0C4.3 14.85 4.55 12.85 5.65 10.15C7.1 6.55 9.65 3.6 12 3.6Z"
+    "M10.7 2.35C7.2 5.8 4.7 10.4 5.05 14.85a7.15 7.15 0 0 0 14.15 0.1C18.6 9.6 14.9 4.6 10.7 2.35Z"
 
   const halo =
-    "M12 2.85C14.75 2.85 17.55 5.95 19.15 9.85C20.35 12.75 20.55 14.85 20.55 15.85a8.55 8.55 0 1 1-17.1 0C3.45 14.85 3.65 12.75 4.85 9.85C6.45 5.95 9.25 2.85 12 2.85Z"
+    "M10.55 1.7C6.7 5.4 3.95 10.15 4.3 14.95a7.95 7.95 0 0 0 15.7 0.15C19.4 9.1 15.3 3.85 10.55 1.7Z"
 
-  // Eyes sit in the soft belly
-  const eyeR = 1.5
-  const eyeY = 14.55
-  const eyeL = 9.45
-  const eyeRgt = 14.55
+  const eyeR = 1.55
+  const eyeY = 14.15
+  const eyeL = 9.5
+  const eyeRgt = 14.5
 
   const body = face
     ? [droplet, eyeCutout(eyeL, eyeY, eyeR), eyeCutout(eyeRgt, eyeY, eyeR)].join("")
@@ -60,15 +59,14 @@ export function BuddyGlyph({
       <path fill="currentColor" fillRule="evenodd" d={body} />
       {face && (
         <>
-          <circle cx={eyeL + 0.2} cy={eyeY} r="0.75" fill="currentColor" />
-          <circle cx={eyeRgt - 0.2} cy={eyeY} r="0.75" fill="currentColor" />
+          <circle cx={eyeL + 0.22} cy={eyeY} r="0.78" fill="currentColor" />
+          <circle cx={eyeRgt - 0.22} cy={eyeY} r="0.78" fill="currentColor" />
         </>
       )}
     </svg>
   )
 }
 
-/** Soft peach badge with Buddy glyph — primary attribution mark, app-wide. */
 export function BuddyMark({
   size = "md",
   className,
