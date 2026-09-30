@@ -106,7 +106,11 @@ function groceryDisplayName(name: string, normalized: string): string {
   if (normalized === "avocado") return "Avocado"
   if (normalized === "banaan") return "Banaan"
   if (normalized === "wortel") return "Wortel"
-  return capitalize(name)
+  if (normalized === "broccoli") return "Broccoli"
+  if (normalized === "komkommer") return "Komkommer"
+  // Drop leading size/ripeness adjectives for the list label.
+  const stripped = name.replace(/^(rijpe?|verse?|gedroogde|bevroren|kleine|grote|zoete)\s+/i, "")
+  return capitalize(stripped || name)
 }
 
 function normalizeInputs(recipeIngredients: Array<GroceryRecipeInput | unknown>): GroceryRecipeInput[] {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { ChevronRight, Repeat, X, Check, ChevronDown } from "lucide-react"
+import { ChevronRight, Repeat, X, Check, SlidersHorizontal } from "lucide-react"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -33,9 +33,8 @@ export type TodayMealAlternative = {
 }
 
 /**
- * Today's meals (ontbijt → lunch → diner) with the same localStorage
- * overrides as Deze week. Matching training: Aanpassen → vervangen /
- * eigen maaltijd / overslaan.
+ * Today's meals (ontbijt → lunch → diner). Adjust is an icon on the row —
+ * not a repeated "Aanpassen" label under every meal.
  */
 export function TodayMealsRows({
   userId,
@@ -104,15 +103,19 @@ export function TodayMealsRows({
         if (skipped) {
           return (
             <div key={meal.slot} className="px-4 py-3">
-              <p className="text-[11px] font-medium text-sage-dark">{meal.label}</p>
-              <p className="text-sm text-ink-soft italic">Overgeslagen</p>
-              <button
-                type="button"
-                onClick={() => applyOverride(meal.slot, null)}
-                className="mt-1 text-xs font-medium text-sage-dark min-h-11 touch-manipulation"
-              >
-                Herstel voorstel
-              </button>
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium text-sage-dark">{meal.label}</p>
+                  <p className="text-sm text-ink-soft italic">Overgeslagen</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => applyOverride(meal.slot, null)}
+                  className="shrink-0 text-xs font-medium text-sage-dark min-h-11 px-1 touch-manipulation"
+                >
+                  Herstel
+                </button>
+              </div>
             </div>
           )
         }
@@ -120,30 +123,27 @@ export function TodayMealsRows({
         if (custom) {
           return (
             <div key={meal.slot} className="px-4 py-3">
-              <p className="text-[11px] font-medium text-sage-dark">{meal.label}</p>
-              <p className="text-sm font-medium text-ink">{custom.text}</p>
-              <p className="text-xs text-ink-soft mt-0.5">Eigen maaltijd</p>
-              <div className="flex flex-wrap gap-1 mt-1">
-                <button
-                  type="button"
+              <div className="flex items-start gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-medium text-sage-dark">{meal.label}</p>
+                  <p className="text-sm font-medium text-ink">{custom.text}</p>
+                  <p className="text-xs text-ink-soft mt-0.5">Eigen maaltijd</p>
+                </div>
+                <AdjustIconButton
+                  expanded={isAdjusting}
                   onClick={() => openAdjust(meal.slot)}
-                  className="inline-flex items-center gap-1 min-h-11 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
-                  aria-expanded={isAdjusting}
-                >
-                  Aanpassen
-                  <ChevronDown
-                    className={cn("h-3.5 w-3.5 transition-transform", isAdjusting && "rotate-180")}
-                    strokeWidth={2}
-                  />
-                </button>
+                  label={`${meal.label} aanpassen`}
+                />
+              </div>
+              {hasOverride && !isAdjusting && (
                 <button
                   type="button"
                   onClick={() => applyOverride(meal.slot, null)}
-                  className="inline-flex items-center min-h-11 px-2 text-xs font-medium text-sage-dark touch-manipulation"
+                  className="mt-1 text-xs font-medium text-sage-dark min-h-11 touch-manipulation"
                 >
                   Herstel advies
                 </button>
-              </div>
+              )}
               {isAdjusting && (
                 <MealAdjustPanel
                   slot={meal.slot}
@@ -169,20 +169,17 @@ export function TodayMealsRows({
         if (!title || !recipeId) {
           return (
             <div key={meal.slot} className="px-4 py-3">
-              <p className="text-[11px] font-medium text-sage-dark">{meal.label}</p>
-              <p className="text-sm text-ink-soft">Nog geen voorstel</p>
-              <button
-                type="button"
-                onClick={() => openAdjust(meal.slot)}
-                className="mt-1 inline-flex items-center gap-1 min-h-11 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
-                aria-expanded={isAdjusting}
-              >
-                Aanpassen
-                <ChevronDown
-                  className={cn("h-3.5 w-3.5 transition-transform", isAdjusting && "rotate-180")}
-                  strokeWidth={2}
+              <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-medium text-sage-dark">{meal.label}</p>
+                  <p className="text-sm text-ink-soft">Nog geen voorstel</p>
+                </div>
+                <AdjustIconButton
+                  expanded={isAdjusting}
+                  onClick={() => openAdjust(meal.slot)}
+                  label={`${meal.label} aanpassen`}
                 />
-              </button>
+              </div>
               {isAdjusting && (
                 <MealAdjustPanel
                   slot={meal.slot}
@@ -211,7 +208,7 @@ export function TodayMealsRows({
 
         return (
           <div key={meal.slot} className="px-4 py-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link
                 href={`/voeding/${recipeId}`}
                 className="flex items-center gap-3 min-w-0 flex-1 touch-manipulation motion-safe:active:opacity-80"
@@ -233,31 +230,22 @@ export function TodayMealsRows({
                 </div>
                 <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
               </Link>
+              <AdjustIconButton
+                expanded={isAdjusting}
+                onClick={() => openAdjust(meal.slot)}
+                label={`${meal.label} aanpassen`}
+              />
             </div>
 
-            <div className="flex flex-wrap gap-1 mt-0.5">
+            {hasOverride && !isAdjusting && (
               <button
                 type="button"
-                onClick={() => openAdjust(meal.slot)}
-                className="inline-flex items-center gap-1 min-h-11 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
-                aria-expanded={isAdjusting}
+                onClick={() => applyOverride(meal.slot, null)}
+                className="mt-1 text-xs font-medium text-sage-dark min-h-11 touch-manipulation"
               >
-                Aanpassen
-                <ChevronDown
-                  className={cn("h-3.5 w-3.5 transition-transform", isAdjusting && "rotate-180")}
-                  strokeWidth={2}
-                />
+                Herstel advies
               </button>
-              {hasOverride && (
-                <button
-                  type="button"
-                  onClick={() => applyOverride(meal.slot, null)}
-                  className="inline-flex items-center min-h-11 px-2 text-xs font-medium text-sage-dark touch-manipulation"
-                >
-                  Herstel advies
-                </button>
-              )}
-            </div>
+            )}
 
             {isAdjusting && (
               <MealAdjustPanel
@@ -279,6 +267,31 @@ export function TodayMealsRows({
         )
       })}
     </>
+  )
+}
+
+function AdjustIconButton({
+  expanded,
+  onClick,
+  label,
+}: {
+  expanded: boolean
+  onClick: () => void
+  label: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-expanded={expanded}
+      className={cn(
+        "shrink-0 h-11 w-11 inline-flex items-center justify-center rounded-xl touch-manipulation transition-colors",
+        expanded ? "bg-surface text-sage-dark" : "text-ink-soft hover:text-sage-dark",
+      )}
+    >
+      <SlidersHorizontal className="h-4 w-4" strokeWidth={1.75} />
+    </button>
   )
 }
 
@@ -367,7 +380,7 @@ function MealAdjustPanel({
   }
 
   return (
-    <div className="flex flex-wrap gap-1 -mt-1">
+    <div className="flex flex-wrap gap-1 mt-2">
       {alternatives.length > 0 && (
         <button
           type="button"

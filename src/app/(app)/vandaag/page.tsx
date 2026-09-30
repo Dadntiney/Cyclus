@@ -6,11 +6,11 @@ import { TodayCards } from "@/components/today/today-cards"
 import { AnticipationNote } from "@/components/today/anticipation-note"
 import { HormoneRoadmapNote } from "@/components/today/hormone-roadmap-note"
 import { PhaseContextCard } from "@/components/today/phase-context-card"
+import { CycleSetupCard } from "@/components/today/cycle-setup-card"
 import { CheckinForm } from "@/components/today/checkin-form"
 import { DayCloseCard } from "@/components/today/day-close-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
-import { MenstruationQuickAction } from "@/components/cycle/menstruation-quick-action"
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { greeting } from "@/lib/greeting"
@@ -164,20 +164,27 @@ export default async function VandaagPage() {
                 menstruationDay={menstruationDay}
               />
             </div>
+          ) : hasCycle && isMenstruationActive && menstruationDay ? (
+            <div className="mt-3">
+              <PhaseContextCard
+                phase="menstruatie"
+                phaseLabel="Menstruatie"
+                cycleDay={menstruationDay}
+                subtitle="Je hebt menstruatie gestart. Vul je cyclusgegevens aan voor een volledige fase-inschatting."
+                hasCycle
+                isMenstruationActive
+                menstruationDay={menstruationDay}
+              />
+            </div>
+          ) : hasCycle ? (
+            <div className="mt-3">
+              <CycleSetupCard />
+            </div>
           ) : (
             <div className="mt-2">
               <p className="text-sm text-ink-soft">
                 Fijn dat je er bent. Kies vandaag wat bij je past.
               </p>
-              {hasCycle && (
-                <div className="mt-2">
-                  {isMenstruationActive ? (
-                    <MenstruationQuickAction isActive day={menstruationDay} variant="inline" />
-                  ) : (
-                    <MenstruationQuickAction isActive={false} day={null} variant="quiet" />
-                  )}
-                </div>
-              )}
             </div>
           )}
         </header>
@@ -212,37 +219,39 @@ export default async function VandaagPage() {
             />
           )}
 
-          {/* Filled check-in later: adjust without blocking the plan */}
-          {hasMeaningfulCheckin && checkinForm}
+          {/* Reflect / log: more air between plan and the closing stack */}
+          <div className="flex flex-col gap-4 pt-1">
+            {hasMeaningfulCheckin && checkinForm}
 
-          {(sleepEnabled || showMedicationCard) && (
-            <section aria-label="Extra voor vandaag" className="flex flex-col gap-3">
-              {sleepEnabled && (
-                <div id="slaap-vandaag">
-                  <SleepCard
-                    date={today}
-                    entry={sleepEntry}
-                    observation={sleepObservation}
-                    historyHref="/slaap"
-                  />
-                </div>
-              )}
-              {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
-            </section>
-          )}
+            {(sleepEnabled || showMedicationCard) && (
+              <section aria-label="Extra voor vandaag" className="flex flex-col gap-3">
+                {sleepEnabled && (
+                  <div id="slaap-vandaag">
+                    <SleepCard
+                      date={today}
+                      entry={sleepEntry}
+                      observation={sleepObservation}
+                      historyHref="/slaap"
+                    />
+                  </div>
+                )}
+                {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
+              </section>
+            )}
 
-          <DayCloseCard
-            userId={user.id}
-            date={today}
-            weekStartISO={weekStartISO}
-            hasCheckin={hasMeaningfulCheckin}
-            movementEnabled={profile?.movement_enabled ?? true}
-            movementDone={Boolean(completedWorkout)}
-            sleepTrackingEnabled={sleepEnabled}
-            hasSleepEntry={Boolean(sleepEntry)}
-            mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
-            savedTexts={savedTexts}
-          />
+            <DayCloseCard
+              userId={user.id}
+              date={today}
+              weekStartISO={weekStartISO}
+              hasCheckin={hasMeaningfulCheckin}
+              movementEnabled={profile?.movement_enabled ?? true}
+              movementDone={Boolean(completedWorkout)}
+              sleepTrackingEnabled={sleepEnabled}
+              hasSleepEntry={Boolean(sleepEntry)}
+              mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
+              savedTexts={savedTexts}
+            />
+          </div>
         </div>
       </div>
     </PullToRefresh>

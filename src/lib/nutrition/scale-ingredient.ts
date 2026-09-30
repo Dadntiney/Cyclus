@@ -31,11 +31,11 @@ function formatAmount(n: number): string {
     return String(Math.round(rounded))
   }
   const fractionPairs: Array<[number, string]> = [
-    [0.25, "1/4"],
-    [0.33, "1/3"],
-    [0.5, "1/2"],
-    [0.67, "2/3"],
-    [0.75, "3/4"],
+    [0.25, "¼"],
+    [0.33, "⅓"],
+    [0.5, "½"],
+    [0.67, "⅔"],
+    [0.75, "¾"],
   ]
   for (const [value, label] of fractionPairs) {
     if (Math.abs(rounded - value) < 0.03) return label
@@ -111,20 +111,21 @@ export function scaleQuantityString(quantity: string | null, factor: number): st
 }
 
 /**
- * Grocery-facing scale: countable units round up so "0,5 ei" / "1/2 komkommer"
- * at half portions still means "koop er één". Recipe pages keep exact scale.
+ * Grocery-facing scale: always re-format amounts (so "0,5" becomes "½"),
+ * and countable units round up so half a courgette still means buy one.
  */
 export function scaleQuantityForGrocery(quantity: string | null, factor: number): string | null {
-  const scaled = scaleQuantityString(quantity, factor)
-  if (!scaled) return scaled
-  const parts = parseQuantityParts(scaled)
-  if (!parts) return scaled
+  if (!quantity) return null
+  if (/^(handvol|handje|scheutje|snufje)$/i.test(quantity.trim())) return quantity
+  const parts = parseQuantityParts(quantity)
+  if (!parts) return quantity
+  let amount = parts.amount * (Number.isFinite(factor) ? factor : 1)
   const unitKey = parts.unit.toLowerCase()
-  if (!PIECE_UNITS.has(unitKey)) return scaled
-  let amount = parts.amount
-  if (amount > 0 && amount < 1) amount = 1
-  else if (amount > 1 && Math.abs(amount - Math.round(amount)) > 0.05) {
-    amount = Math.ceil(amount - 1e-9)
+  if (PIECE_UNITS.has(unitKey)) {
+    if (amount > 0 && amount < 1) amount = 1
+    else if (amount > 1 && Math.abs(amount - Math.round(amount)) > 0.05) {
+      amount = Math.ceil(amount - 1e-9)
+    }
   }
   return formatQuantity(amount, parts.unit)
 }

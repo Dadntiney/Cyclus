@@ -82,11 +82,11 @@ function formatAmount(n: number): string {
     return String(Math.round(rounded))
   }
   const fractionPairs: Array<[number, string]> = [
-    [0.25, "1/4"],
-    [0.33, "1/3"],
-    [0.5, "1/2"],
-    [0.67, "2/3"],
-    [0.75, "3/4"],
+    [0.25, "¼"],
+    [0.33, "⅓"],
+    [0.5, "½"],
+    [0.67, "⅔"],
+    [0.75, "¾"],
   ]
   for (const [value, label] of fractionPairs) {
     if (Math.abs(rounded - value) < 0.03) return label
