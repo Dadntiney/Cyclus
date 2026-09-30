@@ -2,7 +2,7 @@ import { addDays, format } from "date-fns"
 import { nl } from "date-fns/locale"
 import type { Tables } from "@/types/database"
 import { estimateCycle, type CycleEstimate } from "@/lib/cycle/estimate"
-import { getPhaseContent, getDailyPhaseSnackTip, type PhaseSnackTip } from "@/lib/cycle/phase-content"
+import { getPhaseContent, getDailyPhaseSnackTip, getDailyPhaseHydrationTip, type PhaseSnackTip, type PhaseHydrationTip } from "@/lib/cycle/phase-content"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
 import { dietPrefsForCategoryMatch, filterRecipesByCuisinePrefs } from "@/lib/nutrition/cuisine"
@@ -73,6 +73,8 @@ export interface WeekDayPlan {
   anticipationNote: string | null
   /** Phase snack tip for this day — null when no cycle phase known. */
   snackTip: PhaseSnackTip | null
+  /** Soft hydration tip for this day — null when no cycle phase known. */
+  hydrationTip: PhaseHydrationTip | null
 }
 
 export interface BuildWeekPlanInput {
@@ -284,6 +286,10 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
       ? getDailyPhaseSnackTip(cycleEstimate.phase, `${seed}-${dateISO}`)
       : null
 
+    const hydrationTip = cycleEstimate
+      ? getDailyPhaseHydrationTip(cycleEstimate.phase, `${seed}-${dateISO}`)
+      : null
+
     return {
       date: dateISO,
       weekday: format(date, "EEEE", { locale: nl }),
@@ -296,6 +302,7 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
       focusTips,
       anticipationNote: isAnticipated ? anticipationTip : null,
       snackTip,
+      hydrationTip,
     }
   })
 }

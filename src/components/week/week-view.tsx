@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
 import { PhaseSnackTipCard } from "@/components/cycle/phase-snack-tip-card"
+import { PhaseHydrationTipCard } from "@/components/cycle/phase-hydration-tip-card"
 import type { WeekDayPlan, WeekPlanRecipe, WeekPlanWorkout, MealSlot } from "@/lib/recommendations/week-plan"
 import { TodayMovementCard } from "@/components/today/today-movement-card"
 import {
@@ -280,6 +281,12 @@ export function WeekView({
         {nutritionEnabled && day.snackTip && (
           <div className="mt-4">
             <PhaseSnackTipCard tip={day.snackTip} compact />
+          </div>
+        )}
+
+        {day.hydrationTip && (
+          <div className={nutritionEnabled && day.snackTip ? "mt-2.5" : "mt-4"}>
+            <PhaseHydrationTipCard tip={day.hydrationTip} compact />
           </div>
         )}
 

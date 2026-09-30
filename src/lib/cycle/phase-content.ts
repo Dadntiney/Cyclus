@@ -36,6 +36,13 @@ export interface PhaseSnackTip {
   why: string
 }
 
+export interface PhaseHydrationTip {
+  /** Short line, e.g. "Houd water bij de hand". */
+  title: string
+  /** Soft why / how — never guilt. */
+  text: string
+}
+
 export interface PhaseNutritionFocus {
   /** Short label, e.g. "IJzer & eiwitten". */
   focusLabel: string
@@ -58,6 +65,11 @@ export interface PhaseNutritionFocus {
    * "why" — one is picked per day via getDailyPhaseSnackTip.
    */
   snackTips: PhaseSnackTip[]
+  /**
+   * Vocht / hydration tips for Vandaag + Week — soft reminder, not a chore.
+   * One is picked per day via getDailyPhaseHydrationTip.
+   */
+  hydrationTips: PhaseHydrationTip[]
 }
 
 export interface PhaseMovementFocus {
@@ -148,6 +160,20 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
           why: "Kalium en koolhydraten voor snelle energie, notenpasta voor eiwit en verzadiging — fijn op vermoeide dagen.",
         },
       ],
+      hydrationTips: [
+        {
+          title: "Houd water bij de hand",
+          text: "Rondom bloedverlies en vermoeidheid past voldoende vocht vaak goed. Een flesje in zicht helpt sneller dan ‘straks nog even’.",
+        },
+        {
+          title: "Warme thee telt ook",
+          text: "Heb je minder zin in koud water? Warme (kruidenthee) telt mee — en voelt in deze fase vaak extra fijn.",
+        },
+        {
+          title: "Slokjes door de dag",
+          text: "Klein en regelmatig drinken voelt voor veel vrouwen prettiger dan in één keer inhalen — vooral bij hoofdpijn of vermoeidheid.",
+        },
+      ],
     },
     movement: {
       intensityLabel: "Rustig",
@@ -230,6 +256,20 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
           title: "Hummus met komkommer",
           snack: "Een paar lepels hummus met komkommer- of wortelreepjes.",
           why: "Kikkererwten leveren plantaardig eiwit en vezels — licht, maar wél voedzaam als je actiever bent.",
+        },
+      ],
+      hydrationTips: [
+        {
+          title: "Drink mee met je tempo",
+          text: "Als je energie en beweging omhoog gaan, stijgt je vochtbehoefte vaak mee. Water of thee tussendoor is een kleine gewoonte met groot effect.",
+        },
+        {
+          title: "Glas bij elke maaltijd",
+          text: "Een vast moment — water bij ontbijt, lunch en diner — is voor veel vrouwen makkelijker vol te houden dan ‘de hele dag denken aan drinken’.",
+        },
+        {
+          title: "Voor en na bewegen",
+          text: "Even drinken voor je vertrekt en als je terugkomt: simpel, en het houdt je energie gelijkmatiger.",
         },
       ],
     },
@@ -319,6 +359,20 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
           title: "Griekse yoghurt met lijnzaad",
           snack: "Griekse yoghurt met een theelepel gemalen lijnzaad en wat honing naar smaak.",
           why: "Eiwit als anker plus plantaardige omega-3 uit lijnzaad — stevig zonder zwaar te zijn.",
+        },
+      ],
+      hydrationTips: [
+        {
+          title: "Hydrateer bij meer beweging",
+          text: "Voel je je actiever rondom de eisprong? Extra water vóór, tijdens en na training helpt je lichaam die energie te houden.",
+        },
+        {
+          title: "Niet alleen bij dorst",
+          text: "Dorst komt vaak pas later. Een flesje meenemen of thee op kantoor maakt het makkelijker om bij te blijven.",
+        },
+        {
+          title: "Koel en helder",
+          text: "Op warmere of drukke dagen telt vocht dubbel — ook als je je sterk voelt en geneigd bent het te vergeten.",
         },
       ],
     },
@@ -426,6 +480,20 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
           why: "Plantaardig eiwit en vezels — een stevige basis als je tussendoor sneller honger hebt in deze fase.",
         },
       ],
+      hydrationTips: [
+        {
+          title: "Blijf drinken bij vochtvasthouden",
+          text: "Een opgeblazen gevoel betekent niet dat je minder moet drinken. Regelmatig water of thee blijft voor veel vrouwen juist prettig.",
+        },
+        {
+          title: "Vocht bij meer trek",
+          text: "Soms voelt dorst als trek. Even drinken en dan checken of je nog echt honger hebt, kan helpen — zonder iets ‘af te nemen’.",
+        },
+        {
+          title: "Avondrust + een glas",
+          text: "Een glas water of cafeïnevrije thee bij je avondritueel is een zachte herinnering — geen afvinktaak.",
+        },
+      ],
     },
     movement: {
       intensityLabel: "Rustig tot gemiddeld",
@@ -475,4 +543,10 @@ function seededIndex(seed: string, length: number): number {
 export function getDailyPhaseSnackTip(phase: CyclePhase, seed: string): PhaseSnackTip {
   const tips = PHASE_CONTENT[phase].nutrition.snackTips
   return tips[seededIndex(`${seed}-snack`, tips.length)]
+}
+
+/** Picks one soft hydration tip for Vandaag / Week — stable for a given seed. */
+export function getDailyPhaseHydrationTip(phase: CyclePhase, seed: string): PhaseHydrationTip {
+  const tips = PHASE_CONTENT[phase].nutrition.hydrationTips
+  return tips[seededIndex(`${seed}-hydratie`, tips.length)]
 }

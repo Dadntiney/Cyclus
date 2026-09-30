@@ -1,6 +1,6 @@
 import type { Tables } from "@/types/database"
 import type { CycleEstimate } from "@/lib/cycle/estimate"
-import { getDailyPhaseSnackTip, type PhaseSnackTip } from "@/lib/cycle/phase-content"
+import { getDailyPhaseSnackTip, getDailyPhaseHydrationTip, type PhaseSnackTip, type PhaseHydrationTip } from "@/lib/cycle/phase-content"
 import { TRAINING_PREFERENCE_TO_TYPE, symptomLabel } from "@/lib/constants"
 import { SHORT_NIGHT_MINUTES } from "@/lib/sleep/insights"
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
@@ -87,6 +87,8 @@ export interface NutritionRecommendation {
   reason: string
   /** Phase-based tussendoor tip with “why” — null when no cycle estimate. */
   snackTip: PhaseSnackTip | null
+  /** Soft daily hydration reminder when cycle phase is known. */
+  hydrationTip: PhaseHydrationTip | null
 }
 
 export interface NutritionPickInput {
@@ -357,7 +359,11 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
       ? getDailyPhaseSnackTip(cycleEstimate.phase, seed)
       : null
 
-  const nutrition: NutritionRecommendation = { ...nutritionBase, snackTip }
+  const hydrationTip = cycleEstimate
+    ? getDailyPhaseHydrationTip(cycleEstimate.phase, seed)
+    : null
+
+  const nutrition: NutritionRecommendation = { ...nutritionBase, snackTip, hydrationTip }
 
   const mentalEnabled = profile.mental_wellbeing_enabled === true
   const recoveryCta = mentalEnabled
