@@ -27,7 +27,7 @@ export default async function FavorietenPage() {
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
         <BackButton href="/vandaag" label="Vandaag" />
-        <h1 className="font-display text-2xl lg:text-3xl text-ink inline-flex items-center gap-2">
+        <h1 className="font-display text-2xl lg:text-3xl text-ink flex items-center gap-2">
           <Heart className="h-6 w-6 text-peach" fill="currentColor" strokeWidth={0} aria-hidden />
           Favorieten
         </h1>
