@@ -170,8 +170,12 @@ export function MedicationWizard({
       reminderEnabled: data.reminderEnabled,
       remindOnStart: data.remindOnStart,
       remindDaily: data.remindDaily,
-      // Stop reminder only makes sense when she filled in an optional end date.
-      remindOnStop: Boolean(data.endDate) && data.remindOnStop,
+      // Cyclisch: stop at end of each wel-periode (optional toggle).
+      // Other types: only with an absolute end date.
+      remindOnStop:
+        data.scheduleType === "cyclisch"
+          ? data.remindOnStop
+          : Boolean(data.endDate) && data.remindOnStop,
       notes: data.notes.trim() || undefined,
     }
   }
@@ -470,20 +474,12 @@ function ScheduleStep({
             id="cycl-end"
             type="date"
             value={data.endDate}
-            onChange={(e) => {
-              const endDate = e.target.value
-              setData((d) => ({
-                ...d,
-                endDate,
-                // Turning on a stop date enables the stop reminder by default;
-                // clearing it turns the reminder off.
-                remindOnStop: endDate ? d.remindOnStop || true : false,
-              }))
-            }}
+            onChange={(e) => setData((d) => ({ ...d, endDate: e.target.value }))}
           />
           <p className="text-xs text-ink-soft mt-1.5 leading-relaxed">
-            Alleen invullen als deze kuur een einddatum heeft. Zonder einddatum sturen we
-            geen stopmelding — je wel/niet-schema loopt dan gewoon door.
+            Alleen invullen als deze medicatie ergens helemaal stopt. Laat leeg als je
+            wel/niet-schema doorloopt — een stopmelding per wel-periode kun je apart
+            aanzetten bij herinneringen.
           </p>
         </div>
       )}
@@ -511,7 +507,7 @@ function ScheduleStep({
                   setData((d) => ({
                     ...d,
                     endDate,
-                    remindOnStop: endDate ? d.remindOnStop || true : false,
+                    remindOnStop: endDate ? true : false,
                   }))
                 }}
               />
@@ -549,7 +545,7 @@ function ScheduleStep({
                 setData((d) => ({
                   ...d,
                   endDate,
-                  remindOnStop: endDate ? d.remindOnStop || true : false,
+                  remindOnStop: endDate ? true : false,
                 }))
               }}
             />
@@ -569,6 +565,7 @@ function ReminderStep({
 }) {
   const hasEndDate = Boolean(data.endDate)
   const isCyclisch = data.scheduleType === "cyclisch"
+  const canRemindStop = isCyclisch || hasEndDate
 
   return (
     <div>
@@ -599,10 +596,9 @@ function ReminderStep({
             <div className="mt-4 rounded-3xl bg-sage-soft/50 p-4">
               {isCyclisch && (
                 <p className="text-sm text-ink-soft leading-relaxed mb-4">
-                  Omdat dit een wel/niet-schema is, herhaalt de start- en dagelijkse herinnering
-                  zich vanzelf bij elke nieuwe &lsquo;wel&rsquo;-periode. Een stopmelding krijg
-                  je alleen als je een einddatum hebt ingevuld — niet automatisch een dag eerder
-                  in je kuur.
+                  Bij een wel/niet-schema herhalen start- en dagelijkse herinneringen zich
+                  vanzelf. Een stopmelding kun je apart aanzetten — die komt op de laatste
+                  innamedag van elke wel-periode, ook als je schema daarna gewoon doorloopt.
                 </p>
               )}
               <div className="flex flex-col gap-3">
@@ -636,18 +632,20 @@ function ReminderStep({
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-ink">Stopmelding</p>
                     <p className="text-xs text-ink-soft mt-0.5">
-                      {hasEndDate
-                        ? "Op de einddatum die je bij je schema hebt ingevuld."
-                        : "Vul eerst een optionele einddatum in bij je schema."}
+                      {isCyclisch
+                        ? "Op de laatste innamedag van elke wel-periode (je neemt die dag nog wel in)."
+                        : hasEndDate
+                          ? "Op de einddatum die je bij je schema hebt ingevuld."
+                          : "Vul eerst een optionele einddatum in bij je schema."}
                     </p>
                   </div>
                   <Switch
-                    checked={hasEndDate && data.remindOnStop}
+                    checked={canRemindStop && data.remindOnStop}
                     onChange={(remindOnStop) => {
-                      if (!hasEndDate) return
+                      if (!canRemindStop) return
                       setData((d) => ({ ...d, remindOnStop }))
                     }}
-                    disabled={!hasEndDate}
+                    disabled={!canRemindStop}
                     aria-label="Stopmelding aan- of uitzetten"
                   />
                 </div>
@@ -669,6 +667,9 @@ function ReminderStep({
 
 function ReviewStep({ data }: { data: WizardData }) {
   const category = MEDICATION_CATEGORY_OPTIONS.find((c) => c.value === data.category)
+  const showStop =
+    data.remindOnStop &&
+    (data.scheduleType === "cyclisch" || Boolean(data.endDate))
   return (
     <div>
       <h2 className="font-display text-2xl text-ink mb-2">Klopt dit?</h2>
@@ -709,7 +710,7 @@ function ReviewStep({ data }: { data: WizardData }) {
             {[
               data.scheduleType === "cyclisch" && data.remindOnStart && "startmelding",
               data.scheduleType === "cyclisch" && data.remindDaily && "dagelijkse herinnering",
-              data.endDate && data.remindOnStop && "stopmelding",
+              showStop && "stopmelding",
             ]
               .filter(Boolean)
               .join(", ") || "geen extra momenten aan"}

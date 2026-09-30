@@ -7,7 +7,8 @@ import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
  * than a plain weekday list — a "2 weken wel/2 weken niet" reminder should
  * stay silent on the "niet" weeks. For a "cyclisch" schedule, the three
  * event types (start/daily/stop) are independently toggleable — see
- * remindOnStart/remindDaily/remindOnStop.
+ * remindOnStart/remindDaily/remindOnStop. Stop fires on the last dosing
+ * day of each wel-periode (and/or on an absolute endDate).
  */
 export interface MedicationReminderLike extends MedicationSchedule {
   id: string

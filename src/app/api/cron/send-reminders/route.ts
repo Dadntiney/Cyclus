@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { createServiceClient } from "@/lib/supabase/service"
 import { sendPushToUser } from "@/lib/push/send"
 import { isReminderDueToday, isoWeekday, type ReminderLike } from "@/lib/client/reminder-scheduler"
-import { isDosingDay, isScheduleStartDay, isScheduleStopDay, type MedicationSchedule } from "@/lib/medication/schedule"
+import { isDosingDay, isScheduleStartDay, isScheduleStopDay, isAbsoluteMedicationEndDay, type MedicationSchedule } from "@/lib/medication/schedule"
 import { resolveReminderText } from "@/lib/buddy/reminder-labels"
 import { getMorningMessage } from "@/lib/data/morning-messages"
 import { REMINDER_TYPE_OPTIONS, type MorningReminderContentType } from "@/lib/constants"
@@ -210,8 +210,8 @@ export async function GET(request: NextRequest) {
 
         // Independently toggleable per "cyclisch" event type (see the
         // medicatie-instellingen) — skip sending (and logging) entirely
-        // when she turned off this specific moment. Stop only fires when
-        // she filled in an optional end date (isScheduleStopDay).
+        // when she turned off this specific moment. Cyclisch stop = last
+        // dosing day of each wel-periode; absolute endDate also counts.
         if (isStart && !m.remind_on_start) continue
         if (isStop && !m.remind_on_stop) continue
         if (!isStart && !isStop && !m.remind_daily) continue
@@ -219,10 +219,13 @@ export async function GET(request: NextRequest) {
         // Deliberately generic on the lock screen — never the medication's
         // name, hormone or dosage in a push preview (see privacy section of
         // the audit brief). The in-app toast may be specific; this may not.
+        const absoluteEnd = isAbsoluteMedicationEndDay(schedule, today)
         const { title, body, sourceType } = isStart
           ? { title: "Je schema start weer", body: "Vandaag begint het schema dat je zelf hebt ingesteld.", sourceType: "medication_start" }
           : isStop
-            ? { title: "Je schema eindigt vandaag", body: "De periode die je had ingesteld eindigt vandaag.", sourceType: "medication_stop" }
+            ? absoluteEnd
+              ? { title: "Je schema eindigt vandaag", body: "De periode die je had ingesteld eindigt vandaag.", sourceType: "medication_stop" }
+              : { title: "Laatste innamedag", body: "Vandaag is de laatste dag van je wel-periode — daarna begint je pauze.", sourceType: "medication_stop" }
             : { title: "Cyclus", body: "Je hebt een herinnering van Cyclus.", sourceType: "medication_daily" }
 
         const { sent } = await sendPushToUser(userId, {

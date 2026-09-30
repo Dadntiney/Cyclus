@@ -16,7 +16,7 @@ import {
 } from "@/lib/client/doctor-appointment-reminder-scheduler"
 import { wasReminderShownToday, markReminderShownToday } from "@/lib/client/reminder-storage"
 import { resolveReminderText } from "@/lib/buddy/reminder-labels"
-import { isScheduleStartDay, isScheduleStopDay } from "@/lib/medication/schedule"
+import { isScheduleStartDay, isScheduleStopDay, isAbsoluteMedicationEndDay } from "@/lib/medication/schedule"
 import { getMorningMessage } from "@/lib/data/morning-messages"
 import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
 import type { MorningReminderContentType } from "@/lib/constants"
@@ -61,7 +61,9 @@ function medicationToast(medication: MedicationReminderLike, now: Date): Toast {
   const text = isStart
     ? `Je schema voor ${medication.name} start vandaag weer.`
     : isStop
-      ? `Je ingestelde periode voor ${medication.name} eindigt vandaag.`
+      ? isAbsoluteMedicationEndDay(medication, now)
+        ? `Je ingestelde periode voor ${medication.name} eindigt vandaag.`
+        : `Vandaag is de laatste innamedag van je wel-periode voor ${medication.name}.`
       : `Herinnering: je hebt vandaag ${medication.name} ingepland.`
   return { id: medication.id, icon: Pill, text }
 }

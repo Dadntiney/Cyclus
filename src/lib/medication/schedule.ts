@@ -78,14 +78,33 @@ export function isScheduleStartDay(schedule: MedicationSchedule, date: Date): bo
 }
 
 /**
- * Whether `date` is the user-chosen stop day — only when she filled in an
- * optional `endDate` (same idea as optional start). We deliberately do NOT
- * auto-derive a stop day from a cyclisch "wel"-periode: that fired a day
- * early for courses like 2 weken progesteron and made her think she should
- * stop before finishing the full block. Cycle math still drives dosing and
- * start reminders; stop is opt-in via the date field.
+ * Whether `date` should get a stop reminder:
+ * - Absolute `endDate` (optional course end) — any schedule type.
+ * - For cyclisch: also the last dosing day of each "wel" block, so a
+ *   doorlopend 2-weken-wel / 2-weken-niet schema can still remind her
+ *   without filling in an end date. Opt-in via remindOnStop (caller).
+ *   That last day she still takes the dose — copy must say so.
  */
 export function isScheduleStopDay(schedule: MedicationSchedule, date: Date): boolean {
+  const dateISO = format(date, "yyyy-MM-dd")
+  if (schedule.endDate && schedule.endDate === dateISO) return true
+
+  if (schedule.scheduleType !== "cyclisch") return false
+  if (!schedule.startDate || !schedule.scheduleDaysOn || schedule.scheduleDaysOff === null) return false
+  if (schedule.scheduleDaysOff === 0) return false
+  if (schedule.endDate && dateISO > schedule.endDate) return false
+
+  const daysSince = differenceInCalendarDays(date, parseISO(schedule.startDate))
+  if (daysSince < 0) return false
+  const cycleLength = schedule.scheduleDaysOn + schedule.scheduleDaysOff
+  if (cycleLength <= 0) return false
+  // Last day of the "on" block (inclusive) — completes e.g. 14 days of
+  // progesterone before the pause starts tomorrow.
+  return daysSince % cycleLength === schedule.scheduleDaysOn - 1
+}
+
+/** True when stop is the absolute course endDate, not a recurring wel-end. */
+export function isAbsoluteMedicationEndDay(schedule: MedicationSchedule, date: Date): boolean {
   if (!schedule.endDate) return false
   return schedule.endDate === format(date, "yyyy-MM-dd")
 }

@@ -23,8 +23,7 @@ export const medicationSchema = z
     // single reminder_enabled behavior (all three fire together).
     remindOnStart: z.boolean().default(true),
     remindDaily: z.boolean().default(true),
-    // Stop reminder is opt-in via optional endDate — default off so cyclisch
-    // courses (e.g. 2 weken progesteron) don't get an automatic early stop.
+    // Opt-in: for cyclisch = last day of each wel-periode; otherwise needs endDate.
     remindOnStop: z.boolean().default(false),
     notes: z.string().max(500).optional(),
   })
