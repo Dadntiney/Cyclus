@@ -230,7 +230,7 @@ export default async function CyclusdagPage() {
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
                 <p className={cn("text-xs font-medium mb-1 inline-flex items-center gap-1.5", view.colors.text)}>
-                  <BuddyMark size="sm" decorative className="bg-surface/70" />
+                  <BuddyMark size="sm" decorative />
                   {view.buddyMoment.title}
                 </p>
                 <p className="text-sm text-ink leading-relaxed">{view.buddyMoment.text}</p>

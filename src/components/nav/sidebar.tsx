@@ -47,7 +47,10 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
                       <Image src={avatarUrl} alt="" width={18} height={18} className="h-full w-full object-cover" />
                     </span>
                   ) : href === "/buddy" ? (
-                    <BuddyGlyph className="h-4.5 w-4.5" strokeWidth={active ? 2.25 : 1.75} />
+                    <BuddyGlyph
+                      className={cn("h-4.5 w-4.5 text-peach", !active && "opacity-80")}
+                      strokeWidth={active ? 2.25 : 1.75}
+                    />
                   ) : (
                     <Icon className="h-4.5 w-4.5" strokeWidth={active ? 2.25 : 1.75} />
                   )}

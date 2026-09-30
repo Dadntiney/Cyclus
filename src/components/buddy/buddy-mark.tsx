@@ -15,12 +15,11 @@ function eyeCutout(cx: number, cy: number, r: number) {
 }
 
 /**
- * Buddy’s visual signature — a soft droplet companion.
+ * Buddy’s visual signature — a plump soft dewdrop companion in brand peach.
  *
- * Adult, calm, a little alive: rounded teardrop with quiet eyes and a soft
- * smile cut out of the fill. No arms, no cartoon grin. Used only where Buddy
- * speaks or is named as a presence — never as the menstruation status
- * droplet, never as generic decoration.
+ * Rounder than a sharp teardrop: wide calm belly, gentle tip. Quiet eyes +
+ * soft smile cut out of the fill. No arms. Used only where Buddy speaks or
+ * is named — never as the menstruation status droplet.
  */
 export function BuddyGlyph({
   className,
@@ -35,14 +34,18 @@ export function BuddyGlyph({
 }) {
   const weight = Math.min(1.08, Math.max(0.92, strokeWidth / 1.75))
 
+  // Plump dewdrop: fuller sides, softer tip (less “blood drop”, more companion).
   const droplet =
-    "M12 3.35C12 3.35 5.1 10.8 5.1 15.05a6.9 6.9 0 0 0 13.8 0C18.9 10.8 12 3.35 12 3.35Z"
+    "M12 3.1C14.8 5.6 18.7 10.4 18.7 15.15a6.7 6.7 0 1 1-13.4 0C5.3 10.4 9.2 5.6 12 3.1Z"
 
-  // Soft smile lens under the eyes (evenodd hole — reads on any badge color).
-  const smile = "M10.1 16.15Q12 17.9 13.9 16.15Q12 17.2 10.1 16.15Z"
+  const halo =
+    "M12 2.35C15.15 5.1 19.45 10.1 19.45 15.15a7.45 7.45 0 1 1-14.9 0C4.55 10.1 8.85 5.1 12 2.35Z"
+
+  // Face sits in the round belly.
+  const smile = "M10.05 16.85Q12 18.55 13.95 16.85Q12 17.85 10.05 16.85Z"
 
   const body = face
-    ? [droplet, eyeCutout(9.85, 14.05, 1.12), eyeCutout(14.15, 14.05, 1.12), smile].join("")
+    ? [droplet, eyeCutout(9.8, 14.55, 1.15), eyeCutout(14.2, 14.55, 1.15), smile].join("")
     : droplet
 
   return (
@@ -53,18 +56,13 @@ export function BuddyGlyph({
       className={cn("shrink-0", className)}
       style={{ transform: weight !== 1 ? `scale(${weight})` : undefined }}
     >
-      <path
-        d="M12 2.55C12 2.55 4.35 10.35 4.35 15.1a7.65 7.65 0 0 0 15.3 0C19.65 10.35 12 2.55 12 2.55Z"
-        stroke="currentColor"
-        strokeWidth={1.15}
-        opacity="0.26"
-      />
+      <path d={halo} stroke="currentColor" strokeWidth={1.1} opacity="0.28" />
       <path fill="currentColor" fillRule="evenodd" d={body} />
     </svg>
   )
 }
 
-/** Soft sage badge with Buddy glyph — primary attribution mark. */
+/** Soft peach badge with Buddy glyph — primary attribution mark, app-wide. */
 export function BuddyMark({
   size = "md",
   className,
@@ -86,7 +84,7 @@ export function BuddyMark({
       aria-label={decorative ? undefined : label}
       aria-hidden={decorative || undefined}
       className={cn(
-        "inline-flex items-center justify-center rounded-full bg-sage-soft text-sage-dark shrink-0",
+        "inline-flex items-center justify-center rounded-full bg-peach-soft text-peach shrink-0",
         s.box,
         className,
       )}

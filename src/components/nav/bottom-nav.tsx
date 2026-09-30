@@ -63,7 +63,10 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
                       <Image src={avatarUrl} alt="" width={20} height={20} className="h-full w-full object-cover" />
                     </span>
                   ) : href === "/buddy" ? (
-                    <BuddyGlyph className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
+                    <BuddyGlyph
+                      className={cn("h-5 w-5 text-peach", !active && "opacity-75")}
+                      strokeWidth={active ? 2.25 : 1.75}
+                    />
                   ) : (
                     <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
                   )}
