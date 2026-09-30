@@ -14,6 +14,11 @@ import {
   getWhatHelpedForToday,
 } from "@/lib/cycle/what-helped"
 import { symptomLabel } from "@/lib/constants"
+import {
+  lifeStageIsPostCycle,
+  lifeStageLabelForBuddy,
+  lifeStagePrefersGentler,
+} from "@/lib/recommendations/life-stage-bias"
 import { format, startOfWeek, subDays } from "date-fns"
 import { todayDate, todayISO } from "@/lib/dates/amsterdam"
 
@@ -143,6 +148,23 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
   }
   if (cycleProfile?.perimenopause_information) {
     lines.push(`Overgangsinformatie: ${cycleProfile.perimenopause_information}`)
+  }
+  if (cycleProfile?.life_stage) {
+    const label = lifeStageLabelForBuddy(cycleProfile.life_stage)
+    if (label) {
+      lines.push(
+        `Levensfase (zelfgekozen): ${label}${
+          lifeStagePrefersGentler(cycleProfile.life_stage)
+            ? " — neig naar zachter advies; plan hoeft niet af"
+            : ""
+        }`,
+      )
+    }
+    if (lifeStageIsPostCycle(cycleProfile.life_stage, cycleProfile.has_cycle)) {
+      lines.push(
+        "Geen actieve menstruatiecyclus-aannames: praat over slaap, energie, stress en klachten zonder cycluskalender te forceren.",
+      )
+    }
   }
 
   if (checkin) {

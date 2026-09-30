@@ -4,8 +4,10 @@ import type { Tables } from "@/types/database"
 import { estimateCycle, type CycleEstimate } from "@/lib/cycle/estimate"
 import { getPhaseContent, getDailyPhaseSnackTip, getDailyPhaseHydrationTip, type PhaseSnackTip, type PhaseHydrationTip } from "@/lib/cycle/phase-content"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
+import { lifeStagePrefersGentler } from "@/lib/recommendations/life-stage-bias"
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
 import { dietPrefsForCategoryMatch, filterRecipesByCuisinePrefs } from "@/lib/nutrition/cuisine"
+import { pickRotating } from "@/lib/content/rotate"
 
 export type WeekPlanWorkout = Pick<
   Tables<"workouts">,
@@ -101,6 +103,8 @@ export interface BuildWeekPlanInput {
    */
   anticipationSoftDates?: string[]
   anticipationTip?: string | null
+  /** Soft default tilt for peri / veranderend / post — see life-stage-bias. */
+  lifeStage?: string | null
 }
 
 function seededIndex(seed: string, length: number): number {
@@ -183,9 +187,11 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
     seed,
     anticipationSoftDates = [],
     anticipationTip = null,
+    lifeStage = null,
   } = input
   const todayISO = format(today, "yyyy-MM-dd")
   const softDateSet = new Set(anticipationSoftDates)
+  const stageGentler = lifeStagePrefersGentler(lifeStage)
 
   const gentlerDayIndexes = new Set<number>()
   const phaseByIndex: (CycleEstimate | null)[] = []
@@ -204,7 +210,8 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
     phaseByIndex.push(estimate)
     if (
       softDateSet.has(dateISO) ||
-      (estimate && getPhaseContent(estimate.phase).movement.preferGentler)
+      (estimate && getPhaseContent(estimate.phase).movement.preferGentler) ||
+      stageGentler
     ) {
       gentlerDayIndexes.add(i)
     }
@@ -269,6 +276,11 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
       workoutReason = "Een geplande rustdag."
     } else if (isAnticipated) {
       workoutReason = "Iets rustiger getild — rond deze dagen valt het bij jou vaker zwaarder."
+    } else if (stageGentler) {
+      workoutReason =
+        lifeStage === "menopauze"
+          ? "Zacht gehouden — zonder cycluskalender, met ruimte voor herstel."
+          : "Iets rustiger getild met oog op jouw levensfase."
     } else if (phaseContent?.movement.preferGentler) {
       workoutReason = `Iets rustiger getild vanwege de ${phaseContent.label.toLowerCase()}.`
     }
@@ -278,7 +290,9 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
       focusTips.push(anticipationTip)
     } else if (phaseContent) {
       const tips = phaseContent.lifestyleTips
-      const first = tips[seededIndex(`${seed}-${dateISO}-tip1`, tips.length)]
+      const first = tips.length
+        ? pickRotating(tips, `${seed}-${dateISO}-tip1`, `${seed}-lifestyle`)
+        : null
       if (first) focusTips.push(`${first.title}: ${first.text}`)
     }
 

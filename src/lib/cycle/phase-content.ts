@@ -1,4 +1,5 @@
 import type { CyclePhase } from "@/lib/cycle/estimate"
+import { pickRotating } from "@/lib/content/rotate"
 
 /**
  * Static, editorial content describing what a cycle phase generally means
@@ -529,24 +530,14 @@ export function getPhaseContent(phase: CyclePhase): PhaseContent {
   return PHASE_CONTENT[phase]
 }
 
-function seededIndex(seed: string, length: number): number {
-  if (length <= 0) return 0
-  let hash = 0
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i)
-    hash |= 0
-  }
-  return Math.abs(hash) % length
-}
-
-/** Picks one phase snack tip for the day — stable for a given seed. */
+/** Picks one phase snack tip for the day — rotates through the pack before heavy repeats. */
 export function getDailyPhaseSnackTip(phase: CyclePhase, seed: string): PhaseSnackTip {
   const tips = PHASE_CONTENT[phase].nutrition.snackTips
-  return tips[seededIndex(`${seed}-snack`, tips.length)]
+  return pickRotating(tips, `${seed}-snack`, `snack-${phase}`)
 }
 
-/** Picks one soft hydration tip for Vandaag / Week — stable for a given seed. */
+/** Picks one soft hydration tip for Vandaag / Week — rotates through the pack. */
 export function getDailyPhaseHydrationTip(phase: CyclePhase, seed: string): PhaseHydrationTip {
   const tips = PHASE_CONTENT[phase].nutrition.hydrationTips
-  return tips[seededIndex(`${seed}-hydratie`, tips.length)]
+  return pickRotating(tips, `${seed}-hydratie`, `hydratie-${phase}`)
 }

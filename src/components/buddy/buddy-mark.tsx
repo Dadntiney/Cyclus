@@ -1,3 +1,4 @@
+import { MessageCircleHeart } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 type BuddyMarkSize = "sm" | "md" | "lg" | "xl"
@@ -9,15 +10,11 @@ const SIZE: Record<BuddyMarkSize, { box: string; icon: string }> = {
   xl: { box: "h-16 w-16", icon: "h-9 w-9" },
 }
 
-/** Same silhouette as Lucide `Droplet` (menstruatie-status icon). */
-const DROPLET =
-  "M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"
-
 /**
- * Buddy — peach dewdrop companion.
+ * Buddy — speech bubble with a heart (Lucide `MessageCircleHeart`).
  *
- * Shape matches the menstruatie Droplet icon. No face — clean droplet only.
- * Outline variant is stroke-only for nav parity with Lucide icons.
+ * Not a droplet: menstruatie / “starten” already owns Droplet. Bubble = chat,
+ * heart = warm companion. Matches the stroke weight of the other tab icons.
  */
 export function BuddyGlyph({
   className,
@@ -26,38 +23,20 @@ export function BuddyGlyph({
 }: {
   className?: string
   strokeWidth?: number
-  /** @deprecated Eyes removed — kept so call sites keep compiling. */
+  /** @deprecated Face removed — kept so call sites keep compiling. */
   face?: boolean
+  /** Outline = nav stroke; solid fills the mark for peach BuddyMark chips. */
   variant?: "solid" | "outline"
 }) {
-  if (variant === "outline") {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-hidden
-        className={cn("shrink-0", className)}
-      >
-        <path
-          d={DROPLET}
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )
-  }
-
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
+    <MessageCircleHeart
       aria-hidden
       className={cn("shrink-0", className)}
-    >
-      <path fill="currentColor" d={DROPLET} />
-    </svg>
+      strokeWidth={strokeWidth}
+      fill={variant === "solid" ? "currentColor" : "none"}
+      // On solid fills, keep the heart readable as a slight cut via stroke.
+      stroke="currentColor"
+    />
   )
 }
 
@@ -86,7 +65,12 @@ export function BuddyMark({
         className,
       )}
     >
-      <BuddyGlyph className={cn(s.icon, glyphClassName)} strokeWidth={1.75} />
+      {/* Outline on soft peach chip — filled solid would swallow the heart. */}
+      <BuddyGlyph
+        variant="outline"
+        className={cn(s.icon, glyphClassName)}
+        strokeWidth={1.75}
+      />
     </span>
   )
 }

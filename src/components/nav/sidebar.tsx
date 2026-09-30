@@ -5,7 +5,6 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { BuddyGlyph } from "@/components/buddy/buddy-mark"
 import { NAV_ITEMS } from "./nav-items"
 import { logout } from "@/lib/actions/auth"
 import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
@@ -47,12 +46,6 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
                     <span className="h-4.5 w-4.5 rounded-full overflow-hidden shrink-0">
                       <Image src={avatarUrl} alt="" width={18} height={18} className="h-full w-full object-cover" />
                     </span>
-                  ) : href === "/buddy" ? (
-                    <BuddyGlyph
-                      variant="outline"
-                      className="h-4.5 w-4.5"
-                      strokeWidth={active ? 2.25 : 1.75}
-                    />
                   ) : (
                     <Icon className="h-4.5 w-4.5" strokeWidth={active ? 2.25 : 1.75} />
                   )}
