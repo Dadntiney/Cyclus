@@ -408,6 +408,68 @@ export const INGREDIENT_INFO: [key: string, info: IngredientInfo][] = [
     },
   ],
   [
+    "cashew",
+    {
+      label: "Cashewnoten",
+      nutrients: ["Magnesium", "Onverzadigde vetten", "Eiwitten"],
+      explanation:
+        "Cashewnoten leveren magnesium, onverzadigde vetten en wat eiwit — een voedzame snack in een handjevol.",
+    },
+  ],
+  [
+    "chocolade",
+    {
+      label: "Donkere chocolade",
+      nutrients: ["Magnesium", "Antioxidanten"],
+      explanation:
+        "Pure chocolade (rond 70% cacao of hoger) levert magnesium en plantaardige stoffen; het blijft wel een calorie- en suikerbron, dus klein genieten past het best.",
+    },
+  ],
+  [
+    "paprika",
+    {
+      label: "Paprika",
+      nutrients: ["Vitamine C", "Vezels"],
+      explanation:
+        "Paprika is bijzonder rijk aan vitamine C — handig naast plantaardige ijzerbronnen, omdat vitamine C de opname kan ondersteunen.",
+    },
+  ],
+  [
+    "tofu",
+    {
+      label: "Tofu",
+      nutrients: ["Plantaardige eiwitten", "IJzer", "Calcium"],
+      explanation:
+        "Tofu is een plantaardige eiwitbron die ook ijzer en (bij calcium-gezet tofu) calcium levert.",
+    },
+  ],
+  [
+    "makreel",
+    {
+      label: "Makreel",
+      nutrients: ["Omega-3 vetzuren", "Eiwitten", "Vitamine D"],
+      explanation: "Makreel is een vette vis met omega-3, eiwitten en vitamine D.",
+    },
+  ],
+  [
+    "lijnzaad",
+    {
+      label: "Lijnzaad",
+      nutrients: ["Vezels", "Omega-3 vetzuren (plantaardig)"],
+      explanation:
+        "Lijnzaad levert vezels en plantaardige omega-3; gemalen neemt je lichaam het makkelijker op.",
+    },
+  ],
+  [
+    "zwarte bon",
+    {
+      label: "Zwarte bonen",
+      nutrients: ["Plantaardige eiwitten", "Vezels", "Magnesium", "IJzer"],
+      explanation:
+        "Zwarte bonen leveren plantaardig eiwit, vezels, magnesium en ijzer — een stevige basis in soepen en stoofschotels.",
+    },
+  ],
+  [
     "kipfile",
     {
       label: "Kip",

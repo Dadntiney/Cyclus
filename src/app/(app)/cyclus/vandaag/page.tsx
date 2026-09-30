@@ -20,6 +20,7 @@ import { BackButton } from "@/components/ui/back-button"
 import { buttonVariants } from "@/components/ui/button"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
+import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { getSavedMomentTexts } from "@/lib/data/moments"
 import { cn } from "@/lib/utils"
@@ -195,6 +196,11 @@ export default async function CyclusdagPage() {
             </div>
           </SoftPanel>
         )}
+
+        <section>
+          <h2 className="font-display text-lg text-ink mb-2.5">Voeding in deze fase</h2>
+          <PhaseNutritionBasics nutrition={view.nutrition} />
+        </section>
 
         <Expandable label="Meer weten over deze fase">
           <div className="flex flex-col gap-3">

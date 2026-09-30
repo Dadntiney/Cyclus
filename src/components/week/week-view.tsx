@@ -7,6 +7,7 @@ import { nl } from "date-fns/locale"
 import { ShoppingCart, ChevronRight, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
+import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
 import type { WeekDayPlan, WeekPlanRecipe, WeekPlanWorkout, MealSlot } from "@/lib/recommendations/week-plan"
 import { TodayMovementCard } from "@/components/today/today-movement-card"
 import {
@@ -117,6 +118,13 @@ export function WeekView({
             {day.anticipationNote ?? phaseContent.shortDescription}
           </span>
         </p>
+      )}
+
+      {phaseContent && nutritionEnabled && (
+        <section>
+          <p className="text-xs font-medium text-ink-soft mb-2">Voeding in deze fase</p>
+          <PhaseNutritionBasics nutrition={phaseContent.nutrition} compact />
+        </section>
       )}
 
       <div className="grid grid-cols-7 gap-1 sm:gap-1.5">

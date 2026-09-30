@@ -1,7 +1,11 @@
 import { Lightbulb, type LucideIcon } from "lucide-react"
 import type { CycleEstimate, CyclePhase } from "@/lib/cycle/estimate"
 import { getPhaseKnowledge, type BodyChangeItem, type PhaseKnowledge } from "@/lib/cycle/phase-knowledge"
-import { getPhaseContent, type PhaseColorTokens } from "@/lib/cycle/phase-content"
+import {
+  getPhaseContent,
+  type PhaseColorTokens,
+  type PhaseNutritionFocus,
+} from "@/lib/cycle/phase-content"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { BUDDY_QUOTE_CATEGORY_ICON } from "@/lib/data/buddy-quote-icons"
 import { formatPhaseSymptomInsight, type PhaseSymptomInsight } from "@/lib/cycle/patterns"
@@ -70,6 +74,8 @@ export interface CyclusdagView {
   moreChanges: BodyChangeItem[]
   funFact: string
   buddyMoment: BuddyMoment
+  /** Practical nutrition basics for this phase (magnesium, protein, etc.). */
+  nutrition: PhaseNutritionFocus
   /** A one-line, gentle nod to a symptom she's logged before, when relevant — otherwise null. */
   symptomNote: string | null
 }
@@ -166,6 +172,7 @@ export function buildCyclusdagView(input: BuildCyclusdagViewInput): CyclusdagVie
     moreChanges,
     funFact,
     buddyMoment,
+    nutrition: phaseContent.nutrition,
     symptomNote: phaseInsight
       ? formatPhaseSymptomInsight(phaseInsight, phaseLabel)
       : buildSymptomNote(topSymptom, knowledge.changes),

@@ -18,6 +18,15 @@ export interface PhaseColorTokens {
   dot: string
 }
 
+export interface PhaseNutritionBasic {
+  /** Nutrient or theme, e.g. "Magnesium", "Eiwitten". */
+  label: string
+  /** Hedged one-liner — why this theme often fits this phase. */
+  text: string
+  /** Concrete everyday products she can actually buy / cook with. */
+  foods: string[]
+}
+
 export interface PhaseNutritionFocus {
   /** Short label, e.g. "IJzer & eiwitten". */
   focusLabel: string
@@ -29,6 +38,12 @@ export interface PhaseNutritionFocus {
   recipeCategories: string[]
   /** Nutrients often highlighted for this phase, used for the ingredient explainer. */
   nutrients: string[]
+  /**
+   * The practical "basis" for this phase: a few nutrient themes with real
+   * food examples (magnesium products, protein sources, etc.). Shown on the
+   * Cyclusdag detail page — separate from recipe matching above.
+   */
+  basics: PhaseNutritionBasic[]
 }
 
 export interface PhaseMovementFocus {
@@ -69,12 +84,34 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
       dot: "bg-phase-menstruatie",
     },
     nutrition: {
-      focusLabel: "IJzer & warme, voedzame maaltijden",
+      focusLabel: "IJzer, eiwit & warme, voedzame maaltijden",
       focusText:
-        "Tijdens je menstruatie verlies je wat bloed — warme, voedzame maaltijden met ijzerrijke ingrediënten en voldoende vocht passen daar goed bij.",
-      exampleFoods: ["Spinazie", "Rode linzen", "Zalm", "Pompoensoep", "Griekse yoghurt"],
+        "Tijdens je menstruatie verlies je wat bloed — warme, voedzame maaltijden met ijzerrijke ingrediënten, voldoende eiwit en genoeg vocht passen daar vaak goed bij.",
+      exampleFoods: ["Spinazie", "Rode linzen", "Zalm", "Eieren", "Griekse yoghurt", "Pompoensoep"],
       recipeCategories: ["Diner", "Lunch", "Eiwitrijk"],
-      nutrients: ["IJzer", "Magnesium", "Vitamine C", "Vocht"],
+      nutrients: ["IJzer", "Eiwitten", "Vitamine C", "Magnesium", "Vocht"],
+      basics: [
+        {
+          label: "IJzer",
+          text: "IJzerrijke voeding past goed bij bloedverlies; vitamine C helpt je lichaam plantaardig ijzer beter op te nemen.",
+          foods: ["Rode linzen", "Spinazie", "Kidneybonen", "Tofu", "Mager rundvlees", "Pompoenpitten"],
+        },
+        {
+          label: "Vitamine C (bij ijzer)",
+          text: "Combineer plantaardig ijzer met iets vitamine C-rijks — bijvoorbeeld paprika of citrus bij een linzenschotel.",
+          foods: ["Paprika", "Kiwi", "Sinaasappel", "Broccoli", "Aardbei"],
+        },
+        {
+          label: "Eiwitten",
+          text: "Eiwit bij maaltijden helpt verzadiging en herstel — ook op dagen met minder energie.",
+          foods: ["Eieren", "Griekse yoghurt", "Kwark", "Zalm", "Kip", "Linzen"],
+        },
+        {
+          label: "Magnesium",
+          text: "Magnesium draagt bij aan een normale spier- en zenuwfunctie; sommige vrouwen vinden magnesiumrijke snacks prettig bij krampen.",
+          foods: ["Pompoenpitten", "Donkere chocolade (70%+)", "Amandelen", "Spinazie", "Banaan"],
+        },
+      ],
     },
     movement: {
       intensityLabel: "Rustig",
@@ -101,12 +138,29 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
       dot: "bg-phase-folliculair",
     },
     nutrition: {
-      focusLabel: "Verse, lichte voeding",
+      focusLabel: "Eiwit, vezels & stevige energie",
       focusText:
-        "Met vaak wat meer energie kun je in deze fase goed uit de voeten met verse groenten, volwaardige eiwitten en complexe koolhydraten die je energie ondersteunen.",
-      exampleFoods: ["Quinoa", "Kipfilet", "Broccoli", "Bessen", "Havermout"],
-      recipeCategories: ["Lunch", "Ontbijt", "Snel"],
-      nutrients: ["Eiwitten", "Vezels", "B-vitamines"],
+        "Met vaak wat meer energie kun je in deze fase goed uit de voeten met volwaardige eiwitten, vezels en complexe koolhydraten — de basis voor stabielere energie over de dag.",
+      exampleFoods: ["Quinoa", "Kipfilet", "Eieren", "Broccoli", "Bessen", "Havermout", "Kwark"],
+      recipeCategories: ["Lunch", "Ontbijt", "Snel", "Eiwitrijk"],
+      nutrients: ["Eiwitten", "Vezels", "B-vitamines", "Foliumzuur"],
+      basics: [
+        {
+          label: "Eiwitten",
+          text: "Eiwit bij elke maaltijd blijft de basis — handig als je energie en training wat omhoog gaan.",
+          foods: ["Kipfilet", "Eieren", "Kwark", "Griekse yoghurt", "Tofu", "Kikkererwten"],
+        },
+        {
+          label: "Complexe koolhydraten & vezels",
+          text: "Haver, quinoa en volkoren geven geleidelijk energie in plaats van een snelle piek-en-dal.",
+          foods: ["Havermout", "Quinoa", "Volkoren brood", "Zoete aardappel", "Bessen"],
+        },
+        {
+          label: "Foliumzuur & B-vitamines",
+          text: "Bladgroenten en peulvruchten leveren foliumzuur en B-vitamines die in deze opbouwfase vaak goed passen.",
+          foods: ["Spinazie", "Broccoli", "Linzen", "Avocado", "Eieren"],
+        },
+      ],
     },
     movement: {
       intensityLabel: "Gemiddeld tot actief",
@@ -133,12 +187,34 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
       dot: "bg-phase-ovulatie",
     },
     nutrition: {
-      focusLabel: "Kleurrijke, antioxidantrijke voeding",
+      focusLabel: "Kleur, omega-3 & eiwit",
       focusText:
-        "Een gevarieerd bord met veel kleur — groenten, fruit en gezonde vetten — past goed bij deze actieve fase.",
-      exampleFoods: ["Cherrytomaatjes", "Avocado", "Zalm", "Rucola", "Walnoten"],
+        "Een gevarieerd bord met veel kleur, eiwit en gezonde vetten (zoals omega-3) past goed bij deze vaak actievere fase — geen speciale ‘superfood-kuur’, wel een stevige basis.",
+      exampleFoods: ["Cherrytomaatjes", "Avocado", "Zalm", "Rucola", "Walnoten", "Eieren", "Paprika"],
       recipeCategories: ["Diner", "Eiwitrijk", "Vegetarisch"],
-      nutrients: ["Antioxidanten", "Omega-3 vetzuren", "Vezels"],
+      nutrients: ["Antioxidanten", "Omega-3 vetzuren", "Eiwitten", "Vezels"],
+      basics: [
+        {
+          label: "Eiwitten",
+          text: "Houd eiwit als anker — handig als je rondom de eisprong actiever traint of beweegt.",
+          foods: ["Zalm", "Eieren", "Kip", "Griekse yoghurt", "Linzen"],
+        },
+        {
+          label: "Omega-3 vetzuren",
+          text: "Vette vis en walnoten leveren omega-3; dat past goed in een gevarieerd weekpatroon.",
+          foods: ["Zalm", "Makreel", "Walnoten", "Chiazaad", "Lijnzaad"],
+        },
+        {
+          label: "Kleurrijke groenten & fruit",
+          text: "Veel kleur op je bord betekent vaak meer vezels en plantaardige stoffen — praktisch en verzadigend.",
+          foods: ["Cherrytomaatjes", "Paprika", "Rucola", "Bessen", "Wortel"],
+        },
+        {
+          label: "Gezonde vetten",
+          text: "Avocado, olijfolie en noten geven verzadiging naast eiwit en groenten.",
+          foods: ["Avocado", "Olijfolie", "Walnoten", "Amandelen"],
+        },
+      ],
     },
     movement: {
       intensityLabel: "Actief",
@@ -165,12 +241,50 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
       dot: "bg-phase-luteaal",
     },
     nutrition: {
-      focusLabel: "Magnesiumrijke, stabiliserende voeding",
+      focusLabel: "Magnesium, eiwit & stabiele energie",
       focusText:
-        "Voldoende eiwitten en magnesiumrijke voeding passen goed bij deze fase, samen met een wat rustiger trainingsvolume waar nodig.",
-      exampleFoods: ["Pompoenpitten", "Zoete aardappel", "Zalm", "Spinazie", "Griekse yoghurt"],
+        "Magnesiumrijke producten, voldoende eiwit en vezelrijke maaltijden passen vaak goed bij deze fase — vooral als trek of stemming wat wisselt richting het einde van je cyclus.",
+      exampleFoods: [
+        "Pompoenpitten",
+        "Amandelen",
+        "Donkere chocolade",
+        "Zoete aardappel",
+        "Zalm",
+        "Spinazie",
+        "Griekse yoghurt",
+      ],
       recipeCategories: ["Diner", "Eiwitrijk", "Voorbereiden"],
       nutrients: ["Magnesium", "Eiwitten", "Vezels", "Vitamine B6"],
+      basics: [
+        {
+          label: "Magnesium",
+          text: "Goede magnesiumbronnen zijn makkelijk als snack of topping — denk aan pitten, noten, bladgroen en een stukje pure chocolade.",
+          foods: [
+            "Pompoenpitten",
+            "Amandelen",
+            "Cashewnoten",
+            "Spinazie",
+            "Quinoa",
+            "Donkere chocolade (70%+)",
+            "Zwarte bonen",
+          ],
+        },
+        {
+          label: "Eiwitten",
+          text: "Eiwit helpt verzadiging als trek toeneemt; combineer met vezels in plaats van alleen zoet tussendoor.",
+          foods: ["Griekse yoghurt", "Kwark", "Zalm", "Eieren", "Kikkererwten", "Tofu"],
+        },
+        {
+          label: "Vezels & complexe koolhydraten",
+          text: "Zoete aardappel, haver en peulvruchten geven rustigere energie — handig bij wisselende trek.",
+          foods: ["Zoete aardappel", "Havermout", "Linzen", "Volkoren brood", "Peer"],
+        },
+        {
+          label: "Vitamine B6",
+          text: "B6 zit in veel alledaagse producten; het is geen wonderpil, wél een nuttig deel van een gevarieerd bord.",
+          foods: ["Kip", "Zalm", "Banaan", "Aardappel", "Kikkererwten"],
+        },
+      ],
     },
     movement: {
       intensityLabel: "Rustig tot gemiddeld",
