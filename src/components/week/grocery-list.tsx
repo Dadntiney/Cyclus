@@ -224,16 +224,22 @@ export function GroceryList({
                   <button
                     key={item.id}
                     type="button"
+                    role="checkbox"
+                    aria-checked={isChecked}
                     onClick={() => toggle(item.id)}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-left touch-manipulation"
+                    className="w-full flex items-center gap-3 px-4 py-3 min-h-12 text-left touch-manipulation"
                   >
+                    {/* Small checkbox (not a thumbnail-sized tile); row stays ≥44px for touch. */}
                     <span
+                      aria-hidden
                       className={cn(
-                        "shrink-0 h-11 w-11 rounded-xl border flex items-center justify-center transition-colors",
-                        isChecked ? "bg-sage-fill border-sage-dark" : "border-line",
+                        "shrink-0 h-5 w-5 rounded-md border-2 flex items-center justify-center transition-colors",
+                        isChecked
+                          ? "bg-sage-fill border-sage-dark text-white"
+                          : "border-sage-dark/45 bg-surface",
                       )}
                     >
-                      {isChecked && <Check className="h-4 w-4 text-white" strokeWidth={2.5} />}
+                      {isChecked && <Check className="h-3 w-3" strokeWidth={3} />}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span
