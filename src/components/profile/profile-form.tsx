@@ -793,8 +793,8 @@ export function ProfileForm({
                       }, "immediate")
                     }
                     className={cn(
-                      "text-left rounded-2xl border px-3.5 py-2.5 touch-manipulation transition-colors",
-                      selected ? "border-sage bg-sage-soft" : "border-line hover:border-sage/50",
+                      "text-left rounded-3xl px-3.5 py-2.5 touch-manipulation transition-colors",
+                      selected ? "bg-sage-soft ring-1 ring-sage/40" : "bg-sage-soft/40 hover:bg-sage-soft/70",
                     )}
                     aria-pressed={selected}
                   >
@@ -1083,10 +1083,10 @@ export function ProfileForm({
                       "immediate",
                     )
                   }
-                  className={`text-left rounded-2xl border px-3 py-2.5 touch-manipulation transition-colors ${
+                  className={`text-left rounded-3xl px-3 py-2.5 touch-manipulation transition-colors ${
                     state.lifeStage === opt.value
-                      ? "border-sage bg-sage-soft/40"
-                      : "border-line/70 bg-transparent"
+                      ? "bg-sage-soft ring-1 ring-sage/40"
+                      : "bg-sage-soft/40 hover:bg-sage-soft/70"
                   }`}
                 >
                   <span className="block text-sm font-medium text-ink">{opt.label}</span>

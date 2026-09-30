@@ -259,7 +259,7 @@ export function Calendar({
                   "rounded-full border px-3.5 py-2.5 min-h-11 text-sm font-medium touch-manipulation transition-colors",
                   flowByDate.get(flowPickerDate) === opt.value
                     ? "bg-sage-fill text-white border-sage-dark"
-                    : "bg-surface text-ink border-line hover:border-sage/60",
+                    : "bg-sage-soft/50 text-ink border-transparent hover:bg-sage-soft",
                 )}
               >
                 <span className="mr-1 inline-flex items-center" aria-hidden>

@@ -14,7 +14,7 @@ export function MindfulExerciseCard({ exercise }: { exercise: MindfulExercise })
     <Link href={`/mentale-rust/${exercise.id}`} className="block">
       <Card interactive className="p-4">
         <div className="flex items-start gap-3">
-          <span className="shrink-0 h-9 w-9 rounded-full bg-sage-soft flex items-center justify-center" aria-hidden>
+          <span className="shrink-0 h-9 w-9 rounded-full bg-surface/70 flex items-center justify-center" aria-hidden>
             <Icon className="h-4.5 w-4.5 text-sage-dark" strokeWidth={1.75} />
           </span>
           <div className="min-w-0">

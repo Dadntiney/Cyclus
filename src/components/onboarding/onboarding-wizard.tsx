@@ -845,10 +845,10 @@ function NutritionStyleStep({
             type="button"
             onClick={() => onChange(opt.value)}
             className={cn(
-              "flex flex-col gap-1 rounded-2xl border px-4 py-3.5 text-left transition-colors",
+              "flex flex-col gap-1 rounded-3xl px-4 py-3.5 text-left transition-colors",
               value === opt.value
-                ? "bg-sage-soft border-sage"
-                : "bg-surface border-line hover:border-sage/60",
+                ? "bg-sage-soft ring-1 ring-sage/40"
+                : "bg-sage-soft/40 hover:bg-sage-soft/70",
             )}
           >
             <span className="font-medium text-ink">{opt.label}</span>
@@ -937,10 +937,10 @@ function StyleStep({
             type="button"
             onClick={() => onChange(opt.value)}
             className={cn(
-              "flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-colors",
+              "flex items-center gap-3 rounded-3xl px-4 py-3.5 text-left transition-colors",
               value === opt.value
-                ? "bg-sage-soft border-sage"
-                : "bg-surface border-line hover:border-sage/60",
+                ? "bg-sage-soft ring-1 ring-sage/40"
+                : "bg-sage-soft/40 hover:bg-sage-soft/70",
             )}
           >
             <opt.icon className="h-5 w-5 text-sage-dark" strokeWidth={1.75} />

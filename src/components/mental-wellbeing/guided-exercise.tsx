@@ -90,7 +90,7 @@ export function GuidedExercise({ exercise }: { exercise: MindfulExercise }) {
           <button
             type="button"
             onClick={() => setMode("listen")}
-            className="flex items-center gap-3 rounded-2xl border border-line bg-surface px-4 py-3.5 text-left touch-manipulation transition-colors hover:border-sage/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            className="flex items-center gap-3 rounded-3xl bg-cream-soft/80 px-4 py-3.5 text-left touch-manipulation transition-colors hover:bg-sage-soft/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
           >
             <span className="shrink-0 h-10 w-10 rounded-full bg-sage-soft flex items-center justify-center">
               <Headphones className="h-4.5 w-4.5 text-sage-dark" strokeWidth={1.75} />
@@ -103,9 +103,9 @@ export function GuidedExercise({ exercise }: { exercise: MindfulExercise }) {
           <button
             type="button"
             onClick={() => setMode("read")}
-            className="flex items-center gap-3 rounded-2xl border border-line bg-surface px-4 py-3.5 text-left touch-manipulation transition-colors hover:border-sage/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            className="flex items-center gap-3 rounded-3xl bg-cream-soft/80 px-4 py-3.5 text-left touch-manipulation transition-colors hover:bg-sage-soft/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
           >
-            <span className="shrink-0 h-10 w-10 rounded-full bg-cream-soft flex items-center justify-center">
+            <span className="shrink-0 h-10 w-10 rounded-full bg-surface/70 flex items-center justify-center">
               <BookOpen className="h-4.5 w-4.5 text-ink-soft" strokeWidth={1.75} />
             </span>
             <span className="min-w-0">
@@ -146,7 +146,7 @@ export function GuidedExercise({ exercise }: { exercise: MindfulExercise }) {
           onClick={back}
           disabled={stepIndex === 0}
           aria-label="Vorige stap"
-          className="h-12 w-12 rounded-full flex items-center justify-center text-ink-soft border border-line disabled:opacity-30 touch-manipulation motion-safe:active:scale-[0.94] transition-transform"
+          className="h-12 w-12 rounded-full flex items-center justify-center text-ink-soft bg-cream-soft/80 disabled:opacity-30 touch-manipulation motion-safe:active:scale-[0.94] transition-transform"
         >
           <ChevronLeft className="h-5 w-5" strokeWidth={2} />
         </button>

@@ -270,9 +270,9 @@ function CategoryStep({
             type="button"
             onClick={() => onChange(opt.value)}
             className={cn(
-              "flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left touch-manipulation transition-[background-color,border-color,transform] duration-150 motion-safe:active:scale-[0.98]",
+              "flex items-center gap-3 rounded-3xl px-4 py-3.5 text-left touch-manipulation transition-[background-color,transform] duration-150 motion-safe:active:scale-[0.98]",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
-              value === opt.value ? "bg-sage-soft border-sage" : "bg-surface border-line hover:border-sage/60",
+              value === opt.value ? "bg-sage-soft ring-1 ring-sage/50" : "bg-sage-soft/40 hover:bg-sage-soft/70",
             )}
           >
             <opt.icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
@@ -543,7 +543,7 @@ function ReminderStep({
             className="max-w-[160px]"
           />
           {data.scheduleType === "cyclisch" && (
-            <div className="mt-4 rounded-2xl border border-line p-4">
+            <div className="mt-4 rounded-3xl bg-sage-soft/50 p-4">
               <p className="text-sm text-ink-soft leading-relaxed mb-4">
                 Omdat dit een wel/niet-schema is, herhaalt dit zich vanzelf:
                 elke keer opnieuw start, gaat door, en stopt weer — zonder dat je dit ooit
@@ -585,7 +585,7 @@ function ReminderStep({
                   />
                 </div>
               </div>
-              <p className="text-xs text-ink-soft leading-relaxed mt-4 pt-4 border-t border-line">
+              <p className="text-xs text-ink-soft leading-relaxed mt-4 pt-4 border-t border-sage/20">
                 Cyclus volgt uitsluitend het schema dat jij zelf hebt ingesteld. De app bepaalt
                 niet wanneer je moet starten of stoppen, en geeft geen persoonlijk medisch
                 advies.
@@ -606,7 +606,7 @@ function ReviewStep({ data }: { data: WizardData }) {
       <p className="text-ink-soft text-sm mb-6">
         Je kunt dit altijd later aanpassen of verwijderen bij &ldquo;Mijn medicatie&rdquo;.
       </p>
-      <div className="rounded-2xl border border-line p-4 flex flex-col gap-2">
+      <div className="rounded-3xl bg-sage-soft/50 p-4 flex flex-col gap-2">
         <p className="text-sm font-medium text-ink inline-flex items-center gap-1.5">
           {category && <category.icon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />}
           {data.name || "—"}

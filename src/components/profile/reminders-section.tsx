@@ -326,7 +326,7 @@ export function RemindersSection({
             return (
               <div
                 key={reminder.id}
-                className="flex flex-col gap-2 rounded-2xl border border-line px-3.5 py-3"
+                className="flex flex-col gap-2 rounded-3xl bg-sage-soft/50 px-3.5 py-3"
               >
                 <div className="flex items-center gap-2">
                   {(() => {
@@ -408,7 +408,7 @@ export function RemindersSection({
     return (
       <div
         ref={formRef}
-        className="flex flex-col gap-4 rounded-2xl border border-line p-4 scroll-mb-[calc(var(--bottom-nav-h,5.5rem)+1rem)] bg-surface"
+        className="flex flex-col gap-4 rounded-3xl bg-sage-soft/50 p-4 scroll-mb-[calc(var(--bottom-nav-h,5.5rem)+1rem)]"
       >
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-ink">

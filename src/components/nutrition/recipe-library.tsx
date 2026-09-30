@@ -155,7 +155,7 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
             <button
               type="button"
               onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
-              className="mt-4 w-full inline-flex items-center justify-center min-h-11 rounded-xl border border-line text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+              className="mt-4 w-full inline-flex items-center justify-center min-h-11 rounded-xl bg-sage-soft/70 text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 hover:bg-sage-soft"
             >
               Toon {Math.min(PAGE_SIZE, hiddenCount)} recepten meer
               {hiddenCount > PAGE_SIZE ? ` (${hiddenCount} resterend)` : ""}

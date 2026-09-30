@@ -267,7 +267,7 @@ export function ListenMode({
           type="button"
           onClick={handleStop}
           aria-label="Stoppen"
-          className="h-12 w-12 rounded-full flex items-center justify-center text-ink-soft border border-line touch-manipulation motion-safe:active:scale-[0.94] transition-transform"
+          className="h-12 w-12 rounded-full flex items-center justify-center text-ink-soft bg-cream-soft/80 touch-manipulation motion-safe:active:scale-[0.94] transition-transform"
         >
           <Square className="h-4.5 w-4.5" strokeWidth={1.75} />
         </button>

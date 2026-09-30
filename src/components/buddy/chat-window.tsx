@@ -97,7 +97,7 @@ export function ChatWindow({
                 "max-w-[80%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed",
                 m.role === "user"
                   ? "bg-sage-fill text-white rounded-br-md"
-                  : "bg-surface border border-line text-ink rounded-bl-md",
+                  : "bg-sage-soft/60 text-ink rounded-bl-md",
               )}
             >
               {m.message}
@@ -107,7 +107,7 @@ export function ChatWindow({
         {isPending && (
           <div className="flex justify-start items-end gap-2">
             <BuddyMark size="sm" className="mb-0.5" decorative />
-            <div className="bg-surface border border-line rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-ink-soft">
+            <div className="bg-sage-soft/60 rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-ink-soft">
               Aan het typen...
             </div>
           </div>
@@ -118,7 +118,7 @@ export function ChatWindow({
 
       <form
         onSubmit={handleSubmit}
-        className="shrink-0 flex items-center gap-2 px-5 lg:px-8 py-3 border-t border-line bg-surface"
+        className="shrink-0 flex items-center gap-2 px-5 lg:px-8 py-3 border-t border-sage/20 bg-cream"
       >
         <Input
           value={input}
