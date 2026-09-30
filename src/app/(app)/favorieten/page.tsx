@@ -1,16 +1,16 @@
 import Link from "next/link"
-import { Heart, Salad, Dumbbell, ChevronRight } from "lucide-react"
+import { Heart, Salad, Dumbbell, ChevronRight, ChefHat } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getFavoriteRecipes } from "@/lib/data/nutrition"
 import { getFavoriteExercises } from "@/lib/data/training"
-import { RecipeCard } from "@/components/nutrition/recipe-card"
+import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { BackButton } from "@/components/ui/back-button"
 
 /**
- * Unified favorites hub — recipes + exercises in one place.
- * Linked from the heart on Vandaag so she can jump here quickly.
+ * Unified favorites hub — compact rows (same density as Vandaag / Week),
+ * not full RecipeCards.
  */
 export default async function FavorietenPage() {
   const user = await getAuthedUser()
@@ -61,17 +61,42 @@ export default async function FavorietenPage() {
               )}
             </div>
             {recipes.length ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {recipes.slice(0, 4).map((recipe) => (
-                  <RecipeCard key={recipe.id} recipe={recipe} />
+              <Card className="p-0 divide-y divide-line">
+                {recipes.slice(0, 6).map((recipe) => (
+                  <Link
+                    key={recipe.id}
+                    href={`/voeding/${recipe.id}`}
+                    className="flex items-center gap-3 px-4 py-3 touch-manipulation hover:bg-cream-soft transition-colors"
+                  >
+                    <RecipeImage
+                      title={recipe.title}
+                      imageUrl={recipe.image_url}
+                      className="h-12 w-12 rounded-xl shrink-0"
+                      sizes="48px"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-ink truncate">{recipe.title}</p>
+                      {(recipe.preparation_time || recipe.category[0]) && (
+                        <p className="text-xs text-ink-soft mt-0.5 inline-flex items-center gap-1 truncate">
+                          {recipe.preparation_time ? (
+                            <>
+                              <ChefHat className="h-3 w-3 shrink-0" strokeWidth={1.75} aria-hidden />
+                              {recipe.preparation_time} min
+                            </>
+                          ) : null}
+                          {recipe.preparation_time && recipe.category[0] ? " · " : null}
+                          {recipe.category[0] ?? null}
+                        </p>
+                      )}
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} aria-hidden />
+                  </Link>
                 ))}
-              </div>
-            ) : (
-              <Card>
-                <p className="text-sm text-ink-soft">
-                  Nog geen favoriete recepten. Bewaar er een via Voeding.
-                </p>
               </Card>
+            ) : (
+              <p className="text-sm text-ink-soft px-1">
+                Nog geen favoriete recepten. Bewaar er een via Voeding.
+              </p>
             )}
           </section>
 
@@ -97,28 +122,28 @@ export default async function FavorietenPage() {
                   <Link
                     key={exercise.id}
                     href={`/training/${exercise.workout_id}`}
-                    className="flex items-center gap-2 px-5 py-3.5 touch-manipulation hover:bg-cream-soft transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 touch-manipulation hover:bg-cream-soft transition-colors"
                   >
                     <Heart
                       className="h-3.5 w-3.5 text-peach shrink-0"
                       fill="currentColor"
                       strokeWidth={0}
+                      aria-hidden
                     />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-ink truncate">{exercise.name}</p>
                       {exercise.muscle_group && (
                         <p className="text-xs text-ink-soft mt-0.5">{exercise.muscle_group}</p>
                       )}
                     </div>
+                    <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} aria-hidden />
                   </Link>
                 ))}
               </Card>
             ) : (
-              <Card>
-                <p className="text-sm text-ink-soft">
-                  Nog geen favoriete oefeningen. Bewaar er een tijdens een workout.
-                </p>
-              </Card>
+              <p className="text-sm text-ink-soft px-1">
+                Nog geen favoriete oefeningen. Bewaar er een tijdens een workout.
+              </p>
             )}
           </section>
         </>
