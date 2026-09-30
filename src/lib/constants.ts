@@ -20,7 +20,6 @@ import {
   Flame,
   Sun,
   Wind,
-  CloudFog,
   CloudRain,
   UserRound,
   CircleDashed,
@@ -369,7 +368,6 @@ export const BUDDY_STYLE_OPTIONS = [
 export const MENTAL_WELLBEING_CATEGORY_OPTIONS = [
   { value: "rust", label: "Tot rust komen", icon: Leaf, description: "Voor wanneer je wilt vertragen, overdag of op elk moment." },
   { value: "angst_spanning", label: "Angst & spanning", icon: Wind, description: "Voor momenten waarop je gespannen, angstig of onrustig bent." },
-  { value: "overprikkeling", label: "Overprikkeling", icon: CloudFog, description: "Voor wanneer alles even te veel voelt." },
   { value: "prikkelbaarheid", label: "Prikkelbaarheid", icon: Zap, description: "Voor wanneer je sneller geïrriteerd of emotioneel reageert." },
   { value: "somberheid", label: "Somberheid", icon: CloudRain, description: "Voor momenten waarop je je minder vrolijk of zwaar voelt." },
   { value: "eenzaamheid", label: "Eenzaamheid", icon: UserRound, description: "Voor wanneer je behoefte hebt aan verbinding of je alleen voelt." },

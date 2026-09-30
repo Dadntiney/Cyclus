@@ -9,10 +9,10 @@ import { MINDFUL_EXERCISES, type MindfulExercise } from "@/lib/data/mindful-exer
  * MENTAL_SYMPTOM_OPTIONS checkboxes (only shown when mental wellbeing is
  * enabled, see constants.ts) as the primary signal, and falls back to her
  * existing mood rating for a low-mood day where she didn't tick a specific
- * symptom. Deliberately narrow: only the 6 categories with a direct,
- * recognizable check-in signal trigger a suggestion — the other 5 (rust,
- * zelfvertrouwen, slaap, positiviteit, zelfzorg) are things she browses for
- * herself in the library, not things the app guesses she needs.
+ * symptom. Deliberately narrow: only the 5 categories with a direct,
+ * recognizable check-in signal trigger a suggestion — the other categories
+ * (rust, zelfvertrouwen, slaap, positiviteit, zelfzorg) are things she
+ * browses for herself in the library, not things the app guesses she needs.
  *
  * Per the product brief's "geen verplichte positiviteit": the text below
  * always acknowledges first, and never tries to argue her out of a feeling.
@@ -21,7 +21,7 @@ import { MINDFUL_EXERCISES, type MindfulExercise } from "@/lib/data/mindful-exer
 const CATEGORY_BY_SYMPTOM: Record<string, MentalWellbeingCategory> = {
   Gespannen: "angst_spanning",
   Angstig: "angst_spanning",
-  Overprikkeld: "overprikkeling",
+  Overprikkeld: "prikkelbaarheid",
   Prikkelbaar: "prikkelbaarheid",
   Somber: "somberheid",
   Eenzaam: "eenzaamheid",
@@ -34,7 +34,7 @@ interface SuggestionCopy {
 }
 
 const SUGGESTION_COPY: Record<
-  "angst_spanning" | "overprikkeling" | "prikkelbaarheid" | "somberheid" | "eenzaamheid" | "piekeren",
+  "angst_spanning" | "prikkelbaarheid" | "somberheid" | "eenzaamheid" | "piekeren",
   SuggestionCopy
 > = {
   angst_spanning: {
@@ -49,19 +49,6 @@ const SUGGESTION_COPY: Record<
       rustig: "Adem rustig in. En laat je schouders bij de uitademing zakken.",
       direct: "Gespannen vandaag? Doe nu twee minuten ademhaling.",
       luchtig: "Beetje gespannen vandaag? Een korte ademhaling kan al helpen.",
-    },
-  },
-  overprikkeling: {
-    neutral: "Het klinkt alsof alles vandaag wat veel is. Je hoeft niet altijd door te blijven gaan.",
-    styles: {
-      liefdevol: "Voelt alles vandaag wat te veel? Je mag even een stapje terug doen.",
-      humor: "Je hoofd staat vandaag op te veel tabbladen tegelijk. Tijd om er een paar te sluiten.",
-      spiritueel: "Trek je even terug uit de drukte en kom terug bij jezelf.",
-      motiverend: "Even pauzeren is geen zwakte — het geeft je juist weer ruimte.",
-      informatief: "Overprikkeling kan ontstaan door te veel prikkels tegelijk — een korte mindfulness-oefening kan helpen om even uit de drukte te stappen.",
-      rustig: "Trek je heel even terug uit de drukte. Dat mag.",
-      direct: "Overprikkeld? Neem nu vijf minuten rust.",
-      luchtig: "Beetje te veel vandaag? Tijd voor een korte pauze.",
     },
   },
   prikkelbaarheid: {

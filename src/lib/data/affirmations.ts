@@ -100,7 +100,6 @@ export function getAffirmationsByThemes(themes: string[]): Affirmation[] {
 const CATEGORY_TO_AFFIRMATION_THEMES: Record<string, AffirmationTheme[]> = {
   rust: ["rust"],
   angst_spanning: ["rust", "loslaten"],
-  overprikkeling: ["rust", "loslaten"],
   prikkelbaarheid: ["zelfcompassie", "rust"],
   somberheid: ["moeilijke_dagen", "zelfcompassie"],
   eenzaamheid: ["zelfcompassie"],

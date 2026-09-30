@@ -43,7 +43,7 @@ export const MINDFUL_EXERCISES: MindfulExercise[] = [
     id: "even-landen",
     kind: "meditatie",
     title: "Even landen",
-    categories: ["rust", "overprikkeling"],
+    categories: ["rust", "prikkelbaarheid"],
     durationMinutes: 2,
     intro: "Een korte pauze om even helemaal hier te zijn, precies waar je nu bent.",
     steps: [
@@ -193,7 +193,7 @@ export const MINDFUL_EXERCISES: MindfulExercise[] = [
     id: "innerlijke-rust-opbouwen",
     kind: "meditatie",
     title: "Innerlijke rust opbouwen",
-    categories: ["rust", "overprikkeling"],
+    categories: ["rust", "prikkelbaarheid"],
     durationMinutes: 15,
     intro: "Een uitgebreidere meditatie voor wanneer alles even te veel voelt.",
     steps: [
@@ -227,7 +227,7 @@ export const MINDFUL_EXERCISES: MindfulExercise[] = [
     id: "kalmeren-in-het-moment",
     kind: "meditatie",
     title: "Kalmeren in het moment",
-    categories: ["angst_spanning", "overprikkeling"],
+    categories: ["angst_spanning", "prikkelbaarheid"],
     durationMinutes: 2,
     intro: "Een hele korte oefening voor als het even te veel wordt.",
     steps: [
@@ -245,7 +245,7 @@ export const MINDFUL_EXERCISES: MindfulExercise[] = [
     id: "1-minuut-bewust-ademen",
     kind: "mindfulness",
     title: "1 minuut bewust ademen",
-    categories: ["rust", "angst_spanning", "overprikkeling"],
+    categories: ["rust", "angst_spanning", "prikkelbaarheid"],
     durationMinutes: 1,
     intro: "De kortste reset die er is — overal en altijd te doen.",
     steps: [
@@ -260,7 +260,7 @@ export const MINDFUL_EXERCISES: MindfulExercise[] = [
     id: "5-4-3-2-1-oefening",
     kind: "mindfulness",
     title: "5-4-3-2-1 oefening",
-    categories: ["angst_spanning", "overprikkeling", "piekeren"],
+    categories: ["angst_spanning", "prikkelbaarheid", "piekeren"],
     durationMinutes: 3,
     intro: "Je zintuigen gebruiken om terug te komen in het hier en nu.",
     steps: [
@@ -276,7 +276,7 @@ export const MINDFUL_EXERCISES: MindfulExercise[] = [
     id: "bodyscan-kort",
     kind: "mindfulness",
     title: "Body scan",
-    categories: ["rust", "overprikkeling"],
+    categories: ["rust", "prikkelbaarheid"],
     durationMinutes: 3,
     intro: "Kort stilstaan bij verschillende delen van je lichaam.",
     steps: [
