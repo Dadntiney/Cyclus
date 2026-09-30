@@ -9,7 +9,7 @@ const SIZE: Record<BuddyMarkSize, { box: string; icon: string }> = {
   xl: { box: "h-16 w-16", icon: "h-9 w-9" },
 }
 
-/** Full circles as subpaths for evenodd eye cutouts. */
+/** Full circles as subpaths for evenodd eye-white cutouts. */
 function eyeCutout(cx: number, cy: number, r: number) {
   return `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${r * 2} 0a${r} ${r} 0 1 0 ${-r * 2} 0`
 }
@@ -17,9 +17,9 @@ function eyeCutout(cx: number, cy: number, r: number) {
 /**
  * Buddy’s visual signature — a plump soft dewdrop companion in brand peach.
  *
- * Rounder than a sharp teardrop: wide calm belly, gentle tip. Quiet eyes +
- * soft smile cut out of the fill. No arms. Used only where Buddy speaks or
- * is named — never as the menstruation status droplet.
+ * Open looking eyes with pupils (no mouth — smiles read muddy at icon size).
+ * No arms. Used only where Buddy speaks or is named — never as the
+ * menstruation status droplet.
  */
 export function BuddyGlyph({
   className,
@@ -34,18 +34,20 @@ export function BuddyGlyph({
 }) {
   const weight = Math.min(1.08, Math.max(0.92, strokeWidth / 1.75))
 
-  // Plump dewdrop: fuller sides, softer tip (less “blood drop”, more companion).
   const droplet =
     "M12 3.1C14.8 5.6 18.7 10.4 18.7 15.15a6.7 6.7 0 1 1-13.4 0C5.3 10.4 9.2 5.6 12 3.1Z"
 
   const halo =
     "M12 2.35C15.15 5.1 19.45 10.1 19.45 15.15a7.45 7.45 0 1 1-14.9 0C4.55 10.1 8.85 5.1 12 2.35Z"
 
-  // Face sits in the round belly.
-  const smile = "M10.05 16.85Q12 18.55 13.95 16.85Q12 17.85 10.05 16.85Z"
+  // Big open eyes — “kijken”, blij zonder mond
+  const eyeR = 1.55
+  const eyeY = 14.35
+  const eyeL = 9.5
+  const eyeRgt = 14.5
 
   const body = face
-    ? [droplet, eyeCutout(9.8, 14.55, 1.15), eyeCutout(14.2, 14.55, 1.15), smile].join("")
+    ? [droplet, eyeCutout(eyeL, eyeY, eyeR), eyeCutout(eyeRgt, eyeY, eyeR)].join("")
     : droplet
 
   return (
@@ -58,6 +60,13 @@ export function BuddyGlyph({
     >
       <path d={halo} stroke="currentColor" strokeWidth={1.1} opacity="0.28" />
       <path fill="currentColor" fillRule="evenodd" d={body} />
+      {face && (
+        <>
+          {/* Round pupils, slightly toward center — looking at you */}
+          <circle cx={eyeL + 0.2} cy={eyeY} r="0.78" fill="currentColor" />
+          <circle cx={eyeRgt - 0.2} cy={eyeY} r="0.78" fill="currentColor" />
+        </>
+      )}
     </svg>
   )
 }
