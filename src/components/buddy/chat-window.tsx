@@ -75,7 +75,10 @@ export function ChatWindow({
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
-      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto px-5 lg:px-8 py-4 flex flex-col gap-3">
+      <div
+        ref={scrollRef}
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 lg:px-8 py-4 flex flex-col gap-3"
+      >
         {messages.length === 0 && (
           <EmptyState
             icon={<BuddyMark size="lg" decorative />}
@@ -118,7 +121,7 @@ export function ChatWindow({
 
       <form
         onSubmit={handleSubmit}
-        className="shrink-0 flex items-center gap-2 px-5 lg:px-8 py-3 border-t border-sage/20 bg-cream"
+        className="shrink-0 flex items-center gap-2 px-5 lg:px-8 py-3 border-t border-sage/20 bg-cream safe-x"
       >
         <Input
           value={input}
