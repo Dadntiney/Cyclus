@@ -147,7 +147,7 @@ export default async function VandaagPage() {
               aria-label="Favorieten"
               className="shrink-0 inline-flex items-center justify-center h-11 w-11 rounded-full text-peach touch-manipulation motion-safe:active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
             >
-              <Heart className="h-5 w-5" strokeWidth={1.75} />
+              <Heart className="h-5 w-5" fill="currentColor" strokeWidth={0} aria-hidden />
             </Link>
           </div>
 
