@@ -45,9 +45,9 @@ import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { cn } from "@/lib/utils"
 
 /**
- * Cyclus hub IA (see competitive/UX analysis):
- * 1) Now  2) Calendar  3) History  4) Insights  5) Changes  6) More
- * Generic phase lifestyle tips live on Deze week / Cyclusdag — not here.
+ * Cyclus hub IA:
+ * 1) Now  2) Your story / insights  3) Calendar  4) History  5) Changes  6) More
+ * Buddy value (patterns) sits near the top; calendar stays the primary logging action.
  */
 export default async function CyclusPage() {
   const supabase = await createClient()
@@ -130,7 +130,6 @@ export default async function CyclusPage() {
   )
 
   const history = computeCycleHistory(effectiveLogs)
-  const recentHistory = [...history].reverse().slice(0, 6)
   const completedLengths = history
     .filter((p): p is (typeof history)[number] & { cycleLength: number } => p.cycleLength !== null)
     .slice(-6)
@@ -156,6 +155,18 @@ export default async function CyclusPage() {
           history,
         })
       : null
+
+  const lastPeriod = history.length ? history[history.length - 1] : null
+  const lastPeriodIsActive = Boolean(
+    lastPeriod &&
+      (cycleProfile?.active_period_start != null ||
+        (lastPeriod.end === today && menstruationDates.has(today))),
+  )
+  // “Eerdere cycli” = finished periods only — the open one already lives under Nu.
+  const recentHistory = [...history]
+    .reverse()
+    .filter((p) => !(lastPeriodIsActive && lastPeriod && p.start === lastPeriod.start))
+    .slice(0, 6)
 
   const checkinsForPatterns = (checkins ?? []).map((c) => ({
     date: c.date,
@@ -191,6 +202,8 @@ export default async function CyclusPage() {
     coOccurrence: coOccurrences[0] ?? null,
     whatHelped: whatHelpedInsights.slice(0, 2),
     includeWeekGuide: Boolean(cycleEstimate) && !postCycleMode,
+    // Nu card already states day + phase — don’t repeat it in Jouw verhaal.
+    omitDaySummary: Boolean(cycleEstimate) && !postCycleMode,
   })
   const deviationAlerts = computeCycleDeviationAlerts({
     history,
@@ -240,11 +253,51 @@ export default async function CyclusPage() {
   const isIrregular =
     cycleProfile?.regularity === "onregelmatig" || cycleProfile?.regularity === "onbekend"
   const phaseTone = cycleEstimate ? getPhaseContent(cycleEstimate.phase).colors : null
-  const lastPeriod = history.length ? history[history.length - 1] : null
-  const lastPeriodIsActive = Boolean(
-    lastPeriod &&
-      (cycleProfile?.active_period_start != null ||
-        (lastPeriod.end === today && menstruationDates.has(today))),
+
+  const insightsBlock = (
+      <section>
+        <h2 className="font-display text-lg text-ink mb-1">Jouw inzichten</h2>
+        <p className="text-sm text-ink-soft mb-3">
+          Op basis van je check-ins — geen diagnose, wel herkenning.
+        </p>
+
+        {yourStory && (
+          <div className="mb-3">
+            <YourStoryCard story={yourStory} />
+          </div>
+        )}
+
+        {insightLines.length > 0 ? (
+          <Card className="p-0 divide-y divide-line mb-3">
+            {insightLines.map((text) => (
+              <div key={text} className="flex gap-3 px-5 py-3.5">
+                <Lightbulb className="h-4 w-4 shrink-0 text-sage-dark mt-0.5" strokeWidth={1.75} />
+                <p className="text-sm text-ink leading-relaxed">{text}</p>
+              </div>
+            ))}
+          </Card>
+        ) : !yourStory ? (
+          <Card className="mb-3">
+            <EmptyState
+              icon={<Sparkles className="h-6 w-6" />}
+              title="Nog weinig inzichten"
+              description="Vul een aantal check-ins in op Vandaag. Daarna verschijnen hier verbanden."
+            />
+          </Card>
+        ) : null}
+
+        {patterns.length > 0 && (
+          <Card>
+            <p className="text-sm font-medium text-ink mb-3">Meest genoteerde klachten</p>
+            <SimpleBars
+              items={patterns.slice(0, 5).map((p) => ({
+                label: symptomLabel(p.symptom),
+                value: p.count,
+              }))}
+            />
+          </Card>
+        )}
+      </section>
   )
 
   return (
@@ -310,30 +363,30 @@ export default async function CyclusPage() {
           )}
 
           {lastPeriod && (
-            <div className="mt-4 rounded-xl bg-surface/70 px-3 py-2.5">
-              <p className="text-sm font-medium text-ink">Laatste menstruatie</p>
-              <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-sm">
-                <dt className="text-ink-soft">Start</dt>
-                <dd className="text-ink">
+            <div className="mt-4 rounded-xl bg-surface/70 px-3 py-2.5 space-y-2">
+              <div>
+                <p className="text-sm font-medium text-ink">Laatste menstruatie</p>
+                <p className="text-sm text-ink-soft mt-1 leading-relaxed">
                   {format(parseISO(lastPeriod.start), "d MMMM yyyy", { locale: nl })}
-                </dd>
-                <dt className="text-ink-soft">Stop</dt>
-                <dd className="text-ink">
+                  {" · "}
                   {lastPeriodIsActive
-                    ? "Nog bezig"
-                    : format(parseISO(lastPeriod.end), "d MMMM yyyy", { locale: nl })}
-                </dd>
-                <dt className="text-ink-soft">Duur</dt>
-                <dd className="text-ink">
-                  {lastPeriod.days} {lastPeriod.days === 1 ? "dag" : "dagen"}
-                  {lastPeriodIsActive ? " tot nu" : ""}
-                </dd>
-              </dl>
+                    ? `nog bezig (${lastPeriod.days} ${lastPeriod.days === 1 ? "dag" : "dagen"} tot nu)`
+                    : `tot ${format(parseISO(lastPeriod.end), "d MMMM yyyy", { locale: nl })} (${lastPeriod.days} ${lastPeriod.days === 1 ? "dag" : "dagen"})`}
+                </p>
+              </div>
+              {nextPeriod && (
+                <div className="pt-2 border-t border-ink/5">
+                  <p className="text-sm font-medium text-ink">Volgende menstruatie</p>
+                  <p className="text-sm text-ink-soft mt-1 leading-relaxed">
+                    {formatNextPeriodEstimate(nextPeriod)}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
-          {nextPeriod && (
-            <div className="mt-3 rounded-xl bg-surface/70 px-3 py-2.5">
+          {!lastPeriod && nextPeriod && (
+            <div className="mt-4 rounded-xl bg-surface/70 px-3 py-2.5">
               <p className="text-sm font-medium text-ink">Volgende menstruatie</p>
               <p className="text-sm text-ink-soft mt-1 leading-relaxed">
                 {formatNextPeriodEstimate(nextPeriod)}
@@ -374,7 +427,10 @@ export default async function CyclusPage() {
         </Card>
       )}
 
-      {/* 3. Calendar — primary action */}
+      {/* 3. Insights — buddy value right under Nu */}
+      {insightsBlock}
+
+      {/* 4. Calendar — primary logging action */}
       {!postCycleMode && (
         <section>
           <h2 className="font-display text-lg text-ink mb-3">Kalender</h2>
@@ -388,7 +444,7 @@ export default async function CyclusPage() {
         </section>
       )}
 
-      {/* 4. History */}
+      {/* 5. History */}
       {!postCycleMode && (
         <section>
           <h2 className="font-display text-lg text-ink mb-3">Eerdere cycli</h2>
@@ -410,7 +466,7 @@ export default async function CyclusPage() {
                         {format(parseISO(period.end), "d MMM yyyy", { locale: nl })}
                       </p>
                       <p className="text-xs text-ink-soft mt-0.5">
-                        {period.days} dagen menstruatie
+                        {period.days} {period.days === 1 ? "dag" : "dagen"} menstruatie
                         {trackFlowEnabled && flowOption && ` · ${flowOption.label.toLowerCase()}`}
                       </p>
                     </div>
@@ -425,58 +481,13 @@ export default async function CyclusPage() {
             <Card>
               <EmptyState
                 icon={<Droplet className="h-6 w-6" />}
-                title="Nog geen cyclusgeschiedenis"
-                description="Markeer menstruatiedagen in de kalender hierboven."
+                title="Nog geen afgeronde cycli"
+                description="Markeer menstruatiedagen in de kalender. Afgeronde periodes verschijnen hier."
               />
             </Card>
           )}
         </section>
       )}
-
-      {/* 5. Insights — your story first, then detail lines */}
-      <section>
-        <h2 className="font-display text-lg text-ink mb-1">Jouw inzichten</h2>
-        <p className="text-sm text-ink-soft mb-3">
-          Op basis van je check-ins — geen diagnose, wel herkenning.
-        </p>
-
-        {yourStory && (
-          <div className="mb-3">
-            <YourStoryCard story={yourStory} />
-          </div>
-        )}
-
-        {insightLines.length > 0 ? (
-          <Card className="p-0 divide-y divide-line mb-3">
-            {insightLines.map((text) => (
-              <div key={text} className="flex gap-3 px-5 py-3.5">
-                <Lightbulb className="h-4 w-4 shrink-0 text-sage-dark mt-0.5" strokeWidth={1.75} />
-                <p className="text-sm text-ink leading-relaxed">{text}</p>
-              </div>
-            ))}
-          </Card>
-        ) : !yourStory ? (
-          <Card className="mb-3">
-            <EmptyState
-              icon={<Sparkles className="h-6 w-6" />}
-              title="Nog weinig inzichten"
-              description="Vul een aantal check-ins in op Vandaag. Daarna verschijnen hier verbanden."
-            />
-          </Card>
-        ) : null}
-
-        {patterns.length > 0 && (
-          <Card>
-            <p className="text-sm font-medium text-ink mb-3">Meest genoteerde klachten</p>
-            <SimpleBars
-              items={patterns.slice(0, 5).map((p) => ({
-                label: symptomLabel(p.symptom),
-                value: p.count,
-              }))}
-            />
-          </Card>
-        )}
-      </section>
 
       {/* 6. Changes — only when relevant */}
       {uniqueChanges.length > 0 && (

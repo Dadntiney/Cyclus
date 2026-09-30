@@ -43,6 +43,11 @@ export interface ComposeYourStoryInput {
   whatHelped?: WhatHelpedInsight[]
   /** Soft week tilt from phase content when she has a cycle. */
   includeWeekGuide?: boolean
+  /**
+   * When true (Cyclus hub already shows “Nu”), skip the day/phase sentence
+   * so “In beeld” only carries trends — not a repeat of cyclusdag.
+   */
+  omitDaySummary?: boolean
 }
 
 export function composeYourStory(input: ComposeYourStoryInput): YourStory | null {
@@ -57,15 +62,18 @@ export function composeYourStory(input: ComposeYourStoryInput): YourStory | null
     coOccurrence = null,
     whatHelped = [],
     includeWeekGuide = true,
+    omitDaySummary = false,
   } = input
 
   const inViewParts: string[] = []
-  if (hasCycle && phaseLabel && cycleDay != null) {
-    inViewParts.push(`Je zit rond cyclusdag ${cycleDay} — ${phaseLabel.toLowerCase()}.`)
-  } else if (lifeStageLabel) {
-    inViewParts.push(`Je levensfase staat genoteerd als ${lifeStageLabel.toLowerCase()}.`)
-  } else if (!hasCycle) {
-    inViewParts.push("Je volgt Cyclus zonder menstruatiekalender — gericht op klachten en herstel.")
+  if (!omitDaySummary) {
+    if (hasCycle && phaseLabel && cycleDay != null) {
+      inViewParts.push(`Je zit rond cyclusdag ${cycleDay} — ${phaseLabel.toLowerCase()}.`)
+    } else if (lifeStageLabel) {
+      inViewParts.push(`Je levensfase staat genoteerd als ${lifeStageLabel.toLowerCase()}.`)
+    } else if (!hasCycle) {
+      inViewParts.push("Je volgt Cyclus zonder menstruatiekalender — gericht op klachten en herstel.")
+    }
   }
 
   if (cycleLengthTrend) {
@@ -108,7 +116,7 @@ export function composeYourStory(input: ComposeYourStoryInput): YourStory | null
   if (!inViewParts.length && !whatWorks.length && !whatFitsThisWeek) return null
 
   return {
-    cycleInView: inViewParts.join(" ") || "Nog te weinig cyclusgegevens voor een helder beeld — dat groeit mee.",
+    cycleInView: inViewParts.join(" "),
     whatWorks,
     whatFitsThisWeek,
   }
