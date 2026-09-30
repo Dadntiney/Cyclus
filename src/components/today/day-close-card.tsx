@@ -270,7 +270,7 @@ export function DayCloseCard({
               maxLength={280}
               placeholder="Iets kleins mag ook — een moment, een persoon, een gevoel…"
               aria-label="Dankbaarheid vandaag"
-              className="w-full rounded-xl border border-line/60 bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-soft/80 resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/40 min-h-[2.75rem]"
+              className="w-full rounded-xl border border-line/60 bg-surface px-3 py-2.5 text-base text-ink placeholder:text-ink-soft/80 resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/40 min-h-[2.75rem]"
             />
             {gratitude.trim() && (
               <button
