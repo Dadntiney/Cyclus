@@ -14,6 +14,8 @@ import {
   symptomLabel,
 } from "@/lib/constants"
 import { saveCheckin, setTodayNeed } from "@/lib/actions/checkin"
+import { notifyCheckinSaved } from "@/lib/client/checkin-events"
+import { todayISO } from "@/lib/dates/amsterdam"
 import { parseSymptomDetails } from "@/lib/symptom-details"
 import type { CheckinInput, SymptomDetail } from "@/lib/validations/checkin"
 import type { Tables } from "@/types/database"
@@ -35,7 +37,15 @@ type FormState = {
 const DEBOUNCE_MS = 700
 const SAVED_FLASH_MS = 2000
 
-function checkinHasContent(checkin: Checkin | null): boolean {
+function checkinHasContent(checkin: {
+  energy: number | null
+  mood: number | null
+  sleep: number | null
+  stress: number | null
+  symptoms: string[] | null
+  notes: string | null
+  need: string | null
+} | null): boolean {
   if (!checkin) return false
   return Boolean(
     checkin.energy ||
@@ -99,7 +109,6 @@ export function CheckinForm({
 
   const [state, setState] = useState<FormState>(() => stateFromCheckin(initial))
   const stateRef = useRef(state)
-  stateRef.current = state
 
   // Filled → compact summary. Empty → light editor (energy), details closed.
   const [editing, setEditing] = useState(!checkinHasContent(initial))
@@ -207,6 +216,22 @@ export function CheckinForm({
       }, SAVED_FLASH_MS)
     }
 
+    // Flip “Check-in nog open” immediately; refresh so server props catch up.
+    if (
+      checkinHasContent({
+        energy: snapshot.energy,
+        mood: snapshot.mood,
+        sleep: snapshot.sleep,
+        stress: snapshot.stress,
+        symptoms: snapshot.symptoms,
+        notes: snapshot.notes,
+        need: snapshot.need,
+      })
+    ) {
+      notifyCheckinSaved(todayISO())
+    }
+    router.refresh()
+
     if (dirtyRef.current) {
       dirtyRef.current = false
       void performSave()
@@ -229,23 +254,23 @@ export function CheckinForm({
   }
 
   function applyUpdate(updater: (prev: FormState) => FormState, mode: "immediate" | "debounced" = "immediate") {
-    let changed = true
-    setState((prev) => {
-      const next = updater(prev)
-      changed = JSON.stringify(next) !== JSON.stringify(prev)
-      stateRef.current = next
-      return next
-    })
-    if (changed) scheduleSave(mode === "immediate")
+    // Compute next state against the ref BEFORE scheduling save. Relying on
+    // setState's updater to fill stateRef races under React 19 batching and
+    // can persist a stale snapshot (e.g. energy still null while the UI
+    // already shows 1) — which left “Check-in nog open” stuck.
+    const prev = stateRef.current
+    const next = updater(prev)
+    if (JSON.stringify(next) === JSON.stringify(prev)) return
+    stateRef.current = next
+    setState(next)
+    scheduleSave(mode === "immediate")
   }
 
   function selectNeed(value: string) {
-    const next = state.need === value ? null : (value as CheckinInput["need"])
-    setState((prev) => {
-      const updated = { ...prev, need: next }
-      stateRef.current = updated
-      return updated
-    })
+    const next = stateRef.current.need === value ? null : (value as CheckinInput["need"])
+    const updated = { ...stateRef.current, need: next }
+    stateRef.current = updated
+    setState(updated)
     // Lightweight need write + refresh so today’s plan can reshape.
     startNeedTransition(async () => {
       const result = await setTodayNeed(next)
@@ -253,6 +278,9 @@ export function CheckinForm({
         setErrorMsg(result.error)
         setStatus("error")
         return
+      }
+      if (checkinHasContent(updated)) {
+        notifyCheckinSaved(todayISO())
       }
       router.refresh()
     })
@@ -306,7 +334,7 @@ export function CheckinForm({
     setShowDetails(false)
   }
 
-  function StatusHint({ className }: { className?: string }) {
+  function statusHint(className?: string) {
     if (status === "idle") return null
     return (
       <span
@@ -346,7 +374,7 @@ export function CheckinForm({
               <h2 id="checkin-heading" className="font-display text-base text-ink leading-tight">
                 Hoe voel je je?
               </h2>
-              <StatusHint />
+              {statusHint()}
             </div>
             <div className="flex flex-wrap gap-1.5">
               {visible.map((chip) => (
@@ -384,7 +412,7 @@ export function CheckinForm({
           <h2 id="checkin-heading" className="font-display text-lg text-ink">
             Hoe voel je je?
           </h2>
-          <StatusHint />
+          {statusHint()}
         </div>
         {hasAnyInput && (
           <button

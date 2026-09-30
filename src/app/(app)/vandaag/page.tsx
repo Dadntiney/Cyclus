@@ -217,6 +217,7 @@ export default async function VandaagPage() {
           )}
 
           <DayCloseCard
+            key={today}
             userId={user.id}
             date={today}
             weekStartISO={weekStartISO}

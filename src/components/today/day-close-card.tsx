@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Moon, CheckCircle2, Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getDayCloseLine } from "@/lib/data/day-close-notes"
+import { CHECKIN_SAVED_EVENT } from "@/lib/client/checkin-events"
 import {
   loadWeekOverrides,
   WEEK_OVERRIDES_CHANGED_EVENT,
@@ -38,6 +39,10 @@ export function DayCloseCard({
   hasSleepEntry: boolean
 }) {
   const [closed, setClosed] = useState(false)
+  // Optimistic flip after autosave; server `hasCheckin` wins once refresh lands.
+  // Remount via key={date} on the parent so a new day starts clean.
+  const [optimisticCheckin, setOptimisticCheckin] = useState(false)
+  const checkinDone = hasCheckin || optimisticCheckin
   const [movementHandled, setMovementHandled] = useState(movementDone)
   const [hydrated, setHydrated] = useState(false)
   const storageKey = `cyclus:day-closed:${date}`
@@ -60,12 +65,19 @@ export function DayCloseCard({
       }
       setHydrated(true)
     }
+    function onCheckinSaved(event: Event) {
+      const detail = (event as CustomEvent<{ date?: string }>).detail
+      if (detail?.date && detail.date !== date) return
+      setOptimisticCheckin(true)
+    }
     syncFromClient()
     window.addEventListener(WEEK_OVERRIDES_CHANGED_EVENT, syncFromClient)
     window.addEventListener("focus", syncFromClient)
+    window.addEventListener(CHECKIN_SAVED_EVENT, onCheckinSaved)
     return () => {
       window.removeEventListener(WEEK_OVERRIDES_CHANGED_EVENT, syncFromClient)
       window.removeEventListener("focus", syncFromClient)
+      window.removeEventListener(CHECKIN_SAVED_EVENT, onCheckinSaved)
     }
   }, [storageKey, userId, weekStartISO, date, movementDone])
 
@@ -90,8 +102,8 @@ export function DayCloseCard({
   const items = [
     {
       key: "checkin",
-      done: hasCheckin,
-      label: hasCheckin ? "Check-in ingevuld" : "Check-in nog open",
+      done: checkinDone,
+      label: checkinDone ? "Check-in ingevuld" : "Check-in nog open",
     },
     ...(movementEnabled
       ? [
