@@ -1,10 +1,28 @@
-import { estimateCycle, type CyclePhase } from "@/lib/cycle/estimate"
+import { estimateCycle, phaseLabel, type CyclePhase } from "@/lib/cycle/estimate"
 import { computeSymptomFrequency } from "@/lib/cycle/history"
 import { computePersonalInsights, type InsightCheckin } from "@/lib/cycle/insights"
-import { periScoreBand } from "@/lib/cycle/peri-score"
+import {
+  periComplaintHighlights,
+  periScoreBand,
+  type PeriAnswers,
+  type PeriComplaintHighlight,
+} from "@/lib/cycle/peri-score"
+import {
+  computePhaseSymptomInsights,
+  formatPhaseSymptomInsightForDoctor,
+  type CheckinLike,
+} from "@/lib/cycle/patterns"
+import type { CycleHistoryEntry } from "@/lib/cycle/history"
 import { symptomLabel } from "@/lib/constants"
 
 export type DoctorSummaryWeeks = 4 | 8 | 12 | 24
+
+export interface DoctorSummaryPeriAssessment {
+  assessed_on: string
+  score: number
+  answers?: PeriAnswers | null
+  notes?: string | null
+}
 
 export interface DoctorSummaryInput {
   weeks: DoctorSummaryWeeks
@@ -26,9 +44,17 @@ export interface DoctorSummaryInput {
     life_stage?: string | null
   } | null
   menstruationDates: string[]
-  periScores?: { assessed_on: string; score: number }[]
+  periScores?: DoctorSummaryPeriAssessment[]
   /** Optional visit notes from the appointments log (e.g. HT changes). */
   appointmentNotes?: { date: string | null; notes: string }[]
+  /**
+   * Completed-cycle history (oldest first) for phase×symptom patterns.
+   * Same source as Cyclus hub / Vandaag — not limited to the monthly
+   * klachtenlast questionnaire.
+   */
+  cycleHistory?: CycleHistoryEntry[]
+  /** Longer check-in window used only for phase patterns (may exceed `weeks`). */
+  patternCheckins?: CheckinLike[]
 }
 
 export interface DoctorSummary {
@@ -47,6 +73,9 @@ export interface DoctorSummary {
   noteHighlights: string[]
   talkingPoints: string[]
   periScoreNote: string | null
+  periComplaints: PeriComplaintHighlight[]
+  periNotes: string | null
+  phasePatterns: string[]
   appointmentNotes: { date: string | null; notes: string }[]
   generatedAt: string
 }
@@ -64,6 +93,8 @@ export function buildDoctorSummary(input: DoctorSummaryInput): DoctorSummary {
     menstruationDates,
     periScores = [],
     appointmentNotes = [],
+    cycleHistory = [],
+    patternCheckins,
   } = input
   const energies = checkins.map((c) => c.energy).filter((v): v is number => v != null)
   const moods = checkins.map((c) => c.mood).filter((v): v is number => v != null)
@@ -146,13 +177,44 @@ export function buildDoctorSummary(input: DoctorSummaryInput): DoctorSummary {
   talkingPoints.push("Vraag: wat kan helpen op korte termijn en wanneer is vervolgonderzoek zinvol?")
 
   let periScoreNote: string | null = null
+  let periComplaints: PeriComplaintHighlight[] = []
+  let periNotes: string | null = null
   if (periScores.length) {
     const latest = periScores[0]
     const band = periScoreBand(latest.score)
-    periScoreNote = `Laatste klachtenlast-score: ${latest.score}/100 (${band.label}) op ${latest.assessed_on}. ${
-      periScores.length > 1 ? `Eerdere scores: ${periScores.slice(1, 4).map((p) => `${p.score}`).join(", ")}.` : ""
+    periComplaints = periComplaintHighlights(latest.answers ?? null)
+    periNotes = latest.notes?.trim() || null
+    periScoreNote = `Laatste score: ${latest.score}/100 (${band.label}) op ${latest.assessed_on}. De score vat samen hoe zwaar je de onderstaande klachten de afgelopen 30 dagen aangaf (0 = niet · 100 = alles hevig).${
+      periScores.length > 1
+        ? ` Eerdere scores: ${periScores
+            .slice(1, 4)
+            .map((p) => `${p.score}`)
+            .join(", ")}.`
+        : ""
     }`
   }
+
+  // Phase×symptom patterns from completed cycles + daily check-ins —
+  // same engine as Cyclus hub; intentionally not tied to the monthly
+  // klachtenlast questionnaire (that one has no phase context).
+  const phaseSourceCheckins = patternCheckins ?? checkins
+  const phaseInsights = computePhaseSymptomInsights(cycleHistory, phaseSourceCheckins)
+  const shownPhaseKeys = new Set(phaseInsights.map((i) => `${i.phase}:${i.symptom}`))
+  const phasePatterns = [
+    ...phaseInsights
+      .slice(0, 6)
+      .map((i) => formatPhaseSymptomInsightForDoctor(i, phaseLabel(i.phase))),
+    // Personal insights that also name a phase+symptom, if not already covered.
+    ...insights
+      .filter(
+        (i) =>
+          i.phase &&
+          i.symptom &&
+          !shownPhaseKeys.has(`${i.phase}:${i.symptom}`),
+      )
+      .slice(0, 2)
+      .map((i) => i.text),
+  ]
 
   return {
     weeks,
@@ -165,11 +227,16 @@ export function buildDoctorSummary(input: DoctorSummaryInput): DoctorSummary {
       stress: avg(stresses),
     },
     topSymptoms,
-    insights: insights.map((i) => ({ text: i.text })),
+    insights: insights
+      .filter((i) => !(i.phase && i.symptom && shownPhaseKeys.has(`${i.phase}:${i.symptom}`)))
+      .map((i) => ({ text: i.text })),
     cycleNote,
     noteHighlights,
     talkingPoints,
     periScoreNote,
+    periComplaints,
+    periNotes,
+    phasePatterns,
     appointmentNotes: appointmentNotes.slice(0, 8),
     generatedAt: new Date().toISOString(),
   }
@@ -191,17 +258,35 @@ export function doctorSummaryToText(summary: DoctorSummary): string {
     "Cyclus",
     summary.cycleNote,
     "",
-    "Meest genoteerde klachten",
+    "Meest genoteerde klachten (check-ins)",
     ...(summary.topSymptoms.length
       ? summary.topSymptoms.map((s) => `- ${symptomLabel(s.symptom)} (${s.count}×)`)
       : ["- Geen"]),
-    "",
-    "Gesprekspunten",
-    ...summary.talkingPoints.map((t) => `- ${t}`),
   ]
 
+  if (summary.phasePatterns.length) {
+    lines.push(
+      "",
+      "Patronen per cyclusfase",
+      ...summary.phasePatterns.map((p) => `- ${p}`),
+    )
+  }
+
+  lines.push("", "Gesprekspunten", ...summary.talkingPoints.map((t) => `- ${t}`))
+
   if (summary.periScoreNote) {
-    lines.push("", "Klachtenlast", summary.periScoreNote)
+    lines.push("", "Klachtenlast (maandelijkse check)", summary.periScoreNote)
+    if (summary.periComplaints.length) {
+      lines.push("Klachten in deze meting:")
+      lines.push(
+        ...summary.periComplaints.map((c) => `- ${c.label}: ${c.levelLabel.toLowerCase()}`),
+      )
+    } else {
+      lines.push("- Geen individuele klachten boven ‘niet’ in deze meting.")
+    }
+    if (summary.periNotes) {
+      lines.push(`Notitie bij meting: ${summary.periNotes}`)
+    }
   }
   if (summary.insights.length) {
     lines.push("", "Mogelijke verbanden", ...summary.insights.map((i) => `- ${i.text}`))

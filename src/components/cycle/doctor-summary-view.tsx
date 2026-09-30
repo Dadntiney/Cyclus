@@ -110,8 +110,40 @@ export function DoctorSummaryView({
 
         {summary.periScoreNote && (
           <>
-            <h3 className="text-sm font-semibold text-ink mb-1">Klachtenlast</h3>
-            <p className="text-sm text-ink-soft mb-4">{summary.periScoreNote}</p>
+            <h3 className="text-sm font-semibold text-ink mb-1">Klachtenlast (maandelijkse check)</h3>
+            <p className="text-sm text-ink-soft mb-2">{summary.periScoreNote}</p>
+            {summary.periComplaints.length > 0 ? (
+              <ul className="text-sm text-ink mb-2 list-disc pl-5">
+                {summary.periComplaints.map((c) => (
+                  <li key={c.id}>
+                    {c.label}{" "}
+                    <span className="text-ink-soft">({c.levelLabel.toLowerCase()})</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-ink-soft mb-2">
+                Geen individuele klachten boven &lsquo;niet&rsquo; in deze meting.
+              </p>
+            )}
+            {summary.periNotes && (
+              <p className="text-sm text-ink-soft mb-4 italic">Notitie: {summary.periNotes}</p>
+            )}
+            {!summary.periNotes && <div className="mb-4" />}
+          </>
+        )}
+
+        {summary.phasePatterns.length > 0 && (
+          <>
+            <h3 className="text-sm font-semibold text-ink mb-1">Patronen per cyclusfase</h3>
+            <p className="text-xs text-ink-soft mb-1.5 leading-relaxed">
+              Op basis van check-ins in voltooide cycli — niet van de maandelijkse klachtenlast-score.
+            </p>
+            <ul className="text-sm text-ink mb-4 list-disc pl-5">
+              {summary.phasePatterns.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
           </>
         )}
 

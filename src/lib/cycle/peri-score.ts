@@ -80,3 +80,46 @@ export function formatPeriScoreTrend(previous: number | null, current: number): 
   if (delta > 0) return `Ongeveer ${delta} punten hoger dan je vorige meting.`
   return `Ongeveer ${Math.abs(delta)} punten lager dan je vorige meting.`
 }
+
+const LEVEL_LABELS: Record<1 | 2 | 3, string> = {
+  1: "Mild",
+  2: "Matig",
+  3: "Hevig",
+}
+
+export interface PeriComplaintHighlight {
+  id: string
+  label: string
+  level: 1 | 2 | 3
+  levelLabel: string
+}
+
+/** Complaints scored mild/matig/hevig — what the 0–100 score is made of. */
+export function periComplaintHighlights(answers: PeriAnswers | null | undefined): PeriComplaintHighlight[] {
+  if (!answers) return []
+  const rows: PeriComplaintHighlight[] = []
+  for (const item of PERI_SCORE_ITEMS) {
+    const value = answers[item.id]
+    if (value === 1 || value === 2 || value === 3) {
+      rows.push({
+        id: item.id,
+        label: item.label,
+        level: value,
+        levelLabel: LEVEL_LABELS[value],
+      })
+    }
+  }
+  return rows.sort((a, b) => b.level - a.level || a.label.localeCompare(b.label, "nl"))
+}
+
+export function parsePeriAnswers(raw: unknown): PeriAnswers | null {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null
+  const out: PeriAnswers = {}
+  for (const item of PERI_SCORE_ITEMS) {
+    const value = (raw as Record<string, unknown>)[item.id]
+    if (value === 0 || value === 1 || value === 2 || value === 3) {
+      out[item.id] = value
+    }
+  }
+  return Object.keys(out).length ? out : null
+}

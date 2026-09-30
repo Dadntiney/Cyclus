@@ -4,9 +4,12 @@ import { useMemo, useState } from "react"
 import {
   buildDoctorSummary,
   type DoctorSummaryInput,
+  type DoctorSummaryPeriAssessment,
   type DoctorSummaryWeeks,
 } from "@/lib/cycle/doctor-summary"
 import { DoctorSummaryView } from "@/components/cycle/doctor-summary-view"
+import type { CycleHistoryEntry } from "@/lib/cycle/history"
+import type { CheckinLike } from "@/lib/cycle/patterns"
 
 export function DoctorSummaryClient({
   checkins,
@@ -14,12 +17,16 @@ export function DoctorSummaryClient({
   menstruationDates,
   periScores = [],
   appointmentNotes = [],
+  cycleHistory = [],
+  patternCheckins = [],
 }: {
   checkins: DoctorSummaryInput["checkins"]
   cycleProfile: DoctorSummaryInput["cycleProfile"]
   menstruationDates: string[]
-  periScores?: { assessed_on: string; score: number }[]
+  periScores?: DoctorSummaryPeriAssessment[]
   appointmentNotes?: { date: string | null; notes: string }[]
+  cycleHistory?: CycleHistoryEntry[]
+  patternCheckins?: CheckinLike[]
 }) {
   const [weeks, setWeeks] = useState<DoctorSummaryWeeks>(8)
 
@@ -41,6 +48,8 @@ export function DoctorSummaryClient({
     menstruationDates: filtered.menstruationDates,
     periScores: filtered.periScores,
     appointmentNotes,
+    cycleHistory,
+    patternCheckins: patternCheckins.length ? patternCheckins : filtered.checkins,
   })
 
   return <DoctorSummaryView summary={summary} weeks={weeks} onWeeksChange={setWeeks} />

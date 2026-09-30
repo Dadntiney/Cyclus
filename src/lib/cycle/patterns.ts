@@ -113,6 +113,15 @@ export function formatPhaseSymptomInsightShort(insight: PhaseSymptomInsight, pha
   return `Rond de ${phase} noteer je vaker "${symptom}" (${insight.cyclesWithSymptom} van ${insight.cyclesConsidered} cycli).`
 }
 
+/** Neutral wording for the arts-samenvatting / printable export. */
+export function formatPhaseSymptomInsightForDoctor(
+  insight: PhaseSymptomInsight,
+  phaseLabel: string,
+): string {
+  const symptom = symptomLabel(insight.symptom)
+  return `${phaseLabel}: vaker “${symptom}” genoteerd (${insight.cyclesWithSymptom} van ${insight.cyclesConsidered} voltooide cycli).`
+}
+
 /**
  * Whether her cycle length is swinging more or less than before — the
  * "wordt mijn cyclus onregelmatiger, of juist stabieler?" question, most
