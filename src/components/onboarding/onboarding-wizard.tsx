@@ -36,6 +36,7 @@ interface FormData {
   hasCycle: boolean | null
   lastPeriodStart: string
   averageCycleLength: string
+  averagePeriodLength: string
   regularity: string
   perimenopauseInfo: string
   goals: string[]
@@ -112,6 +113,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
     hasCycle: null,
     lastPeriodStart: "",
     averageCycleLength: "",
+    averagePeriodLength: "",
     regularity: "",
     perimenopauseInfo: "",
     goals: [],
@@ -149,6 +151,10 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         if (data.hasCycle === null) return "Laat ons weten of je een cyclus hebt."
         if (data.hasCycle) {
           if (!data.lastPeriodStart) return "Vul de startdatum van je laatste menstruatie in."
+          const periodLen = Number(data.averagePeriodLength)
+          if (!periodLen || periodLen < 2 || periodLen > 14) {
+            return "Vul in hoeveel dagen je menstruatie gemiddeld duurt (2-14)."
+          }
           const len = Number(data.averageCycleLength)
           if (!len || len < 15 || len > 60) return "Vul een gemiddelde cyclusduur in (15-60 dagen)."
           if (!data.regularity) return "Laat ons weten of je cyclus regelmatig is."
@@ -199,6 +205,9 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
           lastPeriodStart: data.lastPeriodStart || undefined,
           averageCycleLength: data.averageCycleLength
             ? Number(data.averageCycleLength)
+            : undefined,
+          averagePeriodLength: data.averagePeriodLength
+            ? Number(data.averagePeriodLength)
             : undefined,
           regularity: (data.regularity || undefined) as
             | "regelmatig"
@@ -602,6 +611,20 @@ function CycleStep({
               max={todayISO()}
               onChange={(e) => setData((d) => ({ ...d, lastPeriodStart: e.target.value }))}
             />
+          </div>
+          <div>
+            <Label htmlFor="averagePeriodLength">Hoeveel dagen duurt je menstruatie gemiddeld?</Label>
+            <Input
+              id="averagePeriodLength"
+              type="number"
+              inputMode="numeric"
+              min={2}
+              max={14}
+              placeholder="Bijv. 5"
+              value={data.averagePeriodLength}
+              onChange={(e) => setData((d) => ({ ...d, averagePeriodLength: e.target.value }))}
+            />
+            <p className="text-xs text-ink-soft mt-1.5">Alleen de bloedingsdagen, niet je hele cyclus.</p>
           </div>
           <div>
             <Label htmlFor="averageCycleLength">Hoe lang duurt je cyclus gemiddeld?</Label>

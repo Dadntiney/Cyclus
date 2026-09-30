@@ -3,6 +3,11 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { onboardingSchema, type OnboardingInput } from "@/lib/validations/onboarding"
+import {
+  buildPeriodSeedDates,
+  clampPeriodLength,
+  isPeriodStillActive,
+} from "@/lib/cycle/period-seed"
 
 export async function completeOnboarding(input: OnboardingInput) {
   const parsed = onboardingSchema.safeParse(input)
@@ -52,14 +57,23 @@ export async function completeOnboarding(input: OnboardingInput) {
     throw new Error("Opslaan van je profiel is niet gelukt.")
   }
 
+  const averagePeriodLength = data.hasCycle
+    ? clampPeriodLength(data.averagePeriodLength ?? undefined)
+    : null
+  const periodOngoing =
+    Boolean(data.hasCycle && data.lastPeriodStart && averagePeriodLength) &&
+    isPeriodStillActive(data.lastPeriodStart!, averagePeriodLength!)
+
   const { error: cycleError } = await supabase.from("cycle_profiles").upsert(
     {
       user_id: user.id,
       has_cycle: data.hasCycle,
       last_period_start: data.hasCycle ? data.lastPeriodStart || null : null,
       average_cycle_length: data.hasCycle ? data.averageCycleLength ?? null : null,
+      average_period_length: averagePeriodLength,
       regularity: data.hasCycle ? data.regularity ?? null : null,
       perimenopause_information: data.perimenopauseInfo || null,
+      active_period_start: periodOngoing ? data.lastPeriodStart! : null,
     },
     { onConflict: "user_id" },
   )
@@ -68,16 +82,16 @@ export async function completeOnboarding(input: OnboardingInput) {
     throw new Error("Opslaan van je cyclusgegevens is niet gelukt.")
   }
 
-  // Seed a calendar mark so phase estimates use logged history (and clearing
-  // the calendar can later clear the estimate — no orphaned profile date).
+  // Seed consecutive bleed days so history/duration match what she told us.
   if (data.hasCycle && data.lastPeriodStart) {
+    const seedDates = buildPeriodSeedDates(data.lastPeriodStart, averagePeriodLength ?? 5)
     const { error: logError } = await supabase.from("cycle_logs").upsert(
-      {
+      seedDates.map((date) => ({
         user_id: user.id,
-        date: data.lastPeriodStart,
+        date,
         menstruation: true,
         symptoms: [],
-      },
+      })),
       { onConflict: "user_id,date" },
     )
     if (logError) {

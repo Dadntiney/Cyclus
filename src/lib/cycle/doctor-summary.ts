@@ -21,6 +21,7 @@ export interface DoctorSummaryInput {
     has_cycle: boolean
     last_period_start: string | null
     average_cycle_length: number | null
+    average_period_length?: number | null
     regularity: string | null
     life_stage?: string | null
   } | null
@@ -87,6 +88,9 @@ export function buildDoctorSummary(input: DoctorSummaryInput): DoctorSummary {
       cycleProfile.average_cycle_length
         ? `Gemiddelde cycluslengte (opgegeven): ${cycleProfile.average_cycle_length} dagen`
         : null,
+      cycleProfile.average_period_length
+        ? `Gemiddelde menstruatieduur (opgegeven): ${cycleProfile.average_period_length} dagen`
+        : null,
       cycleProfile.regularity ? `Regelmaat: ${cycleProfile.regularity}` : null,
       cycleProfile.life_stage ? `Zelfgekozen levensfase: ${cycleProfile.life_stage}` : null,
       menstruationDates.length
@@ -97,6 +101,8 @@ export function buildDoctorSummary(input: DoctorSummaryInput): DoctorSummary {
       cycleProfile.last_period_start,
       cycleProfile.average_cycle_length,
       cycleProfile.has_cycle,
+      undefined,
+      cycleProfile.average_period_length,
     )
     if (todayEstimate) {
       parts.push(

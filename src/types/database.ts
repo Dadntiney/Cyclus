@@ -104,6 +104,7 @@ export type Database = {
         Row: {
           active_period_start: string | null
           average_cycle_length: number | null
+          average_period_length: number | null
           created_at: string
           has_cycle: boolean
           id: string
@@ -117,6 +118,7 @@ export type Database = {
         Insert: {
           active_period_start?: string | null
           average_cycle_length?: number | null
+          average_period_length?: number | null
           created_at?: string
           has_cycle?: boolean
           id?: string
@@ -130,6 +132,7 @@ export type Database = {
         Update: {
           active_period_start?: string | null
           average_cycle_length?: number | null
+          average_period_length?: number | null
           created_at?: string
           has_cycle?: boolean
           id?: string

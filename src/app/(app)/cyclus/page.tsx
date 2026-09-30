@@ -141,7 +141,13 @@ export default async function CyclusPage() {
 
   const cycleEstimate =
     cycleProfile && !postCycleMode
-      ? estimateCycle(effectiveLastStart, cycleProfile.average_cycle_length, cycleProfile.has_cycle)
+      ? estimateCycle(
+          effectiveLastStart,
+          cycleProfile.average_cycle_length,
+          cycleProfile.has_cycle,
+          undefined,
+          cycleProfile.average_period_length,
+        )
       : null
 
   const nextPeriod =

@@ -100,6 +100,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
   const anticipation = composeAnticipation({
     lastPeriodStart: effectiveLastStart,
     averageCycleLength: cycleProfile?.average_cycle_length ?? null,
+    averagePeriodLength: cycleProfile?.average_period_length ?? null,
     hasCycle: Boolean(cycleProfile?.has_cycle),
     phaseInsights,
   })

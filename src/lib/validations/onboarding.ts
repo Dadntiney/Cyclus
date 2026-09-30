@@ -6,6 +6,7 @@ export const onboardingSchema = z.object({
   hasCycle: z.boolean(),
   lastPeriodStart: z.string().optional(),
   averageCycleLength: z.number().int().min(15).max(60).optional(),
+  averagePeriodLength: z.number().int().min(2).max(14).optional(),
   regularity: z.enum(["regelmatig", "onregelmatig", "onbekend"]).optional(),
   perimenopauseInfo: z.string().max(500).optional(),
   goals: z.array(z.string()).min(1, "Kies minstens één doel."),

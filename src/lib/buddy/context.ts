@@ -109,6 +109,8 @@ export async function buildBuddyContext(userId: string): Promise<string[]> {
         getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory),
         cycleProfile.average_cycle_length,
         cycleProfile.has_cycle,
+        undefined,
+        cycleProfile.average_period_length,
       )
     : null
 

@@ -4,6 +4,11 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
+import {
+  buildPeriodSeedDates,
+  clampPeriodLength,
+  isPeriodStillActive,
+} from "@/lib/cycle/period-seed"
 
 export interface UpdateProfileInput {
   name: string
@@ -36,6 +41,7 @@ export interface UpdateProfileInput {
   hasCycle: boolean
   lastPeriodStart: string | null
   averageCycleLength: number | null
+  averagePeriodLength: number | null
   regularity: string | null
   lifeStage: string | null
   perimenopauseInfo: string | null
@@ -103,8 +109,46 @@ export async function updateProfile(input: UpdateProfileInput) {
     return { error: "Vul een gemiddelde cyclusduur tussen 15 en 60 dagen in." }
   }
 
+  const averagePeriodLength =
+    input.hasCycle && input.lastPeriodStart
+      ? clampPeriodLength(input.averagePeriodLength)
+      : null
+
+  if (
+    input.averagePeriodLength !== null &&
+    (input.averagePeriodLength < 2 || input.averagePeriodLength > 14)
+  ) {
+    return { error: "Vul een menstruatieduur tussen 2 en 14 dagen in." }
+  }
+
   const lifeStage =
     input.lifeStage && LIFE_STAGE_VALUES.has(input.lifeStage) ? input.lifeStage : null
+
+  const { data: existingCycle } = await supabase
+    .from("cycle_profiles")
+    .select("active_period_start")
+    .eq("user_id", user.id)
+    .maybeSingle()
+
+  const periodOngoing =
+    Boolean(input.hasCycle && input.lastPeriodStart && averagePeriodLength) &&
+    isPeriodStillActive(input.lastPeriodStart!, averagePeriodLength!)
+
+  // Mirror live Start when the profile-seeded bleed is still going; don't
+  // overwrite a differently dated active period she started from Vandaag.
+  let nextActivePeriodStart = existingCycle?.active_period_start ?? null
+  if (periodOngoing && input.lastPeriodStart) {
+    if (!nextActivePeriodStart || nextActivePeriodStart === input.lastPeriodStart) {
+      nextActivePeriodStart = input.lastPeriodStart
+    }
+  } else if (
+    nextActivePeriodStart &&
+    input.lastPeriodStart &&
+    nextActivePeriodStart === input.lastPeriodStart &&
+    !periodOngoing
+  ) {
+    nextActivePeriodStart = null
+  }
 
   const { error: cycleError } = await supabase
     .from("cycle_profiles")
@@ -112,22 +156,28 @@ export async function updateProfile(input: UpdateProfileInput) {
       has_cycle: input.hasCycle,
       last_period_start: input.lastPeriodStart,
       average_cycle_length: input.averageCycleLength,
+      average_period_length: averagePeriodLength,
       regularity: input.regularity,
       life_stage: lifeStage,
       perimenopause_information: input.perimenopauseInfo,
+      active_period_start: input.hasCycle ? nextActivePeriodStart : null,
     })
     .eq("user_id", user.id)
 
   if (cycleError) return { error: "Opslaan van je cyclusinstellingen is niet gelukt." }
 
   if (input.hasCycle && input.lastPeriodStart) {
+    const seedDates = buildPeriodSeedDates(
+      input.lastPeriodStart,
+      averagePeriodLength ?? 5,
+    )
     const { error: logError } = await supabase.from("cycle_logs").upsert(
-      {
+      seedDates.map((date) => ({
         user_id: user.id,
-        date: input.lastPeriodStart,
+        date,
         menstruation: true,
         symptoms: [],
-      },
+      })),
       { onConflict: "user_id,date" },
     )
     if (logError) return { error: "Opslaan van je cyclusinstellingen is niet gelukt." }

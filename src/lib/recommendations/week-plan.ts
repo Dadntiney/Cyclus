@@ -18,7 +18,10 @@ export type WeekPlanRecipe = Pick<
 type Workout = WeekPlanWorkout
 type Recipe = WeekPlanRecipe
 type Profile = Tables<"profiles">
-type CycleProfile = Pick<Tables<"cycle_profiles">, "last_period_start" | "average_cycle_length" | "has_cycle">
+type CycleProfile = Pick<
+  Tables<"cycle_profiles">,
+  "last_period_start" | "average_cycle_length" | "average_period_length" | "has_cycle"
+>
 
 export type MealSlot = "ontbijt" | "lunch" | "diner"
 
@@ -179,7 +182,13 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
     const date = addDays(weekStart, i)
     const dateISO = format(date, "yyyy-MM-dd")
     const estimate = cycleProfile
-      ? estimateCycle(cycleProfile.last_period_start, cycleProfile.average_cycle_length, cycleProfile.has_cycle, date)
+      ? estimateCycle(
+          cycleProfile.last_period_start,
+          cycleProfile.average_cycle_length,
+          cycleProfile.has_cycle,
+          date,
+          cycleProfile.average_period_length,
+        )
       : null
     phaseByIndex.push(estimate)
     if (

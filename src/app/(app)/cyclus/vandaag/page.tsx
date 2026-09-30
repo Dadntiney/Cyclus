@@ -94,6 +94,8 @@ export default async function CyclusdagPage() {
     getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory),
     cycleProfile.average_cycle_length,
     cycleProfile.has_cycle,
+    undefined,
+    cycleProfile.average_period_length,
   )
 
   if (!cycleEstimate) {

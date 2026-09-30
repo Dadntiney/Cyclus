@@ -171,6 +171,8 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
         getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory),
         cycleProfile.average_cycle_length,
         cycleProfile.has_cycle,
+        undefined,
+        cycleProfile.average_period_length,
       )
     : null
   // Prefer the week-plan estimate for today when present — same phase as Deze week.
@@ -304,6 +306,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
   const anticipation = composeAnticipation({
     lastPeriodStart: effectiveLastStart,
     averageCycleLength: cycleProfile?.average_cycle_length ?? null,
+    averagePeriodLength: cycleProfile?.average_period_length ?? null,
     hasCycle: Boolean(cycleProfile?.has_cycle),
     phaseInsights: allPhaseInsights,
   })

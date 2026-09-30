@@ -39,6 +39,7 @@ export interface Anticipation {
 export interface ComposeAnticipationInput {
   lastPeriodStart: string | null
   averageCycleLength: number | null
+  averagePeriodLength?: number | null
   hasCycle: boolean
   /** All phase×symptom insights (any phase), strongest first. */
   phaseInsights: PhaseSymptomInsight[]
@@ -73,6 +74,7 @@ export function composeAnticipation(input: ComposeAnticipationInput): Anticipati
   const {
     lastPeriodStart,
     averageCycleLength,
+    averagePeriodLength = null,
     hasCycle,
     phaseInsights,
     today = new Date(),
@@ -85,14 +87,26 @@ export function composeAnticipation(input: ComposeAnticipationInput): Anticipati
   }
 
   const todayNoon = new Date(`${iso(today)}T12:00:00`)
-  const todayEstimate = estimateCycle(lastPeriodStart, averageCycleLength, hasCycle, todayNoon)
+  const todayEstimate = estimateCycle(
+    lastPeriodStart,
+    averageCycleLength,
+    hasCycle,
+    todayNoon,
+    averagePeriodLength,
+  )
   if (!todayEstimate) return null
 
   const byPhase = topInsightByPhase(phaseInsights)
 
   for (let offset = 1; offset <= horizonDays; offset++) {
     const day = addDays(todayNoon, offset)
-    const estimate = estimateCycle(lastPeriodStart, averageCycleLength, hasCycle, day)
+    const estimate = estimateCycle(
+      lastPeriodStart,
+      averageCycleLength,
+      hasCycle,
+      day,
+      averagePeriodLength,
+    )
     if (!estimate) continue
 
     const insight = byPhase.get(estimate.phase)
@@ -103,6 +117,7 @@ export function composeAnticipation(input: ComposeAnticipationInput): Anticipati
       averageCycleLength,
       hasCycle,
       addDays(todayNoon, offset - 1),
+      averagePeriodLength,
     )
     // Only fire on the day she *enters* the patterned phase — not every day
     // she spends inside it.
@@ -112,7 +127,13 @@ export function composeAnticipation(input: ComposeAnticipationInput): Anticipati
     const softDates: string[] = []
     for (let w = 0; w < softWindowDays; w++) {
       const softDay = addDays(day, w)
-      const softEstimate = estimateCycle(lastPeriodStart, averageCycleLength, hasCycle, softDay)
+      const softEstimate = estimateCycle(
+        lastPeriodStart,
+        averageCycleLength,
+        hasCycle,
+        softDay,
+        averagePeriodLength,
+      )
       if (!softEstimate || softEstimate.phase !== estimate.phase) break
       softDates.push(iso(softDay))
     }

@@ -28,12 +28,19 @@ export function phaseLabel(phase: CyclePhase): string {
  * exported so `estimateCycle` (today) and the historical pattern analysis
  * in cycle/patterns.ts (past cycles) classify phases identically.
  */
-export function classifyPhase(cycleDay: number, cycleLength: number): CyclePhase {
-  const menstruationLength = Math.min(7, Math.round(cycleLength * 0.18))
+export function classifyPhase(
+  cycleDay: number,
+  cycleLength: number,
+  menstruationLength?: number | null,
+): CyclePhase {
+  const bleedDays =
+    menstruationLength != null && menstruationLength >= 2 && menstruationLength <= 14
+      ? Math.round(menstruationLength)
+      : Math.min(7, Math.round(cycleLength * 0.18))
   const ovulationWindowStart = Math.round(cycleLength * 0.42)
   const ovulationWindowEnd = Math.round(cycleLength * 0.58)
 
-  if (cycleDay <= menstruationLength) return "menstruatie"
+  if (cycleDay <= bleedDays) return "menstruatie"
   if (cycleDay < ovulationWindowStart) return "folliculair"
   if (cycleDay <= ovulationWindowEnd) return "ovulatie"
   return "luteaal"
@@ -51,6 +58,7 @@ export function estimateCycle(
   averageCycleLength: number | null,
   hasCycle: boolean,
   today: Date = todayDate(),
+  averagePeriodLength?: number | null,
 ): CycleEstimate | null {
   if (!hasCycle || !lastPeriodStart || !averageCycleLength) {
     return null
@@ -64,7 +72,7 @@ export function estimateCycle(
   }
 
   const cycleDay = (daysSinceStart % averageCycleLength) + 1
-  const phase = classifyPhase(cycleDay, averageCycleLength)
+  const phase = classifyPhase(cycleDay, averageCycleLength, averagePeriodLength)
 
   return {
     cycleDay,

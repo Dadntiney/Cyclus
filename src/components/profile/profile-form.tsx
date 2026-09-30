@@ -73,6 +73,7 @@ interface FormState {
   hasCycle: boolean
   lastPeriodStart: string
   averageCycleLength: string
+  averagePeriodLength: string
   regularity: string
   lifeStage: string
   perimenopauseInfo: string
@@ -138,6 +139,9 @@ export function ProfileForm({
     hasCycle: cycleProfile?.has_cycle ?? true,
     lastPeriodStart: cycleProfile?.last_period_start ?? "",
     averageCycleLength: cycleProfile?.average_cycle_length ? String(cycleProfile.average_cycle_length) : "",
+    averagePeriodLength: cycleProfile?.average_period_length
+      ? String(cycleProfile.average_period_length)
+      : "",
     regularity: cycleProfile?.regularity ?? "",
     lifeStage: cycleProfile?.life_stage ?? "",
     perimenopauseInfo: cycleProfile?.perimenopause_information ?? "",
@@ -202,6 +206,7 @@ export function ProfileForm({
       hasCycle: s.hasCycle,
       lastPeriodStart: s.hasCycle ? s.lastPeriodStart || null : null,
       averageCycleLength: s.hasCycle && s.averageCycleLength ? Number(s.averageCycleLength) : null,
+      averagePeriodLength: s.hasCycle && s.averagePeriodLength ? Number(s.averagePeriodLength) : null,
       regularity: s.hasCycle ? s.regularity || null : null,
       lifeStage: s.lifeStage || null,
       perimenopauseInfo: s.perimenopauseInfo.trim() || null,
@@ -1011,6 +1016,25 @@ export function ProfileForm({
                 </p>
               </div>
               <div>
+                <Label htmlFor="periodLength">Hoeveel dagen duurt je menstruatie gemiddeld?</Label>
+                <Input
+                  id="periodLength"
+                  type="number"
+                  inputMode="numeric"
+                  min={2}
+                  max={14}
+                  placeholder="Bijv. 5"
+                  value={state.averagePeriodLength}
+                  onChange={(e) =>
+                    applyUpdate((s) => ({ ...s, averagePeriodLength: e.target.value }), "debounced")
+                  }
+                  onBlur={onBlurFlush}
+                />
+                <p className="text-xs text-ink-soft mt-1.5">
+                  Alleen de bloedingsdagen — niet je hele cyclus. Meestal ergens tussen 3 en 7.
+                </p>
+              </div>
+              <div>
                 <Label htmlFor="cycleLength">Gemiddelde cyclusduur (dagen)</Label>
                 <Input
                   id="cycleLength"
@@ -1022,6 +1046,9 @@ export function ProfileForm({
                   onChange={(e) => applyUpdate((s) => ({ ...s, averageCycleLength: e.target.value }), "debounced")}
                   onBlur={onBlurFlush}
                 />
+                <p className="text-xs text-ink-soft mt-1.5">
+                  Van de eerste dag van je menstruatie tot de dag vóór de volgende.
+                </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-ink mb-2">Regelmaat</p>

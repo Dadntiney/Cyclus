@@ -18,6 +18,7 @@ export interface CycleProfileForInsights {
   has_cycle: boolean
   last_period_start: string | null
   average_cycle_length: number | null
+  average_period_length?: number | null
 }
 
 export interface PersonalInsight {
@@ -92,6 +93,7 @@ function phaseForDate(
     cycleProfile.average_cycle_length,
     cycleProfile.has_cycle,
     new Date(`${date}T12:00:00`),
+    cycleProfile.average_period_length,
   )
   return estimate?.phase ?? null
 }
