@@ -64,7 +64,8 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
                     </span>
                   ) : href === "/buddy" ? (
                     <BuddyGlyph
-                      className={cn("h-5 w-5 text-peach", !active && "opacity-75")}
+                      variant="outline"
+                      className="h-5 w-5"
                       strokeWidth={active ? 2.25 : 1.75}
                     />
                   ) : (

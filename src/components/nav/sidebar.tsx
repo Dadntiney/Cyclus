@@ -49,7 +49,8 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
                     </span>
                   ) : href === "/buddy" ? (
                     <BuddyGlyph
-                      className={cn("h-4.5 w-4.5 text-peach", !active && "opacity-80")}
+                      variant="outline"
+                      className="h-4.5 w-4.5"
                       strokeWidth={active ? 2.25 : 1.75}
                     />
                   ) : (
