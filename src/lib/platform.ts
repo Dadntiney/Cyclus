@@ -61,6 +61,9 @@ export async function syncNativeStatusBar() {
     StatusBar.setBackgroundColor({
       color: dark ? BRAND_HEX.creamDark : BRAND_HEX.cream,
     }).catch(() => {}),
+    // Keep the status bar opaque above the WebView — overlaying made the
+    // top chrome look translucent over the GoFiev header.
+    StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {}),
   ])
 }
 
