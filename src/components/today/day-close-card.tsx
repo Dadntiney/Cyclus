@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react"
 import Link from "next/link"
-import { Moon, CheckCircle2, Circle, Heart, Sparkles, NotebookPen } from "lucide-react"
+import { Moon, CheckCircle2, Circle, Heart, Sparkles, NotebookPen, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getDayCloseLine, getEveningAffirmation } from "@/lib/data/day-close-notes"
 import { createDiaryEntry } from "@/lib/actions/diary"
@@ -12,10 +12,8 @@ import {
 } from "@/lib/client/week-plan-storage"
 
 /**
- * Evening wrap-up on Vandaag: a short consciousness moment, not a second
- * questionnaire. Checklist for what was noted, optional gratitude (saved to
- * dagboek), a soft affirmation, and optional links to sleep meditation /
- * diary — then she can mark the day closed without guilt.
+ * Evening wrap-up on Vandaag. Collapsed by default before evening so the
+ * daytime page stays one calm composition — not a second dashboard.
  */
 export function DayCloseCard({
   userId,
@@ -39,6 +37,7 @@ export function DayCloseCard({
   mentalWellbeingEnabled?: boolean
 }) {
   const [closed, setClosed] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const [movementHandled, setMovementHandled] = useState(movementDone)
   const [hydrated, setHydrated] = useState(false)
   const [gratitude, setGratitude] = useState("")
@@ -70,6 +69,8 @@ export function DayCloseCard({
         setClosed(false)
         setMovementHandled(movementDone)
       }
+      // Evening (17+) opens by default; daytime stays a quiet invite.
+      setExpanded(new Date().getHours() >= 17)
       setHydrated(true)
     }
     syncFromClient()
@@ -127,6 +128,7 @@ export function DayCloseCard({
       /* ignore */
     }
     setClosed(false)
+    setExpanded(true)
   }
 
   const items = [
@@ -154,6 +156,8 @@ export function DayCloseCard({
         ]
       : []),
   ]
+
+  const doneCount = items.filter((i) => i.done).length
 
   if (hydrated && closed) {
     return (
@@ -191,6 +195,25 @@ export function DayCloseCard({
           </button>
         </div>
       </div>
+    )
+  }
+
+  if (hydrated && !expanded) {
+    return (
+      <button
+        type="button"
+        onClick={() => setExpanded(true)}
+        className="w-full rounded-3xl bg-sage-soft/55 px-4 py-3.5 flex items-center gap-3 text-left touch-manipulation motion-safe:active:scale-[0.99] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+      >
+        <Moon className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} aria-hidden />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-medium text-ink">Dag afsluiten</span>
+          <span className="block text-xs text-ink-soft mt-0.5">
+            {doneCount}/{items.length} genoteerd · open voor vanavond
+          </span>
+        </span>
+        <ChevronDown className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
+      </button>
     )
   }
 

@@ -1,10 +1,11 @@
 import Link from "next/link"
-import { ChevronRight, Heart } from "lucide-react"
+import { Heart } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { TodayCards } from "@/components/today/today-cards"
 import { AnticipationNote } from "@/components/today/anticipation-note"
 import { HormoneRoadmapNote } from "@/components/today/hormone-roadmap-note"
+import { PhaseContextCard } from "@/components/today/phase-context-card"
 import { CheckinForm } from "@/components/today/checkin-form"
 import { DayCloseCard } from "@/components/today/day-close-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
@@ -12,7 +13,6 @@ import { SleepCard } from "@/components/sleep/sleep-card"
 import { MenstruationQuickAction } from "@/components/cycle/menstruation-quick-action"
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import type { CyclePhase } from "@/lib/cycle/estimate"
-import { cn } from "@/lib/utils"
 import { greeting } from "@/lib/greeting"
 
 const PHASE_TONE: Record<CyclePhase, { bg: string; text: string }> = {
@@ -44,13 +44,14 @@ const PHASE_TAGLINE: Record<CyclePhase, string> = {
 /**
  * Vandaag = one calm composition, not a widget dashboard.
  *
- * 1. Hello + cycle context (incl. menstruatie-actie hier — vindbaar, niet luid)
- * 2. Optional vooruitkijken note (her harder days approaching)
- * 3. Hormone roadmap: why now (fase + klachten) → soft support points
- * 4. One “voor jou vandaag” surface with a single primary CTA
- * 5. Light check-in
- * 6. Optional sleep / meds only
- * 7. Soft day checkout — close the day without a second form
+ * 1. Hello + one phase surface (menstruatie start/stop folded in)
+ * 2. Check-in first when empty (so roadmap can become personal)
+ * 3. Optional vooruitkijken
+ * 4. Compact hormone roadmap
+ * 5. Voor jou vandaag (act)
+ * 6. Check-in adjust when already filled
+ * 7. Optional sleep / meds
+ * 8. Day close — compact until evening
  */
 export default async function VandaagPage() {
   const user = await getAuthedUser()
@@ -85,6 +86,17 @@ export default async function VandaagPage() {
   const hasCycle = Boolean(cycleProfile?.has_cycle)
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
 
+  const hasMeaningfulCheckin = Boolean(
+    checkin &&
+      (checkin.energy ||
+        checkin.mood ||
+        checkin.sleep ||
+        checkin.stress ||
+        (checkin.symptoms?.length ?? 0) > 0 ||
+        (checkin.needs?.length ?? 0) > 0 ||
+        (checkin.notes?.trim()?.length ?? 0) > 0),
+  )
+
   const dayFocus = recommendation?.dayFocus ?? null
   const personalizedFocus =
     dayFocus &&
@@ -96,18 +108,32 @@ export default async function VandaagPage() {
       ? dayFocus
       : null
 
-  // Generic recovery row only when it actually matches a need for rest,
-  // or when movement is off (recovery becomes the soft primary).
   const wantRecoveryRow =
     Boolean(mentalWellbeingSuggestion) ||
     checkin?.needs?.includes("rust") ||
     checkin?.needs?.includes("mezelf") ||
     !(profile?.movement_enabled ?? true)
 
+  // When roadmap follows, keep the phase chip short — avoid repeating the same story.
+  const phaseSubtitle = cycleEstimate
+    ? hormoneRoadmap
+      ? PHASE_TAGLINE[cycleEstimate.phase]
+      : (bodyRecognition?.text ?? PHASE_TAGLINE[cycleEstimate.phase])
+    : ""
+
+  const checkinForm = (
+    <CheckinForm
+      initial={checkin ?? null}
+      mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
+      sleepTrackingEnabled={sleepEnabled}
+      customSymptoms={profile?.custom_symptoms ?? []}
+    />
+  )
+
   return (
     <PullToRefresh>
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <header className="mb-6">
+        <header className="mb-5">
           <div className="flex items-start justify-between gap-3">
             <h1 className="font-display text-2xl lg:text-3xl text-ink tracking-tight min-w-0">
               {greeting()}
@@ -124,47 +150,15 @@ export default async function VandaagPage() {
 
           {cycleEstimate && tone ? (
             <div className="mt-3">
-              <Link
-                href="/cyclus/vandaag"
-                className={cn(
-                  "flex items-center gap-3 rounded-2xl px-3.5 py-2.5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform",
-                  tone.bg,
-                )}
-              >
-                <span
-                  className={cn(
-                    "font-display text-xl leading-none tabular-nums shrink-0",
-                    tone.text,
-                  )}
-                >
-                  {cycleEstimate.cycleDay}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className={cn("block text-sm font-medium", tone.text)}>
-                    {cycleEstimate.phaseLabel}
-                  </span>
-                  <span className="block text-xs text-ink-soft mt-0.5 leading-relaxed">
-                    {bodyRecognition?.text ?? PHASE_TAGLINE[cycleEstimate.phase]}
-                  </span>
-                </span>
-                <ChevronRight
-                  className={cn("h-4 w-4 shrink-0 opacity-70", tone.text)}
-                  strokeWidth={2}
-                  aria-hidden
-                />
-                <span className="sr-only">Open uitleg over deze fase</span>
-              </Link>
-
-              {/* Menstruatie: bij cyclus-context — vindbaar, geen aparte dashboardkaart. */}
-              {hasCycle && (
-                <div className="mt-2">
-                  {isMenstruationActive ? (
-                    <MenstruationQuickAction isActive day={menstruationDay} variant="inline" />
-                  ) : (
-                    <MenstruationQuickAction isActive={false} day={null} variant="quiet" />
-                  )}
-                </div>
-              )}
+              <PhaseContextCard
+                phase={cycleEstimate.phase}
+                phaseLabel={cycleEstimate.phaseLabel}
+                cycleDay={cycleEstimate.cycleDay}
+                subtitle={phaseSubtitle}
+                hasCycle={hasCycle}
+                isMenstruationActive={isMenstruationActive}
+                menstruationDay={menstruationDay}
+              />
             </div>
           ) : (
             <div className="mt-2">
@@ -184,7 +178,10 @@ export default async function VandaagPage() {
           )}
         </header>
 
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6">
+          {/* Empty check-in early: understand starts after she shares how she feels */}
+          {!hasMeaningfulCheckin && checkinForm}
+
           {anticipation && <AnticipationNote anticipation={anticipation} />}
 
           {hormoneRoadmap && (
@@ -207,12 +204,8 @@ export default async function VandaagPage() {
             />
           )}
 
-          <CheckinForm
-            initial={checkin ?? null}
-            mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
-            sleepTrackingEnabled={sleepEnabled}
-            customSymptoms={profile?.custom_symptoms ?? []}
-          />
+          {/* Filled check-in later: adjust without blocking the plan */}
+          {hasMeaningfulCheckin && checkinForm}
 
           {(sleepEnabled || showMedicationCard) && (
             <section aria-label="Extra voor vandaag" className="flex flex-col gap-3">
@@ -234,16 +227,7 @@ export default async function VandaagPage() {
             userId={user.id}
             date={today}
             weekStartISO={weekStartISO}
-            hasCheckin={Boolean(
-              checkin &&
-                (checkin.energy ||
-                  checkin.mood ||
-                  checkin.sleep ||
-                  checkin.stress ||
-                  (checkin.symptoms?.length ?? 0) > 0 ||
-                  (checkin.needs?.length ?? 0) > 0 ||
-                  (checkin.notes?.trim()?.length ?? 0) > 0),
-            )}
+            hasCheckin={hasMeaningfulCheckin}
             movementEnabled={profile?.movement_enabled ?? true}
             movementDone={Boolean(completedWorkout)}
             sleepTrackingEnabled={sleepEnabled}

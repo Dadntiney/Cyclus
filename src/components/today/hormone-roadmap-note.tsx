@@ -13,9 +13,7 @@ const KIND_ICON: Record<RoadmapSupportKind, LucideIcon> = {
 }
 
 /**
- * Compact “hormoonwegwijzer” on Vandaag: why her body may feel this way,
- * plus 1–3 soft support points that move with phase + today’s check-in
- * (and optionally what helped her before).
+ * Compact “hormoonwegwijzer” on Vandaag — one why-beat + max two supports.
  */
 export function HormoneRoadmapNote({
   roadmap,
@@ -28,7 +26,7 @@ export function HormoneRoadmapNote({
     <section
       aria-labelledby="roadmap-heading"
       className={cn(
-        "rounded-3xl px-4 py-4",
+        "rounded-3xl px-4 py-3.5",
         phaseTone?.bg ?? "bg-sage-soft/55",
       )}
     >
@@ -41,7 +39,7 @@ export function HormoneRoadmapNote({
       <p className="text-sm text-ink leading-relaxed">{roadmap.whyNow}</p>
 
       {roadmap.supports.length > 0 && (
-        <ul className="mt-3 flex flex-col gap-2.5">
+        <ul className="mt-3 flex flex-col gap-2">
           {roadmap.supports.map((support) => {
             const Icon = KIND_ICON[support.kind]
             return (
@@ -71,16 +69,28 @@ export function HormoneRoadmapNote({
         </ul>
       )}
 
-      <Link
-        href="/cyclus"
-        className={cn(
-          "mt-3 inline-flex items-center gap-1 min-h-11 text-xs font-medium touch-manipulation",
-          phaseTone?.text ?? "text-sage-dark",
-        )}
-      >
-        Jouw verhaal op Cyclus
-        <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-      </Link>
+      <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+        <Link
+          href="/cyclus/vandaag"
+          className={cn(
+            "inline-flex items-center gap-1 min-h-11 text-xs font-medium touch-manipulation",
+            phaseTone?.text ?? "text-sage-dark",
+          )}
+        >
+          Meer over deze fase
+          <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+        </Link>
+        <Link
+          href="/cyclus"
+          className={cn(
+            "inline-flex items-center gap-1 min-h-11 text-xs font-medium touch-manipulation",
+            phaseTone?.text ?? "text-sage-dark",
+          )}
+        >
+          Jouw verhaal
+          <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+        </Link>
+      </div>
     </section>
   )
 }

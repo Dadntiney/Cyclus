@@ -178,8 +178,9 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
   const todayNeeds = needs ?? []
 
   const hormonalWhy = firstSentence(knowledge.whyExplainer)
+  // Keep whyNow to one calm beat — personal signal first, phase why only as fallback.
   const whyNow = bodyRecognition
-    ? `${bodyRecognition.text} ${hormonalWhy}`
+    ? bodyRecognition.text
     : todaySymptoms.length
       ? `Je noteerde vandaag o.a. ${symptomLabel(todaySymptoms[0]).toLowerCase()}. ${hormonalWhy}`
       : hormonalWhy
@@ -206,8 +207,7 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
     if (supports.length >= 2) break
   }
 
-  // 2) Movement — always give a phase-aware movement why when enabled,
-  // tilted gentler when her check-in asks for rest.
+  // 2) Movement — phase-aware, only if we still have room (max 2 total on Vandaag)
   const wantsRest =
     todayNeeds.includes("rust") ||
     todayNeeds.includes("mezelf") ||
@@ -215,7 +215,7 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
     (stress !== null && stress >= 4) ||
     content.movement.preferGentler
 
-  if (movementEnabled && !usedKinds.has("beweging")) {
+  if (movementEnabled && !usedKinds.has("beweging") && supports.length < 2) {
     supports.push({
       kind: "beweging",
       title: wantsRest ? "Zachtere beweging" : content.movement.intensityLabel,
@@ -224,7 +224,7 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
     usedKinds.add("beweging")
   }
 
-  if (nutritionEnabled && !usedKinds.has("voeding")) {
+  if (nutritionEnabled && !usedKinds.has("voeding") && supports.length < 2) {
     supports.push({
       kind: "voeding",
       title: content.nutrition.focusLabel,
@@ -233,8 +233,8 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
     usedKinds.add("voeding")
   }
 
-  // 3) Tip: symptom-matched daily tip, else phase lifestyle tip
-  if (!usedKinds.has("tip") && supports.length < 3) {
+  // 3) Tip only if still under the calm cap of 2
+  if (!usedKinds.has("tip") && supports.length < 2) {
     if (dailyTip) {
       supports.push({
         kind: "tip",
@@ -255,6 +255,6 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
   return {
     phaseLabel,
     whyNow,
-    supports: supports.slice(0, 3),
+    supports: supports.slice(0, 2),
   }
 }
