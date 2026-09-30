@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useTransition, type FormEvent } from "react"
+import { useEffect, useRef, useState, useTransition, type FormEvent } from "react"
 import { Send } from "lucide-react"
 import { sendBuddyMessage } from "@/lib/actions/buddy"
 import { cn } from "@/lib/utils"
@@ -26,12 +26,34 @@ export function ChatWindow({
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const didMountScroll = useRef(false)
 
-  function scrollToBottom() {
+  function scrollToBottom(behavior: ScrollBehavior = "smooth") {
+    const run = () => {
+      const scroller = scrollRef.current
+      const anchor = bottomRef.current
+      if (anchor) {
+        anchor.scrollIntoView({ behavior, block: "end" })
+      } else if (scroller) {
+        scroller.scrollTo({ top: scroller.scrollHeight, behavior })
+      }
+    }
+    // After React paints the new bubble (esp. long Buddy replies).
     requestAnimationFrame(() => {
-      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
+      requestAnimationFrame(run)
     })
   }
+
+  // Keep the latest message fully in view whenever the thread changes.
+  useEffect(() => {
+    if (!didMountScroll.current) {
+      didMountScroll.current = true
+      scrollToBottom("instant")
+      return
+    }
+    scrollToBottom("smooth")
+  }, [messages, isPending])
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -48,7 +70,6 @@ export function ChatWindow({
     }
     setMessages((prev) => [...prev, optimisticMessage])
     setInput("")
-    scrollToBottom()
 
     startTransition(async () => {
       const result = await sendBuddyMessage(conversationId, trimmed)
@@ -68,7 +89,6 @@ export function ChatWindow({
             created_at: new Date().toISOString(),
           },
         ])
-        scrollToBottom()
       }
     })
   }
@@ -115,6 +135,7 @@ export function ChatWindow({
             </div>
           </div>
         )}
+        <div ref={bottomRef} className="h-px w-full shrink-0" aria-hidden />
       </div>
 
       {error && <p className="text-sm text-danger px-5 pb-1">{error}</p>}
