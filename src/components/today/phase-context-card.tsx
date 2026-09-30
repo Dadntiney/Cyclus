@@ -100,23 +100,18 @@ export function PhaseContextCard({
       </Link>
 
       {hasCycle && (
-        <div className="border-t border-black/5 px-3.5 py-1 flex items-center justify-between gap-3">
+        <div className="border-t border-black/5 px-3.5 py-1 flex items-center justify-between gap-3 overflow-visible">
           <span
             className={cn(
-              "text-xs inline-flex items-center gap-1.5 min-h-11",
+              "text-xs inline-flex items-center gap-2 min-h-11 overflow-visible",
               isMenstruationActive ? "text-danger font-medium" : "text-ink-soft",
             )}
           >
-            <span className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center">
-              {isMenstruationActive && (
-                <span
-                  className="absolute inset-0 rounded-full bg-danger/30 animate-menstruatie-glow"
-                  aria-hidden
-                />
-              )}
+            {/* Freestanding droplet — room to breathe, no glow halo behind */}
+            <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center overflow-visible">
               <Droplet
                 className={cn(
-                  "relative h-3.5 w-3.5",
+                  "h-4 w-4 overflow-visible",
                   isMenstruationActive
                     ? "text-danger animate-menstruatie-adem"
                     : "text-ink-soft",

@@ -90,30 +90,16 @@ export function MenstruationQuickAction({
         isActive ? "bg-phase-menstruatie-soft" : "bg-cream-soft/80",
       )}
     >
-      <div className="relative shrink-0">
-        <span
-          className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-full",
-            isActive ? "bg-surface/70" : "bg-surface",
-          )}
-          aria-hidden
-        >
-          <span className="relative inline-flex h-5 w-5 items-center justify-center">
-            {isActive && (
-              <span
-                className="absolute inset-0 rounded-full bg-danger/25 animate-menstruatie-glow"
-                aria-hidden
-              />
+      <div className="relative shrink-0 overflow-visible" aria-hidden>
+        <span className="inline-flex h-10 w-10 items-center justify-center overflow-visible">
+          <Droplet
+            className={cn(
+              "h-5 w-5 overflow-visible",
+              isActive ? "text-danger animate-menstruatie-adem" : "text-sage-dark",
             )}
-            <Droplet
-              className={cn(
-                "relative h-4.5 w-4.5",
-                isActive ? "text-danger animate-menstruatie-adem" : "text-sage-dark",
-              )}
-              fill={isActive ? "currentColor" : "none"}
-              strokeWidth={1.75}
-            />
-          </span>
+            fill={isActive ? "currentColor" : "none"}
+            strokeWidth={1.75}
+          />
         </span>
       </div>
 

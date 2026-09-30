@@ -428,31 +428,16 @@ select {
   }
 }
 
-@keyframes menstruatie-glow {
-  0%,
-  100% {
-    transform: scale(0.85);
-    opacity: 0.2;
-  }
-  50% {
-    transform: scale(1.45);
-    opacity: 0.4;
-  }
-}
-
 .animate-menstruatie-adem {
   display: inline-block;
   transform-origin: center 70%;
   animation: menstruatie-adem 2.2s ease-in-out infinite;
-}
-
-.animate-menstruatie-glow {
-  animation: menstruatie-glow 2.2s ease-in-out infinite;
+  /* Keep scaled frames from clipping in tight flex rows */
+  overflow: visible;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-menstruatie-adem,
-  .animate-menstruatie-glow {
+  .animate-menstruatie-adem {
     animation: none;
   }
 }
