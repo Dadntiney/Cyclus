@@ -3,11 +3,12 @@
 import { useRef } from "react"
 import Link from "next/link"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
+import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
 
 /**
  * Always `fixed top-0`. Do not sync to visualViewport — rubber-band
- * overscroll was dragging "Cyclus" down the screen. Buddy keyboard layout
- * is owned by BuddyShell; the header stays a stable layout-top anchor.
+ * overscroll was dragging the brand header down the screen. Buddy keyboard
+ * layout is owned by BuddyShell; the header stays a stable layout-top anchor.
  */
 export function MobileHeader() {
   const ref = useRef<HTMLElement>(null)
@@ -27,7 +28,7 @@ export function MobileHeader() {
         href="/vandaag"
         className="font-display text-lg text-sage-dark rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
       >
-        Cyclus
+        {APP_DISPLAY_NAME}
       </Link>
     </header>
   )

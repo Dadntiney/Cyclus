@@ -162,7 +162,7 @@ export function ReminderToastHost({
       if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
         for (const toast of toasts) {
           try {
-            new Notification("Cyclus", { body: toast.text, icon: "/favicon.ico" })
+            new Notification("GoFiev", { body: toast.text, icon: "/icons/icon-192.png" })
           } catch {
             // Notifications can throw in some contexts (e.g. iOS Safari) —
             // the in-app toast below still covers her either way.

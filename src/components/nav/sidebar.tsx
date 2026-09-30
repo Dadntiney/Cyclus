@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { BuddyGlyph } from "@/components/buddy/buddy-mark"
 import { NAV_ITEMS } from "./nav-items"
 import { logout } from "@/lib/actions/auth"
+import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
 
 const navLinkFocus =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset"
@@ -21,7 +22,7 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
         href="/vandaag"
         className="font-display text-xl text-sage-dark px-2 mb-8 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
       >
-        Cyclus
+        {APP_DISPLAY_NAME}
       </Link>
 
       <nav className="flex-1" aria-label="Hoofdnavigatie">

@@ -1,7 +1,7 @@
 {
-  "name": "Cyclus — Jouw lichaam. Jouw ritme. Jouw dag.",
-  "short_name": "Cyclus",
-  "description": "Cyclus helpt je bewegen, eten en rusten in het ritme van jouw lichaam.",
+  "name": "GoFiev — Jouw lichaam. Jouw ritme. Jouw dag.",
+  "short_name": "GoFiev",
+  "description": "GoFiev helpt je bewegen, eten en rusten in het ritme van jouw lichaam.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

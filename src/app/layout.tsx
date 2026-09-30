@@ -3,7 +3,12 @@ import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import { ClientBootstrap } from "@/components/bootstrap/client-bootstrap";
 import { getAuthedUser } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/data/profile";
-import { BRAND_HEX } from "@/lib/theme/brand";
+import {
+  APP_DESCRIPTION,
+  APP_DISPLAY_NAME,
+  APP_TAGLINE,
+  BRAND_HEX,
+} from "@/lib/theme/brand";
 import "./globals.css";
 
 const bodyFont = Plus_Jakarta_Sans({
@@ -18,9 +23,8 @@ const displayFont = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Cyclus — Jouw lichaam. Jouw ritme. Jouw dag.",
-  description:
-    "Cyclus helpt je bewegen, eten en rusten in het ritme van jouw lichaam.",
+  title: `${APP_DISPLAY_NAME} — ${APP_TAGLINE}`,
+  description: APP_DESCRIPTION,
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -38,7 +42,7 @@ export const metadata: Metadata = {
     // --color-cream) shows through. MobileHeader already pads for
     // env(safe-area-inset-top), so content still clears the icons.
     statusBarStyle: "black-translucent",
-    title: "Cyclus",
+    title: APP_DISPLAY_NAME,
   },
 };
 

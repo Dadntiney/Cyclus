@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
           `${reminder.id}-${dateISO}`,
         )
         const { sent } = await sendPushToUser(userId, {
-          title: "Cyclus",
+          title: "GoFiev",
           body: text,
           url: REMINDER_TYPE_URL[reminder.type] ?? "/vandaag",
           tag: `reminder-${reminder.id}`,
@@ -227,7 +227,7 @@ export async function GET(request: NextRequest) {
             ? absoluteEnd
               ? { title: "Je schema eindigt vandaag", body: "De periode die je had ingesteld eindigt vandaag.", sourceType: "medication_stop" }
               : { title: "Pauze begint morgen", body: "Vandaag is de laatste innamedag van je wel-periode. Daarna loopt je schema gewoon door.", sourceType: "medication_stop" }
-            : { title: "Cyclus", body: "Je hebt een herinnering van Cyclus.", sourceType: "medication_daily" }
+            : { title: "GoFiev", body: "Je hebt een herinnering van GoFiev.", sourceType: "medication_daily" }
 
         const { sent } = await sendPushToUser(userId, {
           title,
@@ -252,7 +252,7 @@ export async function GET(request: NextRequest) {
         const when =
           lead === 0 ? "vandaag" : lead === 1 ? "morgen" : lead === 7 ? "over een week" : `over ${lead} dagen`
         const { sent } = await sendPushToUser(userId, {
-          title: "Cyclus",
+          title: "GoFiev",
           body: `Je hebt ${when} een artsafspraak genoteerd.`,
           url: "/cyclus/samenvatting",
           tag: `doctor-appointment-${appt.id}`,

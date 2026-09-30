@@ -14,7 +14,7 @@ import { BRAND_HEX } from "./src/lib/theme/brand"
 // cannot be changed afterwards without publishing as a new app.
 const config: CapacitorConfig = {
   appId: "app.cyclus.mobile",
-  appName: "Cyclus",
+  appName: "GoFiev",
   webDir: ".capacitor-empty",
   server: {
     url: "https://cyclus-eight.vercel.app",
