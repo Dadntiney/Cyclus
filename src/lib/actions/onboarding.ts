@@ -68,5 +68,22 @@ export async function completeOnboarding(input: OnboardingInput) {
     throw new Error("Opslaan van je cyclusgegevens is niet gelukt.")
   }
 
+  // Seed a calendar mark so phase estimates use logged history (and clearing
+  // the calendar can later clear the estimate — no orphaned profile date).
+  if (data.hasCycle && data.lastPeriodStart) {
+    const { error: logError } = await supabase.from("cycle_logs").upsert(
+      {
+        user_id: user.id,
+        date: data.lastPeriodStart,
+        menstruation: true,
+        symptoms: [],
+      },
+      { onConflict: "user_id,date" },
+    )
+    if (logError) {
+      throw new Error("Opslaan van je cyclusgegevens is niet gelukt.")
+    }
+  }
+
   redirect("/vandaag")
 }

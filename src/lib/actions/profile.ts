@@ -120,6 +120,19 @@ export async function updateProfile(input: UpdateProfileInput) {
 
   if (cycleError) return { error: "Opslaan van je cyclusinstellingen is niet gelukt." }
 
+  if (input.hasCycle && input.lastPeriodStart) {
+    const { error: logError } = await supabase.from("cycle_logs").upsert(
+      {
+        user_id: user.id,
+        date: input.lastPeriodStart,
+        menstruation: true,
+        symptoms: [],
+      },
+      { onConflict: "user_id,date" },
+    )
+    if (logError) return { error: "Opslaan van je cyclusinstellingen is niet gelukt." }
+  }
+
   revalidatePath("/profiel")
   revalidatePath("/vandaag")
   revalidatePath("/training")

@@ -4,6 +4,46 @@ import { revalidatePath } from "next/cache"
 import { eachDayOfInterval, format, parseISO } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { todayISO } from "@/lib/dates/amsterdam"
+import { computeCycleHistory } from "@/lib/cycle/history"
+
+function revalidateCyclePages() {
+  revalidatePath("/cyclus")
+  revalidatePath("/cyclus/vandaag")
+  revalidatePath("/vandaag")
+  revalidatePath("/deze-week")
+  revalidatePath("/", "layout")
+}
+
+/**
+ * Calendar marks are the live source of truth for “when did her last period
+ * start?”. After she adds/removes menstruation days, sync profile
+ * `last_period_start` to the latest logged period — or clear it when she
+ * wiped every mark, so Vandaag stops showing a phantom menstruatiefase
+ * from a stale onboarding date.
+ */
+async function syncLastPeriodStartFromLogs(userId: string) {
+  const supabase = await createClient()
+  const { data: logs } = await supabase
+    .from("cycle_logs")
+    .select("date, menstruation, symptoms")
+    .eq("user_id", userId)
+    .eq("menstruation", true)
+    .order("date", { ascending: true })
+
+  const history = computeCycleHistory(
+    (logs ?? []).map((l) => ({
+      date: l.date,
+      menstruation: l.menstruation,
+      symptoms: l.symptoms ?? [],
+    })),
+  )
+  const latestStart = history.length ? history[history.length - 1].start : null
+
+  await supabase
+    .from("cycle_profiles")
+    .update({ last_period_start: latestStart })
+    .eq("user_id", userId)
+}
 
 /**
  * "Menstruatie starten" on Vandaag - sets cycle_profiles.active_period_start
@@ -42,9 +82,8 @@ export async function startMenstruationPeriod() {
     .upsert({ user_id: user.id, date: today, menstruation: true }, { onConflict: "user_id,date" })
   if (logError) return { error: "Opslaan is niet gelukt." }
 
-  revalidatePath("/cyclus")
-  revalidatePath("/cyclus/vandaag")
-  revalidatePath("/vandaag")
+  await syncLastPeriodStartFromLogs(user.id)
+  revalidateCyclePages()
   return { success: true }
 }
 
@@ -108,9 +147,8 @@ export async function stopMenstruationPeriod() {
     .eq("user_id", user.id)
   if (profileError) return { error: "Opslaan is niet gelukt." }
 
-  revalidatePath("/cyclus")
-  revalidatePath("/cyclus/vandaag")
-  revalidatePath("/vandaag")
+  await syncLastPeriodStartFromLogs(user.id)
+  revalidateCyclePages()
   return { success: true }
 }
 
@@ -160,9 +198,8 @@ export async function toggleMenstruationDay(date: string) {
     }
   }
 
-  revalidatePath("/cyclus")
-  revalidatePath("/cyclus/vandaag")
-  revalidatePath("/vandaag")
+  await syncLastPeriodStartFromLogs(user.id)
+  revalidateCyclePages()
   return { success: true }
 }
 
@@ -205,8 +242,7 @@ export async function setCycleLogFlow(date: string, flow: (typeof FLOW_VALUES)[n
     if (error) return { error: "Opslaan is niet gelukt." }
   }
 
-  revalidatePath("/cyclus")
-  revalidatePath("/cyclus/vandaag")
-  revalidatePath("/vandaag")
+  await syncLastPeriodStartFromLogs(user.id)
+  revalidateCyclePages()
   return { success: true }
 }

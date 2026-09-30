@@ -101,18 +101,19 @@ export function computeCycleHistory(logs: CycleLogEntry[]): CycleHistoryEntry[] 
 
 /**
  * Her calendar logging should always win over a stale onboarding-time
- * anchor date: if she's logged a period more recently than the stored
- * `last_period_start`, that becomes the effective anchor for phase
- * estimation. Without this, marking periods in the calendar would never
- * feed back into the cyclusdag/fase estimate shown everywhere else, and
- * the two could silently contradict each other indefinitely.
+ * anchor date. If she's logged periods, the latest start is the effective
+ * anchor. If she has wiped every menstruation mark, return null — do NOT
+ * fall back to a leftover profile date, or Vandaag keeps showing e.g.
+ * "Menstruatie · 3" plus "Menstruatie starten" at the same time.
+ * Profile/onboarding writes should create a matching cycle_logs row when
+ * she sets a start date, so a fresh seed still estimates correctly.
  */
 export function getEffectiveLastPeriodStart(
   storedStart: string | null,
   cycleHistory: Pick<CycleHistoryEntry, "start">[],
 ): string | null {
   const latestLoggedStart = cycleHistory.length ? cycleHistory[cycleHistory.length - 1].start : null
-  if (!latestLoggedStart) return storedStart
+  if (!latestLoggedStart) return null
   if (!storedStart) return latestLoggedStart
   return latestLoggedStart > storedStart ? latestLoggedStart : storedStart
 }

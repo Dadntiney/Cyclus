@@ -1,4 +1,5 @@
 import { differenceInCalendarDays } from "date-fns"
+import { todayDate } from "@/lib/dates/amsterdam"
 
 export type CyclePhase = "menstruatie" | "folliculair" | "ovulatie" | "luteaal"
 
@@ -49,7 +50,7 @@ export function estimateCycle(
   lastPeriodStart: string | null,
   averageCycleLength: number | null,
   hasCycle: boolean,
-  today: Date = new Date(),
+  today: Date = todayDate(),
 ): CycleEstimate | null {
   if (!hasCycle || !lastPeriodStart || !averageCycleLength) {
     return null
