@@ -28,6 +28,8 @@ function formatTime(time: string): string {
   return normalizeReminderTime(time)
 }
 
+type ReminderType = ReminderInput["type"]
+
 function emptyDraft(): ReminderInput {
   return { type: "dagelijkse_checkin", label: "", enabled: true, days: ALL_DAYS, time: "09:00" }
 }
@@ -72,6 +74,8 @@ export function RemindersSection({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState<ReminderInput>(emptyDraft())
+  // Add-mode: pick several "Waarvoor?" types → one reminder each on save.
+  const [selectedTypes, setSelectedTypes] = useState<ReminderType[]>(["dagelijkse_checkin"])
   const [error, setError] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -110,19 +114,22 @@ export function RemindersSection({
 
   function startAdd() {
     setDraft(emptyDraft())
+    setSelectedTypes(["dagelijkse_checkin"])
     setError(null)
     setAdding(true)
     setEditingId(null)
   }
 
   function startEdit(reminder: Reminder) {
+    const type = reminder.type as ReminderType
     setDraft({
-      type: reminder.type as ReminderInput["type"],
+      type,
       label: reminder.label ?? "",
       enabled: reminder.enabled,
       days: reminder.days,
       time: formatTime(reminder.time),
     })
+    setSelectedTypes([type])
     setError(null)
     setEditingId(reminder.id)
     setAdding(false)
@@ -141,16 +148,42 @@ export function RemindersSection({
     }))
   }
 
+  function toggleType(type: ReminderType) {
+    if (editingId) {
+      setDraft((d) => ({ ...d, type }))
+      setSelectedTypes([type])
+      return
+    }
+    setSelectedTypes((prev) => {
+      if (prev.includes(type)) {
+        // Keep at least one type selected.
+        if (prev.length === 1) return prev
+        return prev.filter((t) => t !== type)
+      }
+      return [...prev, type]
+    })
+  }
+
   function handleSave() {
     setError(null)
-    const payload: ReminderInput = {
-      ...draft,
+    if (!editingId && selectedTypes.length === 0) {
+      setError("Kies minstens één onderwerp.")
+      return
+    }
+    if (draft.days.length === 0) {
+      setError("Kies minstens één dag.")
+      return
+    }
+    const base: Omit<ReminderInput, "type"> & { type?: ReminderType } = {
       time: normalizeReminderTime(draft.time),
       label: draft.label?.trim() || "",
+      enabled: draft.enabled,
+      days: draft.days,
     }
-    if (payload.enabled) maybeRequestNotificationPermission()
+    if (base.enabled) maybeRequestNotificationPermission()
     startTransition(async () => {
       if (editingId) {
+        const payload: ReminderInput = { ...base, type: draft.type }
         const result = await updateReminder(editingId, payload)
         if (result.error) {
           setError(result.error)
@@ -177,15 +210,31 @@ export function RemindersSection({
           )
         }
       } else {
-        const result = await createReminder(payload)
-        if (result.error) {
-          setError(result.error)
-          return
+        const created: Reminder[] = []
+        for (const type of selectedTypes) {
+          const result = await createReminder({ ...base, type })
+          if (result.error) {
+            if (created.length) {
+              setReminders((prev) => {
+                const merged = [...prev]
+                for (const row of created) {
+                  if (!merged.some((r) => r.id === row.id)) merged.push(row)
+                }
+                return sortByTime(merged)
+              })
+            }
+            setError(result.error)
+            return
+          }
+          if (result.reminder) created.push(result.reminder as Reminder)
         }
-        if (result.reminder) {
+        if (created.length) {
           setReminders((prev) => {
-            if (prev.some((r) => r.id === result.reminder!.id)) return prev
-            return sortByTime([...prev, result.reminder!])
+            const merged = [...prev]
+            for (const row of created) {
+              if (!merged.some((r) => r.id === row.id)) merged.push(row)
+            }
+            return sortByTime(merged)
           })
         }
       }
@@ -356,13 +405,19 @@ export function RemindersSection({
           </div>
 
           <div>
-            <p className="text-sm font-medium text-ink mb-2">Waarvoor?</p>
+            <p className="text-sm font-medium text-ink mb-1">Waarvoor?</p>
+            {!editingId && (
+              <p className="text-xs text-ink-soft mb-2">
+                Je mag er meerdere tegelijk kiezen — dan maak je in één keer meerdere herinneringen
+                (zelfde dagen en tijdstip).
+              </p>
+            )}
             <div className="flex flex-wrap gap-2">
               {availableTypeOptions.map((opt) => (
                 <Chip
                   key={opt.value}
-                  selected={draft.type === opt.value}
-                  onClick={() => setDraft((d) => ({ ...d, type: opt.value }))}
+                  selected={selectedTypes.includes(opt.value)}
+                  onClick={() => toggleType(opt.value)}
                 >
                   <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
                   {opt.label}
@@ -373,20 +428,25 @@ export function RemindersSection({
 
           <div>
             <Label htmlFor="reminder-label">
-              {draft.type === "anders" ? "Waar wil je aan herinnerd worden?" : "Eigen omschrijving (optioneel)"}
+              {selectedTypes.length === 1 && selectedTypes[0] === "anders"
+                ? "Waar wil je aan herinnerd worden?"
+                : "Eigen omschrijving (optioneel)"}
             </Label>
             <Input
               id="reminder-label"
               value={draft.label ?? ""}
               onChange={(e) => setDraft((d) => ({ ...d, label: e.target.value }))}
               placeholder={
-                draft.type === "anders" ? "Bijvoorbeeld: yoga-oefeningen doen" : "Laat leeg voor de standaardtekst"
+                selectedTypes.length === 1 && selectedTypes[0] === "anders"
+                  ? "Bijvoorbeeld: yoga-oefeningen doen"
+                  : "Laat leeg voor de standaardtekst"
               }
             />
           </div>
 
           <div>
-            <p className="text-sm font-medium text-ink mb-2">Op welke dagen?</p>
+            <p className="text-sm font-medium text-ink mb-1">Op welke dagen?</p>
+            <p className="text-xs text-ink-soft mb-2">Meerdere dagen mogelijk.</p>
             <div className="flex flex-wrap gap-2">
               {REMINDER_DAY_OPTIONS.map((opt) => (
                 <Chip key={opt.value} selected={draft.days.includes(opt.value)} onClick={() => toggleDay(opt.value)}>
@@ -411,7 +471,11 @@ export function RemindersSection({
 
           <div className="flex gap-2">
             <Button onClick={handleSave} disabled={isPending}>
-              {isPending ? "Bezig..." : "Opslaan"}
+              {isPending
+                ? "Bezig..."
+                : !editingId && selectedTypes.length > 1
+                  ? `${selectedTypes.length} herinneringen opslaan`
+                  : "Opslaan"}
             </Button>
             <Button variant="secondary" onClick={cancelForm} disabled={isPending}>
               Annuleren
