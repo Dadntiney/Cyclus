@@ -59,7 +59,7 @@ export default async function BoodschappenPage({
       <div className="mb-5">
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Boodschappen</h1>
         <p className="text-sm text-ink-soft mt-1">
-          Op basis van je weekplanning — per week of per dag.
+          Op basis van je weekplanning en jouw porties — per week of per dag.
         </p>
       </div>
 

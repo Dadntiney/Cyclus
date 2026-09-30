@@ -1,18 +1,28 @@
 import { parseIngredientLine, parseIngredientList } from "@/lib/nutrition/ingredient-parse"
+import { scaleQuantityString, tryAddQuantities } from "@/lib/nutrition/scale-ingredient"
 
 export interface GroceryItem {
   /** Stable id for React keys and localStorage checkbox state: `${category}:${normalized}`. */
   id: string
   name: string
   category: string
-  /** How many recipe-servings in the week ask for this ingredient. */
+  /** How many planned meals ask for this ingredient. */
   count: number
   quantities: string[]
+  /** Best-effort summed amount when units match across occurrences. */
+  totalQuantity: string | null
 }
 
 export interface GroceryCategory {
   category: string
   items: GroceryItem[]
+}
+
+/** One planned meal’s ingredients, optionally scaled to chosen porties. */
+export type GroceryRecipeInput = {
+  ingredients: unknown
+  /** chosenServings / recipeBaseServings — defaults to 1. */
+  factor?: number
 }
 
 const CATEGORY_ORDER = [
@@ -69,10 +79,6 @@ const CATEGORY_KEYWORDS: Record<(typeof CATEGORY_ORDER)[number], string[]> = {
   Overig: [],
 }
 
-// Keywords of 2 characters or less (e.g. "ui") are too short to safely
-// substring-match — "ui" would otherwise match inside "quinoa" or
-// "kruiden". Those require a full word match instead; longer keywords keep
-// substring matching so e.g. "tomaat" still matches "tomaten"/"cherrytomaat".
 function matchesKeyword(normalized: string, keyword: string): boolean {
   if (keyword.length <= 2) {
     return normalized.split(" ").includes(keyword)
@@ -92,27 +98,46 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
+function normalizeInputs(recipeIngredients: Array<GroceryRecipeInput | unknown>): GroceryRecipeInput[] {
+  return recipeIngredients.map((entry) => {
+    if (entry && typeof entry === "object" && "ingredients" in (entry as object)) {
+      const typed = entry as GroceryRecipeInput
+      return { ingredients: typed.ingredients, factor: typed.factor ?? 1 }
+    }
+    return { ingredients: entry, factor: 1 }
+  })
+}
+
 /**
- * Aggregates raw ingredient strings from a set of recipes (one entry per
- * recipe *occurrence* in the week — pass the same recipe twice if it's
- * planned twice) into a categorized, deduplicated grocery list. Ingredients
- * used by multiple recipes collapse into a single line with a count instead
- * of one row per occurrence.
+ * Aggregates ingredients from planned meals into a categorized grocery list.
+ * Pass one entry per meal occurrence; set `factor` to scale amounts to the
+ * chosen number of porties relative to the recipe baseline.
  */
-export function buildGroceryList(recipeIngredients: unknown[]): GroceryCategory[] {
+export function buildGroceryList(
+  recipeIngredients: Array<GroceryRecipeInput | unknown>,
+): GroceryCategory[] {
   const byId = new Map<string, GroceryItem>()
 
-  for (const ingredients of recipeIngredients) {
+  for (const { ingredients, factor = 1 } of normalizeInputs(recipeIngredients)) {
     for (const raw of parseIngredientList(ingredients)) {
       const parsed = parseIngredientLine(raw)
       if (!parsed.normalized) continue
       const category = categorize(parsed.normalized)
       const id = `${category}:${parsed.normalized}`
+      const quantity = scaleQuantityString(parsed.quantity, factor)
       const existing = byId.get(id)
       if (existing) {
         existing.count += 1
-        if (parsed.quantity && !existing.quantities.includes(parsed.quantity)) {
-          existing.quantities.push(parsed.quantity)
+        if (quantity) {
+          if (existing.totalQuantity) {
+            const summed = tryAddQuantities(existing.totalQuantity, quantity)
+            existing.totalQuantity = summed ?? existing.totalQuantity
+          } else {
+            existing.totalQuantity = quantity
+          }
+          if (!existing.quantities.includes(quantity)) {
+            existing.quantities.push(quantity)
+          }
         }
       } else {
         byId.set(id, {
@@ -120,7 +145,8 @@ export function buildGroceryList(recipeIngredients: unknown[]): GroceryCategory[
           name: capitalize(parsed.name),
           category,
           count: 1,
-          quantities: parsed.quantity ? [parsed.quantity] : [],
+          quantities: quantity ? [quantity] : [],
+          totalQuantity: quantity,
         })
       }
     }
@@ -143,14 +169,16 @@ export function groceryItemSubtitle(
   item: GroceryItem,
   scope: "week" | "day" = "week",
 ): string | null {
+  const parts: string[] = []
+  if (item.totalQuantity) {
+    parts.push(item.totalQuantity)
+  } else if (item.quantities.length) {
+    parts.push(item.quantities[0])
+  }
   if (scope === "week" && item.count > 1) {
-    return `${item.count}× nodig deze week`
+    parts.push(`${item.count}× deze week`)
+  } else if (scope === "day" && item.count > 1) {
+    parts.push(`${item.count}× vandaag`)
   }
-  if (scope === "day" && item.count > 1) {
-    return `${item.count}× vandaag`
-  }
-  if (item.quantities.length) {
-    return item.quantities[0]
-  }
-  return null
+  return parts.length ? parts.join(" · ") : null
 }

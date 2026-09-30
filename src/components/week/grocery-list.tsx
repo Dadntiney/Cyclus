@@ -9,6 +9,14 @@ import { cn } from "@/lib/utils"
 import { groceryItemSubtitle, type GroceryCategory } from "@/lib/nutrition/grocery-list"
 import { buildDayGroceryList, buildWeekGroceryList } from "@/lib/nutrition/week-grocery"
 import { loadCheckedGroceryIds, loadWeekOverrides, saveCheckedGroceryIds } from "@/lib/client/week-plan-storage"
+import {
+  DEFAULT_HOUSEHOLD_SERVINGS,
+  loadServingsPrefs,
+  setDefaultServings,
+  SERVINGS_CHANGED_EVENT,
+  type ServingsPrefs,
+} from "@/lib/client/servings-storage"
+import { ServingsStepper } from "@/components/nutrition/servings-stepper"
 import type { WeekDayPlan, WeekPlanRecipe } from "@/lib/recommendations/week-plan"
 
 export type GroceryMode = "week" | "day"
@@ -43,13 +51,24 @@ export function GroceryList({
   const [checked, setChecked] = useState<Set<string>>(new Set())
   const [overridesReady, setOverridesReady] = useState(false)
   const [overrides, setOverrides] = useState(() => ({} as ReturnType<typeof loadWeekOverrides>))
+  const [servingsPrefs, setServingsPrefs] = useState<ServingsPrefs>({
+    defaultServings: DEFAULT_HOUSEHOLD_SERVINGS,
+    byRecipeId: {},
+  })
 
   useEffect(() => {
     // localStorage only on client — keep SSR markup stable, then hydrate.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setChecked(loadCheckedGroceryIds(userId, weekStartISO))
     setOverrides(loadWeekOverrides(userId, weekStartISO))
+    setServingsPrefs(loadServingsPrefs(userId))
     setOverridesReady(true)
+
+    function onServingsChange() {
+      setServingsPrefs(loadServingsPrefs(userId))
+    }
+    window.addEventListener(SERVINGS_CHANGED_EVENT, onServingsChange)
+    return () => window.removeEventListener(SERVINGS_CHANGED_EVENT, onServingsChange)
   }, [userId, weekStartISO])
 
   const byId = useMemo(() => new Map(Object.entries(recipesById)), [recipesById])
@@ -58,12 +77,21 @@ export function GroceryList({
     if (!overridesReady) {
       if (mode === "week") return baseWeekCategories
       const day = days.find((d) => d.date === selectedDate)
-      return day ? buildDayGroceryList(day, {}, byId) : []
+      return day ? buildDayGroceryList(day, {}, byId, servingsPrefs) : []
     }
-    if (mode === "week") return buildWeekGroceryList(days, overrides, byId)
+    if (mode === "week") return buildWeekGroceryList(days, overrides, byId, servingsPrefs)
     const day = days.find((d) => d.date === selectedDate)
-    return day ? buildDayGroceryList(day, overrides, byId) : []
-  }, [overridesReady, mode, selectedDate, days, overrides, byId, baseWeekCategories])
+    return day ? buildDayGroceryList(day, overrides, byId, servingsPrefs) : []
+  }, [
+    overridesReady,
+    mode,
+    selectedDate,
+    days,
+    overrides,
+    byId,
+    baseWeekCategories,
+    servingsPrefs,
+  ])
 
   function syncUrl(nextMode: GroceryMode, nextDate: string) {
     const params = new URLSearchParams()
@@ -96,6 +124,8 @@ export function GroceryList({
       return next
     })
   }
+
+  const recipeOverrideCount = Object.keys(servingsPrefs.byRecipeId).length
 
   return (
     <div className="flex flex-col gap-5">
@@ -149,6 +179,24 @@ export function GroceryList({
           })}
         </div>
       )}
+
+      <div className="rounded-2xl bg-sage-soft/40 px-4 py-3 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-ink">Basis porties</p>
+          <p className="text-xs text-ink-soft mt-0.5 leading-snug">
+            Hoeveelheden op de lijst volgen dit aantal
+            {recipeOverrideCount > 0
+              ? ` · ${recipeOverrideCount} recept${recipeOverrideCount === 1 ? "" : "en"} afwijkend`
+              : ""}
+            . Per recept aanpasbaar op de receptpagina.
+          </p>
+        </div>
+        <ServingsStepper
+          value={servingsPrefs.defaultServings}
+          onChange={(n) => setServingsPrefs(setDefaultServings(userId, n))}
+          size="sm"
+        />
+      </div>
 
       <p className="text-sm text-ink-soft -mt-1">
         {mode === "week"

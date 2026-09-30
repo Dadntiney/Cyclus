@@ -18,7 +18,7 @@ import { composeAnticipation } from "@/lib/cycle/anticipation"
 import type { Tables } from "@/types/database"
 
 const RECIPE_COLUMNS =
-  "id, title, category, preparation_time, ingredients, nutrition_information, image_url"
+  "id, title, category, preparation_time, servings, ingredients, nutrition_information, image_url"
 const WORKOUT_COLUMNS = "id, title, type, duration, difficulty, image_url"
 
 export type CompletedWorkoutInfo = {

@@ -6,7 +6,7 @@ import { getRecipeDetail, getFavoriteRecipeIds } from "@/lib/data/nutrition"
 import { ensureRecipeImage } from "@/lib/images/ensure-recipe-image"
 import { FavoriteButton } from "@/components/nutrition/favorite-button"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
-import { IngredientList } from "@/components/nutrition/ingredient-info-sheet"
+import { RecipeIngredientsWithServings } from "@/components/nutrition/recipe-ingredients-with-servings"
 import { Card } from "@/components/ui/card"
 import { BackButton } from "@/components/ui/back-button"
 
@@ -87,7 +87,7 @@ export default async function RecipeDetailPage({
         {recipe.servings && (
           <span className="inline-flex items-center gap-1">
             <Users className="h-3.5 w-3.5" strokeWidth={1.75} />
-            {recipe.servings} {recipe.servings === 1 ? "portie" : "porties"}
+            Recept voor {recipe.servings} {recipe.servings === 1 ? "portie" : "porties"}
           </span>
         )}
         {recipe.difficulty && <span>{DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}</span>}
@@ -112,18 +112,14 @@ export default async function RecipeDetailPage({
       <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
         <div className="flex flex-col gap-4 lg:col-span-2">
           {ingredients.length > 0 && (
-            <Card>
-              <p className="text-sm font-medium text-ink mb-3">
-                {recipe.is_budget ? "Basis" : "Ingrediënten"}
-              </p>
-              <IngredientList ingredients={ingredients} />
-              {optionalIngredients.length > 0 && (
-                <>
-                  <p className="text-sm font-medium text-ink mt-4 mb-3">Optioneel toevoegen</p>
-                  <IngredientList ingredients={optionalIngredients} bulletClassName="text-peach" />
-                </>
-              )}
-            </Card>
+            <RecipeIngredientsWithServings
+              userId={user.id}
+              recipeId={recipe.id}
+              recipeServings={recipe.servings}
+              ingredients={ingredients}
+              optionalIngredients={optionalIngredients}
+              isBudget={Boolean(recipe.is_budget)}
+            />
           )}
 
           {(steps.length > 0 || recipe.instructions) && (

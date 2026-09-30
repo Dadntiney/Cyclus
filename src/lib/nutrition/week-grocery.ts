@@ -1,17 +1,29 @@
 import type { WeekDayPlan, WeekPlanRecipe } from "@/lib/recommendations/week-plan"
 import type { WeekOverrides } from "@/lib/client/week-plan-storage"
-import { buildGroceryList, type GroceryCategory } from "@/lib/nutrition/grocery-list"
+import type { ServingsPrefs } from "@/lib/client/servings-storage"
+import { resolveRecipeServings, DEFAULT_HOUSEHOLD_SERVINGS } from "@/lib/client/servings-storage"
+import {
+  buildGroceryList,
+  type GroceryCategory,
+  type GroceryRecipeInput,
+} from "@/lib/nutrition/grocery-list"
+
+const FALLBACK_PREFS: ServingsPrefs = {
+  defaultServings: DEFAULT_HOUSEHOLD_SERVINGS,
+  byRecipeId: {},
+}
 
 /**
- * Resolves meal slots against local overrides, then aggregates ingredients.
- * Pass one day for a day-list, or the full week for the week-list.
+ * Resolves meal slots against local overrides, then aggregates ingredients
+ * scaled to the user’s chosen porties (household default or per-recipe).
  */
-function collectIngredientLists(
+function collectRecipeInputs(
   days: WeekDayPlan[],
   overrides: WeekOverrides,
   recipesById: Map<string, WeekPlanRecipe>,
-): unknown[] {
-  const ingredientLists: unknown[] = []
+  servingsPrefs: ServingsPrefs = FALLBACK_PREFS,
+): GroceryRecipeInput[] {
+  const inputs: GroceryRecipeInput[] = []
 
   for (const day of days) {
     for (const meal of day.meals) {
@@ -20,37 +32,38 @@ function collectIngredientLists(
 
       const recipe =
         override?.type === "swap-meal" ? (recipesById.get(override.recipeId) ?? null) : meal.recipe
-      if (recipe) ingredientLists.push(recipe.ingredients)
+      if (!recipe) continue
+
+      const { factor } = resolveRecipeServings(recipe.id, recipe.servings, servingsPrefs)
+      inputs.push({ ingredients: recipe.ingredients, factor })
     }
   }
 
-  return ingredientLists
+  return inputs
 }
 
 /**
  * Same grocery aggregation as `buildGroceryList`, but first resolves each
  * day's meal slots against the user's local overrides (swapped/skipped/
- * custom meals) so a swapped-out salmon dinner doesn't still show up on the
- * shopping list. Swapped-in recipes are resolved via `recipesById` since an
- * override only stores the id + title (see week-plan-storage) — anything it
- * can't resolve (a custom, free-text meal, or a skipped one) is simply left
- * out of the list rather than guessed at.
+ * custom meals) and scales amounts to chosen porties.
  */
 export function buildWeekGroceryList(
   days: WeekDayPlan[],
   overrides: WeekOverrides,
   recipesById: Map<string, WeekPlanRecipe>,
+  servingsPrefs?: ServingsPrefs,
 ): GroceryCategory[] {
-  return buildGroceryList(collectIngredientLists(days, overrides, recipesById))
+  return buildGroceryList(collectRecipeInputs(days, overrides, recipesById, servingsPrefs))
 }
 
-/** Grocery list for a single planned day (same override rules as the week list). */
+/** Grocery list for a single planned day (same override + servings rules). */
 export function buildDayGroceryList(
   day: WeekDayPlan,
   overrides: WeekOverrides,
   recipesById: Map<string, WeekPlanRecipe>,
+  servingsPrefs?: ServingsPrefs,
 ): GroceryCategory[] {
-  return buildGroceryList(collectIngredientLists([day], overrides, recipesById))
+  return buildGroceryList(collectRecipeInputs([day], overrides, recipesById, servingsPrefs))
 }
 
 export type { GroceryCategory }

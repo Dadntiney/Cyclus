@@ -13,7 +13,14 @@ export type WeekPlanWorkout = Pick<
 >
 export type WeekPlanRecipe = Pick<
   Tables<"recipes">,
-  "id" | "title" | "category" | "preparation_time" | "ingredients" | "nutrition_information" | "image_url"
+  | "id"
+  | "title"
+  | "category"
+  | "preparation_time"
+  | "servings"
+  | "ingredients"
+  | "nutrition_information"
+  | "image_url"
 >
 type Workout = WeekPlanWorkout
 type Recipe = WeekPlanRecipe
