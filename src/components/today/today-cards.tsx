@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, ShoppingCart } from "lucide-react"
 import { TodayMovementCard, type TodayWorkoutOption } from "@/components/today/today-movement-card"
 import {
   TodayMealsRows,
@@ -12,8 +12,8 @@ import type { MealSlotKey } from "@/lib/client/week-plan-storage"
 
 /**
  * Vandaag plan: movement first (today’s primary action), then the same
- * meals as Deze week. No library footer — Week is in the nav; full
- * libraries stay reachable from Profiel → Wat ik gebruik and recipe/workout detail.
+ * meals as Deze week. Groceries sit quietly in the plan footer — not a
+ * second stacked card below. Snack tip follows as a light phase tip.
  */
 export function TodayCards({
   recommendation,
@@ -47,7 +47,8 @@ export function TodayCards({
   const showSnack = nutritionEnabled && Boolean(nutrition.snackTip)
   const showMental = Boolean(mentalSuggestion)
   const showRecoveryRow = showRecovery && !showMental && Boolean(recovery.title)
-  const hasSecondary = showMeals || showMental || showRecoveryRow
+  const showGrocery = nutritionEnabled
+  const hasSecondary = showMeals || showMental || showRecoveryRow || showGrocery
 
   return (
     <section aria-labelledby="voor-vandaag-heading">
@@ -143,6 +144,24 @@ export function TodayCards({
                   </p>
                 </div>
               ))}
+
+            {showGrocery && (
+              <div className="flex items-center justify-between gap-3 px-4 py-2.5 min-h-11">
+                <Link
+                  href="/deze-week/boodschappen"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-ink touch-manipulation min-h-11"
+                >
+                  <ShoppingCart className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} />
+                  Boodschappen
+                </Link>
+                <Link
+                  href="/deze-week/boodschappen?modus=dag"
+                  className="text-xs font-medium text-sage-dark touch-manipulation min-h-11 inline-flex items-center shrink-0"
+                >
+                  Voor vandaag →
+                </Link>
+              </div>
+            )}
           </div>
         )}
       </div>
