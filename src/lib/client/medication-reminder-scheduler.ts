@@ -31,13 +31,14 @@ export function getDueMedicationReminders(
 
   return medications.filter((m) => {
     if (!m.reminderEnabled || !m.timeOfDay) return false
-    // false = a computed "off" day for her schedule, stay silent. true or
-    // null (e.g. "eigen schema", not automatically trackable) still remind
-    // at her chosen time — better than silently dropping a custom schedule.
-    if (isDosingDay(m, now) === false) return false
 
     const isStart = isScheduleStartDay(m, now)
     const isStop = !isStart && isScheduleStopDay(m, now)
+    // false = a computed "off" day for her schedule, stay silent — except
+    // on a user-chosen stop date, which may fall on an "off" day.
+    // true or null (e.g. "eigen schema") still remind at her chosen time.
+    if (isDosingDay(m, now) === false && !isStop) return false
+
     if (isStart && !m.remindOnStart) return false
     if (isStop && !m.remindOnStop) return false
     if (!isStart && !isStop && !m.remindDaily) return false

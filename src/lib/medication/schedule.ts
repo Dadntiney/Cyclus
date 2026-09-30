@@ -78,19 +78,16 @@ export function isScheduleStartDay(schedule: MedicationSchedule, date: Date): bo
 }
 
 /**
- * Whether `date` is the LAST day of an "on" block — the day the reminder
- * should say "your period ends today", fired on the last active day itself
- * rather than the first "off" day after it.
+ * Whether `date` is the user-chosen stop day — only when she filled in an
+ * optional `endDate` (same idea as optional start). We deliberately do NOT
+ * auto-derive a stop day from a cyclisch "wel"-periode: that fired a day
+ * early for courses like 2 weken progesteron and made her think she should
+ * stop before finishing the full block. Cycle math still drives dosing and
+ * start reminders; stop is opt-in via the date field.
  */
 export function isScheduleStopDay(schedule: MedicationSchedule, date: Date): boolean {
-  if (schedule.scheduleType !== "cyclisch") return false
-  if (!schedule.startDate || !schedule.scheduleDaysOn || schedule.scheduleDaysOff === null) return false
-  if (schedule.scheduleDaysOff === 0) return false // never actually turns "off"
-  const daysSince = differenceInCalendarDays(date, parseISO(schedule.startDate))
-  if (daysSince < 0) return false
-  const cycleLength = schedule.scheduleDaysOn + schedule.scheduleDaysOff
-  if (cycleLength <= 0) return false
-  return daysSince % cycleLength === schedule.scheduleDaysOn - 1
+  if (!schedule.endDate) return false
+  return schedule.endDate === format(date, "yyyy-MM-dd")
 }
 
 export interface CyclicalPhaseInfo {

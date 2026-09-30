@@ -175,9 +175,10 @@ export async function GET(request: NextRequest) {
           startDate: m.start_date,
           endDate: m.end_date,
         }
-        // false = a computed "off" day, stay silent. true or null (e.g.
-        // "eigen schema", not automatically trackable) still remind today.
-        if (isDosingDay(schedule, today) === false) return false
+        const isStop = isScheduleStopDay(schedule, today)
+        // false = a computed "off" day, stay silent — except on a
+        // user-chosen stop date. true or null (e.g. "eigen schema") still remind.
+        if (isDosingDay(schedule, today) === false && !isStop) return false
         return !alreadySent.has(`medication_daily:${m.id}`) && !alreadySent.has(`medication_start:${m.id}`) && !alreadySent.has(`medication_stop:${m.id}`)
       })
 
@@ -195,7 +196,8 @@ export async function GET(request: NextRequest) {
 
         // Independently toggleable per "cyclisch" event type (see the
         // medicatie-instellingen) — skip sending (and logging) entirely
-        // when she turned off this specific moment.
+        // when she turned off this specific moment. Stop only fires when
+        // she filled in an optional end date (isScheduleStopDay).
         if (isStart && !m.remind_on_start) continue
         if (isStop && !m.remind_on_stop) continue
         if (!isStart && !isStop && !m.remind_daily) continue
