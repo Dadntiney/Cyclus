@@ -5,6 +5,7 @@ import {
   TodayMealsRows,
   type TodayMealAlternative,
 } from "@/components/today/today-meals-rows"
+import { PhaseSnackTipCard } from "@/components/cycle/phase-snack-tip-card"
 import type { Recommendation } from "@/lib/recommendations/engine"
 import type { MentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
 import type { MealSlotKey } from "@/lib/client/week-plan-storage"
@@ -43,6 +44,7 @@ export function TodayCards({
 
   const meals = nutrition.meals ?? []
   const showMeals = nutritionEnabled && meals.length > 0
+  const showSnack = nutritionEnabled && Boolean(nutrition.snackTip)
   const showMental = Boolean(mentalSuggestion)
   const showRecoveryRow = showRecovery && !showMental && Boolean(recovery.title)
   const hasSecondary = showMeals || showMental || showRecoveryRow
@@ -144,6 +146,12 @@ export function TodayCards({
           </div>
         )}
       </div>
+
+      {showSnack && nutrition.snackTip && (
+        <div className="mt-3">
+          <PhaseSnackTipCard tip={nutrition.snackTip} compact />
+        </div>
+      )}
     </section>
   )
 }

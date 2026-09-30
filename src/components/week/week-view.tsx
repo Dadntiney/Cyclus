@@ -8,6 +8,7 @@ import { ShoppingCart, ChevronRight, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
+import { PhaseSnackTipCard } from "@/components/cycle/phase-snack-tip-card"
 import type { WeekDayPlan, WeekPlanRecipe, WeekPlanWorkout, MealSlot } from "@/lib/recommendations/week-plan"
 import { TodayMovementCard } from "@/components/today/today-movement-card"
 import {
@@ -241,6 +242,12 @@ export function WeekView({
             )}
           </div>
         ) : null}
+
+        {nutritionEnabled && day.snackTip && (
+          <div className="mt-4">
+            <PhaseSnackTipCard tip={day.snackTip} compact />
+          </div>
+        )}
 
         {day.focusTips[0] && (
           <p className="text-sm text-ink-soft leading-relaxed px-0.5 mt-4 inline-flex gap-2">

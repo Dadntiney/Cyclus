@@ -27,6 +27,15 @@ export interface PhaseNutritionBasic {
   foods: string[]
 }
 
+export interface PhaseSnackTip {
+  /** Short snack name, e.g. "Handje pompoenpitten". */
+  title: string
+  /** Concrete how-to / portion suggestion. */
+  snack: string
+  /** Hedged "why this fits" knowledge — nutrient basis, not hormone claims. */
+  why: string
+}
+
 export interface PhaseNutritionFocus {
   /** Short label, e.g. "IJzer & eiwitten". */
   focusLabel: string
@@ -44,6 +53,11 @@ export interface PhaseNutritionFocus {
    * Cyclusdag detail page — separate from recipe matching above.
    */
   basics: PhaseNutritionBasic[]
+  /**
+   * Rotating tussendoor tips (nuts, seeds, yoghurt, fruit…) with a short
+   * "why" — one is picked per day via getDailyPhaseSnackTip.
+   */
+  snackTips: PhaseSnackTip[]
 }
 
 export interface PhaseMovementFocus {
@@ -112,6 +126,28 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
           foods: ["Pompoenpitten", "Donkere chocolade (70%+)", "Amandelen", "Spinazie", "Banaan"],
         },
       ],
+      snackTips: [
+        {
+          title: "Pompoenpitten + stukje fruit",
+          snack: "Een handje pompoenpitten met kiwi of sinaasappel.",
+          why: "Pitten leveren magnesium en wat ijzer; vitamine C uit fruit helpt plantaardig ijzer beter opnemen — handig rondom bloedverlies.",
+        },
+        {
+          title: "Griekse yoghurt met amandelen",
+          snack: "Een bakje Griekse yoghurt met een handje amandelen.",
+          why: "Eiwit en calcium uit yoghurt plus magnesium uit noten: verzadigend tussendoor zonder snelle suikerpiek.",
+        },
+        {
+          title: "Pure chocolade + walnoten",
+          snack: "2–3 blokjes pure chocolade (70%+) met een paar walnoten.",
+          why: "Pure cacao en noten leveren magnesium; klein genieten past beter dan alleen zoet als trek oploopt.",
+        },
+        {
+          title: "Banaan met pindakaas",
+          snack: "Halve banaan met een theelepel 100% pindakaas.",
+          why: "Kalium en koolhydraten voor snelle energie, notenpasta voor eiwit en verzadiging — fijn op vermoeide dagen.",
+        },
+      ],
     },
     movement: {
       intensityLabel: "Rustig",
@@ -159,6 +195,28 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
           label: "Foliumzuur & B-vitamines",
           text: "Bladgroenten en peulvruchten leveren foliumzuur en B-vitamines die in deze opbouwfase vaak goed passen.",
           foods: ["Spinazie", "Broccoli", "Linzen", "Avocado", "Eieren"],
+        },
+      ],
+      snackTips: [
+        {
+          title: "Kwark met bessen en chia",
+          snack: "Kwark of Skyr met een handje bessen en een theelepel chiazaad.",
+          why: "Eiwit plus vezels geven rustige energie als je tempo omhoog gaat — chia levert plantaardige omega-3 en verzadiging.",
+        },
+        {
+          title: "Handje gemengde noten",
+          snack: "Een handje amandelen, walnoten of een notenmix (zonder suiker).",
+          why: "Noten geven gezonde vetten, wat eiwit en magnesium — een stevige basis-tussendoortje zonder snelle piek.",
+        },
+        {
+          title: "Havermout-reep of appel met notenboter",
+          snack: "Appel of peer met een theelepel amandel- of pindakaas.",
+          why: "Vezels uit fruit en eiwit/vet uit notenpasta houden je energie gelijkmatiger tussen maaltijden.",
+        },
+        {
+          title: "Hummus met komkommer",
+          snack: "Een paar lepels hummus met komkommer- of wortelreepjes.",
+          why: "Kikkererwten leveren plantaardig eiwit en vezels — licht, maar wél voedzaam als je actiever bent.",
         },
       ],
     },
@@ -213,6 +271,28 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
           label: "Gezonde vetten",
           text: "Avocado, olijfolie en noten geven verzadiging naast eiwit en groenten.",
           foods: ["Avocado", "Olijfolie", "Walnoten", "Amandelen"],
+        },
+      ],
+      snackTips: [
+        {
+          title: "Walnoten en bessen",
+          snack: "Een handje walnoten met een handje blauwe bessen of frambozen.",
+          why: "Walnoten leveren plantaardige omega-3; bessen geven kleur, vezels en vitamine C — past bij een actieve, kleurrijke basis.",
+        },
+        {
+          title: "Avocado op een cracker",
+          snack: "Halve avocado op een volkoren cracker of rijstwafel, met peper.",
+          why: "Onverzadigde vetten en vezels verzadigen goed — handig als je meer beweegt rondom de eisprong.",
+        },
+        {
+          title: "Trailmix met zaden",
+          snack: "Kleine mix van pompoenpitten, zonnebloempitten en een paar rozijnen.",
+          why: "Pitten en zaden leveren mineralen en gezonde vetten; houd het portie klein zodat het écht tussendoor blijft.",
+        },
+        {
+          title: "Griekse yoghurt met lijnzaad",
+          snack: "Griekse yoghurt met een theelepel gemalen lijnzaad en wat honing naar smaak.",
+          why: "Eiwit als anker plus plantaardige omega-3 uit lijnzaad — stevig zonder zwaar te zijn.",
         },
       ],
     },
@@ -285,6 +365,28 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
           foods: ["Kip", "Zalm", "Banaan", "Aardappel", "Kikkererwten"],
         },
       ],
+      snackTips: [
+        {
+          title: "Magnesiummix: pitten & pure chocolade",
+          snack: "Handje pompoenpitten of cashews, eventueel met 1–2 blokjes pure chocolade.",
+          why: "Magnesiumrijke snacks passen vaak goed als trek of spanning toeneemt richting je menstruatie — zonder alleen op zoet te leunen.",
+        },
+        {
+          title: "Kwark met kaneel en peer",
+          snack: "Kwark of Griekse yoghurt met plakjes peer en een snuf kaneel.",
+          why: "Eiwit dempt trek; vezels uit fruit geven een rustiger energiegevoel dan alleen iets zoets.",
+        },
+        {
+          title: "Amandelen en dadels",
+          snack: "Een handje amandelen met 1–2 dadels (of andersom: meer noten, minder zoet).",
+          why: "Noten leveren magnesium en verzadiging; een beetje zoet mag, zolang eiwit/vet meekomt.",
+        },
+        {
+          title: "Hummus of edamame",
+          snack: "Hummus met paprika, of een bakje edamame met een snuf zout.",
+          why: "Plantaardig eiwit en vezels — een stevige basis als je tussendoor sneller honger hebt in deze fase.",
+        },
+      ],
     },
     movement: {
       intensityLabel: "Rustig tot gemiddeld",
@@ -305,4 +407,20 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
 
 export function getPhaseContent(phase: CyclePhase): PhaseContent {
   return PHASE_CONTENT[phase]
+}
+
+function seededIndex(seed: string, length: number): number {
+  if (length <= 0) return 0
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash) % length
+}
+
+/** Picks one phase snack tip for the day — stable for a given seed. */
+export function getDailyPhaseSnackTip(phase: CyclePhase, seed: string): PhaseSnackTip {
+  const tips = PHASE_CONTENT[phase].nutrition.snackTips
+  return tips[seededIndex(`${seed}-snack`, tips.length)]
 }

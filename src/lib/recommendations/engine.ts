@@ -1,5 +1,6 @@
 import type { Tables } from "@/types/database"
 import type { CycleEstimate } from "@/lib/cycle/estimate"
+import { getDailyPhaseSnackTip, type PhaseSnackTip } from "@/lib/cycle/phase-content"
 import { TRAINING_PREFERENCE_TO_TYPE, symptomLabel } from "@/lib/constants"
 import { SHORT_NIGHT_MINUTES } from "@/lib/sleep/insights"
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
@@ -84,6 +85,8 @@ export interface NutritionRecommendation {
   /** @deprecated Prefer meals — kept as the first available recipe for callers. */
   recipe: Recipe | null
   reason: string
+  /** Phase-based tussendoor tip with “why” — null when no cycle estimate. */
+  snackTip: PhaseSnackTip | null
 }
 
 export interface NutritionPickInput {
@@ -253,7 +256,9 @@ export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendat
  * Picks today's suggested recipe. Shared by the Vandaag recommendation and
  * the Voeding page itself, seeded identically so both surfaces agree.
  */
-export function pickTodaysRecipe(input: NutritionPickInput): NutritionRecommendation {
+export function pickTodaysRecipe(
+  input: NutritionPickInput,
+): Pick<NutritionRecommendation, "meals" | "recipe" | "reason"> {
   const { profile, latestCheckin, recipes, seed } = input
   const wantsQuickMeal = Boolean(latestCheckin?.needs?.includes("voeding"))
   const nutritionPrefs = profile.nutrition_preferences ?? []
@@ -337,7 +342,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
       : pickTodaysWorkout({ profile, latestCheckin, todaySleepDurationMinutes, personalSleepPattern, workouts, seed })
     : { workout: null, reason: "" }
 
-  const nutrition: NutritionRecommendation = profile.nutrition_enabled
+  const nutritionBase = profile.nutrition_enabled
     ? dayPlan
       ? {
           meals: dayPlan.meals,
@@ -346,6 +351,13 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
         }
       : pickTodaysRecipe({ profile, latestCheckin, recipes, seed })
     : { meals: [], recipe: null, reason: "" }
+
+  const snackTip =
+    profile.nutrition_enabled && cycleEstimate
+      ? getDailyPhaseSnackTip(cycleEstimate.phase, seed)
+      : null
+
+  const nutrition: NutritionRecommendation = { ...nutritionBase, snackTip }
 
   const mentalEnabled = profile.mental_wellbeing_enabled === true
   const recoveryCta = mentalEnabled

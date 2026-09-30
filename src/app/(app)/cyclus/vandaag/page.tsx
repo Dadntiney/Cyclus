@@ -21,9 +21,11 @@ import { buttonVariants } from "@/components/ui/button"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
 import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
+import { PhaseSnackTipCard } from "@/components/cycle/phase-snack-tip-card"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { getSavedMomentTexts } from "@/lib/data/moments"
 import { cn } from "@/lib/utils"
+import { getDailyPhaseSnackTip } from "@/lib/cycle/phase-content"
 
 /** Soft panel — same calm surface language as Vandaag (no white bordered cards). */
 function SoftPanel({
@@ -200,6 +202,9 @@ export default async function CyclusdagPage() {
         <section>
           <h2 className="font-display text-lg text-ink mb-2.5">Voeding in deze fase</h2>
           <PhaseNutritionBasics nutrition={view.nutrition} />
+          <div className="mt-3">
+            <PhaseSnackTipCard tip={getDailyPhaseSnackTip(view.phase, `${user.id}-${today}`)} />
+          </div>
         </section>
 
         <Expandable label="Meer weten over deze fase">
