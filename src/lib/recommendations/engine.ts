@@ -5,6 +5,11 @@ import { TRAINING_PREFERENCE_TO_TYPE, symptomLabel } from "@/lib/constants"
 import { SHORT_NIGHT_MINUTES } from "@/lib/sleep/insights"
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
 import { dietPrefsForCategoryMatch, filterRecipesByCuisinePrefs } from "@/lib/nutrition/cuisine"
+import {
+  lifeStageIsPostCycle,
+  lifeStageLabelForBuddy,
+  lifeStagePrefersGentler,
+} from "@/lib/recommendations/life-stage-bias"
 
 /** The single strongest sleep/symptom correlation from her history (see
  * computeSleepSymptomInsights) — just enough to personalize today's
@@ -47,9 +52,12 @@ export interface RecommendationInput {
   workouts: Workout[]
   recipes: Recipe[]
   seed: string
+  /** Self-chosen life stage — soft tilt on movement/copy, never a diagnosis. */
+  lifeStage?: string | null
+  hasCycle?: boolean | null
   /**
-   * Today's row from buildWeekPlan — when set, training + meals come from the
-   * week calendar (same source as Deze week) instead of a separate pick.
+   * Today's row from buildWeekPlan — meals stay aligned with Deze week;
+   * workout may soften further when today's check-in/sleep asks for it.
    */
   dayPlan?: {
     meals: Array<{
@@ -154,7 +162,7 @@ function shortNightMatchesPersonalPattern(
   )
 }
 
-function wantsLowerIntensityToday(
+export function wantsLowerIntensityToday(
   checkin: RecommendationInput["latestCheckin"],
   todaySleepDurationMinutes?: number | null,
   personalSleepPattern?: PersonalSleepPattern | null,
@@ -170,6 +178,154 @@ function wantsLowerIntensityToday(
     needsRest ||
     shortNightMatchesPersonalPattern(todaySleepDurationMinutes, personalSleepPattern)
   )
+}
+
+function todaySoftenReason(
+  checkin: RecommendationInput["latestCheckin"],
+  todaySleepDurationMinutes: number | null | undefined,
+  personalSleepPattern: PersonalSleepPattern | null | undefined,
+  lifeStage: string | null | undefined,
+  plannedTitle: string | null,
+): string {
+  const needs = checkin?.needs ?? []
+  const matchesSleepPattern = shortNightMatchesPersonalPattern(
+    todaySleepDurationMinutes,
+    personalSleepPattern,
+  )
+  const plannedBit = plannedTitle ? `Je weekvoorstel was ${plannedTitle}. ` : ""
+
+  if (needs.includes("rust")) {
+    return `${plannedBit}Je gaf aan dat je naar rust verlangt — vandaag dus een zachtere sessie.`
+  }
+  if (matchesSleepPattern && personalSleepPattern) {
+    return `${plannedBit}Je sliep vannacht relatief kort — bij jou hangt dat vaker samen met ${symptomLabel(personalSleepPattern.symptom).toLowerCase()}, dus iets zachter vandaag.`
+  }
+  if (checkin && checkin.energy !== null && checkin.energy <= 2) {
+    return `${plannedBit}Je energie voelt laag vandaag — we buigen mee met een zachtere beweging.`
+  }
+  if (checkin && checkin.stress !== null && checkin.stress >= 4) {
+    return `${plannedBit}Je stress is vandaag wat hoger — zachter bewegen past beter.`
+  }
+  if (checkin && checkin.sleep !== null && checkin.sleep <= 2) {
+    return `${plannedBit}Je slaap voelde matig — we houden het vandaag lichter.`
+  }
+  if (lifeStagePrefersGentler(lifeStage)) {
+    return `${plannedBit}Met jouw levensfase in gedachten houden we het bewegingsvoorstel liever zacht.`
+  }
+  return `${plannedBit}Vandaag past een rustigere sessie beter.`
+}
+
+/**
+ * Keep week meals, but let today's body signals (and life stage) soften the
+ * planned workout when the week row would otherwise ignore them.
+ */
+export function resolveTodaysTraining(input: {
+  profile: TrainingPickInput["profile"]
+  latestCheckin: TrainingPickInput["latestCheckin"]
+  todaySleepDurationMinutes?: number | null
+  personalSleepPattern?: PersonalSleepPattern | null
+  workouts: Workout[]
+  seed: string
+  lifeStage?: string | null
+  dayPlanWorkout?: { workout: Workout | null; reason: string } | null
+}): TrainingRecommendation {
+  const {
+    profile,
+    latestCheckin,
+    todaySleepDurationMinutes,
+    personalSleepPattern,
+    workouts,
+    seed,
+    lifeStage = null,
+    dayPlanWorkout = null,
+  } = input
+
+  if (!dayPlanWorkout) {
+    return pickTodaysWorkout({
+      profile,
+      latestCheckin,
+      todaySleepDurationMinutes,
+      personalSleepPattern,
+      workouts,
+      seed,
+    })
+  }
+
+  const planned = dayPlanWorkout.workout
+  const plannedReason = dayPlanWorkout.reason
+  const lowerIntensity = wantsLowerIntensityToday(
+    latestCheckin,
+    todaySleepDurationMinutes,
+    personalSleepPattern,
+  )
+  const stageGentler = lifeStagePrefersGentler(lifeStage)
+  const shouldSoften = lowerIntensity || stageGentler
+
+  if (!planned) {
+    return { workout: null, reason: plannedReason }
+  }
+
+  if (!shouldSoften) {
+    return { workout: planned, reason: plannedReason }
+  }
+
+  const alreadyGentle = planned.difficulty === "makkelijk"
+  if (alreadyGentle) {
+    return {
+      workout: planned,
+      reason: lowerIntensity
+        ? todaySoftenReason(
+            latestCheckin,
+            todaySleepDurationMinutes,
+            personalSleepPattern,
+            lifeStage,
+            null,
+          )
+        : plannedReason,
+    }
+  }
+
+  const softPick = pickTodaysWorkout({
+    profile,
+    latestCheckin: lowerIntensity
+      ? latestCheckin
+      : {
+          energy: 2,
+          mood: latestCheckin?.mood ?? null,
+          sleep: latestCheckin?.sleep ?? null,
+          stress: latestCheckin?.stress ?? null,
+          symptoms: latestCheckin?.symptoms ?? [],
+          needs: [...(latestCheckin?.needs ?? []), "rust"],
+        },
+    todaySleepDurationMinutes: lowerIntensity ? todaySleepDurationMinutes : null,
+    personalSleepPattern: lowerIntensity ? personalSleepPattern : null,
+    workouts,
+    seed: `${seed}-soften`,
+  })
+
+  if (softPick.workout && softPick.workout.id !== planned.id) {
+    return {
+      workout: softPick.workout,
+      reason: todaySoftenReason(
+        latestCheckin,
+        todaySleepDurationMinutes,
+        personalSleepPattern,
+        lifeStage,
+        planned.title,
+      ),
+    }
+  }
+
+  return {
+    workout: planned,
+    reason: todaySoftenReason(
+      latestCheckin,
+      todaySleepDurationMinutes,
+      personalSleepPattern,
+      lifeStage,
+      null,
+    ),
+  }
 }
 
 function parseCarbGrams(nutritionInformation: Recipe["nutrition_information"]): number | null {
@@ -327,6 +483,8 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     workouts,
     recipes,
     seed,
+    lifeStage = null,
+    hasCycle = null,
     dayPlan = null,
   } = input
 
@@ -335,13 +493,21 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
   const wantsSelfCare = needs.includes("mezelf")
   const lowerIntensity = wantsLowerIntensityToday(latestCheckin, todaySleepDurationMinutes, personalSleepPattern)
   const matchesSleepPattern = shortNightMatchesPersonalPattern(todaySleepDurationMinutes, personalSleepPattern)
+  const stageGentler = lifeStagePrefersGentler(lifeStage)
+  const postCycle = lifeStageIsPostCycle(lifeStage, hasCycle)
 
-  // Week calendar is the source of truth when available — Vandaag and Deze
-  // week must show the same meals/workout for the same date.
+  // Meals stay on the week calendar; workout may soften for today's signals.
   const { workout, reason: trainingReason } = profile.movement_enabled
-    ? dayPlan
-      ? { workout: dayPlan.workout.workout, reason: dayPlan.workout.reason }
-      : pickTodaysWorkout({ profile, latestCheckin, todaySleepDurationMinutes, personalSleepPattern, workouts, seed })
+    ? resolveTodaysTraining({
+        profile,
+        latestCheckin,
+        todaySleepDurationMinutes,
+        personalSleepPattern,
+        workouts,
+        seed,
+        lifeStage,
+        dayPlanWorkout: dayPlan?.workout ?? null,
+      })
     : { workout: null, reason: "" }
 
   const nutritionBase = profile.nutrition_enabled
@@ -378,12 +544,13 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
           "Je gaf aan dat je daar vandaag behoefte aan hebt. Neem een moment zonder schuldgevoel — een bad, een boek, of gewoon niets.",
         ...recoveryCta,
       }
-    : lowerIntensity
+    : lowerIntensity || stageGentler
       ? {
           title: "Zachte mobiliteit",
           duration: 10,
-          description:
-            "Neem vandaag de tijd voor rustige mobiliteit en ademhaling. Luister naar wat je lichaam nodig heeft.",
+          description: stageGentler
+            ? "In jouw fase mag herstel wat meer ruimte krijgen. Korte, rustige mobiliteit is al genoeg."
+            : "Neem vandaag de tijd voor rustige mobiliteit en ademhaling. Luister naar wat je lichaam nodig heeft.",
           ...recoveryCta,
         }
       : {
@@ -396,23 +563,43 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
 
   const namePart = profile.name ? `, ${profile.name}` : ""
   // Don't restate cyclusdag/fase here — the phase hero above already does that.
-  let dayFocus = `Luister vandaag naar hoe je je voelt en pas je tempo daarop aan${namePart}.`
+  let dayFocus = postCycle
+    ? `Luister vandaag naar hoe je je voelt en pas je tempo daarop aan${namePart} — zonder cycluskalender.`
+    : `Luister vandaag naar hoe je je voelt en pas je tempo daarop aan${namePart}.`
   if (needs.includes("rust")) {
     dayFocus = `Je gaf aan dat je vandaag naar rust verlangt${namePart}. Wees zacht voor jezelf — dat is vandaag genoeg.`
   } else if (lowerIntensity && matchesSleepPattern && personalSleepPattern) {
     dayFocus = `Je sliep vannacht relatief kort${namePart} — in jouw gegevens hangt dat vaker samen met ${symptomLabel(personalSleepPattern.symptom).toLowerCase()}. Wees dus extra zacht voor jezelf vandaag.`
   } else if (lowerIntensity) {
     dayFocus = `Je gaf aan dat het vandaag wat minder gaat${namePart}. Wees zacht voor jezelf en kies rust waar dat kan.`
-  } else if (wantsMoreActive) {
+  } else if (wantsMoreActive && !stageGentler) {
     dayFocus = `Je gaf aan dat je zin hebt om te bewegen vandaag${namePart} — dit hebben we daarom voor je samengesteld.`
   } else if (wantsSelfCare) {
     dayFocus = `Je gaf aan dat je vandaag tijd voor jezelf wilt${namePart}. Dat mag er gewoon zijn.`
+  } else if (lifeStage === "perimenopauze" || lifeStage === "veranderend") {
+    dayFocus = `In een veranderende fase mag je tempo per dag anders zijn${namePart}. Volg wat vandaag past — niet wat gisteren lukte.`
+  } else if (postCycle) {
+    dayFocus = `Zonder menstruatiecyclus blijft je lichaam wél signalen geven${namePart}. Slaap, energie en stress tellen vandaag mee.`
   }
 
   const buddyContext: string[] = []
   if (profile.name) buddyContext.push(`Naam: ${profile.name}`)
   if (profile.goals?.length) buddyContext.push(`Doelen: ${profile.goals.join(", ")}`)
-  if (cycleEstimate) {
+  const stageLabel = lifeStageLabelForBuddy(lifeStage)
+  if (stageLabel) {
+    buddyContext.push(
+      `Levensfase (zelfgekozen): ${stageLabel}${
+        stageGentler
+          ? " — neig naar zachter advies; suggereer nooit dat ze iets moet afmaken"
+          : ""
+      }`,
+    )
+  }
+  if (postCycle) {
+    buddyContext.push(
+      "Geen actieve menstruatiecyclus-aannames: praat over slaap, energie, stress en klachten zonder cycluskalender te forceren.",
+    )
+  } else if (cycleEstimate) {
     buddyContext.push(
       `Cyclusdag ${cycleEstimate.cycleDay} (${cycleEstimate.phaseLabel}, schatting)`,
     )

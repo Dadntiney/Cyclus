@@ -202,6 +202,8 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
         workouts,
         recipes,
         seed: `${userId}-${today}`,
+        lifeStage: cycleProfile?.life_stage ?? null,
+        hasCycle: cycleProfile?.has_cycle ?? null,
         dayPlan: todayPlan
           ? {
               meals: todayPlan.meals.map((m) => ({

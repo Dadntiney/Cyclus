@@ -1,5 +1,6 @@
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import type { BuddyStyle } from "@/lib/buddy/styles"
+import { pickRotating } from "@/lib/content/rotate"
 
 /**
  * Content for the daily "Buddy"-quote card on Vandaag — a short, warm
@@ -326,29 +327,13 @@ const PHASE_QUOTES: BuddyQuote[] = [
 
 export const BUDDY_QUOTES: BuddyQuote[] = [...GENERAL_QUOTES, ...PHASE_QUOTES]
 
-function seededIndex(seed: string, length: number): number {
-  if (length <= 0) return 0
-  let hash = 0
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i)
-    hash |= 0
-  }
-  return Math.abs(hash) % length
-}
-
 /**
- * Picks today's quote, seeded by user + date so it's stable across a page's
- * re-renders/reloads but rotates daily and differs between people. Roughly
- * 1 in 4 days pulls from the (small) phase-matched pool when a phase is
- * known — enough to feel like the Buddy notices, not so much that every
- * period day gets the same "take it easy" message.
+ * Picks today's quote with a user-stable rotation so the small pool doesn't
+ * feel stuck after a few weeks. Seed should include YYYY-MM-DD (e.g.
+ * `${userId}-${today}`) so consecutive days walk the pack.
  *
- * When she has a Buddy-stijl preference, the pool is narrowed to only
- * entries that actually have a rewrite for one of her chosen styles — so a
- * styled pick always genuinely sounds like her style, never silently falls
- * back to the neutral phrasing. If narrowing would leave nothing (not
- * enough style coverage yet for that phase/day), it falls back to the full
- * neutral pool rather than showing nothing.
+ * Roughly 1 in 4 days pulls from the phase-matched pool when a phase is
+ * known. Styled preferences still narrow to rewrites when available.
  */
 export function getDailyBuddyQuote(
   seed: string,
@@ -356,18 +341,19 @@ export function getDailyBuddyQuote(
   preferredStyles: BuddyStyle[] = [],
 ): BuddyQuote {
   const phaseMatches = phase ? PHASE_QUOTES.filter((q) => q.phases?.includes(phase)) : []
-  const usePhaseQuote = phaseMatches.length > 0 && seededIndex(`${seed}-phase-gate`, 4) === 0
+  const usePhaseQuote =
+    phaseMatches.length > 0 && pickRotating([0, 1, 2, 3], `${seed}-phase-gate`, "phase-gate") === 0
   const basePool = usePhaseQuote ? phaseMatches : GENERAL_QUOTES
 
   if (preferredStyles.length > 0) {
     const styledPool = basePool.filter((q) => q.styles && preferredStyles.some((s) => q.styles?.[s]))
     if (styledPool.length > 0) {
-      const quote = styledPool[seededIndex(seed, styledPool.length)]
+      const quote = pickRotating(styledPool, seed, "buddy-styled")
       const matchingStyles = preferredStyles.filter((s) => quote.styles?.[s])
-      const style = matchingStyles[seededIndex(`${seed}-style-pick`, matchingStyles.length)]
+      const style = pickRotating(matchingStyles, `${seed}-style-pick`, "buddy-style")
       return { ...quote, text: quote.styles![style]! }
     }
   }
 
-  return basePool[seededIndex(seed, basePool.length)]
+  return pickRotating(basePool, seed, "buddy-general")
 }

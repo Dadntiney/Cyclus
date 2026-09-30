@@ -10,6 +10,7 @@ import {
   type WeekPlanWorkout,
   type MealSlot,
 } from "@/lib/recommendations/week-plan"
+import { resolveTodaysTraining } from "@/lib/recommendations/engine"
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
 import { filterRecipesByCuisinePrefs } from "@/lib/nutrition/cuisine"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
@@ -76,7 +77,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
       .order("date", { ascending: true }),
     supabase
       .from("daily_checkins")
-      .select("date, symptoms")
+      .select("date, symptoms, energy, mood, sleep, stress, needs")
       .eq("user_id", userId)
       .gte("date", sixMonthsAgo),
     supabase
@@ -152,7 +153,40 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
     seed: userId,
     anticipationSoftDates: anticipation?.softDates ?? [],
     anticipationTip: anticipation ? anticipation.body : null,
+    lifeStage: cycleProfile?.life_stage ?? null,
   })
+
+  // Bend today's workout with check-in so Deze week matches Vandaag.
+  const todayCheckin = (recentCheckins ?? []).find((c) => c.date === todayISO) ?? null
+  const todayIndex = days.findIndex((d) => d.isToday)
+  if (todayIndex >= 0 && profile.movement_enabled !== false) {
+    const day = days[todayIndex]
+    const adapted = resolveTodaysTraining({
+      profile,
+      latestCheckin: todayCheckin
+        ? {
+            energy: todayCheckin.energy,
+            mood: todayCheckin.mood,
+            sleep: todayCheckin.sleep,
+            stress: todayCheckin.stress,
+            symptoms: todayCheckin.symptoms,
+            needs: todayCheckin.needs,
+          }
+        : null,
+      workouts: workoutRows,
+      seed: `${userId}-${todayISO}`,
+      lifeStage: cycleProfile?.life_stage ?? null,
+      dayPlanWorkout: day.workout,
+    })
+    days[todayIndex] = {
+      ...day,
+      workout: {
+        ...day.workout,
+        workout: adapted.workout,
+        reason: adapted.reason,
+      },
+    }
+  }
 
   const availableRecipes = filterRecipesByCuisinePrefs(
     filterRecipesForNutritionPrefs(recipeRows, profile.food_allergies, profile.disliked_foods),
