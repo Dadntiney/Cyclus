@@ -12,7 +12,6 @@ import { DayCloseCard } from "@/components/today/day-close-card"
 import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
-import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { greeting } from "@/lib/greeting"
 import { getSavedMomentTexts } from "@/lib/data/moments"
@@ -153,8 +152,7 @@ export default async function VandaagPage() {
   )
 
   return (
-    <PullToRefresh>
-      <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
+    <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         <header className="mb-5">
           <div className="flex items-start justify-between gap-3">
             <h1 className="font-display text-2xl lg:text-3xl text-ink tracking-tight min-w-0">
@@ -274,6 +272,5 @@ export default async function VandaagPage() {
           </div>
         </div>
       </div>
-    </PullToRefresh>
   )
 }

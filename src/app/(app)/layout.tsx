@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/nav/sidebar"
 import { BottomNav } from "@/components/nav/bottom-nav"
 import { MobileHeader } from "@/components/nav/mobile-header"
 import { PageTransition } from "@/components/nav/page-transition"
+import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import { ReminderToastHost, type MorningReminderSettings } from "@/components/reminders/reminder-toast-host"
 import { getReminders } from "@/lib/data/reminders"
 import { getMedicationReminderSources } from "@/lib/data/medications"
@@ -62,7 +63,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="flex-1 flex flex-col min-w-0">
         <MobileHeader />
         <main className="flex-1 pt-[var(--mobile-header-h,4.8rem)] md:pt-0 pb-[calc(var(--bottom-nav-h,5.5rem)+0.75rem)] md:pb-10">
-          <PageTransition>{children}</PageTransition>
+          <PullToRefresh>
+            <PageTransition>{children}</PageTransition>
+          </PullToRefresh>
         </main>
         <BottomNav avatarUrl={profile.avatar_url} />
         <ReminderToastHost
