@@ -7,6 +7,7 @@ import {
   BarChart3,
   Shield,
   NotebookPen,
+  Heart,
 } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfileOverview } from "@/lib/data/profile"
@@ -21,7 +22,6 @@ import { Button } from "@/components/ui/button"
  * Profiel hub — doors only.
  *
  * Job: “waar moet ik zijn?” in <5s. Content lives on subpages.
- * Favorites live inside Voeding / Beweging (not duplicated here).
  */
 const OVER_MIJ = [
   {
@@ -45,6 +45,12 @@ const OVER_MIJ = [
 ] as const
 
 const APP = [
+  {
+    href: "/favorieten",
+    icon: Heart,
+    title: "Favorieten",
+    description: "Opgeslagen recepten en oefeningen.",
+  },
   {
     href: "/profiel/meldingen",
     icon: Bell,

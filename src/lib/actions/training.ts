@@ -64,6 +64,8 @@ export async function toggleExerciseFavorite(exerciseId: string) {
     const { error } = await supabase.from("exercise_favorites").delete().eq("id", existing.id)
     if (error) return { error: "Verwijderen is niet gelukt." }
     revalidatePath("/training")
+    revalidatePath("/training/favorieten")
+    revalidatePath("/favorieten")
     revalidatePath("/profiel")
     return { success: true, favorited: false }
   }
@@ -74,6 +76,8 @@ export async function toggleExerciseFavorite(exerciseId: string) {
   if (error) return { error: "Opslaan is niet gelukt." }
 
   revalidatePath("/training")
+  revalidatePath("/training/favorieten")
+  revalidatePath("/favorieten")
   revalidatePath("/profiel")
   return { success: true, favorited: true }
 }

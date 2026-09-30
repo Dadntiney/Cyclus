@@ -1,0 +1,128 @@
+import Link from "next/link"
+import { Heart, Salad, Dumbbell, ChevronRight } from "lucide-react"
+import { getAuthedUser } from "@/lib/supabase/server"
+import { getFavoriteRecipes } from "@/lib/data/nutrition"
+import { getFavoriteExercises } from "@/lib/data/training"
+import { RecipeCard } from "@/components/nutrition/recipe-card"
+import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
+import { BackButton } from "@/components/ui/back-button"
+
+/**
+ * Unified favorites hub — recipes + exercises in one place.
+ * Linked from the heart on Vandaag so she can jump here quickly.
+ */
+export default async function FavorietenPage() {
+  const user = await getAuthedUser()
+  if (!user) return null
+
+  const [recipes, exercises] = await Promise.all([
+    getFavoriteRecipes(user.id),
+    getFavoriteExercises(user.id),
+  ])
+
+  const isEmpty = recipes.length === 0 && exercises.length === 0
+
+  return (
+    <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
+      <div>
+        <BackButton href="/vandaag" label="Vandaag" />
+        <h1 className="font-display text-2xl lg:text-3xl text-ink inline-flex items-center gap-2">
+          <Heart className="h-6 w-6 text-peach" fill="currentColor" strokeWidth={0} aria-hidden />
+          Favorieten
+        </h1>
+        <p className="text-sm text-ink-soft mt-1">
+          Recepten en oefeningen die je hebt opgeslagen.
+        </p>
+      </div>
+
+      {isEmpty ? (
+        <EmptyState
+          icon={<Heart className="h-6 w-6" strokeWidth={1.5} />}
+          title="Nog geen favorieten"
+          description="Tik op het hartje bij een recept of oefening — dan vind je ze hier terug."
+        />
+      ) : (
+        <>
+          <section>
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h2 className="font-display text-lg text-ink inline-flex items-center gap-2">
+                <Salad className="h-4 w-4 text-sage-dark" strokeWidth={1.75} aria-hidden />
+                Recepten
+              </h2>
+              {recipes.length > 0 && (
+                <Link
+                  href="/voeding/favorieten"
+                  className="text-xs font-medium text-sage-dark inline-flex items-center gap-0.5 min-h-11 touch-manipulation"
+                >
+                  Alles
+                  <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+                </Link>
+              )}
+            </div>
+            {recipes.length ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {recipes.slice(0, 4).map((recipe) => (
+                  <RecipeCard key={recipe.id} recipe={recipe} />
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <p className="text-sm text-ink-soft">
+                  Nog geen favoriete recepten. Bewaar er een via Voeding.
+                </p>
+              </Card>
+            )}
+          </section>
+
+          <section>
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <h2 className="font-display text-lg text-ink inline-flex items-center gap-2">
+                <Dumbbell className="h-4 w-4 text-sage-dark" strokeWidth={1.75} aria-hidden />
+                Oefeningen
+              </h2>
+              {exercises.length > 0 && (
+                <Link
+                  href="/training/favorieten"
+                  className="text-xs font-medium text-sage-dark inline-flex items-center gap-0.5 min-h-11 touch-manipulation"
+                >
+                  Alles
+                  <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+                </Link>
+              )}
+            </div>
+            {exercises.length ? (
+              <Card className="p-0 divide-y divide-line">
+                {exercises.slice(0, 8).map((exercise) => (
+                  <Link
+                    key={exercise.id}
+                    href={`/training/${exercise.workout_id}`}
+                    className="flex items-center gap-2 px-5 py-3.5 touch-manipulation hover:bg-cream-soft transition-colors"
+                  >
+                    <Heart
+                      className="h-3.5 w-3.5 text-peach shrink-0"
+                      fill="currentColor"
+                      strokeWidth={0}
+                    />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-ink truncate">{exercise.name}</p>
+                      {exercise.muscle_group && (
+                        <p className="text-xs text-ink-soft mt-0.5">{exercise.muscle_group}</p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </Card>
+            ) : (
+              <Card>
+                <p className="text-sm text-ink-soft">
+                  Nog geen favoriete oefeningen. Bewaar er een tijdens een workout.
+                </p>
+              </Card>
+            )}
+          </section>
+        </>
+      )}
+    </div>
+  )
+}

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, Heart } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { TodayCards } from "@/components/today/today-cards"
@@ -104,10 +104,19 @@ export default async function VandaagPage() {
     <PullToRefresh>
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         <header className="mb-6">
-          <h1 className="font-display text-2xl lg:text-3xl text-ink tracking-tight">
-            {greeting()}
-            {profile?.name ? `, ${profile.name}` : ""}
-          </h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="font-display text-2xl lg:text-3xl text-ink tracking-tight min-w-0">
+              {greeting()}
+              {profile?.name ? `, ${profile.name}` : ""}
+            </h1>
+            <Link
+              href="/favorieten"
+              aria-label="Favorieten"
+              className="shrink-0 inline-flex items-center justify-center h-11 w-11 rounded-full text-peach touch-manipulation motion-safe:active:scale-95 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            >
+              <Heart className="h-5 w-5" strokeWidth={1.75} />
+            </Link>
+          </div>
 
           {cycleEstimate && tone ? (
             <div className="mt-3">

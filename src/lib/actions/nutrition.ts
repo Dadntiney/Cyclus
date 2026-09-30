@@ -23,6 +23,7 @@ export async function toggleFavorite(recipeId: string) {
     revalidatePath("/voeding")
     revalidatePath(`/voeding/${recipeId}`)
     revalidatePath("/voeding/favorieten")
+    revalidatePath("/favorieten")
     return { success: true, favorited: false }
   }
 
@@ -34,5 +35,6 @@ export async function toggleFavorite(recipeId: string) {
   revalidatePath("/voeding")
   revalidatePath(`/voeding/${recipeId}`)
   revalidatePath("/voeding/favorieten")
+  revalidatePath("/favorieten")
   return { success: true, favorited: true }
 }
