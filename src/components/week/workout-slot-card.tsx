@@ -35,7 +35,7 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
 
   if (focus === "rust" && !swapped) {
     return (
-      <div className="rounded-2xl bg-cream-soft p-3.5 flex items-center gap-2.5 text-ink-soft">
+      <div className="rounded-3xl bg-sage-soft/50 p-3.5 flex items-center gap-2.5 text-ink-soft">
         <Moon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
         <p className="text-sm">Rustdag — geen beweging gepland.</p>
       </div>
@@ -48,7 +48,7 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
   const swappedWorkout = swapped ? (alternatives.find((a) => a.id === swapped.workoutId) ?? null) : null
 
   return (
-    <div className="rounded-2xl border border-line/70 p-3.5">
+    <div className="rounded-3xl bg-sage-soft/50 p-3.5">
       <div className="flex items-center justify-between mb-1.5">
         <p className="text-xs font-medium text-ink-soft">{FOCUS_LABELS[focus]}</p>
         {(skipped || swapped) && (

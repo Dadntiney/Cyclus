@@ -61,12 +61,12 @@ export default async function FavorietenPage() {
               )}
             </div>
             {recipes.length ? (
-              <Card className="p-0 divide-y divide-line">
+              <Card className="p-0 divide-y divide-sage/20">
                 {recipes.slice(0, 6).map((recipe) => (
                   <Link
                     key={recipe.id}
                     href={`/voeding/${recipe.id}`}
-                    className="flex items-center gap-3 px-4 py-3 touch-manipulation hover:bg-cream-soft transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 touch-manipulation hover:bg-sage-soft/70 transition-colors"
                   >
                     <RecipeImage
                       title={recipe.title}
@@ -117,12 +117,12 @@ export default async function FavorietenPage() {
               )}
             </div>
             {exercises.length ? (
-              <Card className="p-0 divide-y divide-line">
+              <Card className="p-0 divide-y divide-sage/20">
                 {exercises.slice(0, 8).map((exercise) => (
                   <Link
                     key={exercise.id}
                     href={`/training/${exercise.workout_id}`}
-                    className="flex items-center gap-3 px-4 py-3 touch-manipulation hover:bg-cream-soft transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 touch-manipulation hover:bg-sage-soft/70 transition-colors"
                   >
                     <Heart
                       className="h-3.5 w-3.5 text-peach shrink-0"

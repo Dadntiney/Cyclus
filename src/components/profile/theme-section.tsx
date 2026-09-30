@@ -34,10 +34,10 @@ export function ThemeSection({ initial }: { initial: ThemePreference }) {
   }
 
   return (
-    <div className="rounded-2xl border border-line/70 bg-surface px-4 py-3.5">
+    <div className="rounded-3xl bg-sage-soft/50 px-4 py-3.5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="text-base font-medium text-ink">Weergave</p>
+          <p className="text-sm font-medium text-ink">Weergave</p>
           <p className="text-sm text-ink-soft mt-0.5">Dag, nacht of zoals je telefoon.</p>
         </div>
         <div className="flex flex-wrap gap-1.5 shrink-0">

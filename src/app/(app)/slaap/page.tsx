@@ -81,8 +81,8 @@ export default async function SlaapPage() {
       {(average || wakeFeelingInsight || sleepSymptomInsights.length > 0) && (
         <div className="flex flex-col gap-3 mb-6">
           {average && (
-            <Card className="bg-sage-soft border-transparent">
-              <p className="text-base text-ink leading-relaxed">
+            <Card className="bg-sage-soft/70">
+              <p className="text-sm text-ink leading-relaxed">
                 Je hebt de afgelopen {average.nights} nachten gemiddeld{" "}
                 <span className="font-semibold">{formatSleepDuration(average.averageMinutes)}</span> geslapen.
               </p>
@@ -90,15 +90,15 @@ export default async function SlaapPage() {
           )}
           {wakeFeelingInsight && (
             <Card>
-              <p className="text-base text-ink-soft leading-relaxed">{wakeFeelingInsight}</p>
+              <p className="text-sm text-ink-soft leading-relaxed">{wakeFeelingInsight}</p>
             </Card>
           )}
           {sleepSymptomInsights.length > 0 && (
             <div>
               <h2 className="font-display text-lg text-ink mb-3">Slaap & klachten</h2>
-              <Card className="p-0 divide-y divide-line">
+              <Card className="p-0 divide-y divide-sage/20">
                 {sleepSymptomInsights.map((insight) => (
-                  <p key={insight.symptom} className="text-base text-ink-soft leading-relaxed px-5 py-3.5">
+                  <p key={insight.symptom} className="text-sm text-ink-soft leading-relaxed px-4 py-3.5">
                     {formatSleepSymptomInsight(insight)}
                   </p>
                 ))}
@@ -130,12 +130,12 @@ export default async function SlaapPage() {
               </Card>
             )
           })()}
-          <Card className="p-0 divide-y divide-line">
+          <Card className="p-0 divide-y divide-sage/20">
             {recentEntries.map((entry) => {
               const hasDuration = Boolean(entry.bedtime && entry.wake_time)
               const feeling = entry.wake_feeling ? WAKE_FEELING_BY_VALUE.get(entry.wake_feeling) : null
               return (
-                <div key={entry.id} className="flex items-center justify-between px-5 py-3.5">
+                <div key={entry.id} className="flex items-center justify-between px-4 py-3.5">
                   <p className="text-sm font-medium text-ink capitalize">
                     {format(parseISO(entry.date), "EEEE d MMM", { locale: nl })}
                   </p>

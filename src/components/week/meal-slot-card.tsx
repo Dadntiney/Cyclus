@@ -39,7 +39,7 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
   }
 
   return (
-    <div className="rounded-2xl border border-line/70 p-3.5">
+    <div className="rounded-3xl bg-sage-soft/50 p-3.5">
       <div className="flex items-center justify-between mb-1.5">
         <p className="text-xs font-medium text-ink-soft">{label}</p>
         {(skipped || swapped || custom) && (

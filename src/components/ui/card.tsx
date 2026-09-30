@@ -8,9 +8,10 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   media?: ReactNode
 }
 
-const baseClasses = "rounded-3xl bg-surface border border-line/70 shadow-[var(--shadow-card)]"
+/** Soft sage panel — same calm surface language as Vandaag (no white bordered cards). */
+const baseClasses = "rounded-3xl bg-sage-soft/50 border border-transparent"
 const interactiveClasses =
-  "transition-[border-color,transform,box-shadow] duration-150 motion-safe:active:scale-[0.985] hover:border-sage/50 active:border-sage/50"
+  "transition-[background-color,transform] duration-150 motion-safe:active:scale-[0.985] hover:bg-sage-soft/70 active:bg-sage-soft/80"
 
 export function Card({ className, interactive, media, children, ...props }: CardProps) {
   if (media) {

@@ -46,7 +46,7 @@ export default async function EditMedicationPage({
       <div className="max-w-md mx-auto px-5 pt-6">
         <BackButton href="/medicatie" label="Mijn medicatie" className="mb-0" />
         {phaseInfo && (
-          <Card className="mt-4 bg-sage-soft border-transparent">
+          <Card className="mt-4">
             <p className="text-sm text-ink">
               Huidige fase: <span className="font-medium">{phaseInfo.phase === "wel" ? "wel" : "niet"}</span> · tot{" "}
               {formatPhaseDate(phaseInfo.phaseEndDate)}

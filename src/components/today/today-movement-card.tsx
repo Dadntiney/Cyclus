@@ -50,7 +50,7 @@ export function TodayMovementCard({
     ? "px-4 pt-4 pb-3"
     : emphasis === "primary"
       ? "rounded-3xl bg-sage-soft/70 p-4"
-      : "rounded-2xl border border-line/70 p-3.5"
+      : "rounded-3xl bg-sage-soft/50 p-3.5"
 
   const [override, setOverride] = useState<DayOverride | null>(null)
   const [swapping, setSwapping] = useState(false)

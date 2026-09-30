@@ -19,7 +19,7 @@ export function AffirmationViewer({ affirmations, seed }: { affirmations: Affirm
   const affirmation = affirmations[index]
 
   return (
-    <Card className="bg-sage-soft border-transparent text-center">
+    <Card className="text-center">
       <p className="font-display text-xl text-ink leading-snug px-2">&ldquo;{affirmation.text}&rdquo;</p>
       <button
         type="button"

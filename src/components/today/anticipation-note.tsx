@@ -10,7 +10,7 @@ export function AnticipationNote({ anticipation }: { anticipation: Anticipation 
   return (
     <section
       aria-label="Vooruitkijken"
-      className="rounded-2xl border border-line/80 bg-surface/60 px-3.5 py-3"
+      className="rounded-3xl bg-sage-soft/50 px-3.5 py-3"
     >
       <p className="text-sm font-medium text-ink tracking-tight">{anticipation.headline}</p>
       <p className="text-xs text-ink-soft mt-1 leading-relaxed">{anticipation.body}</p>

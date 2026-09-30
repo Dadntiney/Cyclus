@@ -14,7 +14,7 @@ export default function ProfielModulesRedirect() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 py-10">
-      <div className="rounded-2xl border border-line/70 bg-surface p-5 min-h-32 skeleton" aria-hidden />
+      <div className="rounded-3xl bg-sage-soft/50 p-5 min-h-32 skeleton" aria-hidden />
     </div>
   )
 }

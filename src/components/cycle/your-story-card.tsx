@@ -13,7 +13,7 @@ export function YourStoryCard({ story }: { story: YourStory }) {
     : "Wat werkt bij jou → wat past deze week."
 
   return (
-    <Card className="bg-sage-soft/40 border-transparent">
+    <Card>
       <div className="flex flex-col gap-3.5">
         <div>
           <p className="text-sm font-medium text-sage-dark mb-0.5">Jouw verhaal</p>

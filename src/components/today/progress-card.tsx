@@ -15,7 +15,7 @@ export function ProgressCard({
   const pct = Math.min(100, Math.round((completedThisWeek / Math.max(1, goal)) * 100))
 
   return (
-    <div className="rounded-2xl border border-line/70 p-4">
+    <div className="rounded-3xl bg-sage-soft/50 p-4">
       <h2 className="font-display text-lg text-ink mb-2.5">Mijn voortgang</h2>
       {movementEnabled && (
         <>

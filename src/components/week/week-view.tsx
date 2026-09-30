@@ -114,8 +114,8 @@ export function WeekView({
               aria-label={`${d.weekday} ${format(parseISO(d.date), "d MMMM", { locale: nl })}${d.isToday ? ", vandaag" : ""}${anticipated ? ", bij jou vaak zwaarder" : ""}`}
               className={cn(
                 "flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 min-h-11 touch-manipulation transition-colors",
-                selected ? "bg-sage-fill text-white" : "bg-surface border border-line text-ink",
-                anticipated && !selected && "border-sage/50",
+                selected ? "bg-sage-fill text-white" : "bg-sage-soft/50 text-ink",
+                anticipated && !selected && "ring-1 ring-sage/40",
               )}
             >
               <span className="text-[10px] font-medium uppercase opacity-80">{d.weekdayShort}</span>
@@ -200,7 +200,7 @@ export function WeekView({
       {nutritionEnabled && (
         <Link
           href="/deze-week/boodschappen"
-          className="flex items-center justify-between rounded-2xl bg-surface border border-line/70 px-4 py-3.5 touch-manipulation"
+          className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
         >
           <span className="inline-flex items-center gap-2.5 text-sm font-medium text-ink">
             <ShoppingCart className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />

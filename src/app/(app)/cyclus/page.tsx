@@ -268,9 +268,9 @@ export default async function CyclusPage() {
         )}
 
         {insightLines.length > 0 ? (
-          <Card className="p-0 divide-y divide-line mb-3">
+          <Card className="p-0 divide-y divide-sage/20 mb-3">
             {insightLines.map((text) => (
-              <div key={text} className="flex gap-3 px-5 py-3.5">
+              <div key={text} className="flex gap-3 px-4 py-3.5">
                 <Lightbulb className="h-4 w-4 shrink-0 text-sage-dark mt-0.5" strokeWidth={1.75} />
                 <p className="text-sm text-ink leading-relaxed">{text}</p>
               </div>
@@ -323,7 +323,7 @@ export default async function CyclusPage() {
       </div>
 
       {!lifeStage && (
-        <Card className="bg-cream-soft border-transparent">
+        <Card className="bg-cream-soft">
           <p className="text-sm font-medium text-ink mb-1">Welke fase past bij jou?</p>
           <p className="text-sm text-ink-soft mb-3">
             Regelmatig, veranderend, overgang of daarna — dan past de uitleg beter. Geen diagnose.
@@ -349,12 +349,12 @@ export default async function CyclusPage() {
           )}
         </Card>
       ) : hasCycle ? (
-        <Card className={cn(phaseTone && "border-transparent", phaseTone?.bg)}>
+        <Card className={cn(phaseTone?.bg)}>
           {cycleEstimate ? (
             <>
               <p className={cn("text-sm font-medium mb-1", phaseTone?.text ?? "text-sage-dark")}>Nu</p>
               <p className="font-display text-2xl text-ink">Cyclusdag {cycleEstimate.cycleDay}</p>
-              <p className="text-base text-ink-soft mt-1">{cycleEstimate.phaseLabel} · schatting</p>
+              <p className="text-sm text-ink-soft mt-1">{cycleEstimate.phaseLabel} · schatting</p>
             </>
           ) : (
             <p className="text-sm text-ink-soft">
@@ -449,9 +449,9 @@ export default async function CyclusPage() {
         <section>
           <h2 className="font-display text-lg text-ink mb-3">Eerdere cycli</h2>
           {recentHistory.length ? (
-            <Card className="p-0 divide-y divide-line">
+            <Card className="p-0 divide-y divide-sage/20">
               {completedLengths.length >= 2 && (
-                <div className="px-5 py-3.5">
+                <div className="px-4 py-3.5">
                   <p className="text-xs text-ink-soft mb-2">Cyclusduur (recent)</p>
                   <CycleLengthSparkline lengths={completedLengths} />
                 </div>
@@ -459,7 +459,7 @@ export default async function CyclusPage() {
               {recentHistory.map((period) => {
                 const flowOption = FLOW_OPTIONS.find((f) => f.value === period.dominantFlow)
                 return (
-                  <div key={period.start} className="flex items-center justify-between px-5 py-3.5">
+                  <div key={period.start} className="flex items-center justify-between px-4 py-3.5">
                     <div>
                       <p className="text-sm font-medium text-ink">
                         {format(parseISO(period.start), "d MMM", { locale: nl })} –{" "}
@@ -515,7 +515,7 @@ export default async function CyclusPage() {
         <div className="flex flex-col gap-2">
           <Link
             href="/cyclus/samenvatting"
-            className="flex items-center justify-between rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation"
+            className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
           >
             <span className="min-w-0">
               <span className="block text-sm font-medium text-ink inline-flex items-center gap-1.5">
@@ -531,7 +531,7 @@ export default async function CyclusPage() {
 
           <Link
             href="/cyclus/klachtenlast"
-            className="flex items-center justify-between rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation"
+            className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
           >
             <span className="min-w-0">
               <span className="block text-sm font-medium text-ink inline-flex items-center gap-1.5">
@@ -549,7 +549,7 @@ export default async function CyclusPage() {
 
           <Link
             href="/kennis"
-            className="flex items-center justify-between rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation"
+            className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
           >
             <span className="min-w-0">
               <span className="block text-sm font-medium text-ink inline-flex items-center gap-1.5">
@@ -565,7 +565,7 @@ export default async function CyclusPage() {
 
           <Link
             href="/cyclus/overgang"
-            className="flex items-center justify-between rounded-2xl border border-line/70 px-4 py-3.5 touch-manipulation"
+            className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
           >
             <span className="min-w-0">
               <span className="block text-sm font-medium text-ink inline-flex items-center gap-1.5">

@@ -6,7 +6,7 @@ const ProfileForm = dynamic(
   () => import("@/components/profile/profile-form").then((m) => ({ default: m.ProfileForm })),
   {
     loading: () => (
-      <div className="rounded-2xl border border-line/70 bg-surface p-5 min-h-48 skeleton" aria-hidden />
+      <div className="rounded-3xl bg-sage-soft/50 p-5 min-h-48 skeleton" aria-hidden />
     ),
   },
 )

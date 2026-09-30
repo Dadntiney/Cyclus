@@ -40,21 +40,21 @@ export default async function OvergangPage() {
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
       <BackButton href="/cyclus" label="Cyclus" />
 
-      <div className="rounded-3xl p-5 lg:p-6 mb-6 bg-info-soft">
-        <p className="text-xs font-semibold uppercase tracking-wide text-info">Cyclus & ouder worden</p>
-        <p className="font-display text-2xl text-ink mt-1">De overgang, uitgelegd</p>
-        <p className="text-base text-ink-soft mt-2 leading-relaxed">{LIFE_STAGE_KNOWLEDGE.intro}</p>
-      </div>
+      <header className="rounded-3xl px-4 py-4 mb-6 bg-info-soft">
+        <p className="text-xs font-medium tracking-wide text-info">Cyclus & ouder worden</p>
+        <h1 className="font-display text-2xl text-ink mt-1">De overgang, uitgelegd</h1>
+        <p className="text-sm text-ink-soft mt-2 leading-relaxed">{LIFE_STAGE_KNOWLEDGE.intro}</p>
+      </header>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
         <section>
-          <h2 className="font-display text-lg text-ink mb-2.5">Hoe je cyclus kan veranderen</h2>
+          <h2 className="font-display text-lg text-ink mb-2">Hoe je cyclus kan veranderen</h2>
           <Card>
             <div className="flex flex-col gap-4">
               {LIFE_STAGE_KNOWLEDGE.ageChanges.map((section) => (
                 <div key={section.heading}>
                   <p className="text-sm font-medium text-ink mb-1">{section.heading}</p>
-                  <p className="text-base text-ink-soft leading-relaxed">{section.text}</p>
+                  <p className="text-sm text-ink-soft leading-relaxed">{section.text}</p>
                 </div>
               ))}
             </div>
@@ -62,42 +62,40 @@ export default async function OvergangPage() {
         </section>
 
         <section>
-          <h2 className="font-display text-lg text-ink mb-2.5">Wat is perimenopauze?</h2>
+          <h2 className="font-display text-lg text-ink mb-2">Wat is perimenopauze?</h2>
           <Card>
-            <p className="text-base text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.whatIsPerimenopause}</p>
+            <p className="text-sm text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.whatIsPerimenopause}</p>
           </Card>
         </section>
 
         <section>
-          <h2 className="font-display text-lg text-ink mb-2.5">Signalen die je kunt herkennen</h2>
+          <h2 className="font-display text-lg text-ink mb-2">Signalen die je kunt herkennen</h2>
           <Card>
             <BodyChangeList items={highlightSignals} />
           </Card>
         </section>
 
-        <section>
-          <Card className="bg-sage-soft border-transparent">
-            <p className="text-xs font-medium text-sage-dark mb-1">Wist je dat...?</p>
-            <p className="text-base text-ink leading-relaxed">{funFact}</p>
-          </Card>
-        </section>
+        <Card>
+          <p className="text-xs font-medium text-sage-dark mb-1">Wist je dat…?</p>
+          <p className="text-sm text-ink leading-relaxed">{funFact}</p>
+        </Card>
 
         <Expandable label="Meer weten over de overgang">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             <Card>
               <p className="text-sm font-medium text-ink mb-3">Meer signalen</p>
               <BodyChangeList items={moreSignals} />
             </Card>
             <Card>
-              <p className="text-sm font-medium text-ink mb-2">Wat kan normaal zijn?</p>
-              <p className="text-base text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.normalNote}</p>
+              <p className="text-sm font-medium text-ink mb-1.5">Wat kan normaal zijn?</p>
+              <p className="text-sm text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.normalNote}</p>
             </Card>
-            <Card className="bg-cream-soft border-transparent">
+            <Card className="bg-cream-soft">
               <div className="flex gap-2.5">
                 <Stethoscope className="h-4 w-4 text-ink-soft shrink-0 mt-0.5" strokeWidth={1.75} />
                 <div>
                   <p className="text-sm font-medium text-ink mb-1.5">Wanneer een zorgverlener inschakelen?</p>
-                  <p className="text-base text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.whenToTalkToDoctor}</p>
+                  <p className="text-sm text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.whenToTalkToDoctor}</p>
                 </div>
               </div>
             </Card>
@@ -106,7 +104,7 @@ export default async function OvergangPage() {
 
         {cycleProfile?.perimenopause_information && (
           <section>
-            <h2 className="font-display text-lg text-ink mb-2.5">Wat jij hierover met ons deelde</h2>
+            <h2 className="font-display text-lg text-ink mb-2">Wat jij hierover met ons deelde</h2>
             <Card>
               <p className="text-sm text-ink-soft leading-relaxed whitespace-pre-wrap">
                 {cycleProfile.perimenopause_information}
@@ -121,7 +119,7 @@ export default async function OvergangPage() {
           </section>
         )}
 
-        <p className="text-xs text-ink-soft px-1 leading-relaxed">
+        <p className="text-xs text-ink-soft leading-relaxed">
           Deze uitleg is algemene, informatieve content — geen medisch advies en geen diagnose.
           Iedere vrouw ervaart deze levensfase anders; bij twijfel of zorgwekkende klachten is
           overleg met een arts of andere zorgverlener altijd een goede stap.

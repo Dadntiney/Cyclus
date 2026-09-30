@@ -23,18 +23,18 @@ export function ProfileHubGroup({
   return (
     <section className="flex flex-col gap-2">
       {title ? <h2 className="px-1 text-sm font-medium text-ink-soft">{title}</h2> : null}
-      <ul className="overflow-hidden rounded-2xl border border-line/70 bg-surface divide-y divide-line/70">
+      <ul className="overflow-hidden rounded-3xl bg-sage-soft/50 divide-y divide-sage/20">
         {items.map((item) => (
           <li key={item.href}>
             <Link
               href={item.href}
               className="flex items-center gap-3.5 px-4 min-h-14 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sage/50"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-soft text-sage-dark">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface/70 text-sage-dark">
                 <item.icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
               </span>
               <span className="min-w-0 flex-1 py-3">
-                <span className="block text-base font-medium text-ink">{item.title}</span>
+                <span className="block text-sm font-medium text-ink">{item.title}</span>
                 <span className="block text-sm text-ink-soft mt-0.5 leading-snug">{item.description}</span>
               </span>
               <ChevronRight className="h-4 w-4 shrink-0 text-ink-soft" strokeWidth={1.75} aria-hidden />
@@ -57,15 +57,15 @@ export function ProfileHubRow({
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-3.5 rounded-2xl border border-line/70 bg-surface px-4 min-h-14 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
+        "flex items-center gap-3.5 rounded-3xl bg-sage-soft/50 px-4 min-h-14 touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
         className,
       )}
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-soft text-sage-dark">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface/70 text-sage-dark">
         <Icon className="h-4 w-4" strokeWidth={1.75} aria-hidden />
       </span>
       <span className="min-w-0 flex-1 py-3">
-        <span className="block text-base font-medium text-ink">{title}</span>
+        <span className="block text-sm font-medium text-ink">{title}</span>
         {description ? <span className="block text-sm text-ink-soft mt-0.5 leading-snug">{description}</span> : null}
       </span>
       <ChevronRight className="h-4 w-4 shrink-0 text-ink-soft" strokeWidth={1.75} aria-hidden />

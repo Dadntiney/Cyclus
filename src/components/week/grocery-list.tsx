@@ -62,7 +62,7 @@ export function GroceryList({
       {categories.map((cat) => (
         <div key={cat.category}>
           <h2 className="font-display text-base text-ink mb-2">{cat.category}</h2>
-          <div className="rounded-3xl bg-surface border border-line/70 divide-y divide-line overflow-hidden">
+          <div className="rounded-3xl bg-sage-soft/50 divide-y divide-sage/20 overflow-hidden">
             {cat.items.map((item) => {
               const isChecked = checked.has(item.id)
               const subtitle = groceryItemSubtitle(item)

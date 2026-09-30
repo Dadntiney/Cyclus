@@ -21,12 +21,12 @@ export default async function TrainingFavorietenPage() {
       </div>
 
       {exercises.length ? (
-        <Card className="p-0 divide-y divide-line">
+        <Card className="p-0 divide-y divide-sage/20">
           {exercises.map((exercise) => (
             <Link
               key={exercise.id}
               href={`/training/${exercise.workout_id}`}
-              className="flex items-center gap-2 px-5 py-3.5 touch-manipulation hover:bg-cream-soft transition-colors"
+              className="flex items-center gap-2 px-4 py-3 touch-manipulation hover:bg-sage-soft/70 transition-colors"
             >
               <Heart className="h-3.5 w-3.5 text-peach shrink-0" fill="currentColor" strokeWidth={0} />
               <div className="min-w-0">

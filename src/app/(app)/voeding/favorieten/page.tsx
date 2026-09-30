@@ -23,12 +23,12 @@ export default async function FavorietenPage() {
       </div>
 
       {recipes.length ? (
-        <Card className="p-0 divide-y divide-line">
+        <Card className="p-0 divide-y divide-sage/20">
           {recipes.map((recipe) => (
             <Link
               key={recipe.id}
               href={`/voeding/${recipe.id}`}
-              className="flex items-center gap-3 px-4 py-3 touch-manipulation hover:bg-cream-soft transition-colors"
+              className="flex items-center gap-3 px-4 py-3 touch-manipulation hover:bg-sage-soft/70 transition-colors"
             >
               <RecipeImage
                 title={recipe.title}
