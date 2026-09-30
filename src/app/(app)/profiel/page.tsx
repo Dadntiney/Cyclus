@@ -71,6 +71,21 @@ const APP = [
   },
 ] as const
 
+const ACCOUNT = [
+  {
+    href: "/profiel/voortgang",
+    icon: BarChart3,
+    title: "Mijn voortgang",
+    description: "Check-ins, trainingen en mijlpalen.",
+  },
+  {
+    href: "/profiel/privacy",
+    icon: Shield,
+    title: "Privacy & gegevens",
+    description: "Exporteren of account verwijderen.",
+  },
+] as const
+
 export default async function ProfielPage() {
   const user = await getAuthedUser()
   if (!user) return null
@@ -98,20 +113,7 @@ export default async function ProfielPage() {
 
       <ThemeSection initial={themePreference} />
 
-      <div className="flex flex-col gap-3">
-        <ProfileHubRow
-          href="/profiel/voortgang"
-          icon={BarChart3}
-          title="Mijn voortgang"
-          description="Check-ins, trainingen en mijlpalen."
-        />
-        <ProfileHubRow
-          href="/profiel/privacy"
-          icon={Shield}
-          title="Privacy & gegevens"
-          description="Exporteren of account verwijderen."
-        />
-      </div>
+      <ProfileHubGroup title="Account" items={ACCOUNT} />
 
       <form action={logout}>
         <Button type="submit" variant="secondary" className="w-full">
