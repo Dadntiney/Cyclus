@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Bell, Plus, Trash2, X } from "lucide-react"
 import { Card } from "@/components/ui/card"
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { REMINDER_TYPE_OPTIONS, REMINDER_DAY_OPTIONS } from "@/lib/constants"
 import { createReminder, updateReminder, deleteReminder, toggleReminder } from "@/lib/actions/reminders"
-import type { ReminderInput } from "@/lib/validations/reminder"
+import { normalizeReminderTime, type ReminderInput } from "@/lib/validations/reminder"
 import type { Tables } from "@/types/database"
 
 type Reminder = Tables<"reminders">
@@ -25,11 +25,15 @@ function daysLabel(days: number[]): string {
 }
 
 function formatTime(time: string): string {
-  return time.slice(0, 5)
+  return normalizeReminderTime(time)
 }
 
 function emptyDraft(): ReminderInput {
   return { type: "dagelijkse_checkin", label: "", enabled: true, days: ALL_DAYS, time: "09:00" }
+}
+
+function sortByTime(list: Reminder[]): Reminder[] {
+  return [...list].sort((a, b) => formatTime(a.time).localeCompare(formatTime(b.time)))
 }
 
 /**
@@ -56,6 +60,7 @@ export function RemindersSection({
   mentalWellbeingEnabled?: boolean
 }) {
   const router = useRouter()
+  const formRef = useRef<HTMLDivElement>(null)
   const [reminders, setReminders] = useState(initialReminders)
   const availableTypeOptions = REMINDER_TYPE_OPTIONS.filter((opt) => {
     const requires = "requires" in opt ? opt.requires : undefined
@@ -70,6 +75,22 @@ export function RemindersSection({
   const [error, setError] = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  // Keep list in sync when the server page re-renders after refresh.
+  useEffect(() => {
+    setReminders(initialReminders)
+  }, [initialReminders])
+
+  const showForm = adding || editingId !== null
+
+  // Form sits above the bottom nav — scroll so Opslaan is reachable on mobile.
+  useEffect(() => {
+    if (!showForm) return
+    const id = window.setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" })
+    }, 50)
+    return () => window.clearTimeout(id)
+  }, [showForm])
 
   function startAdd() {
     setDraft(emptyDraft())
@@ -106,12 +127,48 @@ export function RemindersSection({
 
   function handleSave() {
     setError(null)
-    if (draft.enabled) maybeRequestNotificationPermission()
+    const payload: ReminderInput = {
+      ...draft,
+      time: normalizeReminderTime(draft.time),
+      label: draft.label?.trim() || "",
+    }
+    if (payload.enabled) maybeRequestNotificationPermission()
     startTransition(async () => {
-      const result = editingId ? await updateReminder(editingId, draft) : await createReminder(draft)
-      if (result.error) {
-        setError(result.error)
-        return
+      if (editingId) {
+        const result = await updateReminder(editingId, payload)
+        if (result.error) {
+          setError(result.error)
+          return
+        }
+        if (result.reminder) {
+          setReminders((prev) => sortByTime(prev.map((r) => (r.id === editingId ? result.reminder! : r))))
+        } else {
+          setReminders((prev) =>
+            sortByTime(
+              prev.map((r) =>
+                r.id === editingId
+                  ? {
+                      ...r,
+                      type: payload.type,
+                      label: payload.label?.trim() || null,
+                      enabled: payload.enabled,
+                      days: payload.days,
+                      time: payload.time,
+                    }
+                  : r,
+              ),
+            ),
+          )
+        }
+      } else {
+        const result = await createReminder(payload)
+        if (result.error) {
+          setError(result.error)
+          return
+        }
+        if (result.reminder) {
+          setReminders((prev) => sortByTime([...prev, result.reminder!]))
+        }
       }
       cancelForm()
       router.refresh()
@@ -155,8 +212,6 @@ export function RemindersSection({
       }
     })
   }
-
-  const showForm = adding || editingId !== null
 
   return (
     <Card id="herinneringen" className="scroll-mt-24">
@@ -260,7 +315,10 @@ export function RemindersSection({
       )}
 
       {showForm && (
-        <div className="flex flex-col gap-4 rounded-2xl border border-line p-4">
+        <div
+          ref={formRef}
+          className="flex flex-col gap-4 rounded-2xl border border-line p-4 scroll-mb-[calc(var(--bottom-nav-h,5.5rem)+1rem)]"
+        >
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-ink">
               {editingId ? "Herinnering bewerken" : "Nieuwe herinnering"}
@@ -322,7 +380,7 @@ export function RemindersSection({
               id="reminder-time"
               type="time"
               value={draft.time}
-              onChange={(e) => setDraft((d) => ({ ...d, time: e.target.value }))}
+              onChange={(e) => setDraft((d) => ({ ...d, time: normalizeReminderTime(e.target.value) }))}
               className="max-w-[160px]"
             />
           </div>

@@ -29,6 +29,7 @@ export async function createReminder(input: ReminderInput) {
 
   if (error) return { error: "Opslaan van je herinnering is niet gelukt." }
 
+  revalidatePath("/profiel/meldingen")
   revalidatePath("/profiel")
   return { success: true, reminder: data }
 }
@@ -43,7 +44,7 @@ export async function updateReminder(id: string, input: ReminderInput) {
   } = await supabase.auth.getUser()
   if (!user) return { error: "Je bent niet ingelogd." }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("reminders")
     .update({
       type: parsed.data.type,
@@ -54,11 +55,14 @@ export async function updateReminder(id: string, input: ReminderInput) {
     })
     .eq("id", id)
     .eq("user_id", user.id)
+    .select()
+    .single()
 
   if (error) return { error: "Bijwerken van je herinnering is niet gelukt." }
 
+  revalidatePath("/profiel/meldingen")
   revalidatePath("/profiel")
-  return { success: true }
+  return { success: true, reminder: data }
 }
 
 export async function toggleReminder(id: string, enabled: boolean) {
@@ -76,6 +80,7 @@ export async function toggleReminder(id: string, enabled: boolean) {
 
   if (error) return { error: "Bijwerken is niet gelukt." }
 
+  revalidatePath("/profiel/meldingen")
   revalidatePath("/profiel")
   return { success: true }
 }
@@ -91,6 +96,7 @@ export async function deleteReminder(id: string) {
 
   if (error) return { error: "Verwijderen is niet gelukt." }
 
+  revalidatePath("/profiel/meldingen")
   revalidatePath("/profiel")
   return { success: true }
 }
