@@ -38,7 +38,7 @@ export interface RecommendationInput {
     | "mental_wellbeing_enabled"
   >
   cycleEstimate: CycleEstimate | null
-  latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms" | "need"> | null
+  latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms" | "needs"> | null
   /** Last night's tracked sleep duration, if she has sleep tracking on and filled it in. */
   todaySleepDurationMinutes?: number | null
   /** The strongest sleep/symptom pattern from her history, if any cleared the bar — see computeSleepSymptomInsights. */
@@ -67,7 +67,7 @@ export interface TrainingRecommendation {
 
 export interface TrainingPickInput {
   profile: Pick<Profile, "training_preferences" | "health_conditions" | "movement_limitations">
-  latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms" | "need"> | null
+  latestCheckin: Pick<Checkin, "energy" | "mood" | "sleep" | "stress" | "symptoms" | "needs"> | null
   todaySleepDurationMinutes?: number | null
   personalSleepPattern?: PersonalSleepPattern | null
   workouts: Workout[]
@@ -88,7 +88,7 @@ export interface NutritionRecommendation {
 
 export interface NutritionPickInput {
   profile: Pick<Profile, "nutrition_preferences" | "nutrition_style" | "disliked_foods" | "food_allergies">
-  latestCheckin: Pick<Checkin, "need"> | null
+  latestCheckin: Pick<Checkin, "needs"> | null
   recipes: Recipe[]
   seed: string
 }
@@ -157,7 +157,7 @@ function wantsLowerIntensityToday(
   const lowEnergy = Boolean(checkin) && checkin!.energy !== null && checkin!.energy <= 2
   const highStress = Boolean(checkin) && checkin!.stress !== null && checkin!.stress >= 4
   const poorSleep = Boolean(checkin) && checkin!.sleep !== null && checkin!.sleep <= 2
-  const needsRest = checkin?.need === "rust"
+  const needsRest = Boolean(checkin?.needs?.includes("rust"))
   return (
     lowEnergy ||
     highStress ||
@@ -182,8 +182,8 @@ function parseCarbGrams(nutritionInformation: Recipe["nutrition_information"]): 
  */
 export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendation {
   const { profile, latestCheckin, todaySleepDurationMinutes, personalSleepPattern, workouts, seed } = input
-  const need = latestCheckin?.need ?? null
-  const wantsMoreActive = need === "beweging"
+  const needs = latestCheckin?.needs ?? []
+  const wantsMoreActive = needs.includes("beweging")
 
   const rawPreferenceCount = profile.training_preferences.length
   const preferredTypes = profile.training_preferences
@@ -228,7 +228,7 @@ export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendat
   let reason: string
   if (!workout && rawPreferenceCount > 0) {
     reason = "We hebben nog geen passende workouts voor de bewegingsvorm(en) die je koos — pas dit aan in je profiel."
-  } else if (lowerIntensity && need === "rust") {
+  } else if (lowerIntensity && needs.includes("rust")) {
     reason = "Je gaf aan dat je vandaag naar rust verlangt — een zachte sessie dus."
   } else if (lowerIntensity && matchesSleepPattern && personalSleepPattern) {
     reason = `Je sliep vannacht relatief kort — in jouw gegevens hangt dat vaker samen met ${symptomLabel(personalSleepPattern.symptom).toLowerCase()}, dus kozen we een zachtere sessie.`
@@ -255,7 +255,7 @@ export function pickTodaysWorkout(input: TrainingPickInput): TrainingRecommendat
  */
 export function pickTodaysRecipe(input: NutritionPickInput): NutritionRecommendation {
   const { profile, latestCheckin, recipes, seed } = input
-  const wantsQuickMeal = latestCheckin?.need === "voeding"
+  const wantsQuickMeal = Boolean(latestCheckin?.needs?.includes("voeding"))
   const nutritionPrefs = profile.nutrition_preferences ?? []
   const wantsLowCarb = profile.nutrition_style === "koolhydraatarm"
 
@@ -323,9 +323,9 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
     dayPlan = null,
   } = input
 
-  const need = latestCheckin?.need ?? null
-  const wantsMoreActive = need === "beweging"
-  const wantsSelfCare = need === "mezelf"
+  const needs = latestCheckin?.needs ?? []
+  const wantsMoreActive = needs.includes("beweging")
+  const wantsSelfCare = needs.includes("mezelf")
   const lowerIntensity = wantsLowerIntensityToday(latestCheckin, todaySleepDurationMinutes, personalSleepPattern)
   const matchesSleepPattern = shortNightMatchesPersonalPattern(todaySleepDurationMinutes, personalSleepPattern)
 
@@ -379,7 +379,7 @@ export function buildRecommendation(input: RecommendationInput): Recommendation 
   const namePart = profile.name ? `, ${profile.name}` : ""
   // Don't restate cyclusdag/fase here — the phase hero above already does that.
   let dayFocus = `Luister vandaag naar hoe je je voelt en pas je tempo daarop aan${namePart}.`
-  if (need === "rust") {
+  if (needs.includes("rust")) {
     dayFocus = `Je gaf aan dat je vandaag naar rust verlangt${namePart}. Wees zacht voor jezelf — dat is vandaag genoeg.`
   } else if (lowerIntensity && matchesSleepPattern && personalSleepPattern) {
     dayFocus = `Je sliep vannacht relatief kort${namePart} — in jouw gegevens hangt dat vaker samen met ${symptomLabel(personalSleepPattern.symptom).toLowerCase()}. Wees dus extra zacht voor jezelf vandaag.`

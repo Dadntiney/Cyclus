@@ -149,7 +149,7 @@ export type Database = {
           energy: number | null
           id: string
           mood: number | null
-          need: string | null
+          needs: string[]
           notes: string | null
           sleep: number | null
           stress: number | null
@@ -163,7 +163,7 @@ export type Database = {
           energy?: number | null
           id?: string
           mood?: number | null
-          need?: string | null
+          needs?: string[]
           notes?: string | null
           sleep?: number | null
           stress?: number | null
@@ -177,7 +177,7 @@ export type Database = {
           energy?: number | null
           id?: string
           mood?: number | null
-          need?: string | null
+          needs?: string[]
           notes?: string | null
           sleep?: number | null
           stress?: number | null

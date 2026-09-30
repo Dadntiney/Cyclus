@@ -13,7 +13,10 @@ export const checkinSchema = z.object({
   symptoms: z.array(z.string().trim().min(1).max(60)).max(40),
   symptomDetails: z.record(z.string(), symptomDetailSchema).default({}),
   notes: z.string().max(1000).optional(),
-  need: z.enum(["rust", "beweging", "voeding", "energie", "mezelf"]).nullable(),
+  needs: z
+    .array(z.enum(["rust", "beweging", "voeding", "energie", "mezelf"]))
+    .max(5)
+    .default([]),
   newCustomSymptoms: z.array(z.string().trim().min(1).max(40)).max(10).default([]),
 })
 

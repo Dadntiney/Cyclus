@@ -4,23 +4,25 @@ import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Chip } from "@/components/ui/chip"
 import { NEED_OPTIONS } from "@/lib/constants"
-import { setTodayNeed } from "@/lib/actions/checkin"
+import { setTodayNeeds } from "@/lib/actions/checkin"
 
-export function NeedPicker({ initialNeed }: { initialNeed: string | null }) {
+export function NeedPicker({ initialNeeds }: { initialNeeds: string[] }) {
   const router = useRouter()
-  const [need, setNeed] = useState(initialNeed)
+  const [needs, setNeeds] = useState(initialNeeds)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  function handleSelect(value: string) {
+  function handleToggle(value: string) {
     setError(null)
-    const previous = need
-    const next = need === value ? null : value
-    setNeed(next)
+    const previous = needs
+    const next = needs.includes(value)
+      ? needs.filter((n) => n !== value)
+      : [...needs, value]
+    setNeeds(next)
     startTransition(async () => {
-      const result = await setTodayNeed(next)
+      const result = await setTodayNeeds(next)
       if (result?.error) {
-        setNeed(previous)
+        setNeeds(previous)
         setError(result.error)
         return
       }
@@ -30,14 +32,15 @@ export function NeedPicker({ initialNeed }: { initialNeed: string | null }) {
 
   return (
     <div>
-      <h2 className="text-sm font-medium text-ink-soft mb-2">Waar heb je vandaag behoefte aan?</h2>
+      <h2 className="text-sm font-medium text-ink-soft mb-0.5">Waar heb je vandaag behoefte aan?</h2>
+      <p className="text-xs text-ink-soft mb-2">Je mag er meer dan één kiezen.</p>
       <div className="flex flex-wrap gap-2">
         {NEED_OPTIONS.map((opt) => (
           <Chip
             key={opt.value}
-            selected={need === opt.value}
+            selected={needs.includes(opt.value)}
             disabled={isPending}
-            onClick={() => handleSelect(opt.value)}
+            onClick={() => handleToggle(opt.value)}
           >
             <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
             {opt.label}

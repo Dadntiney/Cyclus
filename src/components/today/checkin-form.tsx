@@ -13,7 +13,7 @@ import {
   NEED_OPTIONS,
   symptomLabel,
 } from "@/lib/constants"
-import { saveCheckin, setTodayNeed } from "@/lib/actions/checkin"
+import { saveCheckin, setTodayNeeds } from "@/lib/actions/checkin"
 import { parseSymptomDetails } from "@/lib/symptom-details"
 import type { CheckinInput, SymptomDetail } from "@/lib/validations/checkin"
 import type { Tables } from "@/types/database"
@@ -29,7 +29,7 @@ type FormState = {
   symptoms: string[]
   symptomDetails: Record<string, SymptomDetail>
   notes: string
-  need: CheckinInput["need"]
+  needs: NonNullable<CheckinInput["needs"]>
 }
 
 const DEBOUNCE_MS = 700
@@ -44,7 +44,7 @@ function checkinHasContent(checkin: Checkin | null): boolean {
       checkin.stress ||
       (checkin.symptoms?.length ?? 0) > 0 ||
       (checkin.notes?.trim()?.length ?? 0) > 0 ||
-      checkin.need,
+      (checkin.needs?.length ?? 0) > 0,
   )
 }
 
@@ -57,7 +57,7 @@ function stateFromCheckin(initial: Checkin | null): FormState {
     symptoms: initial?.symptoms ?? [],
     symptomDetails: parseSymptomDetails(initial?.symptom_details),
     notes: initial?.notes ?? "",
-    need: (initial?.need as CheckinInput["need"]) ?? null,
+    needs: (initial?.needs as FormState["needs"]) ?? [],
   }
 }
 
@@ -131,7 +131,7 @@ export function CheckinForm({
       state.stress ||
       state.symptoms.length ||
       state.notes.trim() ||
-      state.need,
+      state.needs.length,
   )
 
   const summaryChips = useMemo(() => {
@@ -144,8 +144,8 @@ export function CheckinForm({
       if (s === "Anders") continue
       chips.push(symptomLabel(s))
     }
-    if (state.need) {
-      const label = NEED_OPTIONS.find((o) => o.value === state.need)?.label
+    for (const need of state.needs) {
+      const label = NEED_OPTIONS.find((o) => o.value === need)?.label
       if (label) chips.push(label)
     }
     if (state.notes.trim()) chips.push("Notitie")
@@ -181,7 +181,7 @@ export function CheckinForm({
         symptoms: snapshot.symptoms,
         symptomDetails: snapshot.symptomDetails,
         notes: snapshot.notes,
-        need: snapshot.need,
+        needs: snapshot.needs,
         newCustomSymptoms,
       })
     } catch {
@@ -239,16 +239,21 @@ export function CheckinForm({
     if (changed) scheduleSave(mode === "immediate")
   }
 
-  function selectNeed(value: string) {
-    const next = state.need === value ? null : (value as CheckinInput["need"])
+  function toggleNeed(value: string) {
+    const current = state.needs
+    const next = (
+      current.includes(value as FormState["needs"][number])
+        ? current.filter((n) => n !== value)
+        : [...current, value]
+    ) as FormState["needs"]
     setState((prev) => {
-      const updated = { ...prev, need: next }
+      const updated = { ...prev, needs: next }
       stateRef.current = updated
       return updated
     })
     // Lightweight need write + refresh so today’s plan can reshape.
     startNeedTransition(async () => {
-      const result = await setTodayNeed(next)
+      const result = await setTodayNeeds(next)
       if (result?.error) {
         setErrorMsg(result.error)
         setStatus("error")
@@ -478,13 +483,14 @@ export function CheckinForm({
             </div>
 
             <div>
-              <p className="text-sm font-medium text-ink mb-2">Waar heb je behoefte aan?</p>
+              <p className="text-sm font-medium text-ink mb-0.5">Waar heb je behoefte aan?</p>
+              <p className="text-xs text-ink-soft mb-2">Je mag er meer dan één kiezen.</p>
               <div className="flex flex-wrap gap-2">
                 {NEED_OPTIONS.map((opt) => (
                   <Chip
                     key={opt.value}
-                    selected={state.need === opt.value}
-                    onClick={() => selectNeed(opt.value)}
+                    selected={state.needs.includes(opt.value)}
+                    onClick={() => toggleNeed(opt.value)}
                   >
                     <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
                     {opt.label}

@@ -49,7 +49,7 @@ export async function saveCheckin(input: CheckinInput) {
       symptoms,
       symptom_details: symptomDetails,
       notes: parsed.data.notes || null,
-      need: parsed.data.need,
+      needs: parsed.data.needs,
     },
     { onConflict: "user_id,date" },
   )
@@ -82,13 +82,19 @@ export async function saveCheckin(input: CheckinInput) {
 
 const NEED_VALUES = ["rust", "beweging", "voeding", "energie", "mezelf"] as const
 
+export type NeedValue = (typeof NEED_VALUES)[number]
+
 /**
  * Lightweight, tap-to-save counterpart to the full check-in — just the
- * "waar heb je behoefte aan" answer, saved instantly without touching
- * whatever else is (or isn't) already recorded for today.
+ * "waar heb je behoefte aan" answers (multi-select), saved instantly without
+ * touching whatever else is (or isn't) already recorded for today.
  */
-export async function setTodayNeed(need: string | null) {
-  if (need !== null && !NEED_VALUES.includes(need as (typeof NEED_VALUES)[number])) {
+export async function setTodayNeeds(needs: string[]) {
+  const unique = Array.from(new Set(needs))
+  if (unique.length > NEED_VALUES.length) {
+    return { error: "Ongeldige invoer." }
+  }
+  if (!unique.every((n) => NEED_VALUES.includes(n as NeedValue))) {
     return { error: "Ongeldige invoer." }
   }
 
@@ -101,7 +107,7 @@ export async function setTodayNeed(need: string | null) {
   }
 
   const { error } = await supabase.from("daily_checkins").upsert(
-    { user_id: user.id, date: todayISO(), need },
+    { user_id: user.id, date: todayISO(), needs: unique },
     { onConflict: "user_id,date" },
   )
 

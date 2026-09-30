@@ -85,7 +85,7 @@ export default async function VandaagPage() {
   const personalizedFocus =
     dayFocus &&
     checkin &&
-    (checkin.need ||
+    (checkin.needs?.length ||
       (checkin.energy != null && checkin.energy <= 2) ||
       (checkin.mood != null && checkin.mood <= 2) ||
       (checkin.stress != null && checkin.stress >= 4))
@@ -96,8 +96,8 @@ export default async function VandaagPage() {
   // or when movement is off (recovery becomes the soft primary).
   const wantRecoveryRow =
     Boolean(mentalWellbeingSuggestion) ||
-    checkin?.need === "rust" ||
-    checkin?.need === "mezelf" ||
+    checkin?.needs?.includes("rust") ||
+    checkin?.needs?.includes("mezelf") ||
     !(profile?.movement_enabled ?? true)
 
   return (
@@ -223,7 +223,7 @@ export default async function VandaagPage() {
                   checkin.sleep ||
                   checkin.stress ||
                   (checkin.symptoms?.length ?? 0) > 0 ||
-                  checkin.need ||
+                  (checkin.needs?.length ?? 0) > 0 ||
                   (checkin.notes?.trim()?.length ?? 0) > 0),
             )}
             movementEnabled={profile?.movement_enabled ?? true}
