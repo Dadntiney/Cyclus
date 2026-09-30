@@ -210,7 +210,11 @@ export function CheckinForm({
     if (dirtyRef.current) {
       dirtyRef.current = false
       void performSave()
+      return
     }
+
+    // Refresh so the hormone roadmap / plan can reshape with new check-in data.
+    router.refresh()
   }
 
   function scheduleSave(immediate: boolean) {

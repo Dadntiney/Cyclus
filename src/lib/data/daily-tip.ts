@@ -30,6 +30,15 @@ const SYMPTOM_TIP_CATEGORIES: Record<string, string[]> = {
   "Brain fog": ["slaap", "stress", "hydratatie"],
   Stemmingswisselingen: ["stress", "hormonen"],
   Cravings: ["bloedsuiker", "vezels"],
+  Krampen: ["herstel", "hydratatie"],
+  Buikpijn: ["herstel", "hydratatie"],
+  Bloating: ["vezels", "hydratatie"],
+  "Slecht slapen": ["slaap", "stress"],
+  Hoofdpijn: ["hydratatie", "stress"],
+  Emotioneel: ["stress", "herstel"],
+  Gespannen: ["stress", "herstel"],
+  Overprikkeld: ["stress", "herstel"],
+  Prikkelbaar: ["stress", "herstel"],
 }
 
 const TIP_COLUMNS =

@@ -4,6 +4,7 @@ import { getAuthedUser } from "@/lib/supabase/server"
 import { getVandaagData } from "@/lib/data/vandaag"
 import { TodayCards } from "@/components/today/today-cards"
 import { AnticipationNote } from "@/components/today/anticipation-note"
+import { HormoneRoadmapNote } from "@/components/today/hormone-roadmap-note"
 import { CheckinForm } from "@/components/today/checkin-form"
 import { DayCloseCard } from "@/components/today/day-close-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
@@ -45,10 +46,11 @@ const PHASE_TAGLINE: Record<CyclePhase, string> = {
  *
  * 1. Hello + cycle context (incl. menstruatie-actie hier — vindbaar, niet luid)
  * 2. Optional vooruitkijken note (her harder days approaching)
- * 3. One “voor jou vandaag” surface with a single primary CTA
- * 4. Light check-in
- * 5. Optional sleep / meds only
- * 6. Soft day checkout — close the day without a second form
+ * 3. Hormone roadmap: why now (fase + klachten) → soft support points
+ * 4. One “voor jou vandaag” surface with a single primary CTA
+ * 5. Light check-in
+ * 6. Optional sleep / meds only
+ * 7. Soft day checkout — close the day without a second form
  */
 export default async function VandaagPage() {
   const user = await getAuthedUser()
@@ -63,6 +65,7 @@ export default async function VandaagPage() {
     recommendation,
     bodyRecognition,
     anticipation,
+    hormoneRoadmap,
     checkin,
     today,
     weekStartISO,
@@ -183,6 +186,10 @@ export default async function VandaagPage() {
 
         <div className="flex flex-col gap-8">
           {anticipation && <AnticipationNote anticipation={anticipation} />}
+
+          {hormoneRoadmap && (
+            <HormoneRoadmapNote roadmap={hormoneRoadmap} phaseTone={tone} />
+          )}
 
           {recommendation && (
             <TodayCards

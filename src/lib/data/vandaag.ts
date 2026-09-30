@@ -11,11 +11,13 @@ import {
 import { computeSymptomCoOccurrences } from "@/lib/cycle/co-occurrence"
 import { composeBodyRecognition } from "@/lib/cycle/body-translator"
 import { composeAnticipation } from "@/lib/cycle/anticipation"
+import { composeTodayRoadmap } from "@/lib/cycle/today-roadmap"
 import { buildRecommendation } from "@/lib/recommendations/engine"
 import { computeStreak } from "@/lib/data/streak"
 import { getMedicationDashboardItems } from "@/lib/data/medications"
 import { getProfile } from "@/lib/data/profile"
 import { loadWeekPlanContext } from "@/lib/data/week-plan-context"
+import { getDailyTip } from "@/lib/data/daily-tip"
 import { pickMentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
 import { computeSleepDurationMinutes } from "@/lib/sleep/duration"
 import { pickSleepObservation } from "@/lib/sleep/insights"
@@ -277,6 +279,34 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     phaseInsights: allPhaseInsights,
   })
 
+  const dailyTip = dayCycleEstimate
+    ? await getDailyTip(today, {
+        userId,
+        goals: profile?.goals ?? [],
+        recentSymptoms: checkin?.symptoms?.length
+          ? checkin.symptoms
+          : checkinsForPatterns.slice(0, 7).flatMap((c) => c.symptoms),
+      })
+    : null
+
+  const hormoneRoadmap = dayCycleEstimate
+    ? composeTodayRoadmap({
+        phase: dayCycleEstimate.phase,
+        phaseLabel: dayCycleEstimate.phaseLabel,
+        seed: `${userId}-${today}-roadmap`,
+        symptoms: checkin?.symptoms ?? [],
+        needs: checkin?.needs ?? [],
+        energy: checkin?.energy ?? null,
+        stress: checkin?.stress ?? null,
+        bodyRecognition,
+        dailyTip: dailyTip
+          ? { title: dailyTip.title, short_explanation: dailyTip.short_explanation }
+          : null,
+        movementEnabled: profile?.movement_enabled ?? true,
+        nutritionEnabled: profile?.nutrition_enabled ?? true,
+      })
+    : null
+
   return {
     profile,
     cycleProfile,
@@ -287,6 +317,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     recommendation,
     bodyRecognition,
     anticipation,
+    hormoneRoadmap,
     today,
     weekStartISO,
     streak,
