@@ -65,7 +65,7 @@ interface FormState {
   morningReminderEnabled: boolean
   morningReminderTime: string
   morningReminderDays: number[]
-  morningReminderContentType: MorningReminderContentType
+  morningReminderContentTypes: MorningReminderContentType[]
   sleepTrackingEnabled: boolean
   trackFlowIntensity: boolean
   motivation: string
@@ -124,7 +124,13 @@ export function ProfileForm({
     morningReminderEnabled: profile.morning_reminder_enabled === true,
     morningReminderTime: profile.morning_reminder_time.slice(0, 5),
     morningReminderDays: profile.morning_reminder_days ?? [1, 2, 3, 4, 5, 6, 7],
-    morningReminderContentType: (profile.morning_reminder_content_type as MorningReminderContentType) ?? "reminder",
+    morningReminderContentTypes: (() => {
+      const raw = profile.morning_reminder_content_types ?? []
+      const valid = raw.filter((v): v is MorningReminderContentType =>
+        MORNING_REMINDER_CONTENT_TYPE_OPTIONS.some((o) => o.value === v),
+      )
+      return valid.length ? valid : (["reminder"] as MorningReminderContentType[])
+    })(),
     sleepTrackingEnabled: profile.sleep_tracking_enabled === true,
     trackFlowIntensity: profile.track_flow_intensity,
     motivation: profile.motivation ?? "",
@@ -184,7 +190,9 @@ export function ProfileForm({
       morningReminderEnabled: s.morningReminderEnabled,
       morningReminderTime: s.morningReminderTime,
       morningReminderDays: s.morningReminderDays.length ? s.morningReminderDays : [1, 2, 3, 4, 5, 6, 7],
-      morningReminderContentType: s.morningReminderContentType,
+      morningReminderContentTypes: s.morningReminderContentTypes.length
+        ? s.morningReminderContentTypes
+        : ["reminder"],
       sleepTrackingEnabled: s.sleepTrackingEnabled,
       trainingFrequency: s.movementEnabled ? s.trainingFrequency : null,
       trackFlowIntensity: s.trackFlowIntensity,
@@ -757,26 +765,44 @@ export function ProfileForm({
                 </Chip>
               ))}
             </div>
-            <p className="text-sm font-medium text-ink mb-2">Inhoud</p>
+            <p className="text-sm font-medium text-ink mb-1">Inhoud</p>
+            <p className="text-xs text-ink-soft mb-2">Kies één of meer — ze komen samen in je ochtendmelding.</p>
             <div className="flex flex-col gap-2">
-              {MORNING_REMINDER_CONTENT_TYPE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() =>
-                    applyUpdate((s) => ({ ...s, morningReminderContentType: opt.value }), "immediate")
-                  }
-                  className={cn(
-                    "text-left rounded-2xl border px-3.5 py-2.5 touch-manipulation transition-colors",
-                    state.morningReminderContentType === opt.value
-                      ? "border-sage bg-sage-soft"
-                      : "border-line hover:border-sage/50",
-                  )}
-                >
-                  <p className="text-sm font-medium text-ink">{opt.label}</p>
-                  <p className="text-xs text-ink-soft mt-0.5">{opt.description}</p>
-                </button>
-              ))}
+              {MORNING_REMINDER_CONTENT_TYPE_OPTIONS.map((opt) => {
+                const selected = state.morningReminderContentTypes.includes(opt.value)
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() =>
+                      applyUpdate((s) => {
+                        const has = s.morningReminderContentTypes.includes(opt.value)
+                        if (has) {
+                          if (s.morningReminderContentTypes.length <= 1) return s
+                          return {
+                            ...s,
+                            morningReminderContentTypes: s.morningReminderContentTypes.filter(
+                              (v) => v !== opt.value,
+                            ),
+                          }
+                        }
+                        return {
+                          ...s,
+                          morningReminderContentTypes: [...s.morningReminderContentTypes, opt.value],
+                        }
+                      }, "immediate")
+                    }
+                    className={cn(
+                      "text-left rounded-2xl border px-3.5 py-2.5 touch-manipulation transition-colors",
+                      selected ? "border-sage bg-sage-soft" : "border-line hover:border-sage/50",
+                    )}
+                    aria-pressed={selected}
+                  >
+                    <p className="text-sm font-medium text-ink">{opt.label}</p>
+                    <p className="text-xs text-ink-soft mt-0.5">{opt.description}</p>
+                  </button>
+                )
+              })}
             </div>
           </>
         ) : (

@@ -391,14 +391,23 @@ export const BUDDY_FREQUENCY_OPTIONS = [
 ] as const
 
 // Optional Goedemorgen-melding (see profiles.morning_reminder_*).
+// Multi-select: she can combine e.g. quote + affirmation in one morning message.
 export const MORNING_REMINDER_CONTENT_TYPE_OPTIONS = [
-  { value: "reminder", label: "Alleen herinnering", description: "Een korte uitnodiging voor je check-in." },
-  { value: "quote", label: "Met quote", description: "Een kort 'wist je dat' of buddy-quote." },
-  { value: "affirmation", label: "Met affirmatie", description: "Een korte, geloofwaardige affirmatie." },
-  { value: "buddy", label: "Met buddy-boodschap", description: "Een persoonlijk bericht in jouw buddy-stijl." },
+  { value: "reminder", label: "Herinnering", description: "Korte uitnodiging voor je check-in." },
+  { value: "quote", label: "Quote", description: "Een kort 'wist je dat' of buddy-quote." },
+  { value: "affirmation", label: "Affirmatie", description: "Een korte, geloofwaardige affirmatie." },
+  { value: "buddy", label: "Buddy-boodschap", description: "Een persoonlijk bericht in jouw buddy-stijl." },
 ] as const
 
 export type MorningReminderContentType = (typeof MORNING_REMINDER_CONTENT_TYPE_OPTIONS)[number]["value"]
+
+/** Stable display order when combining multiple morning content pieces. */
+export const MORNING_REMINDER_CONTENT_ORDER: MorningReminderContentType[] = [
+  "reminder",
+  "buddy",
+  "quote",
+  "affirmation",
+]
 
 // Optioneel, eenvoudig slaappatroon bijhouden (zie sleep_entries).
 export const WAKE_FEELING_OPTIONS = [

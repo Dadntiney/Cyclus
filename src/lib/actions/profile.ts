@@ -26,7 +26,7 @@ export interface UpdateProfileInput {
   morningReminderEnabled: boolean
   morningReminderTime: string
   morningReminderDays: number[]
-  morningReminderContentType: string
+  morningReminderContentTypes: string[]
   sleepTrackingEnabled: boolean
   trainingFrequency: number | null
   trackFlowIntensity: boolean
@@ -83,7 +83,7 @@ export async function updateProfile(input: UpdateProfileInput) {
       morning_reminder_enabled: input.morningReminderEnabled,
       morning_reminder_time: input.morningReminderTime,
       morning_reminder_days: input.morningReminderDays,
-      morning_reminder_content_type: input.morningReminderContentType,
+      morning_reminder_content_types: input.morningReminderContentTypes,
       sleep_tracking_enabled: input.sleepTrackingEnabled,
       training_frequency: input.trainingFrequency,
       track_flow_intensity: input.trackFlowIntensity,

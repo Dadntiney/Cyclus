@@ -3,7 +3,10 @@ import type { BuddyStyle } from "@/lib/buddy/styles"
 import { pickStyleForToday } from "@/lib/buddy/styles"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { AFFIRMATIONS } from "@/lib/data/affirmations"
-import type { MorningReminderContentType } from "@/lib/constants"
+import {
+  MORNING_REMINDER_CONTENT_ORDER,
+  type MorningReminderContentType,
+} from "@/lib/constants"
 
 /**
  * Content for the optional Goedemorgen-melding. "Quote" and "affirmation"
@@ -12,6 +15,9 @@ import type { MorningReminderContentType } from "@/lib/constants"
  * knows from elsewhere in the app. Only "reminder" (the default) and
  * "buddy" get their own small pools here, since those two are specific to
  * a morning greeting.
+ *
+ * Multiple content types can be selected; pieces are joined into one body
+ * in a stable order (reminder → buddy → quote → affirmation).
  */
 
 interface MorningMessage {
@@ -114,37 +120,11 @@ export interface MorningMessageResult {
   body: string
 }
 
-export function getMorningMessage({
-  contentType,
-  seed,
-  phase,
-  preferredStyles = [],
-}: {
-  contentType: MorningReminderContentType
-  seed: string
-  phase: CyclePhase | null
-  preferredStyles?: BuddyStyle[]
-}): MorningMessageResult {
-  const title = "☀️ Goedemorgen!"
-
-  if (contentType === "quote") {
-    const quote = getDailyBuddyQuote(`${seed}-morning-quote`, phase, preferredStyles)
-    return { title, body: quote.text }
-  }
-
-  if (contentType === "affirmation") {
-    const affirmation = AFFIRMATIONS[seededIndex(`${seed}-morning-affirmation`, AFFIRMATIONS.length)]
-    return { title, body: `"${affirmation.text}"` }
-  }
-
-  if (contentType === "buddy") {
-    const message = BUDDY_MESSAGES[seededIndex(`${seed}-morning-buddy`, BUDDY_MESSAGES.length)]
-    const style = pickStyleForToday(`${seed}-morning-buddy-style`, preferredStyles)
-    const body = (style && message.styles?.[style]) || message.text
-    return { title, body }
-  }
-
-  // "reminder" (default)
+function reminderBody(
+  seed: string,
+  phase: CyclePhase | null,
+  preferredStyles: BuddyStyle[],
+): string {
   const phaseMatches = phase ? REMINDER_MESSAGES.filter((m) => m.phases?.includes(phase)) : []
   const usePhaseMessage = phaseMatches.length > 0 && seededIndex(`${seed}-morning-phase-gate`, 3) === 0
   const pool = usePhaseMessage ? phaseMatches : REMINDER_MESSAGES.filter((m) => !m.phases)
@@ -154,10 +134,61 @@ export function getMorningMessage({
     const styledPool = pool.filter((m) => m.styles?.[style])
     if (styledPool.length > 0) {
       const message = styledPool[seededIndex(seed, styledPool.length)]
-      return { title, body: message.styles![style]! }
+      return message.styles![style]!
     }
   }
 
   const message = pool[seededIndex(seed, pool.length)]
-  return { title, body: message.text }
+  return message.text
+}
+
+function buddyBody(seed: string, preferredStyles: BuddyStyle[]): string {
+  const message = BUDDY_MESSAGES[seededIndex(`${seed}-morning-buddy`, BUDDY_MESSAGES.length)]
+  const style = pickStyleForToday(`${seed}-morning-buddy-style`, preferredStyles)
+  return (style && message.styles?.[style]) || message.text
+}
+
+function pieceForType(
+  type: MorningReminderContentType,
+  seed: string,
+  phase: CyclePhase | null,
+  preferredStyles: BuddyStyle[],
+): string {
+  switch (type) {
+    case "quote":
+      return getDailyBuddyQuote(`${seed}-morning-quote`, phase, preferredStyles).text
+    case "affirmation": {
+      const affirmation = AFFIRMATIONS[seededIndex(`${seed}-morning-affirmation`, AFFIRMATIONS.length)]
+      return `"${affirmation.text}"`
+    }
+    case "buddy":
+      return buddyBody(seed, preferredStyles)
+    case "reminder":
+    default:
+      return reminderBody(seed, phase, preferredStyles)
+  }
+}
+
+export function getMorningMessage({
+  contentTypes,
+  seed,
+  phase,
+  preferredStyles = [],
+}: {
+  contentTypes: MorningReminderContentType[]
+  seed: string
+  phase: CyclePhase | null
+  preferredStyles?: BuddyStyle[]
+}): MorningMessageResult {
+  const title = "☀️ Goedemorgen!"
+  const selected = new Set(
+    (contentTypes.length ? contentTypes : (["reminder"] as MorningReminderContentType[])).filter(
+      (t): t is MorningReminderContentType => MORNING_REMINDER_CONTENT_ORDER.includes(t),
+    ),
+  )
+  const ordered = MORNING_REMINDER_CONTENT_ORDER.filter((t) => selected.has(t))
+  const parts = (ordered.length ? ordered : (["reminder"] as MorningReminderContentType[])).map((type) =>
+    pieceForType(type, seed, phase, preferredStyles),
+  )
+  return { title, body: parts.join("\n\n") }
 }

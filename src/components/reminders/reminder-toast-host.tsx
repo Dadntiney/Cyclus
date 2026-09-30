@@ -21,7 +21,7 @@ export interface MorningReminderSettings {
   enabled: boolean
   time: string
   days: number[]
-  contentType: MorningReminderContentType
+  contentTypes: MorningReminderContentType[]
   preferredStyles: string[]
 }
 
@@ -126,7 +126,7 @@ export function ReminderToastHost({
       for (const reminder of dueMorning) {
         markReminderShownToday(reminder.id, todayISO)
         const message = getMorningMessage({
-          contentType: morningReminder!.contentType,
+          contentTypes: morningReminder!.contentTypes,
           seed: `morning-${todayISO}`,
           phase: null,
           preferredStyles: morningReminder!.preferredStyles as Parameters<typeof getMorningMessage>[0]["preferredStyles"],

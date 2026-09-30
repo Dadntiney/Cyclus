@@ -623,7 +623,7 @@ export type Database = {
           id: string
           mental_wellbeing_categories: string[]
           mental_wellbeing_enabled: boolean | null
-          morning_reminder_content_type: string
+          morning_reminder_content_types: string[]
           morning_reminder_days: number[]
           morning_reminder_enabled: boolean | null
           morning_reminder_time: string
@@ -665,7 +665,7 @@ export type Database = {
           id: string
           mental_wellbeing_categories?: string[]
           mental_wellbeing_enabled?: boolean | null
-          morning_reminder_content_type?: string
+          morning_reminder_content_types?: string[]
           morning_reminder_days?: number[]
           morning_reminder_enabled?: boolean | null
           morning_reminder_time?: string
@@ -705,7 +705,7 @@ export type Database = {
           id?: string
           mental_wellbeing_categories?: string[]
           mental_wellbeing_enabled?: boolean | null
-          morning_reminder_content_type?: string
+          morning_reminder_content_types?: string[]
           morning_reminder_days?: number[]
           morning_reminder_enabled?: boolean | null
           morning_reminder_time?: string

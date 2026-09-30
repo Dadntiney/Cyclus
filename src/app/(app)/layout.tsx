@@ -62,7 +62,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                   enabled: true,
                   time: profile.morning_reminder_time,
                   days: profile.morning_reminder_days,
-                  contentType: profile.morning_reminder_content_type as MorningReminderSettings["contentType"],
+                  contentTypes: (profile.morning_reminder_content_types?.length
+                    ? profile.morning_reminder_content_types
+                    : ["reminder"]) as MorningReminderSettings["contentTypes"],
                   preferredStyles: profile.buddy_styles,
                 }
               : null

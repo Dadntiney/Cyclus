@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     service
       .from("profiles")
       .select(
-        "id, buddy_styles, nutrition_enabled, movement_enabled, mental_wellbeing_enabled, morning_reminder_enabled, morning_reminder_time, morning_reminder_days, morning_reminder_content_type",
+        "id, buddy_styles, nutrition_enabled, movement_enabled, mental_wellbeing_enabled, morning_reminder_enabled, morning_reminder_time, morning_reminder_days, morning_reminder_content_types",
       )
       .in("id", userIds),
     service.from("reminders").select("*").in("user_id", userIds).eq("enabled", true),
@@ -233,7 +233,9 @@ export async function GET(request: NextRequest) {
         !alreadySent.has("morning_reminder:singleton")
       ) {
         const message = getMorningMessage({
-          contentType: profile.morning_reminder_content_type as MorningReminderContentType,
+          contentTypes: (profile.morning_reminder_content_types?.length
+            ? profile.morning_reminder_content_types
+            : ["reminder"]) as MorningReminderContentType[],
           seed: `morning-${userId}-${dateISO}`,
           phase: null,
           preferredStyles: buddyStyles as Parameters<typeof getMorningMessage>[0]["preferredStyles"],
