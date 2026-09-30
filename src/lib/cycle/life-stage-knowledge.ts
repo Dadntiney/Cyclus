@@ -44,7 +44,7 @@ export const LIFE_STAGE_KNOWLEDGE: LifeStageKnowledge = {
     },
   ],
   whatIsPerimenopause:
-    "De overgang (perimenopauze) is de fase vóór de menopauze, die officieel begint na 12 maanden zonder menstruatie. Perimenopauze kan meerdere jaren duren — vaak ergens tussen de 4 en 8 jaar — en is de periode waarin je hormonen geleidelijk veranderen richting die overgang.",
+    "De overgang (perimenopauze) is de fase rondom je laatste menstruaties. De menopauze zelf is die laatste menstruatie — je weet het pas achteraf, als je 12 maanden zonder menstruatie bent geweest. Perimenopauze kan meerdere jaren duren (bij veel vrouwen ongeveer 4 tot 8 jaar, langer als het eerder begint) en is de periode waarin je hormonen geleidelijk veranderen.",
   signals: [
     { label: "Onregelmatige cyclus", text: "Je cyclus kan onvoorspelbaarder worden qua lengte en hoeveelheid bloedverlies.", highlight: true },
     { label: "Opvliegers", text: "Een plotselinge golf van warmte, vaak in het gezicht en bovenlichaam, komt bij veel vrouwen in deze fase voor.", highlight: true },

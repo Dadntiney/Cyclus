@@ -77,7 +77,7 @@ begin
     'wat-verandert-er-rondom-de-overgang',
     'Wat verandert er rondom de overgang?',
     'Hormonen zoals oestrogeen en progesteron verschuiven geleidelijk. Dat kan invloed hebben op energie, slaap, stemming en cyclus.',
-    E'De overgang is geen plotselinge knop, maar een traject dat jaren kan duren. In de perimenopauze (de jaren ervoor) kan je cyclus onregelmatiger worden, terwijl klachten al speel kunnen zijn.\n\nVeelvoorkomende signalen: veranderende menstruatie, opvliegers, nachtelijk zweten, slechter slapen, stemmingswisselingen, brain fog of een ander gevoel in je lijf.\n\nBelangrijk: elke vrouw ervaart dit anders. Wat jij bijhoudt in Cyclus helpt je patronen te herkennen — zonder dat het een diagnose is.\n\nWat je zelf kunt doen: regelmatig slapen, bewegen op jouw tempo, eiwitrijke voeding en stressmomenten serieus nemen. Bij aanhoudende of hevige klachten: praat met je huisarts of gynaecoloog.',
+    E'De overgang is geen plotselinge knop, maar een traject dat jaren kan duren. In de perimenopauze (de jaren ervoor) kan je cyclus onregelmatiger worden, terwijl klachten al kunnen spelen.\n\nVeelvoorkomende signalen: veranderende menstruatie, opvliegers, nachtelijk zweten, slechter slapen, stemmingswisselingen, brain fog of een ander gevoel in je lijf.\n\nBelangrijk: elke vrouw ervaart dit anders. Wat jij bijhoudt in Cyclus helpt je patronen te herkennen — zonder dat het een diagnose is.\n\nWat je zelf kunt doen: regelmatig slapen, bewegen op jouw tempo, eiwitrijke voeding en stressmomenten serieus nemen. Bij aanhoudende of hevige klachten: praat met je huisarts of gynaecoloog.',
     'overgang',
     array['overgang','hormonen','perimenopauze'],
     10
