@@ -62,7 +62,8 @@ function emptyData(initialCategory: Category | null): WizardData {
     reminderEnabled: false,
     remindOnStart: true,
     remindDaily: true,
-    // Stop is opt-in via optional endDate — never auto from cycle math.
+    // Absolute kuur-einde: opt-in via endDate. Cyclisch pauze: default on
+    // when she picks wel/niet (see schedule chip / ScheduleStep).
     remindOnStop: false,
     notes: "",
   }
@@ -404,7 +405,16 @@ function ScheduleStep({
           <Chip
             key={opt.value}
             selected={data.scheduleType === opt.value}
-            onClick={() => setData((d) => ({ ...d, scheduleType: opt.value }))}
+            onClick={() =>
+              setData((d) => ({
+                ...d,
+                scheduleType: opt.value,
+                // Wel/niet almost always wants a pause nudge at the end of
+                // each wel-periode — she can turn it off. Other types keep
+                // stop tied to an absolute end date only.
+                remindOnStop: opt.value === "cyclisch" ? true : d.endDate ? d.remindOnStop : false,
+              }))
+            }
           >
             {opt.label}
           </Chip>
@@ -467,9 +477,34 @@ function ScheduleStep({
             type="date"
             value={data.startDate}
             onChange={(e) => setData((d) => ({ ...d, startDate: e.target.value }))}
-            className="mb-3"
+            className="mb-4"
           />
-          <Label htmlFor="cycl-end">Tot en met (optioneel)</Label>
+
+          <div className="rounded-2xl bg-sage-soft/50 p-4 mb-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-ink">Pauze-herinnering</p>
+                <p className="text-xs text-ink-soft mt-0.5 leading-snug">
+                  Op de laatste innamedag van elke wel-periode een seintje dat je pauze
+                  begint. Daarna loopt je schema gewoon door — medicatie stopt niet.
+                </p>
+              </div>
+              <Switch
+                checked={data.remindOnStop}
+                onChange={(remindOnStop) =>
+                  setData((d) => ({
+                    ...d,
+                    remindOnStop,
+                    // Pausemelding heeft een herinnering nodig; zet die mee aan.
+                    reminderEnabled: remindOnStop ? true : d.reminderEnabled,
+                  }))
+                }
+                aria-label="Pauze-herinnering aan- of uitzetten"
+              />
+            </div>
+          </div>
+
+          <Label htmlFor="cycl-end">Kuureinde (optioneel)</Label>
           <Input
             id="cycl-end"
             type="date"
@@ -477,9 +512,9 @@ function ScheduleStep({
             onChange={(e) => setData((d) => ({ ...d, endDate: e.target.value }))}
           />
           <p className="text-xs text-ink-soft mt-1.5 leading-relaxed">
-            Alleen invullen als deze medicatie ergens helemaal stopt. Laat leeg als je
-            wel/niet-schema doorloopt — een stopmelding per wel-periode kun je apart
-            aanzetten bij herinneringen.
+            Alleen als deze medicatie ergens <span className="font-medium text-ink-soft">helemaal</span>{" "}
+            stopt. Niet invullen voor de terugkerende pauze — die zit al in je wel/niet-schema
+            hierboven.
           </p>
         </div>
       )}
@@ -566,13 +601,16 @@ function ReminderStep({
   const hasEndDate = Boolean(data.endDate)
   const isCyclisch = data.scheduleType === "cyclisch"
   const canRemindStop = isCyclisch || hasEndDate
+  const offValue = Number(data.scheduleDaysOffValue)
+  const hasPausePhase = isCyclisch && Number.isFinite(offValue) && offValue > 0
 
   return (
     <div>
       <h2 className="font-display text-2xl text-ink mb-2">Wil je hier een herinnering voor?</h2>
       <p className="text-ink-soft text-sm mb-6">
         We laten dan een rustige melding zien, bijvoorbeeld &ldquo;Herinnering: je hebt vandaag{" "}
-        {data.name.trim() || "dit"} ingepland.&rdquo;
+        {data.name.trim() || "dit"} ingepland.&rdquo; Dit stel je hier in bij deze medicatie — niet
+        apart in je profiel.
       </p>
       <div className="flex gap-2 mb-5">
         <Chip selected={data.reminderEnabled} onClick={() => setData((d) => ({ ...d, reminderEnabled: true }))}>
@@ -597,8 +635,8 @@ function ReminderStep({
               {isCyclisch && (
                 <p className="text-sm text-ink-soft leading-relaxed mb-4">
                   Bij een wel/niet-schema herhalen start- en dagelijkse herinneringen zich
-                  vanzelf. Een stopmelding kun je apart aanzetten — die komt op de laatste
-                  innamedag van elke wel-periode, ook als je schema daarna gewoon doorloopt.
+                  vanzelf. De pauze-herinnering komt op de laatste innamedag van elke
+                  wel-periode — daarna begint je &lsquo;niet&rsquo;-fase en loopt het schema door.
                 </p>
               )}
               <div className="flex flex-col gap-3">
@@ -607,7 +645,9 @@ function ReminderStep({
                     <div className="flex items-center justify-between gap-3">
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-ink">Startmelding</p>
-                        <p className="text-xs text-ink-soft mt-0.5">Op de eerste dag dat je schema weer begint.</p>
+                        <p className="text-xs text-ink-soft mt-0.5">
+                          Op de eerste dag dat je wel-periode weer begint.
+                        </p>
                       </div>
                       <Switch
                         checked={data.remindOnStart}
@@ -630,13 +670,21 @@ function ReminderStep({
                 )}
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-ink">Stopmelding</p>
+                    <p className="text-sm font-medium text-ink">
+                      {isCyclisch && hasPausePhase
+                        ? "Pauze-herinnering"
+                        : isCyclisch
+                          ? "Einde wel-periode"
+                          : "Stopmelding"}
+                    </p>
                     <p className="text-xs text-ink-soft mt-0.5">
-                      {isCyclisch
-                        ? "Op de laatste innamedag van elke wel-periode (je neemt die dag nog wel in)."
-                        : hasEndDate
-                          ? "Op de einddatum die je bij je schema hebt ingevuld."
-                          : "Vul eerst een optionele einddatum in bij je schema."}
+                      {isCyclisch && hasPausePhase
+                        ? "Laatste innamedag van elke wel-periode — schema blijft doorlopen."
+                        : isCyclisch
+                          ? "Alleen zinvol als je ook een ‘niet’-periode hebt ingesteld."
+                          : hasEndDate
+                            ? "Op het kuureinde dat je bij je schema hebt ingevuld."
+                            : "Vul eerst een optioneel kuureinde in bij je schema."}
                     </p>
                   </div>
                   <Switch
@@ -645,10 +693,18 @@ function ReminderStep({
                       if (!canRemindStop) return
                       setData((d) => ({ ...d, remindOnStop }))
                     }}
-                    disabled={!canRemindStop}
-                    aria-label="Stopmelding aan- of uitzetten"
+                    disabled={!canRemindStop || (isCyclisch && !hasPausePhase)}
+                    aria-label={
+                      isCyclisch ? "Pauze-herinnering aan- of uitzetten" : "Stopmelding aan- of uitzetten"
+                    }
                   />
                 </div>
+                {hasEndDate && isCyclisch && (
+                  <p className="text-xs text-ink-soft leading-relaxed pt-1">
+                    Je hebt ook een kuureinde gezet: op die dag krijg je (met deze melding aan)
+                    een aparte seintje dat de hele kuur stopt.
+                  </p>
+                )}
               </div>
               {isCyclisch && (
                 <p className="text-xs text-ink-soft leading-relaxed mt-4 pt-4 border-t border-sage/20">
@@ -667,9 +723,10 @@ function ReminderStep({
 
 function ReviewStep({ data }: { data: WizardData }) {
   const category = MEDICATION_CATEGORY_OPTIONS.find((c) => c.value === data.category)
+  const isCyclisch = data.scheduleType === "cyclisch"
   const showStop =
-    data.remindOnStop &&
-    (data.scheduleType === "cyclisch" || Boolean(data.endDate))
+    data.remindOnStop && (isCyclisch || Boolean(data.endDate))
+  const stopLabel = isCyclisch ? "pauze-herinnering" : "stopmelding"
   return (
     <div>
       <h2 className="font-display text-2xl text-ink mb-2">Klopt dit?</h2>
@@ -705,12 +762,12 @@ function ReviewStep({ data }: { data: WizardData }) {
         <p className="text-sm text-ink-soft">
           {data.reminderEnabled ? `Herinnering om ${data.timeOfDay}` : "Geen herinnering"}
         </p>
-        {data.reminderEnabled && (data.scheduleType === "cyclisch" || data.endDate) && (
+        {data.reminderEnabled && (isCyclisch || data.endDate) && (
           <p className="text-sm text-ink-soft">
             {[
-              data.scheduleType === "cyclisch" && data.remindOnStart && "startmelding",
-              data.scheduleType === "cyclisch" && data.remindDaily && "dagelijkse herinnering",
-              showStop && "stopmelding",
+              isCyclisch && data.remindOnStart && "startmelding",
+              isCyclisch && data.remindDaily && "dagelijkse herinnering",
+              showStop && stopLabel,
             ]
               .filter(Boolean)
               .join(", ") || "geen extra momenten aan"}

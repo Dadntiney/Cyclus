@@ -54,6 +54,9 @@ export default async function EditMedicationPage({
             <p className="text-xs text-ink-soft mt-1">
               Volgende fase: {phaseInfo.nextPhase === "wel" ? "wel" : "niet"}, vanaf{" "}
               {formatPhaseDate(phaseInfo.nextPhaseStartDate)}
+              {phaseInfo.phase === "wel" && medication.remind_on_stop
+                ? ` · pauze-herinnering op ${formatPhaseDate(phaseInfo.phaseEndDate)}`
+                : ""}
             </p>
           </Card>
         )}
