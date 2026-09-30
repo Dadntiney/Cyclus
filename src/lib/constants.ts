@@ -216,7 +216,6 @@ export function symptomLabel(value: string): string {
 export const MENTAL_SYMPTOM_OPTIONS = [
   "Gespannen",
   "Angstig",
-  "Overprikkeld",
   "Prikkelbaar",
   "Somber",
   "Eenzaam",
