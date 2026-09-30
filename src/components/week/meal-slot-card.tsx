@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ChefHat, Repeat, X, Check } from "lucide-react"
+import { ChefHat, Repeat, X, Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
@@ -19,26 +19,22 @@ interface MealSlotCardProps {
 }
 
 /**
- * One meal slot (ontbijt/lunch/diner) for a day in the week view. Always
- * shows the suggestion first — this is a plan someone can act on, not a
- * blank form — but "Vervang", "Sla over" and "Eigen maaltijd" are always one
- * tap away, since nobody should feel like the app is prescribing what she
- * has to eat.
+ * One meal slot for the week plan. Suggestion first; adjust options behind
+ * one “Aanpassen” control so the day list stays scannable (same pattern as Vandaag).
  */
 export function MealSlotCard({ slot, label, recipe, alternatives, override, onOverride }: MealSlotCardProps) {
-  const [mode, setMode] = useState<"idle" | "swap" | "custom">("idle")
+  const [open, setOpen] = useState(false)
+  const [mode, setMode] = useState<"menu" | "swap" | "custom">("menu")
   const [customText, setCustomText] = useState("")
 
   const skipped = override?.type === "skip-meal"
   const swapped = override?.type === "swap-meal" ? override : null
   const custom = override?.type === "custom-meal" ? override : null
-  // Alternatives are computed against the original suggestion's id (see
-  // week-view's alternativesFor), so once swapped, the picked recipe is
-  // still in this list — reuse it here to keep the photo after swapping.
   const swappedRecipe = swapped ? (alternatives.find((a) => a.id === swapped.recipeId) ?? null) : null
 
-  function reset() {
-    setMode("idle")
+  function closeAdjust() {
+    setOpen(false)
+    setMode("menu")
     setCustomText("")
   }
 
@@ -50,7 +46,7 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
           <button
             type="button"
             onClick={() => onOverride(null)}
-            className="text-[11px] font-medium text-sage-dark touch-manipulation"
+            className="text-[11px] font-medium text-sage-dark touch-manipulation min-h-11 px-1"
           >
             Herstel voorstel
           </button>
@@ -111,8 +107,26 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
         </p>
       )}
 
-      {mode === "idle" && !skipped && (
-        <div className="flex flex-wrap gap-1 mt-2">
+      {!skipped && (
+        <button
+          type="button"
+          onClick={() => {
+            setOpen((v) => !v)
+            setMode("menu")
+          }}
+          className="mt-1.5 inline-flex items-center gap-1 min-h-11 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+          aria-expanded={open}
+        >
+          Aanpassen
+          <ChevronDown
+            className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")}
+            strokeWidth={2}
+          />
+        </button>
+      )}
+
+      {open && !skipped && mode === "menu" && (
+        <div className="mt-1 flex flex-wrap gap-1">
           {alternatives.length > 0 && (
             <button
               type="button"
@@ -132,7 +146,10 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
           </button>
           <button
             type="button"
-            onClick={() => onOverride({ type: "skip-meal", slot })}
+            onClick={() => {
+              onOverride({ type: "skip-meal", slot })
+              closeAdjust()
+            }}
             className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
           >
             <X className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -141,8 +158,8 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
         </div>
       )}
 
-      {mode === "swap" && (
-        <div className="mt-3 flex flex-col gap-1.5">
+      {open && mode === "swap" && (
+        <div className="mt-2 flex flex-col gap-1.5">
           <p className="text-[11px] text-ink-soft mb-0.5">Vervang door:</p>
           {alternatives.map((alt) => (
             <button
@@ -150,27 +167,25 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
               type="button"
               onClick={() => {
                 onOverride({ type: "swap-meal", slot, recipeId: alt.id, title: alt.title })
-                reset()
+                closeAdjust()
               }}
-              className={cn(
-                "text-left text-sm text-ink rounded-xl px-3 py-2 bg-cream-soft hover:bg-sage-soft transition-colors touch-manipulation",
-              )}
+              className="text-left text-sm text-ink rounded-xl px-3 py-2 bg-cream-soft hover:bg-sage-soft transition-colors touch-manipulation"
             >
               {alt.title}
             </button>
           ))}
           <button
             type="button"
-            onClick={reset}
-            className="text-[11px] font-medium text-ink-soft self-start mt-0.5 touch-manipulation"
+            onClick={() => setMode("menu")}
+            className="text-[11px] font-medium text-ink-soft self-start mt-0.5 touch-manipulation min-h-11"
           >
-            Annuleren
+            Terug
           </button>
         </div>
       )}
 
-      {mode === "custom" && (
-        <div className="mt-3 flex flex-col gap-2">
+      {open && mode === "custom" && (
+        <div className="mt-2 flex flex-col gap-2">
           <input
             type="text"
             value={customText}
@@ -186,7 +201,7 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
               onClick={() => {
                 if (!customText.trim()) return
                 onOverride({ type: "custom-meal", slot, text: customText.trim() })
-                reset()
+                closeAdjust()
               }}
             >
               <Check className="h-3.5 w-3.5" strokeWidth={2} />
@@ -194,10 +209,10 @@ export function MealSlotCard({ slot, label, recipe, alternatives, override, onOv
             </Button>
             <button
               type="button"
-              onClick={reset}
+              onClick={() => setMode("menu")}
               className="text-sm font-medium text-ink-soft min-h-11 px-2 touch-manipulation"
             >
-              Annuleren
+              Terug
             </button>
           </div>
         </div>

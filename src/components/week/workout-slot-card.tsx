@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Moon, Repeat, X } from "lucide-react"
+import { Moon, Repeat, X, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { WorkoutImage } from "@/components/training/workout-image"
 import type { DayFocus } from "@/lib/recommendations/weekly-program"
@@ -27,6 +27,7 @@ interface WorkoutSlotCardProps {
 }
 
 export function WorkoutSlotCard({ focus, workout, reason, alternatives, override, onOverride }: WorkoutSlotCardProps) {
+  const [open, setOpen] = useState(false)
   const [swapping, setSwapping] = useState(false)
 
   const skipped = override?.type === "skip-workout"
@@ -41,10 +42,9 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
     )
   }
 
-  const effectiveWorkout = swapped ? { id: swapped.workoutId, title: swapped.title, duration: swapped.duration } : workout
-  // Alternatives are computed against the original suggestion's id (see
-  // week-view's workoutAlternatives), so once swapped, the picked workout
-  // is still in this list — reuse it here to keep the photo after swapping.
+  const effectiveWorkout = swapped
+    ? { id: swapped.workoutId, title: swapped.title, duration: swapped.duration }
+    : workout
   const swappedWorkout = swapped ? (alternatives.find((a) => a.id === swapped.workoutId) ?? null) : null
 
   return (
@@ -106,11 +106,29 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
       )}
 
       {!skipped && (
-        <div className="flex flex-wrap gap-1 mt-2">
+        <button
+          type="button"
+          onClick={() => {
+            setOpen((v) => !v)
+            setSwapping(false)
+          }}
+          className="mt-1.5 inline-flex items-center gap-1 min-h-11 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
+          aria-expanded={open}
+        >
+          Aanpassen
+          <ChevronDown
+            className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")}
+            strokeWidth={2}
+          />
+        </button>
+      )}
+
+      {open && !skipped && !swapping && (
+        <div className="mt-1 flex flex-wrap gap-1">
           {alternatives.length > 0 && (
             <button
               type="button"
-              onClick={() => setSwapping((s) => !s)}
+              onClick={() => setSwapping(true)}
               className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
             >
               <Repeat className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -119,7 +137,10 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
           )}
           <button
             type="button"
-            onClick={() => onOverride({ type: "skip-workout" })}
+            onClick={() => {
+              onOverride({ type: "skip-workout" })
+              setOpen(false)
+            }}
             className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
           >
             <X className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -128,15 +149,21 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
         </div>
       )}
 
-      {swapping && (
-        <div className="mt-3 flex flex-col gap-1.5">
+      {open && swapping && (
+        <div className="mt-2 flex flex-col gap-1.5">
           <p className="text-[11px] text-ink-soft mb-0.5">Vervang door:</p>
           {alternatives.map((alt) => (
             <button
               key={alt.id}
               type="button"
               onClick={() => {
-                onOverride({ type: "swap-workout", workoutId: alt.id, title: alt.title, duration: alt.duration })
+                onOverride({
+                  type: "swap-workout",
+                  workoutId: alt.id,
+                  title: alt.title,
+                  duration: alt.duration,
+                })
+                setOpen(false)
                 setSwapping(false)
               }}
               className={cn(
@@ -150,9 +177,9 @@ export function WorkoutSlotCard({ focus, workout, reason, alternatives, override
           <button
             type="button"
             onClick={() => setSwapping(false)}
-            className="text-[11px] font-medium text-ink-soft self-start mt-0.5 touch-manipulation"
+            className="text-[11px] font-medium text-ink-soft self-start mt-0.5 touch-manipulation min-h-11"
           >
-            Annuleren
+            Terug
           </button>
         </div>
       )}

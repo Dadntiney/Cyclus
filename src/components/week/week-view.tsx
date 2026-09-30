@@ -5,7 +5,6 @@ import Link from "next/link"
 import { format, parseISO } from "date-fns"
 import { nl } from "date-fns/locale"
 import { ShoppingCart, ChevronRight, Salad, Footprints, Lightbulb } from "lucide-react"
-import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import type { WeekDayPlan, WeekPlanRecipe, WeekPlanWorkout, MealSlot } from "@/lib/recommendations/week-plan"
@@ -88,16 +87,17 @@ export function WeekView({
 
   return (
     <div className="flex flex-col gap-5">
-      {phaseContent && (
-        <div className={cn("rounded-3xl p-5", phaseContent.colors.bg)}>
-          <p className={cn("text-sm font-semibold", phaseContent.colors.text)}>
-            {phaseContent.label}
-            {day.cycleEstimate && ` · cyclusdag ${day.cycleEstimate.cycleDay}`}
-          </p>
-          <p className="text-sm text-ink-soft mt-1">
+      {/* Thin phase context — Week is for planning, not re-explaining the phase */}
+      {phaseContent && day.cycleEstimate && (
+        <p className={cn("text-sm leading-relaxed px-0.5", phaseContent.colors.text)}>
+          <span className="font-medium">
+            {phaseContent.label} · dag {day.cycleEstimate.cycleDay}
+          </span>
+          <span className="text-ink-soft">
+            {" — "}
             {day.anticipationNote ?? phaseContent.shortDescription}
-          </p>
-        </div>
+          </span>
+        </p>
       )}
 
       <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
@@ -188,22 +188,11 @@ export function WeekView({
             </section>
           )}
 
-          {day.focusTips.length > 0 && (
-            <section>
-              <p className="text-xs font-medium text-ink-soft mb-2 inline-flex items-center gap-1.5">
-                <Lightbulb className="h-3.5 w-3.5" strokeWidth={1.75} />
-                Focus
-              </p>
-              <Card className="p-3.5">
-                <ul className="flex flex-col gap-1.5">
-                  {day.focusTips.map((tip, i) => (
-                    <li key={i} className="text-sm text-ink-soft leading-relaxed">
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-            </section>
+          {day.focusTips[0] && (
+            <p className="text-sm text-ink-soft leading-relaxed px-0.5 inline-flex gap-2">
+              <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5 text-sage-dark" strokeWidth={1.75} aria-hidden />
+              <span>{day.focusTips[0]}</span>
+            </p>
           )}
         </div>
       </div>
@@ -224,7 +213,9 @@ export function WeekView({
         </Link>
       )}
 
-      {phaseContent && <p className="text-xs text-ink-soft px-1">{phaseContent.whyText}</p>}
+      {phaseContent && (
+        <p className="text-xs text-ink-soft px-0.5 leading-relaxed">{phaseContent.whyText}</p>
+      )}
     </div>
   )
 }
