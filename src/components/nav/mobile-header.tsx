@@ -9,6 +9,9 @@ import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
  * Always `fixed top-0`. Do not sync to visualViewport — rubber-band
  * overscroll was dragging the brand header down the screen. Buddy keyboard
  * layout is owned by BuddyShell; the header stays a stable layout-top anchor.
+ *
+ * Solid `bg-cream` (no /90 + blur): a frosted translucent header looked like
+ * a dark fade over the logo, especially in dark mode / iOS PWA.
  */
 export function MobileHeader() {
   const ref = useRef<HTMLElement>(null)
@@ -17,7 +20,7 @@ export function MobileHeader() {
   return (
     <header
       ref={ref}
-      className="md:hidden fixed top-0 inset-x-0 z-20 flex items-center bg-cream/90 backdrop-blur border-b border-line/60 pb-4"
+      className="md:hidden fixed top-0 inset-x-0 z-20 flex items-center bg-cream border-b border-line/60 pb-4"
       style={{
         paddingTop: "max(1rem, env(safe-area-inset-top))",
         paddingLeft: "max(1.5rem, env(safe-area-inset-left))",
