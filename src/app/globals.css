@@ -309,6 +309,28 @@ input[type="time"]::-webkit-date-and-time-value {
   text-align: left;
 }
 
+/*
+ * iOS Safari zooms the whole page when a focused text field is under 16px.
+ * Force ≥16px on every text-entry control so no field zooms — including
+ * one-offs that pass text-sm and bypass the shared Input component.
+ */
+input:not(
+  [type="button"],
+  [type="submit"],
+  [type="reset"],
+  [type="checkbox"],
+  [type="radio"],
+  [type="range"],
+  [type="file"],
+  [type="hidden"],
+  [type="image"],
+  [type="color"]
+),
+textarea,
+select {
+  font-size: 16px !important;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   a,
   button,
