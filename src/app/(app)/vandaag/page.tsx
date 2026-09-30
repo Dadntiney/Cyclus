@@ -45,14 +45,15 @@ const PHASE_TAGLINE: Record<CyclePhase, string> = {
 /**
  * Vandaag = one calm composition, not a widget dashboard.
  *
- * 1. Hello + one phase surface (menstruatie start/stop folded in)
- * 2. Check-in first when empty (so roadmap can become personal)
- * 3. Optional vooruitkijken
- * 4. Compact hormone roadmap
- * 5. Voor jou vandaag (act)
- * 6. Check-in adjust when already filled
+ * Flow (top → bottom):
+ * 1. Hello + phase context (menstruatie start/stop folded in)
+ * 2. Empty check-in first when needed (so roadmap can become personal)
+ * 3. Optional vooruitkijken / hormone roadmap (“wat je lichaam kan gebruiken”)
+ * 4. Plan: bewegen → maaltijden → boodschappen → voor je hoofd
+ * 5. Tussendoortip (lichte food-tip onder het plan)
+ * 6. Check-in aanpassen when already filled
  * 7. Optional sleep / meds
- * 8. Day close — compact until evening
+ * 8. Dag afsluiten
  */
 export default async function VandaagPage() {
   const user = await getAuthedUser()

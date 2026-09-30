@@ -11,9 +11,9 @@ import type { MentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestio
 import type { MealSlotKey } from "@/lib/client/week-plan-storage"
 
 /**
- * Vandaag plan: movement first (today’s primary action), then the same
- * meals as Deze week. Groceries sit quietly in the plan footer — not a
- * second stacked card below. Snack tip follows as a light phase tip.
+ * Vandaag plan: movement → meals → groceries (right under the last dish) →
+ * mind/recovery. Snack tip follows outside as a light food tip — then the
+ * page continues with check-in / sleep / day close.
  */
 export function TodayCards({
   recommendation,
@@ -48,7 +48,7 @@ export function TodayCards({
   const showMental = Boolean(mentalSuggestion)
   const showRecoveryRow = showRecovery && !showMental && Boolean(recovery.title)
   const showGrocery = nutritionEnabled
-  const hasSecondary = showMeals || showMental || showRecoveryRow || showGrocery
+  const hasSecondary = showMeals || showGrocery || showMental || showRecoveryRow
 
   return (
     <section aria-labelledby="voor-vandaag-heading">
@@ -106,6 +106,24 @@ export function TodayCards({
               />
             )}
 
+            {showGrocery && (
+              <div className="flex items-center justify-between gap-3 px-4 py-2.5 min-h-11">
+                <Link
+                  href="/deze-week/boodschappen"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-ink touch-manipulation min-h-11"
+                >
+                  <ShoppingCart className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} />
+                  Boodschappen
+                </Link>
+                <Link
+                  href="/deze-week/boodschappen?modus=dag"
+                  className="text-xs font-medium text-sage-dark touch-manipulation min-h-11 inline-flex items-center shrink-0"
+                >
+                  Voor vandaag →
+                </Link>
+              </div>
+            )}
+
             {showMental && mentalSuggestion && (
               <Link
                 href={`/mentale-rust/${mentalSuggestion.exercise.id}`}
@@ -144,24 +162,6 @@ export function TodayCards({
                   </p>
                 </div>
               ))}
-
-            {showGrocery && (
-              <div className="flex items-center justify-between gap-3 px-4 py-2.5 min-h-11">
-                <Link
-                  href="/deze-week/boodschappen"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-ink touch-manipulation min-h-11"
-                >
-                  <ShoppingCart className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} />
-                  Boodschappen
-                </Link>
-                <Link
-                  href="/deze-week/boodschappen?modus=dag"
-                  className="text-xs font-medium text-sage-dark touch-manipulation min-h-11 inline-flex items-center shrink-0"
-                >
-                  Voor vandaag →
-                </Link>
-              </div>
-            )}
           </div>
         )}
       </div>
