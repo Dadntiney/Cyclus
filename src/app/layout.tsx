@@ -35,13 +35,10 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    // "default" reserves an opaque, always-light iOS status bar strip above
-    // the page — it never showed our own background, light or dark.
-    // "black-translucent" makes iOS overlay the status bar on top of the
-    // page instead, so whatever's actually behind it (light or dark
-    // --color-cream) shows through. MobileHeader already pads for
-    // env(safe-area-inset-top), so content still clears the icons.
-    statusBarStyle: "black-translucent",
+    // Opaque system status bar — "black-translucent" let page content show
+    // through the top chrome (a visible fade over GoFiev). "default" keeps
+    // the status strip solid; MobileHeader still pads safe-area for notch.
+    statusBarStyle: "default",
     title: APP_DISPLAY_NAME,
   },
 };
