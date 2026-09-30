@@ -4,6 +4,7 @@ import { useActionState } from "react"
 import { resetPassword, type ActionState } from "@/lib/actions/auth"
 import { Input, Label, FieldError } from "@/components/ui/input"
 import { SubmitButton } from "@/components/ui/submit-button"
+import { authButtonClassName, authControlClassName } from "@/app/(auth)/layout"
 
 const initialState: ActionState = {}
 
@@ -11,7 +12,7 @@ export function ResetPasswordForm() {
   const [state, formAction] = useActionState(resetPassword, initialState)
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} className="flex flex-col gap-3.5">
       <div>
         <Label htmlFor="password">Nieuw wachtwoord</Label>
         <Input
@@ -21,6 +22,7 @@ export function ResetPasswordForm() {
           autoComplete="new-password"
           minLength={8}
           required
+          className={authControlClassName}
         />
       </div>
       <div>
@@ -32,10 +34,11 @@ export function ResetPasswordForm() {
           autoComplete="new-password"
           minLength={8}
           required
+          className={authControlClassName}
         />
       </div>
       <FieldError>{state.error}</FieldError>
-      <SubmitButton className="w-full mt-2" pendingText="Bezig...">
+      <SubmitButton className={authButtonClassName} pendingText="Bezig...">
         Wachtwoord opslaan
       </SubmitButton>
     </form>
