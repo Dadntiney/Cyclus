@@ -414,16 +414,46 @@ select {
   }
 }
 
-/* Soft “live” breath for active menstruatie — calm, not alarming */
+/* Soft “live” breath for active menstruatie — calm, not alarming.
+   Plain class (not motion-safe:…) so the rule always matches the DOM class. */
 @keyframes menstruatie-adem {
   0%,
   100% {
     transform: scale(1);
-    opacity: 0.88;
+    opacity: 0.85;
   }
   50% {
-    transform: scale(1.14);
+    transform: scale(1.22);
     opacity: 1;
+  }
+}
+
+@keyframes menstruatie-glow {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.2;
+  }
+  50% {
+    transform: scale(1.45);
+    opacity: 0.4;
+  }
+}
+
+.animate-menstruatie-adem {
+  display: inline-block;
+  transform-origin: center 70%;
+  animation: menstruatie-adem 2.2s ease-in-out infinite;
+}
+
+.animate-menstruatie-glow {
+  animation: menstruatie-glow 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-menstruatie-adem,
+  .animate-menstruatie-glow {
+    animation: none;
   }
 }
 
@@ -436,16 +466,9 @@ select {
     animation: page-in 0.22s ease-out both;
   }
 
-  .animate-menstruatie-adem {
-    animation: menstruatie-adem 2.8s ease-in-out infinite;
-    transform-origin: center bottom;
-    will-change: transform, opacity;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .animate-pop-in,
-    .animate-page-in,
-    .animate-menstruatie-adem {
+    .animate-page-in {
       animation: none;
     }
   }

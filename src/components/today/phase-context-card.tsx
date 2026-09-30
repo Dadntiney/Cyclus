@@ -107,10 +107,10 @@ export function PhaseContextCard({
               isMenstruationActive ? "text-danger font-medium" : "text-ink-soft",
             )}
           >
-            <span className="relative inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center">
+            <span className="relative inline-flex h-4 w-4 shrink-0 items-center justify-center">
               {isMenstruationActive && (
                 <span
-                  className="absolute inset-0 rounded-full bg-danger/25 motion-safe:animate-menstruatie-adem"
+                  className="absolute inset-0 rounded-full bg-danger/30 animate-menstruatie-glow"
                   aria-hidden
                 />
               )}
@@ -118,7 +118,7 @@ export function PhaseContextCard({
                 className={cn(
                   "relative h-3.5 w-3.5",
                   isMenstruationActive
-                    ? "text-danger motion-safe:animate-menstruatie-adem"
+                    ? "text-danger animate-menstruatie-adem"
                     : "text-ink-soft",
                 )}
                 fill={isMenstruationActive ? "currentColor" : "none"}
