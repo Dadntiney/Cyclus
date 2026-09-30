@@ -469,6 +469,39 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_appointments: {
+        Row: {
+          id: string
+          user_id: string
+          appointment_date: string | null
+          notes: string | null
+          reminder_enabled: boolean
+          reminder_time: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          appointment_date?: string | null
+          notes?: string | null
+          reminder_enabled?: boolean
+          reminder_time?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          appointment_date?: string | null
+          notes?: string | null
+          reminder_enabled?: boolean
+          reminder_time?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meal_plans: {
         Row: {
           breakfast: string | null

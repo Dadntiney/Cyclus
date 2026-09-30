@@ -27,6 +27,8 @@ export interface DoctorSummaryInput {
   } | null
   menstruationDates: string[]
   periScores?: { assessed_on: string; score: number }[]
+  /** Optional visit notes from the appointments log (e.g. HT changes). */
+  appointmentNotes?: { date: string | null; notes: string }[]
 }
 
 export interface DoctorSummary {
@@ -45,6 +47,7 @@ export interface DoctorSummary {
   noteHighlights: string[]
   talkingPoints: string[]
   periScoreNote: string | null
+  appointmentNotes: { date: string | null; notes: string }[]
   generatedAt: string
 }
 
@@ -54,7 +57,14 @@ function avg(values: number[]): number | null {
 }
 
 export function buildDoctorSummary(input: DoctorSummaryInput): DoctorSummary {
-  const { weeks, checkins, cycleProfile, menstruationDates, periScores = [] } = input
+  const {
+    weeks,
+    checkins,
+    cycleProfile,
+    menstruationDates,
+    periScores = [],
+    appointmentNotes = [],
+  } = input
   const energies = checkins.map((c) => c.energy).filter((v): v is number => v != null)
   const moods = checkins.map((c) => c.mood).filter((v): v is number => v != null)
   const sleeps = checkins.map((c) => c.sleep).filter((v): v is number => v != null)
@@ -160,6 +170,7 @@ export function buildDoctorSummary(input: DoctorSummaryInput): DoctorSummary {
     noteHighlights,
     talkingPoints,
     periScoreNote,
+    appointmentNotes: appointmentNotes.slice(0, 8),
     generatedAt: new Date().toISOString(),
   }
 }
@@ -197,6 +208,15 @@ export function doctorSummaryToText(summary: DoctorSummary): string {
   }
   if (summary.noteHighlights.length) {
     lines.push("", "Notities", ...summary.noteHighlights.map((n) => `- ${n}`))
+  }
+  if (summary.appointmentNotes.length) {
+    lines.push(
+      "",
+      "Afspraken / afspraken met zorgverlener",
+      ...summary.appointmentNotes.map((n) =>
+        n.date ? `- ${n.date}: ${n.notes}` : `- ${n.notes}`,
+      ),
+    )
   }
 
   lines.push(

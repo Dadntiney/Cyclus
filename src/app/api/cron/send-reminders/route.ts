@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
     { data: profileRows },
     { data: allReminderRows },
     { data: allMedicationRows },
+    { data: allDoctorAppointmentRows },
     { data: allLogRows },
   ] = await Promise.all([
     service
@@ -87,6 +88,12 @@ export async function GET(request: NextRequest) {
       )
       .in("user_id", userIds)
       .eq("reminder_enabled", true),
+    service
+      .from("doctor_appointments")
+      .select("id, user_id, appointment_date, notes, reminder_enabled, reminder_time")
+      .in("user_id", userIds)
+      .eq("reminder_enabled", true)
+      .eq("appointment_date", dateISO),
     service
       .from("push_notification_log")
       .select("user_id, source_type, source_id")
@@ -107,6 +114,12 @@ export async function GET(request: NextRequest) {
     list.push(row)
     medicationsByUser.set(row.user_id, list)
   }
+  const doctorAppointmentsByUser = new Map<string, NonNullable<typeof allDoctorAppointmentRows>>()
+  for (const row of allDoctorAppointmentRows ?? []) {
+    const list = doctorAppointmentsByUser.get(row.user_id) ?? []
+    list.push(row)
+    doctorAppointmentsByUser.set(row.user_id, list)
+  }
   const logsByUser = new Map<string, LogRow[]>()
   for (const row of allLogRows ?? []) {
     const list = logsByUser.get(row.user_id) ?? []
@@ -119,6 +132,7 @@ export async function GET(request: NextRequest) {
       const profile = profileById.get(userId) ?? null
       const reminderRows = remindersByUser.get(userId) ?? []
       const medicationRows = medicationsByUser.get(userId) ?? []
+      const doctorAppointmentRows = doctorAppointmentsByUser.get(userId) ?? []
       const logRows = logsByUser.get(userId) ?? []
 
       const alreadySent = new Set(logRows.map((l) => `${l.source_type}:${l.source_id}`))
@@ -221,6 +235,31 @@ export async function GET(request: NextRequest) {
         await service
           .from("push_notification_log")
           .upsert({ user_id: userId, source_type: sourceType, source_id: m.id, date: dateISO }, { onConflict: "source_type,source_id,date" })
+        notificationsSent += sent
+      }
+
+      // ---- Doctor appointment reminders (one-shot on appointment date) ----
+      for (const appt of doctorAppointmentRows) {
+        if (alreadySent.has(`doctor_appointment:${appt.id}`)) continue
+        // Generic on the lock screen — no free-text visit notes in push preview.
+        const { sent } = await sendPushToUser(userId, {
+          title: "Cyclus",
+          body: "Je hebt vandaag een artsafspraak genoteerd.",
+          url: "/cyclus/samenvatting",
+          tag: `doctor-appointment-${appt.id}`,
+        })
+        if (sent > 0) userHasSend = true
+        await service
+          .from("push_notification_log")
+          .upsert(
+            {
+              user_id: userId,
+              source_type: "doctor_appointment",
+              source_id: appt.id,
+              date: dateISO,
+            },
+            { onConflict: "source_type,source_id,date" },
+          )
         notificationsSent += sent
       }
 

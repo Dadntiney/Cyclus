@@ -7,8 +7,10 @@ import { PageTransition } from "@/components/nav/page-transition"
 import { ReminderToastHost, type MorningReminderSettings } from "@/components/reminders/reminder-toast-host"
 import { getReminders } from "@/lib/data/reminders"
 import { getMedicationReminderSources } from "@/lib/data/medications"
+import { getDoctorAppointmentReminderSources } from "@/lib/data/doctor-appointments"
 import { getProfile } from "@/lib/data/profile"
 import type { MedicationReminderLike } from "@/lib/client/medication-reminder-scheduler"
+import type { DoctorAppointmentReminderLike } from "@/lib/client/doctor-appointment-reminder-scheduler"
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthedUser()
@@ -18,10 +20,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   // Profile + shell data in one round — onboarding redirect is rare after first use.
-  const [profile, reminders, medicationReminderSources] = await Promise.all([
+  const [profile, reminders, medicationReminderSources, doctorAppointmentSources] = await Promise.all([
     getProfile(user.id),
     getReminders(user.id),
     getMedicationReminderSources(user.id),
+    getDoctorAppointmentReminderSources(user.id),
   ])
 
   if (!profile?.onboarding_completed) {
@@ -42,6 +45,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     remindDaily: m.remind_daily,
     remindOnStop: m.remind_on_stop,
   }))
+  const doctorAppointments: DoctorAppointmentReminderLike[] = doctorAppointmentSources
+    .filter((a): a is typeof a & { appointment_date: string } => Boolean(a.appointment_date))
+    .map((a) => ({
+      id: a.id,
+      appointmentDate: a.appointment_date,
+      reminderEnabled: a.reminder_enabled,
+      reminderTime: a.reminder_time,
+      notes: a.notes,
+    }))
 
   return (
     <div className="flex min-h-screen">
@@ -55,6 +67,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <ReminderToastHost
           reminders={reminders}
           medications={medicationReminders}
+          doctorAppointments={doctorAppointments}
           buddyStyles={profile.buddy_styles}
           morningReminder={
             profile.morning_reminder_enabled === true

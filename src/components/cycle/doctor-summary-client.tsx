@@ -13,11 +13,13 @@ export function DoctorSummaryClient({
   cycleProfile,
   menstruationDates,
   periScores = [],
+  appointmentNotes = [],
 }: {
   checkins: DoctorSummaryInput["checkins"]
   cycleProfile: DoctorSummaryInput["cycleProfile"]
   menstruationDates: string[]
   periScores?: { assessed_on: string; score: number }[]
+  appointmentNotes?: { date: string | null; notes: string }[]
 }) {
   const [weeks, setWeeks] = useState<DoctorSummaryWeeks>(8)
 
@@ -38,6 +40,7 @@ export function DoctorSummaryClient({
     cycleProfile,
     menstruationDates: filtered.menstruationDates,
     periScores: filtered.periScores,
+    appointmentNotes,
   })
 
   return <DoctorSummaryView summary={summary} weeks={weeks} onWeeksChange={setWeeks} />

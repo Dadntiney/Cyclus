@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { X, Bell, Pill, Sun } from "lucide-react"
+import { X, Bell, Pill, Sun, Stethoscope } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { REMINDER_TYPE_OPTIONS } from "@/lib/constants"
 import { getDueReminders, type ReminderLike } from "@/lib/client/reminder-scheduler"
@@ -9,6 +9,11 @@ import {
   getDueMedicationReminders,
   type MedicationReminderLike,
 } from "@/lib/client/medication-reminder-scheduler"
+import {
+  doctorAppointmentReminderText,
+  getDueDoctorAppointmentReminders,
+  type DoctorAppointmentReminderLike,
+} from "@/lib/client/doctor-appointment-reminder-scheduler"
 import { wasReminderShownToday, markReminderShownToday } from "@/lib/client/reminder-storage"
 import { resolveReminderText } from "@/lib/buddy/reminder-labels"
 import { isScheduleStartDay, isScheduleStopDay } from "@/lib/medication/schedule"
@@ -72,11 +77,13 @@ function medicationToast(medication: MedicationReminderLike, now: Date): Toast {
 export function ReminderToastHost({
   reminders,
   medications = [],
+  doctorAppointments = [],
   buddyStyles = [],
   morningReminder = null,
 }: {
   reminders: ReminderLike[]
   medications?: MedicationReminderLike[]
+  doctorAppointments?: DoctorAppointmentReminderLike[]
   buddyStyles?: string[]
   morningReminder?: MorningReminderSettings | null
 }) {
@@ -85,13 +92,19 @@ export function ReminderToastHost({
   useEffect(() => {
     const hasReminders = reminders.some((r) => r.enabled)
     const hasMedicationReminders = medications.some((m) => m.reminderEnabled)
+    const hasDoctorReminders = doctorAppointments.some((a) => a.reminderEnabled)
     const hasMorningReminder = morningReminder?.enabled === true
-    if (!hasReminders && !hasMedicationReminders && !hasMorningReminder) return
+    if (!hasReminders && !hasMedicationReminders && !hasDoctorReminders && !hasMorningReminder) return
 
     function check() {
       const now = new Date()
       const dueReminders = getDueReminders(reminders, now, wasReminderShownToday)
       const dueMedications = getDueMedicationReminders(medications, now, wasReminderShownToday)
+      const dueDoctor = getDueDoctorAppointmentReminders(
+        doctorAppointments,
+        now,
+        wasReminderShownToday,
+      )
       // Synthetic single-item "reminder" so the exact-time due-check logic
       // (day + grace window) is shared, not reimplemented for this one case.
       const dueMorning = hasMorningReminder
@@ -110,7 +123,9 @@ export function ReminderToastHost({
             wasReminderShownToday,
           )
         : []
-      if (!dueReminders.length && !dueMedications.length && !dueMorning.length) return
+      if (!dueReminders.length && !dueMedications.length && !dueDoctor.length && !dueMorning.length) {
+        return
+      }
 
       const todayISO = amsterdamTodayISO(now)
       const toasts: Toast[] = []
@@ -122,6 +137,14 @@ export function ReminderToastHost({
       for (const medication of dueMedications) {
         markReminderShownToday(medication.id, todayISO)
         toasts.push(medicationToast(medication, now))
+      }
+      for (const appointment of dueDoctor) {
+        markReminderShownToday(appointment.id, todayISO)
+        toasts.push({
+          id: appointment.id,
+          icon: Stethoscope,
+          text: doctorAppointmentReminderText(appointment),
+        })
       }
       for (const reminder of dueMorning) {
         markReminderShownToday(reminder.id, todayISO)
@@ -150,7 +173,7 @@ export function ReminderToastHost({
     check()
     const interval = setInterval(check, 60_000)
     return () => clearInterval(interval)
-  }, [reminders, medications, buddyStyles, morningReminder])
+  }, [reminders, medications, doctorAppointments, buddyStyles, morningReminder])
 
   function dismiss(id: string) {
     setVisible((prev) => prev.filter((r) => r.id !== id))

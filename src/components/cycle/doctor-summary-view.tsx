@@ -137,6 +137,20 @@ export function DoctorSummaryView({
           </>
         )}
 
+        {summary.appointmentNotes.length > 0 && (
+          <>
+            <h3 className="text-sm font-semibold text-ink mb-1">Afspraken met zorgverlener</h3>
+            <ul className="text-sm text-ink mb-2 list-disc pl-5">
+              {summary.appointmentNotes.map((n) => (
+                <li key={`${n.date ?? "x"}-${n.notes}`}>
+                  {n.date ? `${n.date}: ` : null}
+                  {n.notes}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
         <p className="text-xs text-ink-soft mt-4 border-t border-line pt-3">
           Gegenereerd met Cyclus. Dit is geen medisch advies. Bespreek klachten altijd met een
           zorgverlener. Tip: gebruik Print → “Opslaan als PDF” voor een deelbaar PDF-bestand.
