@@ -19,7 +19,9 @@ import { Expandable } from "@/components/ui/expandable"
 import { BackButton } from "@/components/ui/back-button"
 import { buttonVariants } from "@/components/ui/button"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
+import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
+import { getSavedMomentTexts } from "@/lib/data/moments"
 import { cn } from "@/lib/utils"
 
 /** Soft panel — same calm surface language as Vandaag (no white bordered cards). */
@@ -134,6 +136,7 @@ export default async function CyclusdagPage() {
     profile?.buddy_message_frequency ?? null,
     view.symptomNote !== null,
   )
+  const savedTexts = await getSavedMomentTexts(user.id)
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
@@ -175,8 +178,19 @@ export default async function CyclusdagPage() {
 
         {showAmbientBuddyContent && (
           <SoftPanel>
-            <p className={cn("text-xs font-medium mb-1", view.colors.text)}>Wist je dat…?</p>
-            <p className="text-sm text-ink leading-relaxed">{view.funFact}</p>
+            <div className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <p className={cn("text-xs font-medium mb-1", view.colors.text)}>Wist je dat…?</p>
+                <p className="text-sm text-ink leading-relaxed">{view.funFact}</p>
+              </div>
+              <MomentFavoriteButton
+                kind="fun_fact"
+                text={view.funFact}
+                source="cyclusdag-fun-fact"
+                initialFavorited={savedTexts.has(view.funFact)}
+                size="sm"
+              />
+            </div>
           </SoftPanel>
         )}
 
@@ -199,11 +213,22 @@ export default async function CyclusdagPage() {
 
         {showAmbientBuddyContent && (
           <SoftPanel>
-            <p className={cn("text-xs font-medium mb-1 inline-flex items-center gap-1.5", view.colors.text)}>
-              <view.buddyMoment.icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
-              {view.buddyMoment.title}
-            </p>
-            <p className="text-sm text-ink leading-relaxed">{view.buddyMoment.text}</p>
+            <div className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <p className={cn("text-xs font-medium mb-1 inline-flex items-center gap-1.5", view.colors.text)}>
+                  <view.buddyMoment.icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+                  {view.buddyMoment.title}
+                </p>
+                <p className="text-sm text-ink leading-relaxed">{view.buddyMoment.text}</p>
+              </div>
+              <MomentFavoriteButton
+                kind={view.buddyMoment.kind === "tip" ? "tip" : "quote"}
+                text={view.buddyMoment.text}
+                source="cyclusdag-buddy-moment"
+                initialFavorited={savedTexts.has(view.buddyMoment.text)}
+                size="sm"
+              />
+            </div>
           </SoftPanel>
         )}
 

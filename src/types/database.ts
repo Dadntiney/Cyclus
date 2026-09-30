@@ -436,6 +436,36 @@ export type Database = {
           },
         ]
       }
+      saved_moments: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          source: string | null
+          source_key: string | null
+          text: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          source?: string | null
+          source_key?: string | null
+          text: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          source?: string | null
+          source_key?: string | null
+          text?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       meal_plans: {
         Row: {
           breakfast: string | null

@@ -14,6 +14,7 @@ import { MenstruationQuickAction } from "@/components/cycle/menstruation-quick-a
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { greeting } from "@/lib/greeting"
+import { getSavedMomentTexts } from "@/lib/data/moments"
 
 const PHASE_TONE: Record<CyclePhase, { bg: string; text: string }> = {
   menstruatie: {
@@ -79,6 +80,8 @@ export default async function VandaagPage() {
     sleepObservation,
     recipeImageById,
   } = await getVandaagData(user.id)
+
+  const savedTexts = [...(await getSavedMomentTexts(user.id))]
 
   const showMedicationCard =
     Boolean(profile?.show_medication_on_dashboard) && medicationItems.length > 0
@@ -185,7 +188,11 @@ export default async function VandaagPage() {
           {anticipation && <AnticipationNote anticipation={anticipation} />}
 
           {hormoneRoadmap && (
-            <HormoneRoadmapNote roadmap={hormoneRoadmap} phaseTone={tone} />
+            <HormoneRoadmapNote
+              roadmap={hormoneRoadmap}
+              phaseTone={tone}
+              savedTexts={savedTexts}
+            />
           )}
 
           {recommendation && (
@@ -233,6 +240,7 @@ export default async function VandaagPage() {
             sleepTrackingEnabled={sleepEnabled}
             hasSleepEntry={Boolean(sleepEntry)}
             mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
+            savedTexts={savedTexts}
           />
         </div>
       </div>

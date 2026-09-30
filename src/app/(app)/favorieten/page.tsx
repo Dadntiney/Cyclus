@@ -1,27 +1,30 @@
 import Link from "next/link"
-import { Heart, Salad, Dumbbell, ChevronRight, ChefHat } from "lucide-react"
+import { Heart, Salad, Dumbbell, ChevronRight, ChefHat, Sparkles } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getFavoriteRecipes } from "@/lib/data/nutrition"
 import { getFavoriteExercises } from "@/lib/data/training"
+import { getSavedMoments, savedMomentKindLabel } from "@/lib/data/moments"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
+import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
 import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { BackButton } from "@/components/ui/back-button"
 
 /**
  * Unified favorites hub — compact rows (same density as Vandaag / Week),
- * not full RecipeCards.
+ * not full RecipeCards. Includes hearted tips / quotes / affirmations.
  */
 export default async function FavorietenPage() {
   const user = await getAuthedUser()
   if (!user) return null
 
-  const [recipes, exercises] = await Promise.all([
+  const [recipes, exercises, moments] = await Promise.all([
     getFavoriteRecipes(user.id),
     getFavoriteExercises(user.id),
+    getSavedMoments(user.id),
   ])
 
-  const isEmpty = recipes.length === 0 && exercises.length === 0
+  const isEmpty = recipes.length === 0 && exercises.length === 0 && moments.length === 0
 
   return (
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
@@ -32,7 +35,7 @@ export default async function FavorietenPage() {
           Favorieten
         </h1>
         <p className="text-sm text-ink-soft mt-1">
-          Recepten en oefeningen die je hebt opgeslagen.
+          Recepten, oefeningen en momenten die je wilt onthouden.
         </p>
       </div>
 
@@ -40,10 +43,39 @@ export default async function FavorietenPage() {
         <EmptyState
           icon={<Heart className="h-6 w-6" strokeWidth={1.5} />}
           title="Nog geen favorieten"
-          description="Tik op het hartje bij een recept of oefening — dan vind je ze hier terug."
+          description="Tik op het hartje bij een recept, oefening, tip of affirmatie — dan vind je ze hier terug."
         />
       ) : (
         <>
+          {moments.length > 0 && (
+            <section>
+              <h2 className="font-display text-lg text-ink inline-flex items-center gap-2 mb-3">
+                <Sparkles className="h-4 w-4 text-sage-dark" strokeWidth={1.75} aria-hidden />
+                Bewaarde momenten
+              </h2>
+              <Card className="p-0 divide-y divide-sage/20">
+                {moments.slice(0, 12).map((moment) => (
+                  <div key={moment.id} className="flex items-start gap-3 px-4 py-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-sage-dark mb-0.5">
+                        {savedMomentKindLabel(moment.kind)}
+                      </p>
+                      <p className="text-sm text-ink leading-relaxed">{moment.text}</p>
+                    </div>
+                    <MomentFavoriteButton
+                      kind={moment.kind}
+                      text={moment.text}
+                      source={moment.source ?? undefined}
+                      sourceKey={moment.sourceKey ?? undefined}
+                      initialFavorited
+                      size="sm"
+                    />
+                  </div>
+                ))}
+              </Card>
+            </section>
+          )}
+
           <section>
             <div className="flex items-center justify-between gap-3 mb-3">
               <h2 className="font-display text-lg text-ink inline-flex items-center gap-2">

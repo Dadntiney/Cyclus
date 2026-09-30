@@ -6,6 +6,7 @@ import { Moon, CheckCircle2, Circle, Heart, Sparkles, NotebookPen, ChevronDown }
 import { cn } from "@/lib/utils"
 import { getDayCloseLine, getEveningAffirmation } from "@/lib/data/day-close-notes"
 import { createDiaryEntry } from "@/lib/actions/diary"
+import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
 import {
   loadWeekOverrides,
   WEEK_OVERRIDES_CHANGED_EVENT,
@@ -25,6 +26,7 @@ export function DayCloseCard({
   sleepTrackingEnabled,
   hasSleepEntry,
   mentalWellbeingEnabled = false,
+  savedTexts = [],
 }: {
   userId: string
   date: string
@@ -35,6 +37,7 @@ export function DayCloseCard({
   sleepTrackingEnabled: boolean
   hasSleepEntry: boolean
   mentalWellbeingEnabled?: boolean
+  savedTexts?: string[]
 }) {
   const [closed, setClosed] = useState(false)
   const [expanded, setExpanded] = useState(false)
@@ -285,9 +288,18 @@ export function DayCloseCard({
       </div>
 
       <div className="rounded-2xl bg-surface/65 px-3.5 py-3.5 mb-3">
-        <div className="flex items-center gap-2 mb-1.5">
-          <Sparkles className="h-3.5 w-3.5 text-sage-dark shrink-0" strokeWidth={1.75} />
-          <p className="text-xs font-medium text-ink-soft uppercase tracking-wide">Voor vanavond</p>
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <Sparkles className="h-3.5 w-3.5 text-sage-dark shrink-0" strokeWidth={1.75} />
+            <p className="text-xs font-medium text-ink-soft uppercase tracking-wide">Voor vanavond</p>
+          </div>
+          <MomentFavoriteButton
+            kind="affirmation"
+            text={affirmation}
+            source="day-close-affirmation"
+            initialFavorited={savedTexts.includes(affirmation)}
+            size="sm"
+          />
         </div>
         <p className="font-display text-[1.05rem] leading-snug text-ink">
           &ldquo;{affirmation}&rdquo;

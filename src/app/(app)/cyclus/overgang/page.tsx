@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { Expandable } from "@/components/ui/expandable"
 import { BackButton } from "@/components/ui/back-button"
+import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
+import { getSavedMomentTexts } from "@/lib/data/moments"
 
 function seededIndex(seed: string, length: number): number {
   if (length <= 0) return 0
@@ -35,6 +37,7 @@ export default async function OvergangPage() {
 
   const highlightSignals = LIFE_STAGE_KNOWLEDGE.signals.filter((s) => s.highlight)
   const moreSignals = LIFE_STAGE_KNOWLEDGE.signals.filter((s) => !s.highlight)
+  const savedTexts = await getSavedMomentTexts(user.id)
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
@@ -76,8 +79,19 @@ export default async function OvergangPage() {
         </section>
 
         <Card>
-          <p className="text-xs font-medium text-sage-dark mb-1">Wist je dat…?</p>
-          <p className="text-sm text-ink leading-relaxed">{funFact}</p>
+          <div className="flex items-start gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium text-sage-dark mb-1">Wist je dat…?</p>
+              <p className="text-sm text-ink leading-relaxed">{funFact}</p>
+            </div>
+            <MomentFavoriteButton
+              kind="fun_fact"
+              text={funFact}
+              source="overgang-fun-fact"
+              initialFavorited={savedTexts.has(funFact)}
+              size="sm"
+            />
+          </div>
         </Card>
 
         <Expandable label="Meer weten over de overgang">

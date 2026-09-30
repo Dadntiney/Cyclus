@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ChevronRight, Footprints, Salad, Leaf, Lightbulb, Heart } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { RoadmapSupportKind, TodayRoadmap } from "@/lib/cycle/today-roadmap"
+import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
 import { cn } from "@/lib/utils"
 
 const KIND_ICON: Record<RoadmapSupportKind, LucideIcon> = {
@@ -18,10 +19,14 @@ const KIND_ICON: Record<RoadmapSupportKind, LucideIcon> = {
 export function HormoneRoadmapNote({
   roadmap,
   phaseTone,
+  savedTexts = [],
 }: {
   roadmap: TodayRoadmap
   phaseTone?: { bg: string; text: string } | null
+  savedTexts?: string[]
 }) {
+  const saved = new Set(savedTexts)
+
   return (
     <section
       aria-labelledby="roadmap-heading"
@@ -30,18 +35,31 @@ export function HormoneRoadmapNote({
         phaseTone?.bg ?? "bg-sage-soft/55",
       )}
     >
-      <p
-        id="roadmap-heading"
-        className={cn("text-sm font-medium mb-1", phaseTone?.text ?? "text-sage-dark")}
-      >
-        Wat jouw lichaam vandaag kan gebruiken
-      </p>
-      <p className="text-sm text-ink leading-relaxed">{roadmap.whyNow}</p>
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <p
+            id="roadmap-heading"
+            className={cn("text-sm font-medium mb-1", phaseTone?.text ?? "text-sage-dark")}
+          >
+            Wat jouw lichaam vandaag kan gebruiken
+          </p>
+          <p className="text-sm text-ink leading-relaxed">{roadmap.whyNow}</p>
+        </div>
+        <MomentFavoriteButton
+          kind="roadmap"
+          text={roadmap.whyNow}
+          source="hormone-roadmap"
+          initialFavorited={saved.has(roadmap.whyNow)}
+          size="sm"
+        />
+      </div>
 
       {roadmap.supports.length > 0 && (
         <ul className="mt-3 flex flex-col gap-2">
           {roadmap.supports.map((support) => {
             const Icon = KIND_ICON[support.kind]
+            const momentText = `${support.title}: ${support.why}`
+            const heartable = support.kind === "tip" || support.kind === "helped"
             return (
               <li key={`${support.kind}-${support.title}`} className="flex gap-2.5">
                 <span className="mt-0.5 shrink-0 h-7 w-7 rounded-full bg-surface/70 flex items-center justify-center">
@@ -57,12 +75,21 @@ export function HormoneRoadmapNote({
                     aria-hidden
                   />
                 </span>
-                <span className="min-w-0">
+                <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium text-ink">{support.title}</span>
                   <span className="block text-xs text-ink-soft mt-0.5 leading-relaxed">
                     {support.why}
                   </span>
                 </span>
+                {heartable && (
+                  <MomentFavoriteButton
+                    kind="tip"
+                    text={momentText}
+                    source="hormone-roadmap-support"
+                    initialFavorited={saved.has(momentText)}
+                    size="sm"
+                  />
+                )}
               </li>
             )
           })}

@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
 import { BackButton } from "@/components/ui/back-button"
 import type { MentalWellbeingCategory } from "@/lib/constants"
+import { getSavedMomentTexts } from "@/lib/data/moments"
 
 export default async function MentaleRustPage() {
   const user = await getAuthedUser()
@@ -44,6 +45,7 @@ export default async function MentaleRustPage() {
   const today = todayISO()
   const preferredCategories = (profile.mental_wellbeing_categories ?? []) as MentalWellbeingCategory[]
   const affirmations = getAffirmationsByThemes(affirmationThemesForCategories(preferredCategories))
+  const savedTexts = [...(await getSavedMomentTexts(user.id))]
 
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
@@ -57,7 +59,11 @@ export default async function MentaleRustPage() {
 
       <div>
         <h2 className="font-display text-lg text-ink mb-3">Een klein moment voor jezelf</h2>
-        <AffirmationViewer affirmations={affirmations} seed={`${user.id}-${today}`} />
+        <AffirmationViewer
+          affirmations={affirmations}
+          seed={`${user.id}-${today}`}
+          savedTexts={savedTexts}
+        />
       </div>
 
       <div>
