@@ -9,7 +9,7 @@ export function BodyChangeList({ items }: { items: BodyChangeItem[] }) {
         return (
         <li key={item.label} className="flex gap-3">
           <span
-            className="shrink-0 h-8 w-8 rounded-full bg-cream-soft flex items-center justify-center"
+            className="shrink-0 h-8 w-8 rounded-full bg-surface/70 flex items-center justify-center"
             aria-hidden
           >
             <Icon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />

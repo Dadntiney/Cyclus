@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { ReactNode } from "react"
 import { format, subDays } from "date-fns"
 import { Droplet, CalendarDays } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
@@ -13,7 +14,6 @@ import {
 } from "@/lib/cycle/history"
 import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { buildCyclusdagView } from "@/lib/cycle/cyclusdag"
-import { Card } from "@/components/ui/card"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Expandable } from "@/components/ui/expandable"
 import { BackButton } from "@/components/ui/back-button"
@@ -21,6 +21,19 @@ import { buttonVariants } from "@/components/ui/button"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { cn } from "@/lib/utils"
+
+/** Soft panel — same calm surface language as Vandaag (no white bordered cards). */
+function SoftPanel({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div className={cn("rounded-3xl bg-sage-soft/50 px-4 py-4", className)}>{children}</div>
+  )
+}
 
 export default async function CyclusdagPage() {
   const supabase = await createClient()
@@ -51,7 +64,7 @@ export default async function CyclusdagPage() {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         {backLink}
-        <Card>
+        <SoftPanel>
           <EmptyState
             icon={<Droplet className="h-6 w-6" strokeWidth={1.5} />}
             title="Geen cyclusdag"
@@ -62,7 +75,7 @@ export default async function CyclusdagPage() {
               </Link>
             }
           />
-        </Card>
+        </SoftPanel>
       </div>
     )
   }
@@ -85,7 +98,7 @@ export default async function CyclusdagPage() {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         {backLink}
-        <Card>
+        <SoftPanel>
           <EmptyState
             icon={<CalendarDays className="h-6 w-6" strokeWidth={1.5} />}
             title="Nog te weinig gegevens"
@@ -96,7 +109,7 @@ export default async function CyclusdagPage() {
               </Link>
             }
           />
-        </Card>
+        </SoftPanel>
       </div>
     )
   }
@@ -116,9 +129,6 @@ export default async function CyclusdagPage() {
     preferredStyles,
   })
 
-  // Passive/ambient buddy content (fun fact + "even onthouden" moment) —
-  // gated by her optional cadence preference. "Alleen relevant" leans on
-  // whether there's an actual recognized pattern, not just a generic quote.
   const showAmbientBuddyContent = shouldShowBuddyMessage(
     `${user.id}-${today}-cyclusdag`,
     profile?.buddy_message_frequency ?? null,
@@ -129,77 +139,75 @@ export default async function CyclusdagPage() {
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
       {backLink}
 
-      <div className={cn("rounded-3xl p-5 lg:p-6 mb-6", view.colors.bg)}>
-        <p className={cn("text-xs font-semibold uppercase tracking-wide", view.colors.text)}>
+      <header className={cn("rounded-3xl px-4 py-4 mb-6", view.colors.bg)}>
+        <p className={cn("text-xs font-medium tracking-wide", view.colors.text)}>
           Cyclusdag {view.cycleDay}
         </p>
-        <p className="font-display text-2xl text-ink mt-1">{view.phaseLabel}</p>
-      </div>
+        <h1 className="font-display text-2xl text-ink mt-1">{view.phaseLabel}</h1>
+      </header>
 
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-6">
         <section>
-          <h2 className="font-display text-lg text-ink mb-2.5">Wat gebeurt er in je lichaam?</h2>
-          <Card>
-            <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.bodySummary}</p>
-            <p className="text-base text-ink-soft leading-relaxed mt-3">{view.knowledge.hormonalSummary}</p>
-          </Card>
+          <h2 className="font-display text-lg text-ink mb-2">Wat gebeurt er in je lichaam?</h2>
+          <SoftPanel>
+            <p className="text-sm text-ink leading-relaxed">{view.knowledge.bodySummary}</p>
+            <p className="text-sm text-ink-soft leading-relaxed mt-3">
+              {view.knowledge.hormonalSummary}
+            </p>
+          </SoftPanel>
         </section>
 
         <section>
-          <h2 className="font-display text-lg text-ink mb-2.5">Hoe kun je je voelen?</h2>
-          <Card>
+          <h2 className="font-display text-lg text-ink mb-2">Hoe kun je je voelen?</h2>
+          <SoftPanel>
             <BodyChangeList items={view.highlightChanges} />
             {view.symptomNote && (
-              <p className="text-xs text-ink-soft bg-cream-soft rounded-xl px-3 py-2.5 mt-4">
+              <p className="text-xs text-ink-soft bg-surface/65 rounded-2xl px-3 py-2.5 mt-4 leading-relaxed">
                 {view.symptomNote}
               </p>
             )}
-            <div className="mt-4 pt-4 border-t border-line">
-              <p className="text-sm font-medium text-ink mb-2">Waarom?</p>
-              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.whyExplainer}</p>
+            <div className="mt-4 pt-4 border-t border-sage/20">
+              <p className="text-sm font-medium text-ink mb-1.5">Waarom?</p>
+              <p className="text-sm text-ink-soft leading-relaxed">{view.knowledge.whyExplainer}</p>
             </div>
-          </Card>
+          </SoftPanel>
         </section>
 
         {showAmbientBuddyContent && (
-          <section>
-            <Card className="bg-sage-soft border-transparent">
-              <p className="text-xs font-medium text-sage-dark mb-1">Wist je dat...?</p>
-              <p className="text-base text-ink leading-relaxed">{view.funFact}</p>
-            </Card>
-          </section>
+          <SoftPanel>
+            <p className={cn("text-xs font-medium mb-1", view.colors.text)}>Wist je dat…?</p>
+            <p className="text-sm text-ink leading-relaxed">{view.funFact}</p>
+          </SoftPanel>
         )}
 
         <Expandable label="Meer weten over deze fase">
-          <div className="flex flex-col gap-4">
-            <Card>
-              <p className="text-sm font-medium text-ink mb-3">Meer lichamelijke en mentale signalen</p>
+          <div className="flex flex-col gap-3">
+            <SoftPanel>
+              <p className="text-sm font-medium text-ink mb-3">Meer signalen</p>
               <BodyChangeList items={view.moreChanges} />
-            </Card>
-            <Card>
-              <p className="text-sm font-medium text-ink mb-2">Wat kan normaal zijn?</p>
-              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.normalNote}</p>
-            </Card>
-            <Card>
-              <p className="text-sm font-medium text-ink mb-2">Waar kun je aandacht aan besteden?</p>
-              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.attentionNote}</p>
-            </Card>
+            </SoftPanel>
+            <SoftPanel>
+              <p className="text-sm font-medium text-ink mb-1.5">Wat kan normaal zijn?</p>
+              <p className="text-sm text-ink-soft leading-relaxed">{view.knowledge.normalNote}</p>
+            </SoftPanel>
+            <SoftPanel>
+              <p className="text-sm font-medium text-ink mb-1.5">Waar kun je aandacht aan besteden?</p>
+              <p className="text-sm text-ink-soft leading-relaxed">{view.knowledge.attentionNote}</p>
+            </SoftPanel>
           </div>
         </Expandable>
 
         {showAmbientBuddyContent && (
-          <section>
-            <Card className="bg-surface">
-              <p className="text-xs font-medium text-sage-dark mb-1 inline-flex items-center gap-1">
-                <view.buddyMoment.icon className="h-3.5 w-3.5" strokeWidth={1.75} />
-                {view.buddyMoment.title}
-              </p>
-              <p className="text-base text-ink leading-relaxed">{view.buddyMoment.text}</p>
-            </Card>
-          </section>
+          <SoftPanel>
+            <p className={cn("text-xs font-medium mb-1 inline-flex items-center gap-1.5", view.colors.text)}>
+              <view.buddyMoment.icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+              {view.buddyMoment.title}
+            </p>
+            <p className="text-sm text-ink leading-relaxed">{view.buddyMoment.text}</p>
+          </SoftPanel>
         )}
 
-        <p className="text-xs text-ink-soft px-1 leading-relaxed">
+        <p className="text-xs text-ink-soft leading-relaxed">
           Deze uitleg is algemene, informatieve content — geen medisch advies en geen diagnose.
           Iedere vrouw ervaart haar cyclus anders; twijfel je over aanhoudende of ernstige
           klachten, overleg dan met een arts of andere zorgverlener.
