@@ -226,7 +226,7 @@ export async function GET(request: NextRequest) {
           : isStop
             ? absoluteEnd
               ? { title: "Je schema eindigt vandaag", body: "De periode die je had ingesteld eindigt vandaag.", sourceType: "medication_stop" }
-              : { title: "Laatste innamedag", body: "Vandaag is de laatste dag van je wel-periode — daarna begint je pauze.", sourceType: "medication_stop" }
+              : { title: "Pauze begint morgen", body: "Vandaag is de laatste innamedag van je wel-periode. Daarna loopt je schema gewoon door.", sourceType: "medication_stop" }
             : { title: "Cyclus", body: "Je hebt een herinnering van Cyclus.", sourceType: "medication_daily" }
 
         const { sent } = await sendPushToUser(userId, {

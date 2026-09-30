@@ -23,7 +23,8 @@ export const medicationSchema = z
     // single reminder_enabled behavior (all three fire together).
     remindOnStart: z.boolean().default(true),
     remindDaily: z.boolean().default(true),
-    // Opt-in: for cyclisch = last day of each wel-periode; otherwise needs endDate.
+    // Opt-in: cyclisch = pauze aan einde van elke wel-periode (schema loopt door);
+    // anders alleen bij absolute kuureinde (endDate).
     remindOnStop: z.boolean().default(false),
     notes: z.string().max(500).optional(),
   })

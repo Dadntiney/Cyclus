@@ -63,7 +63,7 @@ function medicationToast(medication: MedicationReminderLike, now: Date): Toast {
     : isStop
       ? isAbsoluteMedicationEndDay(medication, now)
         ? `Je ingestelde periode voor ${medication.name} eindigt vandaag.`
-        : `Vandaag is de laatste innamedag van je wel-periode voor ${medication.name}.`
+        : `Laatste innamedag voor ${medication.name} — daarna begint je pauze. Je schema loopt daarna gewoon door.`
       : `Herinnering: je hebt vandaag ${medication.name} ingepland.`
   return { id: medication.id, icon: Pill, text }
 }
