@@ -4,7 +4,7 @@ import { useActionState } from "react"
 import { login, type ActionState } from "@/lib/actions/auth"
 import { Input, Label, FieldError } from "@/components/ui/input"
 import { SubmitButton } from "@/components/ui/submit-button"
-import { authButtonClassName, authControlClassName } from "@/app/(auth)/layout"
+import { authButtonClassName, authControlClassName } from "@/app/(auth)/auth-styles"
 
 const initialState: ActionState = {}
 

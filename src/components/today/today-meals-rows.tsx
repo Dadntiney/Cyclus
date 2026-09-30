@@ -106,7 +106,7 @@ export function TodayMealsRows({
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-[11px] font-medium text-sage-dark">{meal.label}</p>
-                  <p className="text-sm text-ink-soft italic">Overgeslagen</p>
+                  <p className="text-sm text-ink-soft italic">Vandaag overgeslagen — ook goed</p>
                 </div>
                 <button
                   type="button"
@@ -404,7 +404,7 @@ function MealAdjustPanel({
         className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
       >
         <X className="h-3.5 w-3.5" strokeWidth={1.75} />
-        Overslaan
+        Vandaag niet
       </button>
       <button
         type="button"

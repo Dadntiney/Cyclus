@@ -104,7 +104,7 @@ export function DayCloseCard({
     startTransition(async () => {
       const result = await createDiaryEntry({
         date,
-        body: `Dankbaar vandaag: ${text}`,
+        body: `Van vandaag meegenomen: ${text}`,
       })
       if (result?.error) {
         setGratitudeError(result.error)
@@ -138,7 +138,7 @@ export function DayCloseCard({
     {
       key: "checkin",
       done: hasCheckin,
-      label: hasCheckin ? "Check-in ingevuld" : "Check-in nog open",
+      label: hasCheckin ? "Even bij jezelf geweest" : "Check-in nog open",
     },
     ...(movementEnabled
       ? [
@@ -154,7 +154,7 @@ export function DayCloseCard({
           {
             key: "sleep",
             done: hasSleepEntry,
-            label: hasSleepEntry ? "Slaap ingevuld" : "Slaap nog invullen",
+            label: hasSleepEntry ? "Slaap genoteerd" : "Slaap nog invullen",
           },
         ]
       : []),
@@ -169,11 +169,11 @@ export function DayCloseCard({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle2 className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} />
-              <p className="text-sm font-medium text-ink">Dag afgesloten</p>
+              <p className="text-sm font-medium text-ink">Dag mag rusten</p>
             </div>
             {gratitudeSaved && gratitude.trim() && (
               <p className="text-sm text-ink/80 pl-6 mb-2 leading-relaxed">
-                Dankbaar voor: {gratitude.trim()}
+                Meegenomen: {gratitude.trim()}
               </p>
             )}
             <p className="font-display text-[1.05rem] leading-snug text-ink/90 pl-6">
@@ -210,9 +210,13 @@ export function DayCloseCard({
       >
         <Moon className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} aria-hidden />
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-ink">Dag afsluiten</span>
+          <span className="block text-sm font-medium text-ink">Even afronden</span>
           <span className="block text-xs text-ink-soft mt-0.5">
-            {doneCount}/{items.length} genoteerd · open voor vanavond
+            {doneCount === 0
+              ? "Kort terugkijken als je wilt — niks hoeft"
+              : doneCount === items.length
+                ? "Alles wat je wilde is genoteerd"
+                : `${doneCount} van ${items.length} aangeraakt · open wanneer jij wilt`}
           </span>
         </span>
         <ChevronDown className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
@@ -224,10 +228,10 @@ export function DayCloseCard({
     <div className="rounded-3xl bg-sage-soft/55 px-4 py-4">
       <div className="flex items-center gap-2 mb-1">
         <Moon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-        <h2 className="font-display text-lg text-ink">Dag afsluiten</h2>
+        <h2 className="font-display text-lg text-ink">Even afronden</h2>
       </div>
       <p className="text-sm text-ink-soft mb-3">
-        Even terugkijken op vandaag — kort, bewust, zonder oordeel.
+        Kort terugkijken — makkelijk en zonder oordeel. Niet alles hoeft aangevinkt.
       </p>
 
       <ul className="flex flex-col gap-2 mb-4">
@@ -257,7 +261,7 @@ export function DayCloseCard({
       <div className="rounded-2xl bg-surface/65 px-3.5 py-3.5 mb-3">
         <div className="flex items-center gap-2 mb-2">
           <Heart className="h-3.5 w-3.5 text-sage-dark shrink-0" strokeWidth={1.75} />
-          <p className="text-sm font-medium text-ink">Waar ben je vandaag dankbaar voor?</p>
+          <p className="text-sm font-medium text-ink">Wat neem je mee van vandaag?</p>
         </div>
         {gratitudeSaved ? (
           <p className="text-sm text-ink leading-relaxed">{gratitude.trim()}</p>
@@ -268,8 +272,8 @@ export function DayCloseCard({
               onChange={(e) => setGratitude(e.target.value)}
               rows={2}
               maxLength={280}
-              placeholder="Iets kleins mag ook — een moment, een persoon, een gevoel…"
-              aria-label="Dankbaarheid vandaag"
+              placeholder="Iets kleins mag ook — een moment, een inzicht, een gevoel…"
+              aria-label="Wat neem je mee van vandaag"
               className="w-full rounded-xl border border-line/60 bg-surface px-3 py-2.5 text-base text-ink placeholder:text-ink-soft/80 resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/40 min-h-[2.75rem]"
             />
             {gratitude.trim() && (
@@ -340,7 +344,7 @@ export function DayCloseCard({
         disabled={isPending}
         className="w-full inline-flex items-center justify-center min-h-11 rounded-xl bg-sage-fill text-sm font-medium text-white touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 motion-safe:active:scale-[0.99] transition-transform disabled:opacity-70"
       >
-        {isPending ? "Even bewaren…" : "Markeer dag als afgesloten"}
+        {isPending ? "Even bewaren…" : "Dag laten rusten"}
       </button>
     </div>
   )

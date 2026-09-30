@@ -48,13 +48,13 @@ function buildMilestones(stats: {
   const milestones: Milestone[] = []
 
   if (stats.totalCheckins >= 1) milestones.push({ id: "first-checkin", icon: Sprout, label: "Je eerste check-in" })
-  if (stats.totalWorkoutsCompleted >= 1) milestones.push({ id: "first-workout", icon: Footprints, label: "Je eerste training afgerond" })
+  if (stats.totalWorkoutsCompleted >= 1) milestones.push({ id: "first-workout", icon: Footprints, label: "Eerste keer voor jezelf bewogen" })
   if (stats.totalWorkoutsCompleted >= 5) milestones.push({ id: "5-workouts", icon: Dumbbell, label: "5 trainingen voor jezelf gedaan" })
   if (stats.totalWorkoutsCompleted >= 10) milestones.push({ id: "10-workouts", icon: Flame, label: "10 trainingen voor jezelf gedaan" })
   if (stats.totalWorkoutsCompleted >= 25) milestones.push({ id: "25-workouts", icon: Trophy, label: "25 trainingen — dit heb je zelf opgebouwd" })
-  if (stats.bestStreak >= 3) milestones.push({ id: "streak-3", icon: Zap, label: "3 dagen op rij ingecheckt" })
-  if (stats.bestStreak >= 7) milestones.push({ id: "streak-7", icon: Star, label: "Een hele week op rij ingecheckt" })
-  if (stats.bestStreak >= 30) milestones.push({ id: "streak-30", icon: Crown, label: "30 dagen op rij — knap volgehouden" })
+  if (stats.bestStreak >= 3) milestones.push({ id: "streak-3", icon: Zap, label: "3 dagen bij jezelf geweest" })
+  if (stats.bestStreak >= 7) milestones.push({ id: "streak-7", icon: Star, label: "Een week lang even bij jezelf" })
+  if (stats.bestStreak >= 30) milestones.push({ id: "streak-30", icon: Crown, label: "30 dagen bij jezelf — knap volgehouden" })
   if (stats.favoriteCount >= 1) milestones.push({ id: "first-favorite", icon: Heart, label: "Je eerste favoriet opgeslagen" })
 
   return milestones

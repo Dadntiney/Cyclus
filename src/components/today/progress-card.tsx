@@ -47,7 +47,7 @@ export function ProgressCard({
       )}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <p className="text-sm text-ink-soft">Check-in reeks</p>
+          <p className="text-sm text-ink-soft">Dagen bij jezelf</p>
           <p className="text-sm font-medium text-ink">
             {streak > 0 ? `${streak} ${streak === 1 ? "dag" : "dagen"}` : "Begin vandaag"}
           </p>
@@ -57,8 +57,8 @@ export function ProgressCard({
           role="img"
           aria-label={
             streak > 0
-              ? `Check-in reeks van ${streak} ${streak === 1 ? "dag" : "dagen"}`
-              : "Nog geen check-in reeks"
+              ? `${streak} ${streak === 1 ? "dag" : "dagen"} waarop je even bij jezelf was`
+              : "Nog geen dagen bij jezelf genoteerd"
           }
         >
           {Array.from({ length: 7 }).map((_, i) => {

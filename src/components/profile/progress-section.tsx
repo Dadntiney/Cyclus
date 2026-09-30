@@ -30,10 +30,13 @@ export function ProgressSection({
         Geen scores, geen druk — gewoon een overzicht van wat je al hebt opgebouwd.
       </p>
       <div className="grid grid-cols-2 gap-2.5 mb-4">
-        <StatTile value={totalWorkoutsCompleted} label="trainingen voltooid" />
+        <StatTile value={totalWorkoutsCompleted} label="voor jezelf gedaan" />
         <StatTile value={totalCheckins} label="check-ins" />
-        <StatTile value={currentStreak} label={currentStreak === 1 ? "dag op rij" : "dagen op rij"} />
-        <StatTile value={bestStreak} label="langste reeks" />
+        <StatTile
+          value={currentStreak}
+          label={currentStreak === 1 ? "dag bij jezelf" : "dagen bij jezelf"}
+        />
+        <StatTile value={bestStreak} label="langste bij jezelf" />
       </div>
 
       {milestones.length > 0 ? (
@@ -53,8 +56,8 @@ export function ProgressSection({
         </>
       ) : (
         <p className="text-sm text-ink-soft">
-          Jouw reis begint hier. Je eerste mijlpaal verschijnt zodra je een check-in doet of een
-          training afrondt.
+          Jouw reis begint hier. Je eerste mijlpaal verschijnt zodra je een check-in doet of iets
+          voor jezelf doet.
         </p>
       )}
     </Card>

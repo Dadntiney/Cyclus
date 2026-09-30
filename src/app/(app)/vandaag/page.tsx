@@ -9,12 +9,15 @@ import { PhaseContextCard } from "@/components/today/phase-context-card"
 import { CycleSetupCard } from "@/components/today/cycle-setup-card"
 import { CheckinForm } from "@/components/today/checkin-form"
 import { DayCloseCard } from "@/components/today/day-close-card"
+import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { greeting } from "@/lib/greeting"
 import { getSavedMomentTexts } from "@/lib/data/moments"
+import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
+import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 
 const PHASE_TONE: Record<CyclePhase, { bg: string; text: string }> = {
   menstruatie: {
@@ -47,13 +50,14 @@ const PHASE_TAGLINE: Record<CyclePhase, string> = {
  *
  * Flow (top → bottom):
  * 1. Hello + phase context (menstruatie start/stop folded in)
- * 2. Empty check-in first when needed (so roadmap can become personal)
- * 3. Optional vooruitkijken / hormone roadmap (“wat je lichaam kan gebruiken”)
- * 4. Plan: bewegen → maaltijden → boodschappen → voor je hoofd
- * 5. Tussendoortip (lichte food-tip onder het plan)
- * 6. Check-in aanpassen when already filled
- * 7. Optional sleep / meds
- * 8. Dag afsluiten
+ * 2. Soft Buddy “even onthouden” (optional, frequency-gated)
+ * 3. Empty check-in first when needed (so roadmap can become personal)
+ * 4. Optional vooruitkijken / hormone roadmap (“wat je lichaam kan gebruiken”)
+ * 5. Plan: bewegen → maaltijden → boodschappen → voor je hoofd
+ * 6. Tussendoortip (lichte food-tip onder het plan)
+ * 7. Check-in aanpassen when already filled
+ * 8. Optional sleep / meds
+ * 9. Even afronden
  */
 export default async function VandaagPage() {
   const user = await getAuthedUser()
@@ -111,6 +115,20 @@ export default async function VandaagPage() {
       (checkin.stress != null && checkin.stress >= 4))
       ? dayFocus
       : null
+
+  const preferredStyles = (profile?.buddy_styles ?? []) as BuddyStyle[]
+  const showBuddyQuote = shouldShowBuddyMessage(
+    `${user.id}-${today}-vandaag-quote`,
+    profile?.buddy_message_frequency ?? null,
+    Boolean(bodyRecognition || personalizedFocus),
+  )
+  const buddyQuote = showBuddyQuote
+    ? getDailyBuddyQuote(
+        `${user.id}-${today}-vandaag`,
+        cycleEstimate?.phase ?? null,
+        preferredStyles,
+      )
+    : null
 
   const wantRecoveryRow =
     Boolean(mentalWellbeingSuggestion) ||
@@ -190,6 +208,8 @@ export default async function VandaagPage() {
         </header>
 
         <div className="flex flex-col gap-6">
+          {buddyQuote && <BuddyQuoteCard quote={buddyQuote} />}
+
           {/* Empty check-in early: understand starts after she shares how she feels */}
           {!hasMeaningfulCheckin && checkinForm}
 

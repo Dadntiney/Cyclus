@@ -108,7 +108,7 @@ export function TodayMovementCard({
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
-            <p className="text-sm font-medium text-ink">Afgerond: {completed.title}</p>
+            <p className="text-sm font-medium text-ink">Voor jezelf gedaan: {completed.title}</p>
             <p className="text-xs text-ink-soft mt-0.5">{completed.duration} minuten</p>
             {canUndoCompleted && (
               <button
@@ -164,7 +164,7 @@ export function TodayMovementCard({
       {skipped ? (
         <div>
           <p className="text-[11px] font-medium text-sage-dark mb-1">Beweging</p>
-          <p className="text-sm text-ink-soft italic">Overgeslagen</p>
+          <p className="text-sm text-ink-soft italic">Vandaag geen beweging — ook goed</p>
           <button
             type="button"
             onClick={() => applyOverride(null)}
@@ -249,7 +249,7 @@ export function TodayMovementCard({
                   className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
                 >
                   <X className="h-3.5 w-3.5" strokeWidth={1.75} />
-                  Overslaan
+                  Vandaag niet
                 </button>
                 {swapped && (
                   <button
