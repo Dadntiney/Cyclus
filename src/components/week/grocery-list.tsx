@@ -1,105 +1,212 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
+import { format, parseISO } from "date-fns"
+import { nl } from "date-fns/locale"
 import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { groceryItemSubtitle, type GroceryCategory } from "@/lib/nutrition/grocery-list"
-import { buildWeekGroceryList } from "@/lib/nutrition/week-grocery"
+import { buildDayGroceryList, buildWeekGroceryList } from "@/lib/nutrition/week-grocery"
 import { loadCheckedGroceryIds, loadWeekOverrides, saveCheckedGroceryIds } from "@/lib/client/week-plan-storage"
 import type { WeekDayPlan, WeekPlanRecipe } from "@/lib/recommendations/week-plan"
+
+export type GroceryMode = "week" | "day"
 
 export function GroceryList({
   userId,
   weekStartISO,
-  baseCategories,
+  baseWeekCategories,
   days,
   recipesById,
+  initialMode = "week",
+  initialDate = null,
 }: {
   userId: string
   weekStartISO: string
-  /** Server-computed, override-free list — shown until overrides load client-side. */
-  baseCategories: GroceryCategory[]
+  /** Server-computed week list (no overrides) — shown until client hydrates. */
+  baseWeekCategories: GroceryCategory[]
   days: WeekDayPlan[]
   recipesById: Record<string, WeekPlanRecipe>
+  initialMode?: GroceryMode
+  /** ISO date when opening in day mode; falls back to today / first day. */
+  initialDate?: string | null
 }) {
+  const router = useRouter()
+  const todayISO = days.find((d) => d.isToday)?.date ?? days[0]?.date ?? null
+  const [mode, setMode] = useState<GroceryMode>(initialMode)
+  const [selectedDate, setSelectedDate] = useState<string>(
+    () => initialDate && days.some((d) => d.date === initialDate)
+      ? initialDate
+      : todayISO ?? days[0]?.date ?? "",
+  )
   const [checked, setChecked] = useState<Set<string>>(new Set())
-  const [categories, setCategories] = useState(baseCategories)
+  const [overridesReady, setOverridesReady] = useState(false)
+  const [overrides, setOverrides] = useState(() => ({} as ReturnType<typeof loadWeekOverrides>))
 
   useEffect(() => {
-    // Reads localStorage, which isn't available during SSR — deliberately
-    // deferred to an effect so the first client render matches the
-    // server-rendered (override-free) HTML, then updates once mounted.
+    // localStorage only on client — keep SSR markup stable, then hydrate.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setChecked(loadCheckedGroceryIds(userId, weekStartISO))
-    const overrides = loadWeekOverrides(userId, weekStartISO)
-    if (Object.keys(overrides).length) {
-      const byId = new Map(Object.entries(recipesById))
-      setCategories(buildWeekGroceryList(days, overrides, byId))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- days/recipesById are stable per page load
+    setOverrides(loadWeekOverrides(userId, weekStartISO))
+    setOverridesReady(true)
   }, [userId, weekStartISO])
+
+  const byId = useMemo(() => new Map(Object.entries(recipesById)), [recipesById])
+
+  const categories = useMemo(() => {
+    if (!overridesReady) {
+      if (mode === "week") return baseWeekCategories
+      const day = days.find((d) => d.date === selectedDate)
+      return day ? buildDayGroceryList(day, {}, byId) : []
+    }
+    if (mode === "week") return buildWeekGroceryList(days, overrides, byId)
+    const day = days.find((d) => d.date === selectedDate)
+    return day ? buildDayGroceryList(day, overrides, byId) : []
+  }, [overridesReady, mode, selectedDate, days, overrides, byId, baseWeekCategories])
+
+  function syncUrl(nextMode: GroceryMode, nextDate: string) {
+    const params = new URLSearchParams()
+    if (nextMode === "day") {
+      params.set("modus", "dag")
+      if (nextDate) params.set("dag", nextDate)
+    }
+    const qs = params.toString()
+    router.replace(qs ? `/deze-week/boodschappen?${qs}` : "/deze-week/boodschappen", { scroll: false })
+  }
+
+  function selectMode(next: GroceryMode) {
+    setMode(next)
+    syncUrl(next, selectedDate)
+  }
+
+  function selectDay(date: string) {
+    setSelectedDate(date)
+    setMode("day")
+    syncUrl("day", date)
+  }
 
   function toggle(id: string) {
     setChecked((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
+      // Shared across week ↔ day — same item ids, one checklist.
       saveCheckedGroceryIds(userId, weekStartISO, next)
       return next
     })
   }
 
-  if (!categories.length) {
-    return (
-      <p className="text-sm text-ink-soft">
-        Nog geen boodschappen — zodra je weekplanning maaltijden bevat, verschijnen ze hier automatisch.
-      </p>
-    )
-  }
-
   return (
     <div className="flex flex-col gap-5">
-      {categories.map((cat) => (
-        <div key={cat.category}>
-          <h2 className="font-display text-base text-ink mb-2">{cat.category}</h2>
-          <div className="rounded-3xl bg-sage-soft/50 divide-y divide-sage/20 overflow-hidden">
-            {cat.items.map((item) => {
-              const isChecked = checked.has(item.id)
-              const subtitle = groceryItemSubtitle(item)
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => toggle(item.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left touch-manipulation"
-                >
-                  <span
-                    className={cn(
-                      "shrink-0 h-11 w-11 rounded-xl border flex items-center justify-center transition-colors",
-                      isChecked ? "bg-sage-fill border-sage-dark" : "border-line",
-                    )}
+      <div
+        className="inline-flex self-start rounded-2xl bg-sage-soft/60 p-1"
+        role="tablist"
+        aria-label="Boodschappenweergave"
+      >
+        {(
+          [
+            { id: "week" as const, label: "Week" },
+            { id: "day" as const, label: "Dag" },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={mode === tab.id}
+            onClick={() => selectMode(tab.id)}
+            className={cn(
+              "min-h-11 px-4 rounded-xl text-sm font-medium touch-manipulation transition-colors",
+              mode === tab.id ? "bg-surface text-ink shadow-sm" : "text-ink-soft",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {mode === "day" && (
+        <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+          {days.map((d) => {
+            const selected = d.date === selectedDate
+            return (
+              <button
+                key={d.date}
+                type="button"
+                onClick={() => selectDay(d.date)}
+                aria-pressed={selected}
+                aria-label={`${d.weekday} ${format(parseISO(d.date), "d MMMM", { locale: nl })}${d.isToday ? ", vandaag" : ""}`}
+                className={cn(
+                  "flex flex-col items-center gap-1 rounded-2xl px-1 py-2.5 min-h-11 touch-manipulation transition-colors",
+                  selected ? "bg-sage-fill text-white" : "bg-sage-soft/50 text-ink",
+                )}
+              >
+                <span className="text-[10px] font-medium uppercase opacity-80">{d.weekdayShort}</span>
+                <span className="text-sm font-semibold">{format(parseISO(d.date), "d")}</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      <p className="text-sm text-ink-soft -mt-1">
+        {mode === "week"
+          ? "Alles voor je weekplanning. Vink af wat je al in huis hebt of hebt gehaald."
+          : selectedDate
+            ? `Alleen voor ${format(parseISO(selectedDate), "EEEE d MMMM", { locale: nl })}${selectedDate === todayISO ? " (vandaag)" : ""}.`
+            : "Kies een dag."}
+      </p>
+
+      {!categories.length ? (
+        <p className="text-sm text-ink-soft">
+          {mode === "day"
+            ? "Geen maaltijden op deze dag — of ze zijn overgeslagen."
+            : "Nog geen boodschappen — zodra je weekplanning maaltijden bevat, verschijnen ze hier automatisch."}
+        </p>
+      ) : (
+        categories.map((cat) => (
+          <div key={cat.category}>
+            <h2 className="font-display text-base text-ink mb-2">{cat.category}</h2>
+            <div className="rounded-3xl bg-sage-soft/50 divide-y divide-sage/20 overflow-hidden">
+              {cat.items.map((item) => {
+                const isChecked = checked.has(item.id)
+                const subtitle = groceryItemSubtitle(item, mode)
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => toggle(item.id)}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-left touch-manipulation"
                   >
-                    {isChecked && <Check className="h-4 w-4 text-white" strokeWidth={2.5} />}
-                  </span>
-                  <span className="min-w-0 flex-1">
                     <span
                       className={cn(
-                        "block text-sm font-medium",
-                        isChecked ? "text-ink-soft/60 line-through" : "text-ink",
+                        "shrink-0 h-11 w-11 rounded-xl border flex items-center justify-center transition-colors",
+                        isChecked ? "bg-sage-fill border-sage-dark" : "border-line",
                       )}
                     >
-                      {item.name}
+                      {isChecked && <Check className="h-4 w-4 text-white" strokeWidth={2.5} />}
                     </span>
-                    {subtitle && (
-                      <span className="block text-xs text-ink-soft mt-0.5">{subtitle}</span>
-                    )}
-                  </span>
-                </button>
-              )
-            })}
+                    <span className="min-w-0 flex-1">
+                      <span
+                        className={cn(
+                          "block text-sm font-medium",
+                          isChecked ? "text-ink-soft/60 line-through" : "text-ink",
+                        )}
+                      >
+                        {item.name}
+                      </span>
+                      {subtitle && (
+                        <span className="block text-xs text-ink-soft mt-0.5">{subtitle}</span>
+                      )}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   )
 }

@@ -139,9 +139,15 @@ export function buildGroceryList(recipeIngredients: unknown[]): GroceryCategory[
   }))
 }
 
-export function groceryItemSubtitle(item: GroceryItem): string | null {
-  if (item.count > 1) {
+export function groceryItemSubtitle(
+  item: GroceryItem,
+  scope: "week" | "day" = "week",
+): string | null {
+  if (scope === "week" && item.count > 1) {
     return `${item.count}× nodig deze week`
+  }
+  if (scope === "day" && item.count > 1) {
+    return `${item.count}× vandaag`
   }
   if (item.quantities.length) {
     return item.quantities[0]

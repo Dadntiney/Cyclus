@@ -258,19 +258,29 @@ export function WeekView({
       </div>
 
       {nutritionEnabled && (
-        <Link
-          href="/deze-week/boodschappen"
-          className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
-        >
-          <span className="inline-flex items-center gap-2.5 text-sm font-medium text-ink">
-            <ShoppingCart className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-            Boodschappen voor deze week
-            {groceryItemCount > 0 && (
-              <span className="text-xs text-ink-soft">({groceryItemCount})</span>
-            )}
-          </span>
-          <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
-        </Link>
+        <div className="flex flex-col gap-1.5">
+          <Link
+            href="/deze-week/boodschappen"
+            className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
+          >
+            <span className="inline-flex items-center gap-2.5 text-sm font-medium text-ink">
+              <ShoppingCart className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
+              Boodschappen voor deze week
+              {groceryItemCount > 0 && (
+                <span className="text-xs text-ink-soft">({groceryItemCount})</span>
+              )}
+            </span>
+            <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
+          </Link>
+          {day.isToday && (
+            <Link
+              href="/deze-week/boodschappen?modus=dag"
+              className="text-xs font-medium text-sage-dark px-1 min-h-11 inline-flex items-center touch-manipulation"
+            >
+              Alleen vandaag →
+            </Link>
+          )}
+        </div>
       )}
 
       {phaseContent && (
