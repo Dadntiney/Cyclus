@@ -205,10 +205,12 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
       ? {
           estimate: todayPlan.cycleEstimate,
           predictedMenstruation: todayPlan.predictedMenstruation,
+          menstruationSoftHint: todayPlan.menstruationSoftHint,
         }
       : resolvePresentedForDate(today, effectiveCycleProfile, loggedMenstruationDates)
   const dayCycleEstimate = presentedToday.estimate
   const predictedMenstruation = presentedToday.predictedMenstruation
+  const menstruationSoftHint = presentedToday.menstruationSoftHint
 
   const menstruationDay = activePeriodStart
     ? differenceInCalendarDays(parseISO(today), parseISO(activePeriodStart)) + 1
@@ -393,6 +395,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     checkin,
     cycleEstimate: dayCycleEstimate,
     predictedMenstruation,
+    menstruationSoftHint,
     isMenstruationActive: activePeriodStart !== null,
     menstruationDay,
     recommendation,

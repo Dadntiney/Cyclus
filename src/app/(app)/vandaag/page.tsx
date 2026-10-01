@@ -68,6 +68,7 @@ export default async function VandaagPage() {
     isMenstruationActive,
     menstruationDay,
     predictedMenstruation,
+    menstruationSoftHint,
     recommendation,
     bodyRecognition,
     anticipation,
@@ -182,6 +183,7 @@ export default async function VandaagPage() {
                 isMenstruationActive={isMenstruationActive}
                 menstruationDay={menstruationDay}
                 predictedMenstruation={predictedMenstruation}
+                menstruationSoftHint={menstruationSoftHint}
               />
             </div>
           ) : hasCycle && isMenstruationActive && menstruationDay ? (

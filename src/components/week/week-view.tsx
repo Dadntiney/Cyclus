@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import {
   formatPresentedCycleHeadline,
+  softMenstruationNote,
   PREDICTED_MENSTRUATION_NOTE,
 } from "@/lib/cycle/presented-estimate"
 import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
@@ -125,12 +126,15 @@ export function WeekView({
               day.date,
               activePeriodStart,
               day.predictedMenstruation,
+              day.menstruationSoftHint,
             )}
           </span>
           <span className="text-ink-soft">
             {" — "}
             {day.predictedMenstruation
-              ? (day.anticipationNote ?? PREDICTED_MENSTRUATION_NOTE)
+              ? (day.anticipationNote ??
+                  softMenstruationNote(day.menstruationSoftHint) ??
+                  PREDICTED_MENSTRUATION_NOTE)
               : (day.anticipationNote ?? phaseContent.shortDescription)}
           </span>
         </p>

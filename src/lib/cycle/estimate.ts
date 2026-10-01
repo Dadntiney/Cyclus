@@ -83,18 +83,24 @@ export function estimateCycle(
 }
 
 /**
- * Calendar math may land on menstruatie day 1 before she has actually
- * started. Soft planning may still tilt gently; presentation must not
- * claim menstruatie until she starts (`active_period_start`) or that
- * date is already logged as bleed.
+ * Calendar math may land on menstruatie before she has actually started,
+ * or still claim it after she tapped stop (today stays in cycle_logs).
+ *
+ * Soft planning may still tilt gently; presentation must not claim
+ * menstruatie for today/future unless Bezig (`active_period_start`).
+ * Logged bleed only confirms *past* days in the week view.
  */
 export function isMenstruationConfirmedForDate(
   dateISO: string,
   activePeriodStart: string | null,
   loggedMenstruationDates?: ReadonlySet<string> | null,
+  todayISO?: string | null,
 ): boolean {
-  if (loggedMenstruationDates?.has(dateISO)) return true
   if (activePeriodStart && dateISO >= activePeriodStart) return true
+  // Today / future: only an active start counts — after "stoppen", today
+  // is logged but she is no longer Bezig.
+  if (todayISO && dateISO >= todayISO) return false
+  if (loggedMenstruationDates?.has(dateISO)) return true
   return false
 }
 
@@ -109,10 +115,18 @@ export function resolvePresentedCycleEstimate(
   activePeriodStart: string | null,
   averageCycleLength?: number | null,
   loggedMenstruationDates?: ReadonlySet<string> | null,
+  todayISO?: string | null,
 ): CycleEstimate | null {
   if (!estimate) return null
   if (estimate.phase !== "menstruatie") return estimate
-  if (isMenstruationConfirmedForDate(dateISO, activePeriodStart, loggedMenstruationDates)) {
+  if (
+    isMenstruationConfirmedForDate(
+      dateISO,
+      activePeriodStart,
+      loggedMenstruationDates,
+      todayISO,
+    )
+  ) {
     return estimate
   }
 

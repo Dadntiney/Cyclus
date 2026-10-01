@@ -6,7 +6,10 @@ import Link from "next/link"
 import { ChevronRight, Droplet } from "lucide-react"
 import { startMenstruationPeriod, stopMenstruationPeriod } from "@/lib/actions/cycle"
 import type { CyclePhase } from "@/lib/cycle/estimate"
-import { PREDICTED_MENSTRUATION_NOTE } from "@/lib/cycle/presented-estimate"
+import {
+  softMenstruationNote,
+  type MenstruationSoftHint,
+} from "@/lib/cycle/presented-estimate"
 import { cn } from "@/lib/utils"
 
 const PHASE_TONE: Record<CyclePhase, { bg: string; text: string }> = {
@@ -32,8 +35,8 @@ const PHASE_TONE: Record<CyclePhase, { bg: string; text: string }> = {
  * One phase surface on Vandaag: day + label + short line, with menstruatie
  * start/stop folded in — never a second duplicate card.
  *
- * When bleed is only predicted (not started), skip the big cycle-day number —
- * that digit feels like a claim; soft “kan komen” copy is clearer.
+ * Soft states (predicted / just stopped): no big cycle-day digit — that
+ * number only means something while Bezig.
  */
 export function PhaseContextCard({
   phase,
@@ -44,6 +47,7 @@ export function PhaseContextCard({
   isMenstruationActive,
   menstruationDay,
   predictedMenstruation = false,
+  menstruationSoftHint = null,
 }: {
   phase: CyclePhase
   phaseLabel: string
@@ -53,20 +57,32 @@ export function PhaseContextCard({
   isMenstruationActive: boolean
   menstruationDay: number | null
   predictedMenstruation?: boolean
+  menstruationSoftHint?: MenstruationSoftHint
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const tone = PHASE_TONE[phase]
-  const softPredicted = predictedMenstruation && !isMenstruationActive
+  const softHint =
+    menstruationSoftHint ??
+    (predictedMenstruation && !isMenstruationActive ? "predicted" : null)
+  const softMode = Boolean(softHint) && !isMenstruationActive
 
-  const title = softPredicted
+  const title = softHint === "predicted"
     ? `${phaseLabel} · kan komen`
-    : isMenstruationActive && menstruationDay
-      ? `${phaseLabel} · dag ${menstruationDay}`
-      : phaseLabel
+    : softHint === "ended"
+      ? phaseLabel
+      : isMenstruationActive && menstruationDay
+        ? `${phaseLabel} · dag ${menstruationDay}`
+        : phaseLabel
 
-  const line = softPredicted ? PREDICTED_MENSTRUATION_NOTE : subtitle
+  const line = softMode ? (softMenstruationNote(softHint) ?? subtitle) : subtitle
+
+  const statusLabel = isMenstruationActive
+    ? "Bezig"
+    : softHint === "ended"
+      ? "Gestopt"
+      : "Nog niet gestart"
 
   function handleMenstruation() {
     setError(null)
@@ -88,7 +104,7 @@ export function PhaseContextCard({
         href="/cyclus/vandaag"
         className="flex items-center gap-3 px-3.5 py-2.5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
       >
-        {!softPredicted && (
+        {!softMode && (
           <span
             className={cn(
               "font-display text-xl leading-none tabular-nums shrink-0",
@@ -118,7 +134,6 @@ export function PhaseContextCard({
               isMenstruationActive ? "text-danger font-medium" : "text-ink-soft",
             )}
           >
-            {/* Freestanding droplet — room to breathe, no glow halo behind */}
             <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center overflow-visible">
               <Droplet
                 className={cn(
@@ -132,7 +147,7 @@ export function PhaseContextCard({
                 aria-hidden
               />
             </span>
-            {isMenstruationActive ? "Bezig" : "Nog niet gestart"}
+            {statusLabel}
           </span>
           <button
             type="button"

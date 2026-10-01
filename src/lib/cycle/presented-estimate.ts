@@ -5,6 +5,7 @@ import {
   resolvePresentedCycleEstimate,
   type CycleEstimate,
 } from "@/lib/cycle/estimate"
+import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
 
 export type CycleProfileForPresentation = Pick<
   Tables<"cycle_profiles">,
@@ -19,6 +20,12 @@ export type CycleProfileForPresentation = Pick<
 export const PREDICTED_MENSTRUATION_NOTE =
   "Menstruatie kan rond nu komen — we gaan er pas vanuit als jij start."
 
+/** After stoppen: today may still be logged, but Bezig is off. */
+export const ENDED_MENSTRUATION_NOTE =
+  "Je hebt gestopt. Start opnieuw wanneer het weer begint."
+
+export type MenstruationSoftHint = "predicted" | "ended" | null
+
 export function loggedMenstruationDateSet(
   logs: ReadonlyArray<{ date: string; menstruation: boolean | null }>,
 ): Set<string> {
@@ -27,17 +34,22 @@ export function loggedMenstruationDateSet(
 
 /**
  * One code path for Deze week, Vandaag, and recommendations: raw calendar
- * estimate, then gate predicted menstruatie until she starts or logs bleed.
+ * estimate, then gate menstruatie until she is Bezig (active start).
  */
 export function resolvePresentedForDate(
   dateISO: string,
   cycleProfile: CycleProfileForPresentation | null,
   loggedMenstruationDates?: ReadonlySet<string> | null,
-): { estimate: CycleEstimate | null; predictedMenstruation: boolean } {
+): {
+  estimate: CycleEstimate | null
+  predictedMenstruation: boolean
+  menstruationSoftHint: MenstruationSoftHint
+} {
   if (!cycleProfile) {
-    return { estimate: null, predictedMenstruation: false }
+    return { estimate: null, predictedMenstruation: false, menstruationSoftHint: null }
   }
 
+  const today = amsterdamTodayISO()
   const date = new Date(`${dateISO}T12:00:00`)
   const raw = estimateCycle(
     cycleProfile.last_period_start,
@@ -52,25 +64,48 @@ export function resolvePresentedForDate(
     cycleProfile.active_period_start ?? null,
     cycleProfile.average_cycle_length,
     loggedMenstruationDates,
+    today,
   )
-  const predictedMenstruation =
-    raw?.phase === "menstruatie" && estimate?.phase !== "menstruatie"
 
-  return { estimate, predictedMenstruation }
+  const softUnconfirmed =
+    raw?.phase === "menstruatie" && estimate?.phase !== "menstruatie"
+  const menstruationSoftHint: MenstruationSoftHint = !softUnconfirmed
+    ? null
+    : loggedMenstruationDates?.has(dateISO)
+      ? "ended"
+      : "predicted"
+
+  return {
+    estimate,
+    // Keep flag for existing week/UI soft mode (no hard day digit).
+    predictedMenstruation: softUnconfirmed,
+    menstruationSoftHint,
+  }
+}
+
+export function softMenstruationNote(hint: MenstruationSoftHint): string | null {
+  if (hint === "ended") return ENDED_MENSTRUATION_NOTE
+  if (hint === "predicted") return PREDICTED_MENSTRUATION_NOTE
+  return null
 }
 
 /**
  * Headline for week + Vandaag.
- * Predicted bleed: no hard cyclusdag — “kan komen” until she starts.
+ * Soft bleed states: no hard cyclusdag — “kan komen” / ended copy instead.
  */
 export function formatPresentedCycleHeadline(
   estimate: CycleEstimate,
   dateISO: string,
   activePeriodStart: string | null,
   predictedMenstruation = false,
+  menstruationSoftHint: MenstruationSoftHint = null,
 ): string {
   const phaseLabel = estimate.phaseLabel
-  if (predictedMenstruation) {
+  const hint = menstruationSoftHint ?? (predictedMenstruation ? "predicted" : null)
+  if (hint === "ended") {
+    return `${phaseLabel}`
+  }
+  if (hint === "predicted") {
     return `${phaseLabel} · kan komen`
   }
   if (estimate.phase === "menstruatie" && activePeriodStart && dateISO >= activePeriodStart) {
