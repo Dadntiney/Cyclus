@@ -33,6 +33,7 @@ export function BackButton({
   return (
     <Link
       href={href}
+      transitionTypes={["nav-back"]}
       onClick={(e) => {
         if (hasNavigatedInApp()) {
           e.preventDefault()

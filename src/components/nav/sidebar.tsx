@@ -1,8 +1,10 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
+import { useLinkStatus } from "next/link"
 import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { NAV_ITEMS } from "./nav-items"
@@ -12,13 +14,39 @@ import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
 const navLinkFocus =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset"
 
+function NavPendingHint() {
+  const { pending } = useLinkStatus()
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "ml-auto h-1.5 w-1.5 rounded-full bg-sage shrink-0",
+        "opacity-0 transition-opacity duration-150",
+        pending && "opacity-70 motion-safe:animate-pulse",
+      )}
+    />
+  )
+}
+
 export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
   const pathname = usePathname()
+  const [optimisticHref, setOptimisticHref] = useState<string | null>(null)
+
+  useEffect(() => {
+    setOptimisticHref(null)
+  }, [pathname])
+
+  const displayPath = optimisticHref ?? pathname
 
   return (
-    <aside className="hidden md:flex md:flex-col md:w-64 xl:w-72 md:shrink-0 border-r border-line bg-surface/60 px-4 py-6">
+    <aside
+      className="hidden md:flex md:flex-col md:w-64 xl:w-72 md:shrink-0 border-r border-line bg-surface/60 px-4 py-6"
+      style={{ viewTransitionName: "app-sidebar" }}
+    >
       <Link
         href="/vandaag"
+        prefetch
+        transitionTypes={["tab"]}
         className="font-display text-xl text-sage-dark px-2 mb-8 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
       >
         {APP_DISPLAY_NAME}
@@ -27,15 +55,18 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
       <nav className="flex-1" aria-label="Hoofdnavigatie">
         <ul className="flex flex-col gap-1">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || pathname.startsWith(`${href}/`)
+            const active = displayPath === href || displayPath.startsWith(`${href}/`)
             const isProfile = href === "/profiel"
             return (
               <li key={href}>
                 <Link
                   href={href}
+                  prefetch
+                  transitionTypes={["tab"]}
                   aria-current={active ? "page" : undefined}
+                  onClick={() => setOptimisticHref(href)}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150",
                     navLinkFocus,
                     active
                       ? "bg-sage-soft text-sage-dark"
@@ -50,6 +81,7 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
                     <Icon className="h-4.5 w-4.5" strokeWidth={active ? 2.25 : 1.75} />
                   )}
                   {label}
+                  <NavPendingHint />
                 </Link>
               </li>
             )

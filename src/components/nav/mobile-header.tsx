@@ -28,6 +28,7 @@ export function MobileHeader() {
         opacity: 1,
         isolation: "isolate",
         transform: "translateZ(0)",
+        viewTransitionName: "app-mobile-header",
         paddingTop: "max(1rem, env(safe-area-inset-top))",
         paddingLeft: "max(1.5rem, env(safe-area-inset-left))",
         paddingRight: "max(1.5rem, env(safe-area-inset-right))",
