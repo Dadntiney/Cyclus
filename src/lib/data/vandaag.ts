@@ -2,7 +2,10 @@ import { cache } from "react"
 import { differenceInCalendarDays, format, parseISO, startOfWeek, subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
-import { estimateCycle, resolvePresentedCycleEstimate } from "@/lib/cycle/estimate"
+import {
+  loggedMenstruationDateSet,
+  resolvePresentedForDate,
+} from "@/lib/cycle/presented-estimate"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
 import {
   computeCycleLengthTrend,
@@ -179,30 +182,27 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
   const personalSleepPattern = sleepEnabled ? personalSleepContext.personalSleepPattern : null
 
   const activePeriodStart = cycleProfile?.active_period_start ?? null
-  const cycleHistory = computeCycleHistory(
-    withActivePeriod(
-      cycleLogs.map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
-      activePeriodStart,
-      today,
-    ),
-  )
-  const cycleEstimate = cycleProfile
-    ? estimateCycle(
-        getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory),
-        cycleProfile.average_cycle_length,
-        cycleProfile.has_cycle,
-        undefined,
-        cycleProfile.average_period_length,
-      )
-    : null
-  // Prefer the week-plan estimate for today when present — same phase as Deze week.
-  // Always gate predicted menstruatie behind an active start (or logged bleed).
-  const dayCycleEstimate = resolvePresentedCycleEstimate(
-    todayPlan?.cycleEstimate ?? cycleEstimate,
-    today,
+  const logsWithActive = withActivePeriod(
+    cycleLogs.map((l) => ({ date: l.date, menstruation: l.menstruation, symptoms: l.symptoms })),
     activePeriodStart,
-    cycleProfile?.average_cycle_length,
+    today,
   )
+  const cycleHistory = computeCycleHistory(logsWithActive)
+  const loggedMenstruationDates = loggedMenstruationDateSet(logsWithActive)
+  const effectiveLastStart = cycleProfile
+    ? getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory)
+    : null
+  const effectiveCycleProfile = cycleProfile
+    ? {
+        ...cycleProfile,
+        last_period_start: effectiveLastStart,
+      }
+    : null
+
+  // Same row as Deze week when the week plan loaded — never re-resolve differently.
+  const dayCycleEstimate =
+    todayPlan?.cycleEstimate ??
+    resolvePresentedForDate(today, effectiveCycleProfile, loggedMenstruationDates).estimate
 
   const menstruationDay = activePeriodStart
     ? differenceInCalendarDays(parseISO(today), parseISO(activePeriodStart)) + 1
@@ -328,9 +328,6 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     coOccurrences: computeSymptomCoOccurrences(checkinsForPatterns),
     todaySymptoms: checkin?.symptoms ?? [],
   })
-  const effectiveLastStart = cycleProfile
-    ? getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory)
-    : null
   const anticipation = composeAnticipation({
     lastPeriodStart: effectiveLastStart,
     averageCycleLength: cycleProfile?.average_cycle_length ?? null,

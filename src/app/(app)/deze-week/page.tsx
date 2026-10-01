@@ -25,6 +25,7 @@ export default async function DezeWeekPage() {
       <WeekView
         userId={user.id}
         weekStartISO={ctx.weekStartISO}
+        activePeriodStart={ctx.activePeriodStart}
         days={ctx.days}
         recipePoolBySlot={ctx.recipePoolBySlot}
         workoutPool={ctx.workouts}

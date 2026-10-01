@@ -23,6 +23,7 @@ import { filterRecipesByCuisinePrefs } from "@/lib/nutrition/cuisine"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
 import { computePhaseSymptomInsights } from "@/lib/cycle/patterns"
 import { composeAnticipation } from "@/lib/cycle/anticipation"
+import { loggedMenstruationDateSet } from "@/lib/cycle/presented-estimate"
 import type { Tables } from "@/types/database"
 
 export type CompletedWorkoutInfo = {
@@ -38,6 +39,8 @@ export interface WeekPlanContext {
   weekStart: Date
   weekStartISO: string
   profile: Tables<"profiles">
+  /** For UI sync with Vandaag menstruatie · dag N while Bezig. */
+  activePeriodStart: string | null
   days: WeekDayPlan[]
   workouts: WeekPlanWorkout[]
   recipes: WeekPlanRecipe[]
@@ -95,9 +98,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
     todayISO,
   )
   const cycleHistory = computeCycleHistory(logsWithActive)
-  const loggedMenstruationDates = new Set(
-    logsWithActive.filter((l) => l.menstruation).map((l) => l.date),
-  )
+  const loggedMenstruationDates = loggedMenstruationDateSet(logsWithActive)
   const effectiveLastStart = cycleProfile
     ? getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory)
     : null
@@ -199,6 +200,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
     weekStart,
     weekStartISO,
     profile,
+    activePeriodStart: cycleProfile?.active_period_start ?? null,
     days,
     workouts: workoutRows,
     recipes: recipeRows,

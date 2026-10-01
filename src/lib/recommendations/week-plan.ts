@@ -1,11 +1,8 @@
 import { addDays, format } from "date-fns"
 import { nl } from "date-fns/locale"
 import type { Tables } from "@/types/database"
-import {
-  estimateCycle,
-  resolvePresentedCycleEstimate,
-  type CycleEstimate,
-} from "@/lib/cycle/estimate"
+import type { CycleEstimate } from "@/lib/cycle/estimate"
+import { resolvePresentedForDate } from "@/lib/cycle/presented-estimate"
 import { getPhaseContent, getDailyPhaseSnackTip, getDailyPhaseHydrationTip, type PhaseSnackTip, type PhaseHydrationTip } from "@/lib/cycle/phase-content"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
 import { lifeStagePrefersGentler } from "@/lib/recommendations/life-stage-bias"
@@ -208,32 +205,17 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
   const todayISO = format(today, "yyyy-MM-dd")
   const softDateSet = new Set(anticipationSoftDates)
   const stageGentler = lifeStagePrefersGentler(lifeStage)
-  const activePeriodStart = cycleProfile?.active_period_start ?? null
 
   const gentlerDayIndexes = new Set<number>()
   const phaseByIndex: (CycleEstimate | null)[] = []
   const predictedByIndex: boolean[] = []
   for (let i = 0; i < 7; i++) {
-    const date = addDays(weekStart, i)
-    const dateISO = format(date, "yyyy-MM-dd")
-    const rawEstimate = cycleProfile
-      ? estimateCycle(
-          cycleProfile.last_period_start,
-          cycleProfile.average_cycle_length,
-          cycleProfile.has_cycle,
-          date,
-          cycleProfile.average_period_length,
-        )
-      : null
-    const estimate = resolvePresentedCycleEstimate(
-      rawEstimate,
+    const dateISO = format(addDays(weekStart, i), "yyyy-MM-dd")
+    const { estimate, predictedMenstruation: isPredictedBleed } = resolvePresentedForDate(
       dateISO,
-      activePeriodStart,
-      cycleProfile?.average_cycle_length,
+      cycleProfile,
       loggedMenstruationDates,
     )
-    const isPredictedBleed =
-      rawEstimate?.phase === "menstruatie" && estimate?.phase !== "menstruatie"
     phaseByIndex.push(estimate)
     predictedByIndex.push(isPredictedBleed)
     if (

@@ -7,6 +7,7 @@ import { nl } from "date-fns/locale"
 import { ShoppingCart, ChevronRight, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
+import { formatPresentedCycleHeadline } from "@/lib/cycle/presented-estimate"
 import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
 import { PhaseSnackTipCard } from "@/components/cycle/phase-snack-tip-card"
 import { PhaseHydrationTipCard } from "@/components/cycle/phase-hydration-tip-card"
@@ -22,6 +23,7 @@ import type { CompletedWorkoutInfo } from "@/lib/data/week-plan-context"
 interface WeekViewProps {
   userId: string
   weekStartISO: string
+  activePeriodStart?: string | null
   days: WeekDayPlan[]
   recipePoolBySlot: Record<MealSlot, WeekPlanRecipe[]>
   workoutPool: WeekPlanWorkout[]
@@ -34,6 +36,7 @@ interface WeekViewProps {
 export function WeekView({
   userId,
   weekStartISO,
+  activePeriodStart = null,
   days,
   recipePoolBySlot,
   workoutPool,
@@ -114,9 +117,7 @@ export function WeekView({
       {phaseContent && day.cycleEstimate && (
         <p className={cn("text-sm leading-relaxed px-0.5", phaseContent.colors.text)}>
           <span className="font-medium">
-            {day.cycleEstimate.phase === "menstruatie"
-              ? `${phaseContent.label} · dag ${day.cycleEstimate.cycleDay}`
-              : phaseContent.label}
+            {formatPresentedCycleHeadline(day.cycleEstimate, day.date, activePeriodStart)}
           </span>
           <span className="text-ink-soft">
             {" — "}
@@ -137,17 +138,18 @@ export function WeekView({
           const dPhase = d.cycleEstimate ? getPhaseContent(d.cycleEstimate.phase) : null
           const selected = i === selectedIndex
           const anticipated = Boolean(d.anticipationNote)
+          const predicted = d.predictedMenstruation
           return (
             <button
               key={d.date}
               type="button"
               onClick={() => setSelectedIndex(i)}
               aria-pressed={selected}
-              aria-label={`${d.weekday} ${format(parseISO(d.date), "d MMMM", { locale: nl })}${d.isToday ? ", vandaag" : ""}${anticipated ? ", bij jou vaak zwaarder" : ""}`}
+              aria-label={`${d.weekday} ${format(parseISO(d.date), "d MMMM", { locale: nl })}${d.isToday ? ", vandaag" : ""}${predicted ? ", menstruatie kan komen" : ""}${anticipated ? ", bij jou vaak zwaarder" : ""}`}
               className={cn(
                 "flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 min-h-11 touch-manipulation transition-colors",
                 selected ? "bg-sage-fill text-white" : "bg-sage-soft/50 text-ink",
-                anticipated && !selected && "ring-1 ring-sage/40",
+                (anticipated || predicted) && !selected && "ring-1 ring-sage/40",
               )}
             >
               <span className="text-[10px] font-medium uppercase opacity-80">{d.weekdayShort}</span>
@@ -172,9 +174,11 @@ export function WeekView({
             {format(parseISO(day.date), "d MMMM", { locale: nl })}
           </span>
         </div>
-        {!day.isToday && day.anticipationNote ? (
+        {day.anticipationNote ? (
           <p className="text-xs text-ink-soft mb-2.5 leading-relaxed">
-            Bij jou vaak een zwaardere dag — plan staat iets zachter.
+            {day.predictedMenstruation
+              ? day.anticipationNote
+              : "Bij jou vaak een zwaardere dag — plan staat iets zachter."}
           </p>
         ) : (
           <div className="mb-2.5" />
