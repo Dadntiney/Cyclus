@@ -451,106 +451,25 @@ select {
     animation: page-in 0.18s ease-out both;
   }
 
+  /* Soft enter for sub-pages only — never fades to blank, no slide. */
+  .animate-page-soft {
+    animation: page-soft 0.16s ease-out both;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-pop-in,
-    .animate-page-in {
+    .animate-page-in,
+    .animate-page-soft {
       animation: none;
     }
   }
 }
 
-/* —— App-like route transitions (React ViewTransition) —— */
-::view-transition {
-  pointer-events: none;
-}
-
-::view-transition-group(app-mobile-header),
-::view-transition-group(app-bottom-nav),
-::view-transition-group(app-sidebar) {
-  animation: none;
-  z-index: 100;
-}
-
-::view-transition-old(app-mobile-header),
-::view-transition-old(app-bottom-nav),
-::view-transition-old(app-sidebar) {
-  display: none;
-}
-
-::view-transition-new(app-mobile-header),
-::view-transition-new(app-bottom-nav),
-::view-transition-new(app-sidebar) {
-  animation: none;
-}
-
-@keyframes vt-fade {
+@keyframes page-soft {
   from {
-    opacity: 0;
+    opacity: 0.92;
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes vt-slide {
-  from {
-    translate: var(--vt-slide-offset, 24px) 0;
-  }
-  to {
-    translate: 0 0;
-  }
-}
-
-/* Soft tab crossfade — no blank opacity:0 remount */
-::view-transition-old(.vt-tab) {
-  animation: 120ms ease-in both vt-fade reverse;
-}
-::view-transition-new(.vt-tab) {
-  animation: 180ms ease-out 40ms both vt-fade;
-}
-
-::view-transition-old(.vt-fade) {
-  animation: 100ms ease-in both vt-fade reverse;
-}
-::view-transition-new(.vt-fade) {
-  animation: 160ms ease-out 40ms both vt-fade;
-}
-
-::view-transition-old(.vt-forward) {
-  --vt-slide-offset: -28px;
-  animation:
-    120ms ease-in both vt-fade reverse,
-    220ms ease-in-out both vt-slide reverse;
-}
-::view-transition-new(.vt-forward) {
-  --vt-slide-offset: 28px;
-  animation:
-    180ms ease-out 60ms both vt-fade,
-    220ms ease-in-out both vt-slide;
-}
-
-::view-transition-old(.vt-back) {
-  --vt-slide-offset: 28px;
-  animation:
-    120ms ease-in both vt-fade reverse,
-    220ms ease-in-out both vt-slide reverse;
-}
-::view-transition-new(.vt-back) {
-  --vt-slide-offset: -28px;
-  animation:
-    180ms ease-out 60ms both vt-fade,
-    220ms ease-in-out both vt-slide;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(.vt-tab),
-  ::view-transition-new(.vt-tab),
-  ::view-transition-old(.vt-fade),
-  ::view-transition-new(.vt-fade),
-  ::view-transition-old(.vt-forward),
-  ::view-transition-new(.vt-forward),
-  ::view-transition-old(.vt-back),
-  ::view-transition-new(.vt-back) {
-    animation: none !important;
   }
 }

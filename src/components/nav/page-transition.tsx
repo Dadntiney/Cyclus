@@ -1,19 +1,20 @@
 "use client"
 
-import { useEffect, useRef, ViewTransition, type ReactNode } from "react"
+import { useEffect, useRef, type ReactNode } from "react"
 import { usePathname } from "next/navigation"
 import { markNavigation, ensurePopstateTracking, consumePopNavigationFlag } from "@/lib/client/navigation-depth"
 import { scrollToHash } from "@/lib/client/hash-scroll"
 
 /**
- * Soft route transitions without blanking the screen.
- * Remounting with opacity:0 felt houterig; ViewTransition crossfades
- * between screens while chrome (header/nav) stays put.
+ * Route shell: scroll/hash/depth bookkeeping + a very light enter fade.
+ * No ViewTransition crossfade/slide — that read busy and “webby” on
+ * GoFiev’s calm surfaces; tabs especially should feel near-instant.
  */
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const isFirstPathname = useRef(true)
   const cancelHashScroll = useRef<(() => void) | undefined>(undefined)
+  const isPrimaryTab = /^\/(vandaag|deze-week|cyclus|buddy|profiel)(\/|$)/.test(pathname)
 
   useEffect(() => {
     ensurePopstateTracking()
@@ -45,23 +46,11 @@ export function PageTransition({ children }: { children: ReactNode }) {
   }, [pathname])
 
   return (
-    <ViewTransition
+    <div
       key={pathname}
-      enter={{
-        tab: "vt-tab",
-        "nav-forward": "vt-forward",
-        "nav-back": "vt-back",
-        default: "vt-fade",
-      }}
-      exit={{
-        tab: "vt-tab",
-        "nav-forward": "vt-forward",
-        "nav-back": "vt-back",
-        default: "vt-fade",
-      }}
-      default="none"
+      className={isPrimaryTab ? undefined : "motion-safe:animate-page-soft"}
     >
       {children}
-    </ViewTransition>
+    </div>
   )
 }

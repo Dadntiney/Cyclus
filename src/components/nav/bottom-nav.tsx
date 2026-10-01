@@ -47,7 +47,6 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
       ref={ref}
       aria-label="Hoofdnavigatie"
       aria-hidden={keyboardOpen || undefined}
-      style={{ viewTransitionName: "app-bottom-nav" }}
       className={cn(
         "md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-line safe-bottom safe-x",
         "transition-transform duration-200 ease-out motion-reduce:transition-none",
@@ -63,7 +62,6 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
               <Link
                 href={href}
                 prefetch
-                transitionTypes={["tab"]}
                 aria-current={active ? "page" : undefined}
                 onClick={() => setOptimisticHref(href)}
                 className={cn(
