@@ -8,14 +8,13 @@ import {
   format,
   getDay,
   isSameMonth,
-  isToday,
   startOfMonth,
   subMonths,
 } from "date-fns"
 import { nl } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, X, Droplet, Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
+import { todayISO as amsterdamTodayISO, todayDate } from "@/lib/dates/amsterdam"
 import { toggleMenstruationDay, setCycleLogFlow } from "@/lib/actions/cycle"
 import { FLOW_OPTIONS } from "@/lib/constants"
 
@@ -34,7 +33,7 @@ export function Calendar({
   flowByDate: initialFlowByDate,
   trackFlowEnabled = false,
 }: CalendarProps) {
-  const [month, setMonth] = useState(() => startOfMonth(new Date()))
+  const [month, setMonth] = useState(() => startOfMonth(todayDate()))
   const [dates, setDates] = useState(initialDates)
   const [flowByDate, setFlowByDate] = useState<Map<string, string | null>>(
     initialFlowByDate ?? new Map(),
@@ -56,6 +55,8 @@ export function Calendar({
   function handleDayClick(day: Date) {
     const iso = format(day, "yyyy-MM-dd")
     if (iso > todayISO) return
+    // Ignore double-taps while this day (or another) is still saving.
+    if (pendingDate) return
     setError(null)
 
     if (trackFlowEnabled) {
@@ -177,22 +178,23 @@ export function Calendar({
           const isMenstruation = dates.has(iso)
           const flow = flowByDate.get(iso)
           const future = iso > todayISO
+          const isAmsterdamToday = iso === todayISO
           return (
             <button
               key={iso}
               type="button"
-              disabled={future}
+              disabled={future || pendingDate === iso}
               onClick={() => handleDayClick(day)}
               aria-label={`${format(day, "d MMMM yyyy", { locale: nl })}${
                 isMenstruation ? ", menstruatie — tik om uit te zetten" : ", tik om menstruatie te markeren"
-              }${isToday(day) ? ", vandaag" : ""}${future ? ", toekomst" : ""}`}
+              }${isAmsterdamToday ? ", vandaag" : ""}${future ? ", toekomst" : ""}`}
               aria-pressed={isMenstruation}
               className={cn(
                 "relative h-11 rounded-full text-sm mx-auto w-11 flex items-center justify-center transition-colors touch-manipulation",
                 isSameMonth(day, month) ? "text-ink" : "text-ink-soft/40",
                 isMenstruation && "bg-phase-menstruatie text-phase-menstruatie-text font-medium",
-                !isMenstruation && isToday(day) && "border border-sage text-sage-dark font-medium",
-                !isMenstruation && !isToday(day) && "hover:bg-cream-soft",
+                !isMenstruation && isAmsterdamToday && "border border-sage text-sage-dark font-medium",
+                !isMenstruation && !isAmsterdamToday && "hover:bg-cream-soft",
                 future && "opacity-30 cursor-not-allowed",
                 isPending && pendingDate === iso && "opacity-60",
               )}

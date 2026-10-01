@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Check, ChevronDown, ChevronUp, Loader2, Plus } from "lucide-react"
 import { RatingScale } from "@/components/ui/rating-scale"
@@ -13,7 +13,7 @@ import {
   NEED_OPTIONS,
   symptomLabel,
 } from "@/lib/constants"
-import { saveCheckin, setTodayNeeds } from "@/lib/actions/checkin"
+import { saveCheckin } from "@/lib/actions/checkin"
 import { parseSymptomDetails } from "@/lib/symptom-details"
 import type { CheckinInput, SymptomDetail } from "@/lib/validations/checkin"
 import type { Tables } from "@/types/database"
@@ -34,6 +34,41 @@ type FormState = {
 
 const DEBOUNCE_MS = 700
 const SAVED_FLASH_MS = 2000
+
+function CheckinStatusHint({
+  status,
+  errorMsg,
+  className,
+}: {
+  status: "idle" | "saving" | "saved" | "error"
+  errorMsg: string | null
+  className?: string
+}) {
+  if (status === "idle") return null
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 text-xs font-medium shrink-0 animate-pop-in",
+        status === "error" ? "text-danger" : "text-sage-dark",
+        className,
+      )}
+    >
+      {status === "saving" && (
+        <>
+          <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} />
+          Opslaan…
+        </>
+      )}
+      {status === "saved" && (
+        <>
+          <Check className="h-3 w-3" strokeWidth={3} />
+          Opgeslagen
+        </>
+      )}
+      {status === "error" && (errorMsg ?? "Niet opgeslagen")}
+    </span>
+  )
+}
 
 function checkinHasContent(checkin: Checkin | null): boolean {
   if (!checkin) return false
@@ -83,7 +118,6 @@ export function CheckinForm({
   onEditingChange?: (editing: boolean) => void
 }) {
   const router = useRouter()
-  const [, startNeedTransition] = useTransition()
 
   const [extraCustoms, setExtraCustoms] = useState<string[]>([])
   const allCustoms = useMemo(
@@ -102,12 +136,10 @@ export function CheckinForm({
 
   const [state, setState] = useState<FormState>(() => stateFromCheckin(initial))
   const stateRef = useRef(state)
-  stateRef.current = state
 
   // Filled → compact summary. Empty → light editor (energy), details closed.
   const [editing, setEditing] = useState(!checkinHasContent(initial))
   const editingRef = useRef(editing)
-  editingRef.current = editing
   const [showDetails, setShowDetails] = useState(false)
   const [customDraft, setCustomDraft] = useState("")
 
@@ -120,7 +152,18 @@ export function CheckinForm({
   const dirtyRef = useRef(false)
   const mountedRef = useRef(true)
   const onEditingChangeRef = useRef(onEditingChange)
-  onEditingChangeRef.current = onEditingChange
+
+  useEffect(() => {
+    stateRef.current = state
+  }, [state])
+
+  useEffect(() => {
+    editingRef.current = editing
+  }, [editing])
+
+  useEffect(() => {
+    onEditingChangeRef.current = onEditingChange
+  }, [onEditingChange])
 
   useEffect(() => {
     mountedRef.current = true
@@ -262,28 +305,15 @@ export function CheckinForm({
   }
 
   function toggleNeed(value: string) {
-    const current = state.needs
-    const next = (
-      current.includes(value as FormState["needs"][number])
-        ? current.filter((n) => n !== value)
-        : [...current, value]
-    ) as FormState["needs"]
-    setState((prev) => {
-      const updated = { ...prev, needs: next }
-      stateRef.current = updated
-      return updated
-    })
-    // Lightweight need write + refresh so today’s plan can reshape.
-    startNeedTransition(async () => {
-      const result = await setTodayNeeds(next)
-      if (result?.error) {
-        setErrorMsg(result.error)
-        setStatus("error")
-        return
-      }
-      if (!editingRef.current) {
-        router.refresh()
-      }
+    // Same save queue as other fields — avoids racing setTodayNeeds vs saveCheckin.
+    applyUpdate((prev) => {
+      const current = prev.needs
+      const next = (
+        current.includes(value as FormState["needs"][number])
+          ? current.filter((n) => n !== value)
+          : [...current, value]
+      ) as FormState["needs"]
+      return { ...prev, needs: next }
     })
   }
 
@@ -337,33 +367,6 @@ export function CheckinForm({
     router.refresh()
   }
 
-  function StatusHint({ className }: { className?: string }) {
-    if (status === "idle") return null
-    return (
-      <span
-        className={cn(
-          "inline-flex items-center gap-1 text-xs font-medium shrink-0 animate-pop-in",
-          status === "error" ? "text-danger" : "text-sage-dark",
-          className,
-        )}
-      >
-        {status === "saving" && (
-          <>
-            <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} />
-            Opslaan…
-          </>
-        )}
-        {status === "saved" && (
-          <>
-            <Check className="h-3 w-3" strokeWidth={3} />
-            Opgeslagen
-          </>
-        )}
-        {status === "error" && (errorMsg ?? "Niet opgeslagen")}
-      </span>
-    )
-  }
-
   // ── Compact summary ────────────────────────────────────────────────────
   if (hasAnyInput && !editing) {
     const visible = summaryChips.slice(0, 4)
@@ -380,7 +383,7 @@ export function CheckinForm({
               <h2 id="checkin-heading" className="font-display text-base text-ink leading-tight">
                 Hoe voel je je?
               </h2>
-              <StatusHint />
+              <CheckinStatusHint status={status} errorMsg={errorMsg} />
             </div>
             <div className="flex flex-wrap gap-1.5">
               {visible.map((chip) => (
@@ -421,7 +424,7 @@ export function CheckinForm({
           <h2 id="checkin-heading" className="font-display text-lg text-ink">
             Hoe voel je je?
           </h2>
-          <StatusHint />
+          <CheckinStatusHint status={status} errorMsg={errorMsg} />
         </div>
         {hasAnyInput && (
           <button

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Repeat, X, Check, ChevronDown, Moon } from "lucide-react"
 import { WorkoutImage } from "@/components/training/workout-image"
 import { Chip } from "@/components/ui/chip"
@@ -54,6 +55,7 @@ export function TodayMovementCard({
   /** Planned rest day (week program) — soft Moon row unless swapped. */
   restDay?: boolean
 }) {
+  const router = useRouter()
   const shell = embedded
     ? "px-4 pt-4 pb-3"
     : emphasis === "primary"
@@ -117,6 +119,7 @@ export function TodayMovementCard({
                 onClick={() => {
                   startTransition(async () => {
                     await undoTodaysWorkoutSession()
+                    router.refresh()
                   })
                 }}
                 className="mt-1.5 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation min-h-11"

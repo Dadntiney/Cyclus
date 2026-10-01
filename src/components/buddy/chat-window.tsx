@@ -75,6 +75,8 @@ export function ChatWindow({
       const result = await sendBuddyMessage(conversationId, trimmed)
       if (result.error) {
         setError(result.error)
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticMessage.id))
+        setInput(trimmed)
         return
       }
       if (result.conversationId) setConversationId(result.conversationId)

@@ -13,6 +13,17 @@ import type { Tables } from "@/types/database"
 
 type SleepEntry = Tables<"sleep_entries">
 
+function fieldsFromInitial(initial: SleepEntry | null) {
+  return {
+    bedtime: initial?.bedtime?.slice(0, 5) ?? "",
+    wakeTime: initial?.wake_time?.slice(0, 5) ?? "",
+    wakeFeeling: (initial?.wake_feeling ?? null) as string | null,
+    sleepQuality: (initial?.sleep_quality ?? null) as string | null,
+    wakeCount: initial?.wake_count ?? null,
+    showMore: Boolean(initial?.sleep_quality || initial?.wake_count !== null),
+  }
+}
+
 /**
  * Quick-entry sheet — bedtime, wake time and how she felt waking up are
  * always visible (the three things worth logging in a few seconds); sleep
@@ -31,14 +42,30 @@ export function SleepEntrySheet({
   initial: SleepEntry | null
 }) {
   const router = useRouter()
-  const [bedtime, setBedtime] = useState(initial?.bedtime?.slice(0, 5) ?? "")
-  const [wakeTime, setWakeTime] = useState(initial?.wake_time?.slice(0, 5) ?? "")
-  const [wakeFeeling, setWakeFeeling] = useState<string | null>(initial?.wake_feeling ?? null)
-  const [sleepQuality, setSleepQuality] = useState<string | null>(initial?.sleep_quality ?? null)
-  const [wakeCount, setWakeCount] = useState<number | null>(initial?.wake_count ?? null)
-  const [showMore, setShowMore] = useState(Boolean(initial?.sleep_quality || initial?.wake_count !== null))
+  const seed = fieldsFromInitial(initial)
+  const [bedtime, setBedtime] = useState(seed.bedtime)
+  const [wakeTime, setWakeTime] = useState(seed.wakeTime)
+  const [wakeFeeling, setWakeFeeling] = useState<string | null>(seed.wakeFeeling)
+  const [sleepQuality, setSleepQuality] = useState<string | null>(seed.sleepQuality)
+  const [wakeCount, setWakeCount] = useState<number | null>(seed.wakeCount)
+  const [showMore, setShowMore] = useState(seed.showMore)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  // When the sheet opens, resync from latest server props (avoid stale edits).
+  const [wasOpen, setWasOpen] = useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) {
+      const next = fieldsFromInitial(initial)
+      setBedtime(next.bedtime)
+      setWakeTime(next.wakeTime)
+      setWakeFeeling(next.wakeFeeling)
+      setSleepQuality(next.sleepQuality)
+      setWakeCount(next.wakeCount)
+      setShowMore(next.showMore)
+      setError(null)
+    }
+  }
 
   function handleSave() {
     setError(null)

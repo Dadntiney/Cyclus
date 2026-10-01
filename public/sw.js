@@ -3,10 +3,10 @@
 // API routes or Server Action POSTs — those must always hit the network so
 // auth state and data stay correct. Bump CACHE_NAME to invalidate old caches
 // on the next deploy.
-const CACHE_NAME = "cyclus-static-v1"
+const CACHE_NAME = "gofiev-static-v1"
 const CACHEABLE_PATH_PREFIXES = ["/_next/static/", "/icons/"]
 
-self.addEventListener("install", (event) => {
+self.addEventListener("install", () => {
   self.skipWaiting()
 })
 
@@ -52,10 +52,10 @@ self.addEventListener("push", (event) => {
   try {
     payload = event.data.json()
   } catch {
-    payload = { title: "Cyclus", body: event.data.text() }
+    payload = { title: "GoFiev", body: event.data.text() }
   }
 
-  const title = payload.title || "Cyclus"
+  const title = payload.title || "GoFiev"
   event.waitUntil(
     self.registration.showNotification(title, {
       body: payload.body,

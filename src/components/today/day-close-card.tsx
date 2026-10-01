@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import Link from "next/link"
 import { Moon, CheckCircle2, Circle, Heart, Sparkles, NotebookPen, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -47,6 +47,7 @@ export function DayCloseCard({
   const [gratitudeSaved, setGratitudeSaved] = useState(false)
   const [gratitudeError, setGratitudeError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const didInitExpandRef = useRef(false)
 
   const storageKey = `cyclus:day-closed:${date}`
   const gratitudeKey = `cyclus:day-gratitude:${date}`
@@ -72,9 +73,12 @@ export function DayCloseCard({
         setClosed(false)
         setMovementHandled(movementDone)
       }
-      // Evening (17+) opens by default; daytime stays a quiet invite.
-      setExpanded(new Date().getHours() >= 17)
-      setHydrated(true)
+      if (!didInitExpandRef.current) {
+        didInitExpandRef.current = true
+        // Evening (17+) opens once; later movementDone refreshes must not collapse.
+        setExpanded(new Date().getHours() >= 17)
+        setHydrated(true)
+      }
     }
     syncFromClient()
     window.addEventListener(WEEK_OVERRIDES_CHANGED_EVENT, syncFromClient)

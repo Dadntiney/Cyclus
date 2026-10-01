@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState, useTransition } from "react"
-import { Footprints, Salad, Brain, Leaf } from "lucide-react"
+import { Footprints, Salad, Brain } from "lucide-react"
 import { BuddyMark } from "@/components/buddy/buddy-mark"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"

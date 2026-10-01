@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { format, parseISO } from "date-fns"
 import { nl } from "date-fns/locale"
 import { NotebookPen } from "lucide-react"
@@ -19,6 +20,7 @@ type Entry = {
 }
 
 export function DiaryClient({ entries }: { entries: Entry[] }) {
+  const router = useRouter()
   const [body, setBody] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -53,6 +55,7 @@ export function DiaryClient({ entries }: { entries: Entry[] }) {
               else {
                 setBody("")
                 toast.show("Opgeslagen")
+                router.refresh()
               }
             })
           }}
@@ -81,9 +84,11 @@ export function DiaryClient({ entries }: { entries: Entry[] }) {
                   <button
                     type="button"
                     className="text-xs text-ink-soft underline min-h-11 px-1 touch-manipulation"
+                    disabled={isPending}
                     onClick={() =>
                       startTransition(async () => {
                         await deleteDiaryEntry(entry.id)
+                        router.refresh()
                       })
                     }
                   >

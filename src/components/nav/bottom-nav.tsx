@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
@@ -35,10 +35,11 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
   const { keyboardOpen } = useVisualViewportFrame()
   useMeasuredHeightVar(ref, "--bottom-nav-h", keyboardOpen)
   const [optimisticHref, setOptimisticHref] = useState<string | null>(null)
-
-  useEffect(() => {
-    setOptimisticHref(null)
-  }, [pathname])
+  const [pathForOptimistic, setPathForOptimistic] = useState(pathname)
+  if (pathname !== pathForOptimistic) {
+    setPathForOptimistic(pathname)
+    if (optimisticHref != null) setOptimisticHref(null)
+  }
 
   const displayPath = optimisticHref ?? pathname
 

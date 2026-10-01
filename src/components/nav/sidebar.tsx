@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
@@ -31,10 +31,11 @@ function NavPendingHint() {
 export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
   const pathname = usePathname()
   const [optimisticHref, setOptimisticHref] = useState<string | null>(null)
-
-  useEffect(() => {
-    setOptimisticHref(null)
-  }, [pathname])
+  const [pathForOptimistic, setPathForOptimistic] = useState(pathname)
+  if (pathname !== pathForOptimistic) {
+    setPathForOptimistic(pathname)
+    if (optimisticHref != null) setOptimisticHref(null)
+  }
 
   const displayPath = optimisticHref ?? pathname
 
