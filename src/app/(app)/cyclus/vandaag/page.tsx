@@ -5,7 +5,7 @@ import { Droplet, CalendarDays } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { todayDate, todayISO } from "@/lib/dates/amsterdam"
-import { estimateCycle } from "@/lib/cycle/estimate"
+import { resolvePresentedForDate } from "@/lib/cycle/presented-estimate"
 import {
   computeCycleHistory,
   computeSymptomFrequency,
@@ -94,13 +94,26 @@ export default async function CyclusdagPage() {
       today,
     ),
   )
-  const cycleEstimate = estimateCycle(
-    getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory),
-    cycleProfile.average_cycle_length,
-    cycleProfile.has_cycle,
-    undefined,
-    cycleProfile.average_period_length,
+  const menstruationDates = new Set(
+    (logs ?? []).filter((l) => l.menstruation).map((l) => l.date),
   )
+  const effectiveLastStart = getEffectiveLastPeriodStart(
+    cycleProfile.last_period_start,
+    cycleHistory,
+  )
+  const presented = resolvePresentedForDate(
+    today,
+    {
+      last_period_start: effectiveLastStart,
+      average_cycle_length: cycleProfile.average_cycle_length,
+      average_period_length: cycleProfile.average_period_length,
+      has_cycle: cycleProfile.has_cycle,
+      active_period_start: cycleProfile.active_period_start,
+    },
+    menstruationDates,
+  )
+  const cycleEstimate = presented.estimate
+  const softMenstruationMode = Boolean(presented.menstruationSoftHint)
 
   if (!cycleEstimate) {
     return (
@@ -150,7 +163,11 @@ export default async function CyclusdagPage() {
 
       <header className={cn("rounded-3xl px-4 py-4 mb-6", view.colors.bg)}>
         <p className={cn("text-xs font-medium tracking-wide", view.colors.text)}>
-          Cyclusdag {view.cycleDay}
+          {softMenstruationMode
+            ? presented.menstruationSoftHint === "predicted"
+              ? "Menstruatie kan komen"
+              : "Menstruatie gestopt"
+            : `Cyclusdag ${view.cycleDay}`}
         </p>
         <h1 className="font-display text-2xl text-ink mt-1">{view.phaseLabel}</h1>
       </header>

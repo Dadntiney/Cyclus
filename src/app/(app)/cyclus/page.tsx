@@ -3,6 +3,11 @@ import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { estimateCycle, phaseLabel } from "@/lib/cycle/estimate"
 import {
+  resolvePresentedForDate,
+  formatPresentedCycleHeadline,
+  softMenstruationNote,
+} from "@/lib/cycle/presented-estimate"
+import {
   computeCycleHistory,
   computeSymptomFrequency,
   getEffectiveLastPeriodStart,
@@ -139,7 +144,7 @@ export default async function CyclusPage() {
     ? getEffectiveLastPeriodStart(cycleProfile.last_period_start, history)
     : null
 
-  const cycleEstimate =
+  const rawCycleEstimate =
     cycleProfile && !postCycleMode
       ? estimateCycle(
           effectiveLastStart,
@@ -149,6 +154,32 @@ export default async function CyclusPage() {
           cycleProfile.average_period_length,
         )
       : null
+
+  // Same soft gate as Vandaag / Week: no hard menstruatiedag until Bezig.
+  // Use effective last start (same as raw estimate) so hub and soft gate agree.
+  const presentedToday =
+    cycleProfile && !postCycleMode
+      ? resolvePresentedForDate(
+          today,
+          {
+            last_period_start: effectiveLastStart,
+            average_cycle_length: cycleProfile.average_cycle_length,
+            average_period_length: cycleProfile.average_period_length,
+            has_cycle: cycleProfile.has_cycle,
+            active_period_start: cycleProfile.active_period_start,
+          },
+          menstruationDates,
+        )
+      : {
+          estimate: null,
+          predictedMenstruation: false,
+          menstruationSoftHint: null,
+        }
+
+  // Prefer presented; fall back only if soft gate had nothing (shouldn't happen).
+  const cycleEstimate = presentedToday.estimate ?? rawCycleEstimate
+  const menstruationSoftHint = presentedToday.menstruationSoftHint
+  const softMenstruationMode = Boolean(menstruationSoftHint)
 
   const nextPeriod =
     cycleProfile && !postCycleMode
@@ -164,9 +195,7 @@ export default async function CyclusPage() {
 
   const lastPeriod = history.length ? history[history.length - 1] : null
   const lastPeriodIsActive = Boolean(
-    lastPeriod &&
-      (cycleProfile?.active_period_start != null ||
-        (lastPeriod.end === today && menstruationDates.has(today))),
+    lastPeriod && cycleProfile?.active_period_start != null,
   )
   // “Eerdere cycli” = finished periods only — the open one already lives under Nu.
   const recentHistory = [...history]
@@ -259,6 +288,17 @@ export default async function CyclusPage() {
   const isIrregular =
     cycleProfile?.regularity === "onregelmatig" || cycleProfile?.regularity === "onbekend"
   const phaseTone = cycleEstimate ? getPhaseContent(cycleEstimate.phase).colors : null
+  const nuHeadline =
+    cycleEstimate && cycleProfile
+      ? formatPresentedCycleHeadline(
+          cycleEstimate,
+          today,
+          cycleProfile.active_period_start ?? null,
+          presentedToday.predictedMenstruation,
+          menstruationSoftHint,
+        )
+      : null
+  const nuSoftNote = softMenstruationNote(menstruationSoftHint)
 
   const insightsBlock = (
       <section>
@@ -359,8 +399,27 @@ export default async function CyclusPage() {
           {cycleEstimate ? (
             <>
               <p className={cn("text-sm font-medium mb-1", phaseTone?.text ?? "text-sage-dark")}>Nu</p>
-              <p className="font-display text-2xl text-ink">Cyclusdag {cycleEstimate.cycleDay}</p>
-              <p className="text-sm text-ink-soft mt-1">{cycleEstimate.phaseLabel} · schatting</p>
+              {softMenstruationMode ? (
+                <>
+                  <p className="font-display text-2xl text-ink">{nuHeadline}</p>
+                  {nuSoftNote && (
+                    <p className="text-sm text-ink-soft mt-1 leading-relaxed">{nuSoftNote}</p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="font-display text-2xl text-ink">
+                    {cycleEstimate.phase === "menstruatie" && cycleProfile?.active_period_start
+                      ? nuHeadline
+                      : `Cyclusdag ${cycleEstimate.cycleDay}`}
+                  </p>
+                  <p className="text-sm text-ink-soft mt-1">
+                    {cycleEstimate.phase === "menstruatie" && cycleProfile?.active_period_start
+                      ? "Bezig · op jouw start"
+                      : `${cycleEstimate.phaseLabel} · schatting`}
+                  </p>
+                </>
+              )}
             </>
           ) : (
             <p className="text-sm text-ink-soft">
