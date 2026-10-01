@@ -74,10 +74,10 @@ export default async function CyclusdagPage() {
           <EmptyState
             icon={<Droplet className="h-6 w-6" strokeWidth={1.5} />}
             title="Geen cyclusdag"
-            description="Je gaf aan momenteel geen menstruatiecyclus te hebben. Klachten en patronen vind je nog wel bij Cyclus."
+            description="Je gaf aan momenteel geen menstruatiecyclus te hebben. Klachten en patronen vind je nog wel onder Cyclus."
             action={
               <Link href="/cyclus" className={buttonVariants({ variant: "secondary" })}>
-                Naar Cyclus
+                Naar overzicht
               </Link>
             }
           />
@@ -110,7 +110,7 @@ export default async function CyclusdagPage() {
           <EmptyState
             icon={<CalendarDays className="h-6 w-6" strokeWidth={1.5} />}
             title="Nog te weinig gegevens"
-            description="Markeer je menstruatiedagen in de kalender bij Cyclus. Daarna verschijnt hier jouw persoonlijke uitleg."
+            description="Markeer je menstruatiedagen in de kalender. Daarna verschijnt hier jouw persoonlijke uitleg."
             action={
               <Link href="/cyclus" className={buttonVariants({ variant: "secondary" })}>
                 Open kalender
@@ -247,9 +247,9 @@ export default async function CyclusdagPage() {
         )}
 
         <p className="text-xs text-ink-soft leading-relaxed">
-          Deze uitleg is algemene, informatieve content — geen medisch advies en geen diagnose.
-          Iedere vrouw ervaart haar cyclus anders; twijfel je over aanhoudende of ernstige
-          klachten, overleg dan met een arts of andere zorgverlener.
+          Deze uitleg is algemene informatie — geen medisch advies en geen diagnose.
+          Iedere vrouw ervaart haar cyclus anders. Bij aanhoudende of ernstige klachten:
+          overleg met een arts of andere zorgverlener.
         </p>
       </div>
     </div>

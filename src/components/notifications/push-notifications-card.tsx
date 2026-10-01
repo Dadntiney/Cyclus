@@ -135,14 +135,14 @@ export function PushNotificationsCard() {
 
       {status === "ios-needs-install" && (
         <p className="text-xs text-ink-soft">
-          Zet Cyclus eerst toe aan je beginscherm (deel-icoon → &ldquo;Zet op beginscherm&rdquo;) om
-          pushmeldingen te kunnen ontvangen — dat is een beperking van iOS, niet van Cyclus.
+          Zet GoFiev eerst toe aan je beginscherm (deel-icoon → &ldquo;Zet op beginscherm&rdquo;) om
+          pushmeldingen te kunnen ontvangen — dat is een beperking van iOS, niet van GoFiev.
         </p>
       )}
 
       {status === "denied" && (
         <p className="text-xs text-ink-soft">
-          Je hebt meldingen voor Cyclus geblokkeerd in je browser. Zet dit aan via de
+          Je hebt meldingen voor GoFiev geblokkeerd in je browser. Zet dit aan via de
           site-instellingen van je browser om weer meldingen te ontvangen.
         </p>
       )}
@@ -150,7 +150,7 @@ export function PushNotificationsCard() {
       {(status === "subscribed" || status === "not-subscribed") && (
         <>
           <p className="text-xs text-ink-soft mb-3">
-            Ontvang je ingestelde herinneringen ook als Cyclus niet open staat — helemaal
+            Ontvang je ingestelde herinneringen ook als GoFiev niet open staat — helemaal
             optioneel, en je bepaalt zelf welke herinneringen je hieronder aan hebt staan.
           </p>
           {error && <p className="text-xs text-danger mb-3">{error}</p>}

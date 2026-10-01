@@ -140,7 +140,7 @@ function firstReply(contextLines: string[]): string {
 
   const parts: string[] = []
   parts.push(
-    "Dank je voor je bericht. Ik ben nog geen volwaardige AI-gesprekspartner — die koppeling volgt later — maar ik kan je wel helpen op basis van wat je met Cyclus hebt gedeeld.",
+    "Dank je voor je bericht. Ik ben nog geen volwaardige AI-gesprekspartner — die koppeling volgt later — maar ik kan je wel helpen op basis van wat je met GoFiev hebt gedeeld.",
   )
 
   if (checkinLine) {

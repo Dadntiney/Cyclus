@@ -244,7 +244,7 @@ export function buildDoctorSummary(input: DoctorSummaryInput): DoctorSummary {
 
 export function doctorSummaryToText(summary: DoctorSummary): string {
   const lines = [
-    "Cyclus — samenvatting voor zorgverlener",
+    "GoFiev — samenvatting voor zorgverlener",
     summary.periodLabel,
     `Check-ins: ${summary.checkinCount}`,
     `Gegenereerd: ${summary.generatedAt}`,
@@ -255,7 +255,7 @@ export function doctorSummaryToText(summary: DoctorSummary): string {
     `- Slaap: ${summary.averages.sleep ?? "—"}`,
     `- Stress: ${summary.averages.stress ?? "—"}`,
     "",
-    "Cyclus",
+    "Menstruatiecyclus",
     summary.cycleNote,
     "",
     "Meest genoteerde klachten (check-ins)",

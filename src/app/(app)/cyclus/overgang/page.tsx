@@ -134,9 +134,9 @@ export default async function OvergangPage() {
         )}
 
         <p className="text-xs text-ink-soft leading-relaxed">
-          Deze uitleg is algemene, informatieve content — geen medisch advies en geen diagnose.
-          Iedere vrouw ervaart deze levensfase anders; bij twijfel of zorgwekkende klachten is
-          overleg met een arts of andere zorgverlener altijd een goede stap.
+          Deze uitleg is algemene informatie — geen medisch advies en geen diagnose.
+          Iedere vrouw ervaart deze levensfase anders. Bij twijfel of zorgwekkende klachten:
+          overleg met een arts of andere zorgverlener.
         </p>
       </div>
     </div>

@@ -23,7 +23,7 @@ export function ProfileHero({
         </h1>
         {memberSince ? (
           <p className="text-sm text-ink-soft mt-0.5">
-            Bij Cyclus sinds {format(new Date(memberSince), "MMMM yyyy", { locale: nl })}
+            Bij GoFiev sinds {format(new Date(memberSince), "MMMM yyyy", { locale: nl })}
           </p>
         ) : (
           <p className="text-sm text-ink-soft mt-0.5">Tik op je foto om die te wijzigen.</p>

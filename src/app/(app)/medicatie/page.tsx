@@ -69,7 +69,7 @@ export default async function MedicatiePage() {
       )}
 
       <p className="text-xs text-ink-soft mt-6 leading-relaxed">
-        Dit is jouw eigen registratie. Cyclus geeft geen medisch advies en bepaalt niet welke
+        Dit is jouw eigen registratie. GoFiev geeft geen medisch advies en bepaalt niet welke
         dosering of behandeling voor jou geschikt is. Voer alleen in wat je van je arts,
         apotheker of bijsluiter hebt gekregen.
       </p>

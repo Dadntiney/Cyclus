@@ -96,5 +96,5 @@ export function getCoOccurrenceForToday(
 export function formatCoOccurrenceInsight(pair: SymptomCoOccurrence): string {
   const trigger = symptomLabel(pair.trigger).toLowerCase()
   const companion = symptomLabel(pair.companion).toLowerCase()
-  return `Als je "${trigger}" noteert, komt "${companion}" bij jou vaker mee.`
+  return `Als je “${trigger}” noteert, komt “${companion}” bij jou vaker mee.`
 }

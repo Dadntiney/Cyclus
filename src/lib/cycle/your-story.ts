@@ -68,11 +68,13 @@ export function composeYourStory(input: ComposeYourStoryInput): YourStory | null
   const inViewParts: string[] = []
   if (!omitDaySummary) {
     if (hasCycle && phaseLabel && cycleDay != null) {
-      inViewParts.push(`Je zit rond cyclusdag ${cycleDay} — ${phaseLabel.toLowerCase()}.`)
+      inViewParts.push(`Rond cyclusdag ${cycleDay}: ${phaseLabel.toLowerCase()}.`)
     } else if (lifeStageLabel) {
-      inViewParts.push(`Je levensfase staat genoteerd als ${lifeStageLabel.toLowerCase()}.`)
+      inViewParts.push(`Je hebt als levensfase “${lifeStageLabel.toLowerCase()}” gekozen.`)
     } else if (!hasCycle) {
-      inViewParts.push("Je volgt Cyclus zonder menstruatiekalender — gericht op klachten en herstel.")
+      inViewParts.push(
+        "Je gebruikt GoFiev zonder menstruatiekalender — gericht op klachten en herstel.",
+      )
     }
   }
 
@@ -80,7 +82,7 @@ export function composeYourStory(input: ComposeYourStoryInput): YourStory | null
     // Use a shorter cut for the story card; full text lives under Veranderingen.
     if (cycleLengthTrend.direction === "onregelmatiger") {
       inViewParts.push(
-        `Je cyclusduur wisselt de laatste ${cycleLengthTrend.cyclesConsidered} cycli wat meer dan daarvoor.`,
+        `Je cyclusduur wisselt de laatste ${cycleLengthTrend.cyclesConsidered} cycli wat meer.`,
       )
     } else {
       inViewParts.push(
@@ -108,7 +110,7 @@ export function composeYourStory(input: ComposeYourStoryInput): YourStory | null
       : `Beweging op ${content.movement.intensityLabel.toLowerCase()} past vaak bij deze fase.`
     const nutrition = content.nutrition.focusText.split(".")[0]?.trim()
     whatFitsThisWeek = nutrition
-      ? `${movement} Bij voeding: ${nutrition.toLowerCase()}.`
+      ? `${movement} Bij voeding past vaak ${nutrition.toLowerCase()}.`
       : movement
   }
 

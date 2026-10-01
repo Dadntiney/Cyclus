@@ -753,7 +753,7 @@ function HealthStep({
     <div>
       <h2 className="font-display text-2xl text-ink mb-2">Aandachtspunten</h2>
       <p className="text-ink-soft text-sm mb-6">
-        Optioneel. Dit helpt ons om trainingen en voeding beter op jou af te stemmen. Cyclus
+        Optioneel. Dit helpt ons om trainingen en voeding beter op jou af te stemmen. GoFiev
         stelt geen diagnoses — dit is puur om je advies passender te maken.
       </p>
 

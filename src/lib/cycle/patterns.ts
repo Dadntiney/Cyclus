@@ -99,8 +99,12 @@ export function getTopPhaseSymptomInsight(
 }
 
 export function formatPhaseSymptomInsight(insight: PhaseSymptomInsight, phaseLabel: string): string {
-  const cycleWord = insight.cyclesWithSymptom === insight.cyclesConsidered ? "al je" : `${insight.cyclesWithSymptom} van je laatste ${insight.cyclesConsidered}`
-  return `Je gaf bij ${cycleWord} cycli vaker "${symptomLabel(insight.symptom).toLowerCase()}" aan rond de ${phaseLabel.toLowerCase()} — mogelijk een patroon dat bij jou past.`
+  const symptom = symptomLabel(insight.symptom).toLowerCase()
+  const phase = phaseLabel.toLowerCase()
+  if (insight.cyclesWithSymptom === insight.cyclesConsidered) {
+    return `Rond de ${phase} noteerde je in al je laatste cycli vaker “${symptom}” — mogelijk een patroon bij jou.`
+  }
+  return `Rond de ${phase} noteerde je vaker “${symptom}” (${insight.cyclesWithSymptom} van ${insight.cyclesConsidered} cycli) — mogelijk een patroon bij jou.`
 }
 
 /** Shorter list form for the Cyclus hub — same claim, less template weight. */
@@ -108,9 +112,9 @@ export function formatPhaseSymptomInsightShort(insight: PhaseSymptomInsight, pha
   const symptom = symptomLabel(insight.symptom).toLowerCase()
   const phase = phaseLabel.toLowerCase()
   if (insight.cyclesWithSymptom === insight.cyclesConsidered) {
-    return `Rond de ${phase} noteer je vaker "${symptom}" — zo in al je laatste cycli.`
+    return `Rond de ${phase} noteer je vaker “${symptom}” — in al je laatste cycli.`
   }
-  return `Rond de ${phase} noteer je vaker "${symptom}" (${insight.cyclesWithSymptom} van ${insight.cyclesConsidered} cycli).`
+  return `Rond de ${phase} noteer je vaker “${symptom}” (${insight.cyclesWithSymptom} van ${insight.cyclesConsidered} cycli).`
 }
 
 /** Neutral wording for the arts-samenvatting / printable export. */
@@ -179,7 +183,7 @@ export function computeCycleLengthTrend(periods: CycleHistoryEntry[]): CycleLeng
 
 export function formatCycleLengthTrendInsight(insight: CycleLengthTrendInsight): string {
   if (insight.direction === "onregelmatiger") {
-    return `Op basis van je laatste ${insight.cyclesConsidered} cycli wisselt je cyclusduur de laatste tijd meer dan daarvoor — dit kan erop wijzen dat je cyclus op dit moment wat onregelmatiger is. Dat kan door allerlei dingen komen, zoals stress of je levensfase, en is geen diagnose — wel de moeite waard om in de gaten te houden.`
+    return `Over je laatste ${insight.cyclesConsidered} cycli wisselt je cyclusduur meer dan eerder. Dat kan door stress of je levensfase komen — geen diagnose, wel de moeite waard om te volgen.`
   }
-  return `Op basis van je laatste ${insight.cyclesConsidered} cycli wisselt je cyclusduur de laatste tijd minder dan daarvoor — je cyclus lijkt op dit moment wat stabieler te verlopen.`
+  return `Over je laatste ${insight.cyclesConsidered} cycli wisselt je cyclusduur minder dan eerder. Je ritme lijkt wat stabieler te verlopen.`
 }

@@ -708,7 +708,7 @@ function ReminderStep({
               </div>
               {isCyclisch && (
                 <p className="text-xs text-ink-soft leading-relaxed mt-4 pt-4 border-t border-sage/20">
-                  Cyclus volgt uitsluitend het schema dat jij zelf hebt ingesteld. De app bepaalt
+                  GoFiev volgt uitsluitend het schema dat jij zelf hebt ingesteld. De app bepaalt
                   niet wanneer je moet starten of stoppen, en geeft geen persoonlijk medisch
                   advies.
                 </p>

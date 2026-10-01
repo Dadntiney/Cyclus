@@ -85,7 +85,7 @@ export function DoctorSummaryView({
           ))}
         </div>
 
-        <h3 className="text-sm font-semibold text-ink mb-1">Cyclus</h3>
+        <h3 className="text-sm font-semibold text-ink mb-1">Menstruatiecyclus</h3>
         <p className="text-sm text-ink-soft mb-4">{summary.cycleNote}</p>
 
         <h3 className="text-sm font-semibold text-ink mb-1">Meest genoteerde klachten</h3>
@@ -184,7 +184,7 @@ export function DoctorSummaryView({
         )}
 
         <p className="text-xs text-ink-soft mt-4 border-t border-line pt-3">
-          Gegenereerd met Cyclus. Dit is geen medisch advies. Bespreek klachten altijd met een
+          Gegenereerd met GoFiev. Dit is geen medisch advies. Bespreek klachten altijd met een
           zorgverlener. Tip: gebruik Print → “Opslaan als PDF” voor een deelbaar PDF-bestand.
         </p>
       </Card>

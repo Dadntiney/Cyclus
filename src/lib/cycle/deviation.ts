@@ -66,7 +66,7 @@ export function computeCycleDeviationAlerts(input: {
       alerts.push({
         kind: "langere_cycli",
         title: "Je cycli lijken langer te worden",
-        body: `Je recente cycli zijn gemiddeld ongeveer ${Math.round(delta)} dagen langer dan daarvoor. Bijhouden helpt om dit met een zorgverlener te bespreken als het aanhoudt.`,
+        body: `Je recente cycli zijn gemiddeld ongeveer ${Math.round(delta)} dagen langer dan daarvoor. Handig om bij te houden — en te bespreken met een zorgverlener als het aanhoudt.`,
         severity: "attention",
       })
     } else if (delta <= -LENGTH_SHIFT_DAYS) {
@@ -95,7 +95,7 @@ export function computeCycleDeviationAlerts(input: {
     alerts.push({
       kind: "life_stage_hint",
       title: "Past een veranderende levensfase bij jou?",
-      body: "Je gegevens laten verschuivingen zien. Je kunt in je profiel aangeven of je cyclus verandert of dat je in de overgang denkt te zitten — dan past de app de uitleg beter aan. Dit is géén diagnose.",
+      body: "Je gegevens laten verschuivingen zien. Geef in je profiel aan of je cyclus verandert of dat je in de overgang denkt te zitten — dan past de uitleg beter. Dit is géén diagnose.",
       severity: "info",
     })
   }

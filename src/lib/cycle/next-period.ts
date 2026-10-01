@@ -112,10 +112,10 @@ function averageAbsoluteSwing(lengths: number[]): number {
 export function formatNextPeriodEstimate(estimate: NextPeriodEstimate): string {
   const when =
     estimate.daysUntil === 0
-      ? "rond vandaag"
+      ? "Rond vandaag"
       : estimate.daysUntil > 0
-        ? `over ongeveer ${estimate.daysUntil} dag${estimate.daysUntil === 1 ? "" : "en"}`
-        : `ongeveer ${Math.abs(estimate.daysUntil)} dag${Math.abs(estimate.daysUntil) === 1 ? "" : "en"} geleden (schatting)`
+        ? `Over ongeveer ${estimate.daysUntil} dag${estimate.daysUntil === 1 ? "" : "en"}`
+        : `Ongeveer ${Math.abs(estimate.daysUntil)} dag${Math.abs(estimate.daysUntil) === 1 ? "" : "en"} geleden (schatting)`
 
   const confidenceLabel =
     estimate.confidence === "hoog"
@@ -124,5 +124,5 @@ export function formatNextPeriodEstimate(estimate: NextPeriodEstimate): string {
         ? "voorzichtige schatting"
         : "ruime schatting — je cyclus wisselt"
 
-  return `Volgende menstruatie ${when} (venster ±${estimate.windowDays} dagen). ${confidenceLabel}.`
+  return `${when} (venster ±${estimate.windowDays} dagen). ${confidenceLabel}.`
 }

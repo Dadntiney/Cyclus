@@ -22,7 +22,7 @@ export default async function ProfielMeldingenPage() {
       <div>
         <BackButton href="/profiel" label="Profiel" />
         <h1 className="font-display text-2xl lg:text-3xl text-ink">Meldingen</h1>
-        <p className="text-sm text-ink-soft mt-1">Wanneer Cyclus zich laat horen.</p>
+        <p className="text-sm text-ink-soft mt-1">Wanneer GoFiev zich laat horen.</p>
       </div>
       <ProfileForm
         profile={data.profile}

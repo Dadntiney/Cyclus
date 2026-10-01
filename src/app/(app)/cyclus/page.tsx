@@ -264,7 +264,7 @@ export default async function CyclusPage() {
       <section>
         <h2 className="font-display text-lg text-ink mb-1">Jouw inzichten</h2>
         <p className="text-sm text-ink-soft mb-3">
-          Op basis van je check-ins — geen diagnose, wel herkenning.
+          Gebaseerd op je check-ins — ter herkenning, geen diagnose.
         </p>
 
         {yourStory && (
@@ -287,7 +287,7 @@ export default async function CyclusPage() {
             <EmptyState
               icon={<Sparkles className="h-6 w-6" />}
               title="Nog weinig inzichten"
-              description="Vul een aantal check-ins in op Vandaag. Daarna verschijnen hier verbanden."
+              description="Vul een paar check-ins in op Vandaag. Dan verschijnen hier verbanden."
             />
           </Card>
         ) : null}
@@ -332,7 +332,7 @@ export default async function CyclusPage() {
         <Card className="bg-cream-soft">
           <p className="text-sm font-medium text-ink mb-1">Welke fase past bij jou?</p>
           <p className="text-sm text-ink-soft mb-3">
-            Regelmatig, veranderend, overgang of daarna — dan past de uitleg beter. Geen diagnose.
+            Regelmatig, veranderend, overgang of daarna: dan past de uitleg beter. Geen diagnose.
           </p>
           <Link href="/profiel/cyclus" className="text-sm font-medium text-sage-dark underline">
             Levensfase kiezen
@@ -364,7 +364,7 @@ export default async function CyclusPage() {
             </>
           ) : (
             <p className="text-sm text-ink-soft">
-              Markeer je menstruatiedagen in de kalender hieronder om je cyclusdag te schatten.
+              Markeer je menstruatiedagen in de kalender hieronder. Dan kunnen we je cyclusdag schatten.
             </p>
           )}
 
@@ -427,7 +427,7 @@ export default async function CyclusPage() {
       ) : (
         <Card>
           <p className="text-sm text-ink-soft">
-            Je hebt aangegeven geen menstruatiecyclus te hebben. Hieronder zie je wel je
+            Je hebt aangegeven geen menstruatiecyclus te hebben. Hieronder zie je wel
             klachtenpatronen.
           </p>
         </Card>
@@ -579,7 +579,7 @@ export default async function CyclusPage() {
                 {overgangMode ? "Overgang & verandering" : "Cyclus & ouder worden"}
               </span>
               <span className="block text-xs text-ink-soft mt-0.5">
-                Uitleg over hoe je cyclus kan veranderen.
+                Wat er kan veranderen naarmate je ouder wordt.
               </span>
             </span>
             <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />

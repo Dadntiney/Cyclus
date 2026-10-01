@@ -64,11 +64,14 @@ export function computeMonthChangeInsights(
   for (const row of rising.slice(0, 2)) {
     insights.push({
       kind: row.prev === 0 ? "new" : "up",
-      title: row.prev === 0 ? `Nieuw vaker: ${symptomLabel(row.symptom)}` : `Vaker: ${symptomLabel(row.symptom)}`,
+      title:
+        row.prev === 0
+          ? `Nieuw: ${symptomLabel(row.symptom)}`
+          : `Vaker: ${symptomLabel(row.symptom)}`,
       body:
         row.prev === 0
-          ? `De afgelopen maand noteerde je "${symptomLabel(row.symptom).toLowerCase()}" ${row.count}×, terwijl dat de maand ervoor nauwelijks speelde.`
-          : `Je noteerde "${symptomLabel(row.symptom).toLowerCase()}" ${row.count}× (was ${row.prev}×).`,
+          ? `De afgelopen maand noteerde je “${symptomLabel(row.symptom).toLowerCase()}” ${row.count}× — de maand ervoor speelde dat nauwelijks.`
+          : `Je noteerde “${symptomLabel(row.symptom).toLowerCase()}” ${row.count}× (was ${row.prev}×).`,
     })
   }
 
@@ -103,10 +106,13 @@ function pushMetricDiff(
   const delta = recent - previous
   if (Math.abs(delta) < 0.4) return
   const better = higherIsBetter ? delta > 0 : delta < 0
+  const worseTitle = higherIsBetter
+    ? `${capitalize(label)} iets lager`
+    : `${capitalize(label)} iets hoger`
   insights.push({
     kind: better ? "up" : "down",
-    title: better ? `${capitalize(label)} iets beter` : `${capitalize(label)} iets lager`,
-    body: `Gemiddelde ${label}: ${recent.toFixed(1)} (was ${previous.toFixed(1)}) over de afgelopen maand.`,
+    title: better ? `${capitalize(label)} iets beter` : worseTitle,
+    body: `Gemiddelde ${label} de afgelopen maand: ${recent.toFixed(1)} (was ${previous.toFixed(1)}).`,
   })
 }
 

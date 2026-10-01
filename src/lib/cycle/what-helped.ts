@@ -188,9 +188,9 @@ export function getWhatHelpedForToday(
 
 export function formatWhatHelpedInsight(insight: WhatHelpedInsight): string {
   if (insight.kind === "need") {
-    return `Op dagen waarop je "${insight.label}" koos, noteerde je vaker een betere energie of stemming.`
+    return `Op dagen waarop je “${insight.label}” koos, noteerde je vaker een betere energie of stemming.`
   }
-  return `Op dagen met ${insight.label}, noteerde je vaker een betere energie of stemming.`
+  return `Op dagen met ${insight.label} noteerde je vaker een betere energie of stemming.`
 }
 
 /** Short title for roadmap / story cards. */

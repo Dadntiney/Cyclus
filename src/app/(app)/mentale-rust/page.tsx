@@ -73,7 +73,7 @@ export default async function MentaleRustPage() {
 
       <p className="text-xs text-ink-soft px-1 leading-relaxed">
         Deze content is algemene, informatieve ondersteuning — geen behandeling, therapie of
-        diagnose. Cyclus vervangt geen professionele hulp. Voel je je langere tijd erg somber,
+        diagnose. GoFiev vervangt geen professionele hulp. Voel je je langere tijd erg somber,
         angstig of alleen, of beïnvloedt dit je dagelijks leven sterk? Dan kan het goed zijn om
         hierover te praten met je huisarts of een andere zorgverlener.
       </p>

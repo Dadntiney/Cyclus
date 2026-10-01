@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 export function YourStoryCard({ story }: { story: YourStory }) {
   const showInView = Boolean(story.cycleInView.trim())
   const subtitle = showInView
-    ? "In beeld → wat werkt → wat past deze week."
+    ? "Wat speelt → wat werkt → wat past deze week."
     : "Wat werkt bij jou → wat past deze week."
 
   return (
