@@ -3,7 +3,8 @@ import { cookies } from "next/headers"
 import { cache } from "react"
 import type { Database } from "@/types/database"
 
-export async function createClient() {
+/** One Supabase server client per request — layouts + pages share it. */
+export const createClient = cache(async () => {
   const cookieStore = await cookies()
 
   return createServerClient<Database>(
@@ -27,7 +28,7 @@ export async function createClient() {
       },
     },
   )
-}
+})
 
 // The layout and the page it wraps both need the authed user for the same
 // request; auth.getUser() re-validates the session against Supabase's Auth

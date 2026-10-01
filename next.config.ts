@@ -8,7 +8,8 @@ const nextConfig: NextConfig = {
   // import to its own module at build time, so the bundle only ever
   // contains the icons actually used.
   experimental: {
-    optimizePackageImports: ["lucide-react"],
+    // lucide + date-fns are large barrels; rewrite to per-export modules.
+    optimizePackageImports: ["lucide-react", "date-fns"],
   },
   images: {
     remotePatterns: [

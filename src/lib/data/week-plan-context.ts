@@ -1,8 +1,15 @@
 import { cache } from "react"
-import { format, startOfWeek, subDays } from "date-fns"
+import { format, startOfWeek } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { todayDate, todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
 import { getProfile } from "@/lib/data/profile"
+import {
+  getCycleLogsForHistory,
+  getCycleProfile,
+  getRecentCheckinsForHistory,
+  getRecipePlanCatalog,
+  getWorkoutPlanCatalog,
+} from "@/lib/data/shared-sources"
 import {
   buildWeekPlan,
   type WeekDayPlan,
@@ -17,10 +24,6 @@ import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } fr
 import { computePhaseSymptomInsights } from "@/lib/cycle/patterns"
 import { composeAnticipation } from "@/lib/cycle/anticipation"
 import type { Tables } from "@/types/database"
-
-const RECIPE_COLUMNS =
-  "id, title, category, preparation_time, servings, ingredients, nutrition_information, image_url"
-const WORKOUT_COLUMNS = "id, title, type, duration, difficulty, image_url"
 
 export type CompletedWorkoutInfo = {
   workoutId: string
@@ -54,32 +57,22 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
   const todayISO = amsterdamTodayISO()
   const weekStart = startOfWeek(today, { weekStartsOn: 1 })
   const weekStartISO = format(weekStart, "yyyy-MM-dd")
-  const sixMonthsAgo = format(subDays(today, 200), "yyyy-MM-dd")
 
   const [
     profile,
-    { data: cycleProfile },
-    { data: workouts },
-    { data: recipes },
-    { data: cycleLogs },
-    { data: recentCheckins },
+    cycleProfile,
+    workouts,
+    recipes,
+    cycleLogs,
+    recentCheckins,
     { data: weekSessions },
   ] = await Promise.all([
     getProfile(userId),
-    supabase.from("cycle_profiles").select("*").eq("user_id", userId).maybeSingle(),
-    supabase.from("workouts").select(WORKOUT_COLUMNS),
-    supabase.from("recipes").select(RECIPE_COLUMNS),
-    supabase
-      .from("cycle_logs")
-      .select("date, menstruation, symptoms")
-      .eq("user_id", userId)
-      .gte("date", sixMonthsAgo)
-      .order("date", { ascending: true }),
-    supabase
-      .from("daily_checkins")
-      .select("date, symptoms, energy, mood, sleep, stress, needs")
-      .eq("user_id", userId)
-      .gte("date", sixMonthsAgo),
+    getCycleProfile(userId),
+    getWorkoutPlanCatalog(),
+    getRecipePlanCatalog(),
+    getCycleLogsForHistory(userId),
+    getRecentCheckinsForHistory(userId),
     supabase
       .from("workout_sessions")
       .select("date, workout_id, created_at")
@@ -94,7 +87,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
 
   const cycleHistory = computeCycleHistory(
     withActivePeriod(
-      (cycleLogs ?? []).map((l) => ({
+      cycleLogs.map((l) => ({
         date: l.date,
         menstruation: l.menstruation,
         symptoms: l.symptoms,
@@ -115,7 +108,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
 
   const phaseInsights = computePhaseSymptomInsights(
     cycleHistory,
-    (recentCheckins ?? []).map((c) => ({ date: c.date, symptoms: c.symptoms ?? [] })),
+    recentCheckins.map((c) => ({ date: c.date, symptoms: c.symptoms ?? [] })),
   )
   const anticipation = composeAnticipation({
     lastPeriodStart: effectiveLastStart,
@@ -125,9 +118,9 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
     phaseInsights,
   })
 
-  const workoutRows = (workouts ?? []) as WeekPlanWorkout[]
+  const workoutRows = workouts as WeekPlanWorkout[]
   const workoutById = new Map(workoutRows.map((w) => [w.id, w]))
-  const recipeRows = (recipes ?? []) as WeekPlanRecipe[]
+  const recipeRows = recipes as WeekPlanRecipe[]
 
   const completedWorkoutsByDate: Record<string, CompletedWorkoutInfo> = {}
   for (const session of weekSessions ?? []) {
@@ -157,7 +150,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
   })
 
   // Bend today's workout with check-in so Deze week matches Vandaag.
-  const todayCheckin = (recentCheckins ?? []).find((c) => c.date === todayISO) ?? null
+  const todayCheckin = recentCheckins.find((c) => c.date === todayISO) ?? null
   const todayIndex = days.findIndex((d) => d.isToday)
   if (todayIndex >= 0 && profile.movement_enabled !== false) {
     const day = days[todayIndex]

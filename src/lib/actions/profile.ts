@@ -224,6 +224,16 @@ export async function updateThemePreference(theme: ThemePreference) {
 
   if (error) return { error: "Opslaan van je weergave-instelling is niet gelukt." }
 
+  // Keep root-layout theme paint free of a profile fetch.
+  try {
+    const { cookies } = await import("next/headers")
+    const { THEME_COOKIE, themeCookieOptions } = await import("@/lib/theme/theme-cookie")
+    const jar = await cookies()
+    jar.set(THEME_COOKIE, theme, themeCookieOptions())
+  } catch {
+    // Cookie write can fail in some edge contexts — client applyTheme still sets it.
+  }
+
   return { success: true }
 }
 

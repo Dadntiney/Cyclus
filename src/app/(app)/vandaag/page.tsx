@@ -14,7 +14,6 @@ import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { greeting } from "@/lib/greeting"
-import { getSavedMomentTexts } from "@/lib/data/moments"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 
@@ -82,10 +81,9 @@ export default async function VandaagPage() {
     mentalWellbeingSuggestion,
     sleepEntry,
     sleepObservation,
+    savedTexts,
     recipeImageById,
   } = await getVandaagData(user.id)
-
-  const savedTexts = [...(await getSavedMomentTexts(user.id))]
 
   const showMedicationCard =
     Boolean(profile?.show_medication_on_dashboard) && medicationItems.length > 0

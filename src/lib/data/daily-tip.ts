@@ -1,5 +1,7 @@
 import { cache } from "react"
+import { unstable_cache } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 
 function seededIndex(seed: string, length: number): number {
   if (length <= 0) return 0
@@ -44,8 +46,21 @@ const SYMPTOM_TIP_CATEGORIES: Record<string, string[]> = {
 const TIP_COLUMNS =
   "id, created_at, category, title, short_explanation, practical_example, fun_fact, quiz_question, quiz_options, quiz_answer_explanation"
 
-/** Tips table is small and shared — cache the list per request. */
-const loadTips = cache(async () => {
+const getCachedTips = unstable_cache(
+  async () => {
+    const supabase = createServiceClient()
+    const { data } = await supabase.from("daily_tips").select(TIP_COLUMNS).order("created_at")
+    return data ?? []
+  },
+  ["daily-tips-catalog-v1"],
+  { revalidate: 3600 },
+)
+
+/** Tips table is small and shared — cross-request cache when possible. */
+export const loadTips = cache(async () => {
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return getCachedTips()
+  }
   const supabase = await createClient()
   const { data } = await supabase.from("daily_tips").select(TIP_COLUMNS).order("created_at")
   return data ?? []

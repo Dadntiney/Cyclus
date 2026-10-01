@@ -1,26 +1,29 @@
-import type { Metadata, Viewport } from "next";
-import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
-import { ClientBootstrap } from "@/components/bootstrap/client-bootstrap";
-import { getAuthedUser } from "@/lib/supabase/server";
-import { getProfile } from "@/lib/data/profile";
+import type { Metadata, Viewport } from "next"
+import { cookies } from "next/headers"
+import { Fraunces, Plus_Jakarta_Sans } from "next/font/google"
+import { ClientBootstrap } from "@/components/bootstrap/client-bootstrap"
 import {
   APP_DESCRIPTION,
   APP_DISPLAY_NAME,
   APP_TAGLINE,
   BRAND_HEX,
-} from "@/lib/theme/brand";
-import "./globals.css";
+} from "@/lib/theme/brand"
+import { THEME_COOKIE, readThemeAttr } from "@/lib/theme/theme-cookie"
+import "./globals.css"
 
 const bodyFont = Plus_Jakarta_Sans({
   variable: "--font-body",
   subsets: ["latin"],
-});
+  display: "swap",
+})
 
 const displayFont = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
+  // One weight keeps first paint light; 500 covers headings well enough.
+  weight: ["500"],
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: `${APP_DISPLAY_NAME} — ${APP_TAGLINE}`,
@@ -35,13 +38,10 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    // Opaque system status bar — "black-translucent" let page content show
-    // through the top chrome (a visible fade over GoFiev). "default" keeps
-    // the status strip solid; MobileHeader still pads safe-area for notch.
     statusBarStyle: "default",
     title: APP_DISPLAY_NAME,
   },
-};
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -51,25 +51,13 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: BRAND_HEX.cream },
     { media: "(prefers-color-scheme: dark)", color: BRAND_HEX.creamDark },
   ],
-  // Resizes the visual viewport when the on-screen keyboard opens instead
-  // of the keyboard simply overlaying fixed-position content (the bottom
-  // nav, a sheet's footer) — the browsers that support this (Chrome/
-  // Android; Safari is catching up) stop inputs disappearing behind it.
   interactiveWidget: "resizes-content",
-};
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // "auto" (or logged out) intentionally sets no attribute: the dark CSS
-  // block in globals.css then applies purely via @media
-  // (prefers-color-scheme: dark), which the browser re-evaluates live if
-  // the device theme changes — no client script needed for that case, and
-  // nothing to get wrong on the very first paint (no flash either way).
-  // "licht"/"donker" force data-theme explicitly, read here server-side so
-  // the very first response already has it — also no flash.
-  const user = await getAuthedUser();
-  const profile = user ? await getProfile(user.id) : null;
-  const theme = profile?.theme_preference;
-  const themeAttr = theme === "light" || theme === "dark" ? theme : undefined;
+  // Theme from a light cookie — no Supabase round-trip on every HTML shell.
+  const jar = await cookies()
+  const themeAttr = readThemeAttr(jar.get(THEME_COOKIE)?.value)
 
   return (
     <html
@@ -82,5 +70,5 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ClientBootstrap />
       </body>
     </html>
-  );
+  )
 }

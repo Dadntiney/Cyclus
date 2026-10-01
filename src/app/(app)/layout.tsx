@@ -5,13 +5,9 @@ import { BottomNav } from "@/components/nav/bottom-nav"
 import { MobileHeader } from "@/components/nav/mobile-header"
 import { PageTransition } from "@/components/nav/page-transition"
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
-import { ReminderToastHost, type MorningReminderSettings } from "@/components/reminders/reminder-toast-host"
-import { getReminders } from "@/lib/data/reminders"
-import { getMedicationReminderSources } from "@/lib/data/medications"
-import { getDoctorAppointmentReminderSources } from "@/lib/data/doctor-appointments"
+import { ReminderHostBoundary } from "@/components/reminders/reminder-host-boundary"
 import { getProfile } from "@/lib/data/profile"
-import type { MedicationReminderLike } from "@/lib/client/medication-reminder-scheduler"
-import type { DoctorAppointmentReminderLike } from "@/lib/client/doctor-appointment-reminder-scheduler"
+import type { MorningReminderSettings } from "@/components/reminders/reminder-toast-host"
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthedUser()
@@ -20,42 +16,26 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/login")
   }
 
-  // Profile + shell data in one round — onboarding redirect is rare after first use.
-  const [profile, reminders, medicationReminderSources, doctorAppointmentSources] = await Promise.all([
-    getProfile(user.id),
-    getReminders(user.id),
-    getMedicationReminderSources(user.id),
-    getDoctorAppointmentReminderSources(user.id),
-  ])
+  // Shell only needs profile — reminders stream in via Suspense so first
+  // paint for Vandaag / Week / etc. is not blocked on three extra queries.
+  const profile = await getProfile(user.id)
 
   if (!profile?.onboarding_completed) {
     redirect("/onboarding")
   }
-  const medicationReminders = medicationReminderSources.map((m) => ({
-    id: m.id,
-    name: m.name,
-    reminderEnabled: m.reminder_enabled,
-    timeOfDay: m.time_of_day,
-    scheduleType: m.schedule_type as MedicationReminderLike["scheduleType"],
-    scheduleDays: m.schedule_days,
-    scheduleDaysOn: m.schedule_days_on,
-    scheduleDaysOff: m.schedule_days_off,
-    startDate: m.start_date,
-    endDate: m.end_date,
-    remindOnStart: m.remind_on_start,
-    remindDaily: m.remind_daily,
-    remindOnStop: m.remind_on_stop,
-  }))
-  const doctorAppointments: DoctorAppointmentReminderLike[] = doctorAppointmentSources
-    .filter((a): a is typeof a & { appointment_date: string } => Boolean(a.appointment_date))
-    .map((a) => ({
-      id: a.id,
-      appointmentDate: a.appointment_date,
-      reminderEnabled: a.reminder_enabled,
-      reminderTime: a.reminder_time,
-      reminderLeadDays: a.reminder_lead_days ?? 0,
-      notes: a.notes,
-    }))
+
+  const morningReminder: MorningReminderSettings | null =
+    profile.morning_reminder_enabled === true
+      ? {
+          enabled: true,
+          time: profile.morning_reminder_time,
+          days: profile.morning_reminder_days,
+          contentTypes: (profile.morning_reminder_content_types?.length
+            ? profile.morning_reminder_content_types
+            : ["reminder"]) as MorningReminderSettings["contentTypes"],
+          preferredStyles: profile.buddy_styles,
+        }
+      : null
 
   return (
     <div className="flex min-h-screen">
@@ -68,24 +48,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </PullToRefresh>
         </main>
         <BottomNav avatarUrl={profile.avatar_url} />
-        <ReminderToastHost
-          reminders={reminders}
-          medications={medicationReminders}
-          doctorAppointments={doctorAppointments}
+        <ReminderHostBoundary
+          userId={user.id}
           buddyStyles={profile.buddy_styles}
-          morningReminder={
-            profile.morning_reminder_enabled === true
-              ? {
-                  enabled: true,
-                  time: profile.morning_reminder_time,
-                  days: profile.morning_reminder_days,
-                  contentTypes: (profile.morning_reminder_content_types?.length
-                    ? profile.morning_reminder_content_types
-                    : ["reminder"]) as MorningReminderSettings["contentTypes"],
-                  preferredStyles: profile.buddy_styles,
-                }
-              : null
-          }
+          morningReminder={morningReminder}
         />
       </div>
     </div>
