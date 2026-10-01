@@ -216,7 +216,7 @@ export const PHASE_CONTENT: Record<CyclePhase, PhaseContent> = {
     nutrition: {
       focusLabel: "Eiwit, vezels & stevige energie",
       focusText:
-        "Met vaak wat meer energie kun je in deze fase goed uit de voeten met volwaardige eiwitten, vezels en complexe koolhydraten — de basis voor stabielere energie over de dag.",
+        "Met wat meer energie kun je in deze fase goed uit de voeten met volwaardige eiwitten, vezels en complexe koolhydraten — de basis voor stabielere energie over de dag.",
       exampleFoods: ["Quinoa", "Kipfilet", "Eieren", "Broccoli", "Bessen", "Havermout", "Kwark"],
       recipeCategories: ["Lunch", "Ontbijt", "Snel", "Eiwitrijk"],
       nutrients: ["Eiwitten", "Vezels", "B-vitamines", "Foliumzuur"],

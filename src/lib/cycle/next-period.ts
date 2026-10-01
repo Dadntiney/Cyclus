@@ -119,10 +119,10 @@ export function formatNextPeriodEstimate(estimate: NextPeriodEstimate): string {
 
   const confidenceLabel =
     estimate.confidence === "hoog"
-      ? "redelijk zeker"
+      ? "Redelijk zeker"
       : estimate.confidence === "middel"
-        ? "voorzichtige schatting"
-        : "ruime schatting — je cyclus wisselt"
+        ? "Voorzichtige schatting"
+        : "Ruime schatting — je cyclus wisselt"
 
   return `${when} (venster ±${estimate.windowDays} dagen). ${confidenceLabel}.`
 }

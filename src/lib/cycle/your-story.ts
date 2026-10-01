@@ -108,9 +108,9 @@ export function composeYourStory(input: ComposeYourStoryInput): YourStory | null
     const movement = content.movement.preferGentler
       ? "Zachtere beweging past vaak beter in deze fase."
       : `Beweging op ${content.movement.intensityLabel.toLowerCase()} past vaak bij deze fase.`
-    const nutrition = content.nutrition.focusText.split(".")[0]?.trim()
-    whatFitsThisWeek = nutrition
-      ? `${movement} Bij voeding past vaak ${nutrition.toLowerCase()}.`
+    const nutritionSentence = content.nutrition.focusText.split(".")[0]?.trim()
+    whatFitsThisWeek = nutritionSentence
+      ? `${movement} ${nutritionSentence}.`
       : movement
   }
 
