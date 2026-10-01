@@ -106,10 +106,27 @@ export async function setTodayNeeds(needs: string[]) {
     return { error: "Je bent niet ingelogd." }
   }
 
-  const { error } = await supabase.from("daily_checkins").upsert(
-    { user_id: user.id, date: todayISO(), needs: unique },
-    { onConflict: "user_id,date" },
-  )
+  // Update-or-insert — never upsert a partial row. A bare upsert of `{ needs }`
+  // can null out energy/mood/etc. on conflict depending on PostgREST prefs.
+  const today = todayISO()
+  const { data: existing } = await supabase
+    .from("daily_checkins")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("date", today)
+    .maybeSingle()
+
+  const { error } = existing
+    ? await supabase
+        .from("daily_checkins")
+        .update({ needs: unique })
+        .eq("user_id", user.id)
+        .eq("date", today)
+    : await supabase.from("daily_checkins").insert({
+        user_id: user.id,
+        date: today,
+        needs: unique,
+      })
 
   if (error) {
     return { error: "Opslaan is niet gelukt. Probeer het opnieuw." }

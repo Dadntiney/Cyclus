@@ -152,10 +152,9 @@ export function CheckinForm({
   const dirtyRef = useRef(false)
   const mountedRef = useRef(true)
   const onEditingChangeRef = useRef(onEditingChange)
-
-  useEffect(() => {
-    stateRef.current = state
-  }, [state])
+  /** Resolves when the current save chain (including dirty retries) finishes. */
+  const saveChainRef = useRef<Promise<void>>(Promise.resolve())
+  const performSaveRef = useRef<() => Promise<void>>(async () => {})
 
   useEffect(() => {
     editingRef.current = editing
@@ -168,9 +167,42 @@ export function CheckinForm({
   useEffect(() => {
     mountedRef.current = true
     onEditingChangeRef.current?.(editingRef.current)
+
+    function flushPending() {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+        void performSaveRef.current()
+        return
+      }
+      if (dirtyRef.current && !savingRef.current) {
+        void performSaveRef.current()
+      }
+    }
+
+    function onHide() {
+      if (document.visibilityState === "hidden") flushPending()
+    }
+
+    // Mobile: tab switch / app background often unloads before debounce fires.
+    window.addEventListener("pagehide", flushPending)
+    document.addEventListener("visibilitychange", onHide)
+
     return () => {
       mountedRef.current = false
-      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+      window.removeEventListener("pagehide", flushPending)
+      document.removeEventListener("visibilitychange", onHide)
+      // Best-effort flush — same as Profiel. Clearing without save was dropping
+      // the last taps when she left Vandaag within the debounce window.
+      // Read performSaveRef at cleanup time (not mount) so we call the latest save.
+      const save = performSaveRef.current
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+        void save()
+      } else if (dirtyRef.current && !savingRef.current) {
+        void save()
+      }
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
     }
   }, [])
@@ -212,71 +244,85 @@ export function CheckinForm({
   async function performSave() {
     if (savingRef.current) {
       dirtyRef.current = true
-      return
-    }
-    savingRef.current = true
-    dirtyRef.current = false
-    if (mountedRef.current) setStatus("saving")
-
-    const snapshot = stateRef.current
-    const newCustomSymptoms = snapshot.symptoms.filter(
-      (s) =>
-        !SYMPTOM_OPTIONS.includes(s as (typeof SYMPTOM_OPTIONS)[number]) &&
-        !MENTAL_SYMPTOM_OPTIONS.includes(s as (typeof MENTAL_SYMPTOM_OPTIONS)[number]) &&
-        s !== "Anders" &&
-        s !== "Geen klachten",
-    )
-
-    let result: Awaited<ReturnType<typeof saveCheckin>> | undefined
-    try {
-      result = await saveCheckin({
-        energy: snapshot.energy,
-        mood: snapshot.mood,
-        // Sleep scale is hidden when SleepCard is on; keep any prior value.
-        sleep: snapshot.sleep,
-        stress: snapshot.stress,
-        symptoms: snapshot.symptoms,
-        symptomDetails: snapshot.symptomDetails,
-        notes: snapshot.notes,
-        needs: snapshot.needs,
-        newCustomSymptoms,
-      })
-    } catch {
-      result = { error: "Opslaan is niet gelukt. Controleer je verbinding." }
+      return saveChainRef.current
     }
 
-    savingRef.current = false
-
-    if (result?.error) {
-      if (mountedRef.current) {
-        setErrorMsg(result.error)
-        setStatus("error")
-      }
-      return
-    }
-
-    if (mountedRef.current) {
-      setErrorMsg(null)
-      setStatus("saved")
-      if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
-      savedTimerRef.current = setTimeout(() => {
-        if (mountedRef.current) setStatus((current) => (current === "saved" ? "idle" : current))
-      }, SAVED_FLASH_MS)
-    }
-
-    if (dirtyRef.current) {
+    const run = (async () => {
+      savingRef.current = true
       dirtyRef.current = false
-      void performSave()
-      return
-    }
+      if (mountedRef.current) setStatus("saving")
 
-    // Don’t refresh while she’s still editing — a refresh used to remount
-    // this form when Vandaag moved it between slots, which collapsed the card.
-    // Roadmap/plan catch up on Klaar (or when already collapsed).
-    if (!editingRef.current) {
-      router.refresh()
-    }
+      const snapshot = stateRef.current
+      const newCustomSymptoms = snapshot.symptoms.filter(
+        (s) =>
+          !SYMPTOM_OPTIONS.includes(s as (typeof SYMPTOM_OPTIONS)[number]) &&
+          !MENTAL_SYMPTOM_OPTIONS.includes(s as (typeof MENTAL_SYMPTOM_OPTIONS)[number]) &&
+          s !== "Anders" &&
+          s !== "Geen klachten",
+      )
+
+      let result: Awaited<ReturnType<typeof saveCheckin>> | undefined
+      try {
+        result = await saveCheckin({
+          energy: snapshot.energy,
+          mood: snapshot.mood,
+          // Sleep scale is hidden when SleepCard is on; keep any prior value.
+          sleep: snapshot.sleep,
+          stress: snapshot.stress,
+          symptoms: snapshot.symptoms,
+          symptomDetails: snapshot.symptomDetails,
+          notes: snapshot.notes,
+          needs: snapshot.needs,
+          newCustomSymptoms,
+        })
+      } catch {
+        result = { error: "Opslaan is niet gelukt. Controleer je verbinding." }
+      }
+
+      savingRef.current = false
+
+      if (result?.error) {
+        if (mountedRef.current) {
+          setErrorMsg(result.error)
+          setStatus("error")
+        }
+        return
+      }
+
+      if (mountedRef.current) {
+        setErrorMsg(null)
+        setStatus("saved")
+        if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+        savedTimerRef.current = setTimeout(() => {
+          if (mountedRef.current) setStatus((current) => (current === "saved" ? "idle" : current))
+        }, SAVED_FLASH_MS)
+      }
+
+      if (dirtyRef.current) {
+        dirtyRef.current = false
+        await performSave()
+        return
+      }
+
+      // Don’t refresh while she’s still editing — a refresh used to remount
+      // this form when Vandaag moved it between slots, which collapsed the card.
+      // Roadmap/plan catch up on Klaar (or when already collapsed).
+      if (!editingRef.current) {
+        router.refresh()
+      }
+    })()
+
+    saveChainRef.current = run.then(
+      () => undefined,
+      () => undefined,
+    )
+    return saveChainRef.current
   }
+
+  // Keep the unmount/pagehide flush pointed at the latest save closure.
+  useEffect(() => {
+    performSaveRef.current = performSave
+  })
 
   function scheduleSave(immediate: boolean) {
     if (debounceTimerRef.current) {
@@ -293,15 +339,29 @@ export function CheckinForm({
     }
   }
 
+  /** Flush debounce + wait for any in-flight save chain before leaving edit mode. */
+  async function flushSave() {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+    if (savingRef.current) {
+      dirtyRef.current = true
+      await saveChainRef.current
+      return
+    }
+    await performSave()
+  }
+
   function applyUpdate(updater: (prev: FormState) => FormState, mode: "immediate" | "debounced" = "immediate") {
-    let changed = true
-    setState((prev) => {
-      const next = updater(prev)
-      changed = JSON.stringify(next) !== JSON.stringify(prev)
-      stateRef.current = next
-      return next
-    })
-    if (changed) scheduleSave(mode === "immediate")
+    // Derive next from the ref (already render-synced) so scheduleSave never
+    // depends on whether React ran the setState updater in this tick.
+    const prev = stateRef.current
+    const next = updater(prev)
+    if (JSON.stringify(next) === JSON.stringify(prev)) return
+    stateRef.current = next
+    setState(next)
+    scheduleSave(mode === "immediate")
   }
 
   function toggleNeed(value: string) {
@@ -356,15 +416,13 @@ export function CheckinForm({
   }
 
   function finishEditing() {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current)
-      debounceTimerRef.current = null
-      void performSave()
-    }
-    setEditingAndNotify(false)
-    setShowDetails(false)
-    // Now safe to reshape roadmap / plan around the saved check-in.
-    router.refresh()
+    void (async () => {
+      await flushSave()
+      setEditingAndNotify(false)
+      setShowDetails(false)
+      // Now safe to reshape roadmap / plan around the saved check-in.
+      router.refresh()
+    })()
   }
 
   // ── Compact summary ────────────────────────────────────────────────────
