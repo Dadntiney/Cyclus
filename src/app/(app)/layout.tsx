@@ -62,7 +62,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <Sidebar avatarUrl={profile.avatar_url} />
       <div className="flex-1 flex flex-col min-w-0">
         <MobileHeader />
-        <main className="flex-1 pt-[var(--mobile-header-h,4.8rem)] md:pt-0 pb-[calc(var(--bottom-nav-h,5.5rem)+0.75rem)] md:pb-10">
+        <main className="flex-1 pt-[var(--mobile-header-h,4.8rem)] md:pt-0 pb-[calc(var(--bottom-nav-h,5.5rem)+1.5rem)] md:pb-10">
           <PullToRefresh>
             <PageTransition>{children}</PageTransition>
           </PullToRefresh>
