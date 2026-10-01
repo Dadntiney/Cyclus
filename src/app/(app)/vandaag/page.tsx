@@ -7,7 +7,7 @@ import { AnticipationNote } from "@/components/today/anticipation-note"
 import { HormoneRoadmapNote } from "@/components/today/hormone-roadmap-note"
 import { PhaseContextCard } from "@/components/today/phase-context-card"
 import { CycleSetupCard } from "@/components/today/cycle-setup-card"
-import { CheckinForm } from "@/components/today/checkin-form"
+import { VandaagCheckinSlot } from "@/components/today/vandaag-checkin-slot"
 import { DayCloseCard } from "@/components/today/day-close-card"
 import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
@@ -146,14 +146,12 @@ export default async function VandaagPage() {
           : (bodyRecognition?.text ?? PHASE_TAGLINE[cycleEstimate.phase])
         : ""
 
-  const checkinForm = (
-    <CheckinForm
-      initial={checkin ?? null}
-      mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
-      sleepTrackingEnabled={sleepEnabled}
-      customSymptoms={profile?.custom_symptoms ?? []}
-    />
-  )
+  const checkinFormProps = {
+    initial: checkin ?? null,
+    mentalWellbeingEnabled: profile?.mental_wellbeing_enabled === true,
+    sleepTrackingEnabled: sleepEnabled,
+    customSymptoms: profile?.custom_symptoms ?? [],
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
@@ -211,72 +209,77 @@ export default async function VandaagPage() {
           )}
         </header>
 
-        <div className="flex flex-col gap-6">
-          {buddyQuote && <BuddyQuoteCard quote={buddyQuote} />}
-
-          {/* Empty check-in early: understand starts after she shares how she feels */}
-          {!hasMeaningfulCheckin && checkinForm}
-
-          {anticipation && <AnticipationNote anticipation={anticipation} />}
-
-          {hormoneRoadmap && (
-            <HormoneRoadmapNote
-              roadmap={hormoneRoadmap}
-              phaseTone={tone}
-              savedTexts={savedTexts}
-            />
-          )}
-
-          {recommendation && (
-            <TodayCards
-              recommendation={recommendation}
-              userId={user.id}
-              date={today}
-              weekStartISO={weekStartISO}
-              workoutAlternatives={workoutAlternatives}
-              mealAlternativesBySlot={mealAlternativesBySlot}
-              completedWorkout={completedWorkout}
-              mentalSuggestion={mentalWellbeingSuggestion}
-              focusLine={personalizedFocus}
-              showRecovery={wantRecoveryRow}
-              recipeImageById={recipeImageById}
-            />
-          )}
-
-          {/* Reflect / log: more air between plan and the closing stack */}
-          <div className="flex flex-col gap-4 pt-1">
-            {hasMeaningfulCheckin && checkinForm}
-
-            {(sleepEnabled || showMedicationCard) && (
-              <section aria-label="Extra voor vandaag" className="flex flex-col gap-3">
-                {sleepEnabled && (
-                  <div id="slaap-vandaag">
-                    <SleepCard
-                      date={today}
-                      entry={sleepEntry}
-                      observation={sleepObservation}
-                      historyHref="/slaap"
-                    />
-                  </div>
-                )}
-                {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
-              </section>
-            )}
-
-            <DayCloseCard
-              userId={user.id}
-              date={today}
-              weekStartISO={weekStartISO}
-              hasCheckin={hasMeaningfulCheckin}
-              movementEnabled={profile?.movement_enabled ?? true}
-              movementDone={Boolean(completedWorkout)}
-              sleepTrackingEnabled={sleepEnabled}
-              hasSleepEntry={Boolean(sleepEntry)}
-              mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
-              savedTexts={savedTexts}
-            />
+        {buddyQuote && (
+          <div className="mb-6">
+            <BuddyQuoteCard quote={buddyQuote} />
           </div>
-        </div>
+        )}
+
+        <VandaagCheckinSlot
+          hasMeaningfulCheckin={hasMeaningfulCheckin}
+          {...checkinFormProps}
+          earlyExtras={
+            <>
+              {anticipation && <AnticipationNote anticipation={anticipation} />}
+              {hormoneRoadmap && (
+                <HormoneRoadmapNote
+                  roadmap={hormoneRoadmap}
+                  phaseTone={tone}
+                  savedTexts={savedTexts}
+                />
+              )}
+            </>
+          }
+          plan={
+            recommendation ? (
+              <TodayCards
+                recommendation={recommendation}
+                userId={user.id}
+                date={today}
+                weekStartISO={weekStartISO}
+                workoutAlternatives={workoutAlternatives}
+                mealAlternativesBySlot={mealAlternativesBySlot}
+                completedWorkout={completedWorkout}
+                mentalSuggestion={mentalWellbeingSuggestion}
+                focusLine={personalizedFocus}
+                showRecovery={wantRecoveryRow}
+                recipeImageById={recipeImageById}
+              />
+            ) : null
+          }
+          lateExtras={
+            <>
+              {(sleepEnabled || showMedicationCard) && (
+                <section aria-label="Extra voor vandaag" className="flex flex-col gap-3">
+                  {sleepEnabled && (
+                    <div id="slaap-vandaag">
+                      <SleepCard
+                        date={today}
+                        entry={sleepEntry}
+                        observation={sleepObservation}
+                        historyHref="/slaap"
+                      />
+                    </div>
+                  )}
+                  {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
+                </section>
+              )}
+
+              <DayCloseCard
+                userId={user.id}
+                date={today}
+                weekStartISO={weekStartISO}
+                hasCheckin={hasMeaningfulCheckin}
+                movementEnabled={profile?.movement_enabled ?? true}
+                movementDone={Boolean(completedWorkout)}
+                sleepTrackingEnabled={sleepEnabled}
+                hasSleepEntry={Boolean(sleepEntry)}
+                mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}
+                savedTexts={savedTexts}
+              />
+            </>
+          }
+        />
       </div>
   )
 }

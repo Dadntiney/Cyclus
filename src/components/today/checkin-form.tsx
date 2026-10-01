@@ -73,11 +73,14 @@ export function CheckinForm({
   mentalWellbeingEnabled = false,
   sleepTrackingEnabled = false,
   customSymptoms = [],
+  onEditingChange,
 }: {
   initial: Checkin | null
   mentalWellbeingEnabled?: boolean
   sleepTrackingEnabled?: boolean
   customSymptoms?: string[]
+  /** Lets Vandaag keep the card’s visual slot while she edits (no remount). */
+  onEditingChange?: (editing: boolean) => void
 }) {
   const router = useRouter()
   const [, startNeedTransition] = useTransition()
@@ -103,6 +106,8 @@ export function CheckinForm({
 
   // Filled → compact summary. Empty → light editor (energy), details closed.
   const [editing, setEditing] = useState(!checkinHasContent(initial))
+  const editingRef = useRef(editing)
+  editingRef.current = editing
   const [showDetails, setShowDetails] = useState(false)
   const [customDraft, setCustomDraft] = useState("")
 
@@ -114,15 +119,24 @@ export function CheckinForm({
   const savingRef = useRef(false)
   const dirtyRef = useRef(false)
   const mountedRef = useRef(true)
+  const onEditingChangeRef = useRef(onEditingChange)
+  onEditingChangeRef.current = onEditingChange
 
   useEffect(() => {
     mountedRef.current = true
+    onEditingChangeRef.current?.(editingRef.current)
     return () => {
       mountedRef.current = false
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
     }
   }, [])
+
+  function setEditingAndNotify(next: boolean) {
+    editingRef.current = next
+    setEditing(next)
+    onEditingChangeRef.current?.(next)
+  }
 
   const hasAnyInput = Boolean(
     state.energy ||
@@ -213,8 +227,12 @@ export function CheckinForm({
       return
     }
 
-    // Refresh so the hormone roadmap / plan can reshape with new check-in data.
-    router.refresh()
+    // Don’t refresh while she’s still editing — a refresh used to remount
+    // this form when Vandaag moved it between slots, which collapsed the card.
+    // Roadmap/plan catch up on Klaar (or when already collapsed).
+    if (!editingRef.current) {
+      router.refresh()
+    }
   }
 
   function scheduleSave(immediate: boolean) {
@@ -263,7 +281,9 @@ export function CheckinForm({
         setStatus("error")
         return
       }
-      router.refresh()
+      if (!editingRef.current) {
+        router.refresh()
+      }
     })
   }
 
@@ -311,8 +331,10 @@ export function CheckinForm({
       debounceTimerRef.current = null
       void performSave()
     }
-    setEditing(false)
+    setEditingAndNotify(false)
     setShowDetails(false)
+    // Now safe to reshape roadmap / plan around the saved check-in.
+    router.refresh()
   }
 
   function StatusHint({ className }: { className?: string }) {
@@ -375,7 +397,7 @@ export function CheckinForm({
             type="button"
             onClick={() => {
               setShowDetails(true)
-              setEditing(true)
+              setEditingAndNotify(true)
             }}
             className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-sage-dark min-h-11 px-1 touch-manipulation rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
             aria-expanded={false}
