@@ -114,7 +114,9 @@ export function WeekView({
       {phaseContent && day.cycleEstimate && (
         <p className={cn("text-sm leading-relaxed px-0.5", phaseContent.colors.text)}>
           <span className="font-medium">
-            {phaseContent.label} · dag {day.cycleEstimate.cycleDay}
+            {day.cycleEstimate.phase === "menstruatie"
+              ? `${phaseContent.label} · dag ${day.cycleEstimate.cycleDay}`
+              : phaseContent.label}
           </span>
           <span className="text-ink-soft">
             {" — "}

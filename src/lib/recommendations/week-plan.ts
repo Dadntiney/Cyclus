@@ -1,7 +1,11 @@
 import { addDays, format } from "date-fns"
 import { nl } from "date-fns/locale"
 import type { Tables } from "@/types/database"
-import { estimateCycle, type CycleEstimate } from "@/lib/cycle/estimate"
+import {
+  estimateCycle,
+  resolvePresentedCycleEstimate,
+  type CycleEstimate,
+} from "@/lib/cycle/estimate"
 import { getPhaseContent, getDailyPhaseSnackTip, getDailyPhaseHydrationTip, type PhaseSnackTip, type PhaseHydrationTip } from "@/lib/cycle/phase-content"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
 import { lifeStagePrefersGentler } from "@/lib/recommendations/life-stage-bias"
@@ -29,7 +33,11 @@ type Recipe = WeekPlanRecipe
 type Profile = Tables<"profiles">
 type CycleProfile = Pick<
   Tables<"cycle_profiles">,
-  "last_period_start" | "average_cycle_length" | "average_period_length" | "has_cycle"
+  | "last_period_start"
+  | "average_cycle_length"
+  | "average_period_length"
+  | "has_cycle"
+  | "active_period_start"
 >
 
 export type MealSlot = "ontbijt" | "lunch" | "diner"
@@ -65,6 +73,11 @@ export interface WeekDayPlan {
   isToday: boolean
   isPast: boolean
   cycleEstimate: CycleEstimate | null
+  /**
+   * Raw estimate said menstruatie, but she has not started / logged bleed
+   * for this date — soft tilt only, never “menstruatiedag N”.
+   */
+  predictedMenstruation: boolean
   meals: WeekMealSlot[]
   workout: WeekWorkoutSlot
   focusTips: string[]
@@ -105,6 +118,8 @@ export interface BuildWeekPlanInput {
   anticipationTip?: string | null
   /** Soft default tilt for peri / veranderend / post — see life-stage-bias. */
   lifeStage?: string | null
+  /** Dates already logged (or synthesized) as menstruatie bleed days. */
+  loggedMenstruationDates?: ReadonlySet<string>
 }
 
 function seededIndex(seed: string, length: number): number {
@@ -188,17 +203,20 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
     anticipationSoftDates = [],
     anticipationTip = null,
     lifeStage = null,
+    loggedMenstruationDates,
   } = input
   const todayISO = format(today, "yyyy-MM-dd")
   const softDateSet = new Set(anticipationSoftDates)
   const stageGentler = lifeStagePrefersGentler(lifeStage)
+  const activePeriodStart = cycleProfile?.active_period_start ?? null
 
   const gentlerDayIndexes = new Set<number>()
   const phaseByIndex: (CycleEstimate | null)[] = []
+  const predictedByIndex: boolean[] = []
   for (let i = 0; i < 7; i++) {
     const date = addDays(weekStart, i)
     const dateISO = format(date, "yyyy-MM-dd")
-    const estimate = cycleProfile
+    const rawEstimate = cycleProfile
       ? estimateCycle(
           cycleProfile.last_period_start,
           cycleProfile.average_cycle_length,
@@ -207,9 +225,20 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
           cycleProfile.average_period_length,
         )
       : null
+    const estimate = resolvePresentedCycleEstimate(
+      rawEstimate,
+      dateISO,
+      activePeriodStart,
+      cycleProfile?.average_cycle_length,
+      loggedMenstruationDates,
+    )
+    const isPredictedBleed =
+      rawEstimate?.phase === "menstruatie" && estimate?.phase !== "menstruatie"
     phaseByIndex.push(estimate)
+    predictedByIndex.push(isPredictedBleed)
     if (
       softDateSet.has(dateISO) ||
+      isPredictedBleed ||
       (estimate && getPhaseContent(estimate.phase).movement.preferGentler) ||
       stageGentler
     ) {
@@ -242,6 +271,7 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
     const date = addDays(weekStart, i)
     const dateISO = format(date, "yyyy-MM-dd")
     const cycleEstimate = phaseByIndex[i]
+    const predictedMenstruation = predictedByIndex[i]
     const phaseContent = cycleEstimate ? getPhaseContent(cycleEstimate.phase) : null
 
     const todayRecipeIds = new Set<string>()
@@ -276,6 +306,9 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
       workoutReason = "Een geplande rustdag."
     } else if (isAnticipated) {
       workoutReason = "Iets rustiger getild — rond deze dagen valt het bij jou vaker zwaarder."
+    } else if (predictedMenstruation) {
+      workoutReason =
+        "Iets rustiger getild — menstruatie kan rond nu komen; we gaan er pas vanuit als jij start."
     } else if (stageGentler) {
       workoutReason =
         lifeStage === "menopauze"
@@ -288,6 +321,10 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
     const focusTips: string[] = []
     if (isAnticipated && anticipationTip) {
       focusTips.push(anticipationTip)
+    } else if (predictedMenstruation) {
+      focusTips.push(
+        "Menstruatie kan rond nu komen — een schatting, geen feit. Start zelf wanneer het zo is.",
+      )
     } else if (phaseContent) {
       const tips = phaseContent.lifestyleTips
       const first = tips.length
@@ -304,6 +341,11 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
       ? getDailyPhaseHydrationTip(cycleEstimate.phase, `${seed}-${dateISO}`)
       : null
 
+    const predictedNote =
+      predictedMenstruation && !isAnticipated
+        ? "Menstruatie kan rond nu komen — we gaan er pas vanuit als jij start."
+        : null
+
     return {
       date: dateISO,
       weekday: format(date, "EEEE", { locale: nl }),
@@ -311,10 +353,11 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
       isToday: dateISO === todayISO,
       isPast: dateISO < todayISO,
       cycleEstimate,
+      predictedMenstruation,
       meals,
       workout: { focus: day.focus, workout: day.workout, reason: workoutReason },
       focusTips,
-      anticipationNote: isAnticipated ? anticipationTip : null,
+      anticipationNote: isAnticipated ? anticipationTip : predictedNote,
       snackTip,
       hydrationTip,
     }

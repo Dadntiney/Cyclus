@@ -81,3 +81,51 @@ export function estimateCycle(
     isEstimate: true,
   }
 }
+
+/**
+ * Calendar math may land on menstruatie day 1 before she has actually
+ * started. Soft planning may still tilt gently; presentation must not
+ * claim menstruatie until she starts (`active_period_start`) or that
+ * date is already logged as bleed.
+ */
+export function isMenstruationConfirmedForDate(
+  dateISO: string,
+  activePeriodStart: string | null,
+  loggedMenstruationDates?: ReadonlySet<string> | null,
+): boolean {
+  if (loggedMenstruationDates?.has(dateISO)) return true
+  if (activePeriodStart && dateISO >= activePeriodStart) return true
+  return false
+}
+
+/**
+ * Turns a raw estimate into what we show / plan as the day's phase.
+ * Predicted menstruatie without an active start becomes late luteaal —
+ * still an estimate, never "menstruatiedag N".
+ */
+export function resolvePresentedCycleEstimate(
+  estimate: CycleEstimate | null,
+  dateISO: string,
+  activePeriodStart: string | null,
+  averageCycleLength?: number | null,
+  loggedMenstruationDates?: ReadonlySet<string> | null,
+): CycleEstimate | null {
+  if (!estimate) return null
+  if (estimate.phase !== "menstruatie") return estimate
+  if (isMenstruationConfirmedForDate(dateISO, activePeriodStart, loggedMenstruationDates)) {
+    return estimate
+  }
+
+  const cycleLength =
+    averageCycleLength != null && averageCycleLength >= 21 && averageCycleLength <= 45
+      ? averageCycleLength
+      : 28
+
+  return {
+    // End of cycle — waiting for her to start, not day 1 of a bleed.
+    cycleDay: cycleLength,
+    phase: "luteaal",
+    phaseLabel: PHASE_LABELS.luteaal,
+    isEstimate: true,
+  }
+}

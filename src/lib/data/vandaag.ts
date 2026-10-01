@@ -2,7 +2,7 @@ import { cache } from "react"
 import { differenceInCalendarDays, format, parseISO, startOfWeek, subDays } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
-import { estimateCycle } from "@/lib/cycle/estimate"
+import { estimateCycle, resolvePresentedCycleEstimate } from "@/lib/cycle/estimate"
 import { computeCycleHistory, getEffectiveLastPeriodStart, withActivePeriod } from "@/lib/cycle/history"
 import {
   computeCycleLengthTrend,
@@ -196,7 +196,13 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
       )
     : null
   // Prefer the week-plan estimate for today when present — same phase as Deze week.
-  const dayCycleEstimate = todayPlan?.cycleEstimate ?? cycleEstimate
+  // Always gate predicted menstruatie behind an active start (or logged bleed).
+  const dayCycleEstimate = resolvePresentedCycleEstimate(
+    todayPlan?.cycleEstimate ?? cycleEstimate,
+    today,
+    activePeriodStart,
+    cycleProfile?.average_cycle_length,
+  )
 
   const menstruationDay = activePeriodStart
     ? differenceInCalendarDays(parseISO(today), parseISO(activePeriodStart)) + 1

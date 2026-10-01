@@ -85,16 +85,18 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
 
   if (!profile) return null
 
-  const cycleHistory = computeCycleHistory(
-    withActivePeriod(
-      cycleLogs.map((l) => ({
-        date: l.date,
-        menstruation: l.menstruation,
-        symptoms: l.symptoms,
-      })),
-      cycleProfile?.active_period_start ?? null,
-      todayISO,
-    ),
+  const logsWithActive = withActivePeriod(
+    cycleLogs.map((l) => ({
+      date: l.date,
+      menstruation: l.menstruation,
+      symptoms: l.symptoms,
+    })),
+    cycleProfile?.active_period_start ?? null,
+    todayISO,
+  )
+  const cycleHistory = computeCycleHistory(logsWithActive)
+  const loggedMenstruationDates = new Set(
+    logsWithActive.filter((l) => l.menstruation).map((l) => l.date),
   )
   const effectiveLastStart = cycleProfile
     ? getEffectiveLastPeriodStart(cycleProfile.last_period_start, cycleHistory)
@@ -147,6 +149,7 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
     anticipationSoftDates: anticipation?.softDates ?? [],
     anticipationTip: anticipation ? anticipation.body : null,
     lifeStage: cycleProfile?.life_stage ?? null,
+    loggedMenstruationDates,
   })
 
   // Bend today's workout with check-in so Deze week matches Vandaag.
