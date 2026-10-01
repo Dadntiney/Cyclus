@@ -7,7 +7,10 @@ import { nl } from "date-fns/locale"
 import { ShoppingCart, ChevronRight, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
-import { formatPresentedCycleHeadline } from "@/lib/cycle/presented-estimate"
+import {
+  formatPresentedCycleHeadline,
+  PREDICTED_MENSTRUATION_NOTE,
+} from "@/lib/cycle/presented-estimate"
 import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
 import { PhaseSnackTipCard } from "@/components/cycle/phase-snack-tip-card"
 import { PhaseHydrationTipCard } from "@/components/cycle/phase-hydration-tip-card"
@@ -117,11 +120,18 @@ export function WeekView({
       {phaseContent && day.cycleEstimate && (
         <p className={cn("text-sm leading-relaxed px-0.5", phaseContent.colors.text)}>
           <span className="font-medium">
-            {formatPresentedCycleHeadline(day.cycleEstimate, day.date, activePeriodStart)}
+            {formatPresentedCycleHeadline(
+              day.cycleEstimate,
+              day.date,
+              activePeriodStart,
+              day.predictedMenstruation,
+            )}
           </span>
           <span className="text-ink-soft">
             {" — "}
-            {day.anticipationNote ?? phaseContent.shortDescription}
+            {day.predictedMenstruation
+              ? (day.anticipationNote ?? PREDICTED_MENSTRUATION_NOTE)
+              : (day.anticipationNote ?? phaseContent.shortDescription)}
           </span>
         </p>
       )}

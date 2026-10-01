@@ -200,9 +200,15 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     : null
 
   // Same row as Deze week when the week plan loaded — never re-resolve differently.
-  const dayCycleEstimate =
-    todayPlan?.cycleEstimate ??
-    resolvePresentedForDate(today, effectiveCycleProfile, loggedMenstruationDates).estimate
+  const presentedToday =
+    todayPlan != null
+      ? {
+          estimate: todayPlan.cycleEstimate,
+          predictedMenstruation: todayPlan.predictedMenstruation,
+        }
+      : resolvePresentedForDate(today, effectiveCycleProfile, loggedMenstruationDates)
+  const dayCycleEstimate = presentedToday.estimate
+  const predictedMenstruation = presentedToday.predictedMenstruation
 
   const menstruationDay = activePeriodStart
     ? differenceInCalendarDays(parseISO(today), parseISO(activePeriodStart)) + 1
@@ -386,6 +392,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     cycleProfile,
     checkin,
     cycleEstimate: dayCycleEstimate,
+    predictedMenstruation,
     isMenstruationActive: activePeriodStart !== null,
     menstruationDay,
     recommendation,

@@ -4,6 +4,7 @@ import type { Tables } from "@/types/database"
 import type { CycleEstimate } from "@/lib/cycle/estimate"
 import { resolvePresentedForDate } from "@/lib/cycle/presented-estimate"
 import { getPhaseContent, getDailyPhaseSnackTip, getDailyPhaseHydrationTip, type PhaseSnackTip, type PhaseHydrationTip } from "@/lib/cycle/phase-content"
+import { PREDICTED_MENSTRUATION_NOTE } from "@/lib/cycle/presented-estimate"
 import { buildWeeklyProgram, type DayFocus } from "@/lib/recommendations/weekly-program"
 import { lifeStagePrefersGentler } from "@/lib/recommendations/life-stage-bias"
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
@@ -304,9 +305,7 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
     if (isAnticipated && anticipationTip) {
       focusTips.push(anticipationTip)
     } else if (predictedMenstruation) {
-      focusTips.push(
-        "Menstruatie kan rond nu komen — een schatting, geen feit. Start zelf wanneer het zo is.",
-      )
+      focusTips.push(PREDICTED_MENSTRUATION_NOTE)
     } else if (phaseContent) {
       const tips = phaseContent.lifestyleTips
       const first = tips.length
@@ -324,9 +323,7 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
       : null
 
     const predictedNote =
-      predictedMenstruation && !isAnticipated
-        ? "Menstruatie kan rond nu komen — we gaan er pas vanuit als jij start."
-        : null
+      predictedMenstruation && !isAnticipated ? PREDICTED_MENSTRUATION_NOTE : null
 
     return {
       date: dateISO,

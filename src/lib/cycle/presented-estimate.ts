@@ -15,6 +15,10 @@ export type CycleProfileForPresentation = Pick<
   | "active_period_start"
 >
 
+/** Soft copy when the calendar says bleed could start, but she has not. */
+export const PREDICTED_MENSTRUATION_NOTE =
+  "Menstruatie kan rond nu komen — we gaan er pas vanuit als jij start."
+
 export function loggedMenstruationDateSet(
   logs: ReadonlyArray<{ date: string; menstruation: boolean | null }>,
 ): Set<string> {
@@ -55,13 +59,20 @@ export function resolvePresentedForDate(
   return { estimate, predictedMenstruation }
 }
 
-/** Headline for week + Vandaag — same cyclusdag rules everywhere. */
+/**
+ * Headline for week + Vandaag.
+ * Predicted bleed: no hard cyclusdag — “kan komen” until she starts.
+ */
 export function formatPresentedCycleHeadline(
   estimate: CycleEstimate,
   dateISO: string,
   activePeriodStart: string | null,
+  predictedMenstruation = false,
 ): string {
   const phaseLabel = estimate.phaseLabel
+  if (predictedMenstruation) {
+    return `${phaseLabel} · kan komen`
+  }
   if (estimate.phase === "menstruatie" && activePeriodStart && dateISO >= activePeriodStart) {
     const menstruationDay =
       differenceInCalendarDays(parseISO(dateISO), parseISO(activePeriodStart)) + 1

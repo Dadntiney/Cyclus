@@ -67,6 +67,7 @@ export default async function VandaagPage() {
     cycleEstimate,
     isMenstruationActive,
     menstruationDay,
+    predictedMenstruation,
     recommendation,
     bodyRecognition,
     anticipation,
@@ -134,11 +135,15 @@ export default async function VandaagPage() {
     !(profile?.movement_enabled ?? true)
 
   // When roadmap follows, keep the phase chip short — avoid repeating the same story.
-  const phaseSubtitle = cycleEstimate
-    ? hormoneRoadmap
-      ? PHASE_TAGLINE[cycleEstimate.phase]
-      : (bodyRecognition?.text ?? PHASE_TAGLINE[cycleEstimate.phase])
-    : ""
+  // Predicted bleed (not started): soft line instead of a hard cycle-day claim.
+  const phaseSubtitle =
+    predictedMenstruation && !isMenstruationActive
+      ? ""
+      : cycleEstimate
+        ? hormoneRoadmap
+          ? PHASE_TAGLINE[cycleEstimate.phase]
+          : (bodyRecognition?.text ?? PHASE_TAGLINE[cycleEstimate.phase])
+        : ""
 
   const checkinForm = (
     <CheckinForm
@@ -176,6 +181,7 @@ export default async function VandaagPage() {
                 hasCycle={hasCycle}
                 isMenstruationActive={isMenstruationActive}
                 menstruationDay={menstruationDay}
+                predictedMenstruation={predictedMenstruation}
               />
             </div>
           ) : hasCycle && isMenstruationActive && menstruationDay ? (

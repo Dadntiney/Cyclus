@@ -6,6 +6,7 @@ import Link from "next/link"
 import { ChevronRight, Droplet } from "lucide-react"
 import { startMenstruationPeriod, stopMenstruationPeriod } from "@/lib/actions/cycle"
 import type { CyclePhase } from "@/lib/cycle/estimate"
+import { PREDICTED_MENSTRUATION_NOTE } from "@/lib/cycle/presented-estimate"
 import { cn } from "@/lib/utils"
 
 const PHASE_TONE: Record<CyclePhase, { bg: string; text: string }> = {
@@ -30,6 +31,9 @@ const PHASE_TONE: Record<CyclePhase, { bg: string; text: string }> = {
 /**
  * One phase surface on Vandaag: day + label + short line, with menstruatie
  * start/stop folded in — never a second duplicate card.
+ *
+ * When bleed is only predicted (not started), skip the big cycle-day number —
+ * that digit feels like a claim; soft “kan komen” copy is clearer.
  */
 export function PhaseContextCard({
   phase,
@@ -39,6 +43,7 @@ export function PhaseContextCard({
   hasCycle,
   isMenstruationActive,
   menstruationDay,
+  predictedMenstruation = false,
 }: {
   phase: CyclePhase
   phaseLabel: string
@@ -47,11 +52,21 @@ export function PhaseContextCard({
   hasCycle: boolean
   isMenstruationActive: boolean
   menstruationDay: number | null
+  predictedMenstruation?: boolean
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const tone = PHASE_TONE[phase]
+  const softPredicted = predictedMenstruation && !isMenstruationActive
+
+  const title = softPredicted
+    ? `${phaseLabel} · kan komen`
+    : isMenstruationActive && menstruationDay
+      ? `${phaseLabel} · dag ${menstruationDay}`
+      : phaseLabel
+
+  const line = softPredicted ? PREDICTED_MENSTRUATION_NOTE : subtitle
 
   function handleMenstruation() {
     setError(null)
@@ -73,23 +88,19 @@ export function PhaseContextCard({
         href="/cyclus/vandaag"
         className="flex items-center gap-3 px-3.5 py-2.5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
       >
-        <span
-          className={cn(
-            "font-display text-xl leading-none tabular-nums shrink-0",
-            tone.text,
-          )}
-        >
-          {cycleDay}
-        </span>
+        {!softPredicted && (
+          <span
+            className={cn(
+              "font-display text-xl leading-none tabular-nums shrink-0",
+              tone.text,
+            )}
+          >
+            {isMenstruationActive && menstruationDay ? menstruationDay : cycleDay}
+          </span>
+        )}
         <span className="min-w-0 flex-1">
-          <span className={cn("block text-sm font-medium", tone.text)}>
-            {isMenstruationActive && menstruationDay
-              ? `${phaseLabel} · dag ${menstruationDay}`
-              : phaseLabel}
-          </span>
-          <span className="block text-xs text-ink-soft mt-0.5 leading-relaxed">
-            {subtitle}
-          </span>
+          <span className={cn("block text-sm font-medium", tone.text)}>{title}</span>
+          <span className="block text-xs text-ink-soft mt-0.5 leading-relaxed">{line}</span>
         </span>
         <ChevronRight
           className={cn("h-4 w-4 shrink-0 opacity-70", tone.text)}
