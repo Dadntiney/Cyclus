@@ -239,7 +239,7 @@ export function WeekView({
               <div
                 className={cn(
                   "divide-y divide-line",
-                  showMovement && "border-t border-sage/15",
+                  showMovement && "border-t border-line",
                 )}
               >
                 {showMeals && (

@@ -36,7 +36,7 @@ export default async function SlaapPage() {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         <BackButton href="/vandaag" label="Vandaag" />
-        <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Slaap</h1>
+        <h1 className="font-display text-3xl lg:text-4xl text-ink mb-1">Slaap</h1>
         <p className="text-sm text-ink-soft mb-6">Je slaapduur en eenvoudige inzichten.</p>
         <Card>
           <EmptyState
@@ -95,8 +95,8 @@ export default async function SlaapPage() {
           )}
           {sleepSymptomInsights.length > 0 && (
             <div>
-              <h2 className="font-display text-lg text-ink mb-3">Slaap & klachten</h2>
-              <Card className="p-0 divide-y divide-sage/20">
+              <h2 className="font-display text-xl text-ink mb-3">Slaap & klachten</h2>
+              <Card className="p-0 divide-y divide-line">
                 {sleepSymptomInsights.map((insight) => (
                   <p key={insight.symptom} className="text-sm text-ink-soft leading-relaxed px-4 py-3.5">
                     {formatSleepSymptomInsight(insight)}
@@ -108,7 +108,7 @@ export default async function SlaapPage() {
         </div>
       )}
 
-      <h2 className="font-display text-lg text-ink mb-3">Laatste nachten</h2>
+      <h2 className="font-display text-xl text-ink mb-3">Laatste nachten</h2>
       {recentEntries.length ? (
         <>
           {(() => {
@@ -130,7 +130,7 @@ export default async function SlaapPage() {
               </Card>
             )
           })()}
-          <Card className="p-0 divide-y divide-sage/20">
+          <Card className="p-0 divide-y divide-line">
             {recentEntries.map((entry) => {
               const hasDuration = Boolean(entry.bedtime && entry.wake_time)
               const feeling = entry.wake_feeling ? WAKE_FEELING_BY_VALUE.get(entry.wake_feeling) : null

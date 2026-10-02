@@ -30,7 +30,7 @@ export default async function FavorietenPage() {
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
       <div>
         <BackButton href="/vandaag" label="Vandaag" />
-        <h1 className="font-display text-2xl lg:text-3xl text-ink flex items-center gap-2">
+        <h1 className="font-display text-3xl lg:text-4xl text-ink flex items-center gap-2">
           <Heart className="h-6 w-6 text-peach" fill="currentColor" strokeWidth={0} aria-hidden />
           Favorieten
         </h1>
@@ -49,11 +49,11 @@ export default async function FavorietenPage() {
         <>
           {moments.length > 0 && (
             <section>
-              <h2 className="font-display text-lg text-ink inline-flex items-center gap-2 mb-3">
+              <h2 className="font-display text-xl text-ink inline-flex items-center gap-2 mb-3">
                 <Sparkles className="h-4 w-4 text-sage-dark" strokeWidth={1.75} aria-hidden />
                 Bewaarde momenten
               </h2>
-              <Card className="p-0 divide-y divide-sage/20">
+              <Card className="p-0 divide-y divide-line">
                 {moments.slice(0, 12).map((moment) => (
                   <div key={moment.id} className="flex items-start gap-3 px-4 py-3">
                     <div className="min-w-0 flex-1">
@@ -78,7 +78,7 @@ export default async function FavorietenPage() {
 
           <section>
             <div className="flex items-center justify-between gap-3 mb-3">
-              <h2 className="font-display text-lg text-ink inline-flex items-center gap-2">
+              <h2 className="font-display text-xl text-ink inline-flex items-center gap-2">
                 <Salad className="h-4 w-4 text-sage-dark" strokeWidth={1.75} aria-hidden />
                 Recepten
               </h2>
@@ -93,7 +93,7 @@ export default async function FavorietenPage() {
               )}
             </div>
             {recipes.length ? (
-              <Card className="p-0 divide-y divide-sage/20">
+              <Card className="p-0 divide-y divide-line">
                 {recipes.slice(0, 6).map((recipe) => (
                   <Link
                     key={recipe.id}
@@ -134,7 +134,7 @@ export default async function FavorietenPage() {
 
           <section>
             <div className="flex items-center justify-between gap-3 mb-3">
-              <h2 className="font-display text-lg text-ink inline-flex items-center gap-2">
+              <h2 className="font-display text-xl text-ink inline-flex items-center gap-2">
                 <Dumbbell className="h-4 w-4 text-sage-dark" strokeWidth={1.75} aria-hidden />
                 Oefeningen
               </h2>
@@ -149,7 +149,7 @@ export default async function FavorietenPage() {
               )}
             </div>
             {exercises.length ? (
-              <Card className="p-0 divide-y divide-sage/20">
+              <Card className="p-0 divide-y divide-line">
                 {exercises.slice(0, 8).map((exercise) => (
                   <Link
                     key={exercise.id}

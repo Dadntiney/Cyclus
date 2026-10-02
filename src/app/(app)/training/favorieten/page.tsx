@@ -16,12 +16,12 @@ export default async function TrainingFavorietenPage() {
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
       <div>
         <BackButton href="/training" label="Beweging" />
-        <h1 className="font-display text-2xl lg:text-3xl text-ink">Favoriete oefeningen</h1>
+        <h1 className="font-display text-3xl lg:text-4xl text-ink">Favoriete oefeningen</h1>
         <p className="text-sm text-ink-soft mt-1">Jouw opgeslagen oefeningen.</p>
       </div>
 
       {exercises.length ? (
-        <Card className="p-0 divide-y divide-sage/20">
+        <Card className="p-0 divide-y divide-line">
           {exercises.map((exercise) => (
             <Link
               key={exercise.id}

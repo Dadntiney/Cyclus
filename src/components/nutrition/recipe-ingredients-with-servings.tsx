@@ -60,7 +60,7 @@ export function RecipeIngredientsWithServings({
   }
 
   return (
-    <div className="rounded-3xl bg-sage-soft/50 p-4 lg:p-5">
+    <div className="rounded-[1.25rem] bg-surface border border-line p-4 lg:p-5">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="min-w-0">
           <p className="text-sm font-medium text-ink">
