@@ -20,6 +20,21 @@ function parseStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((i): i is string => typeof i === "string") : []
 }
 
+/** Stored keys are plain ASCII ("calorieen"); show proper Dutch with units. */
+const NUTRITION_LABELS: Record<string, { label: string; unit?: string }> = {
+  calorieen: { label: "Energie", unit: "kcal" },
+  eiwit: { label: "Eiwit" },
+  koolhydraten: { label: "Koolhydraten" },
+  vet: { label: "Vet" },
+}
+
+const NUTRITION_ORDER = ["calorieen", "eiwit", "koolhydraten", "vet"]
+
+function nutritionOrder(key: string) {
+  const i = NUTRITION_ORDER.indexOf(key)
+  return i === -1 ? NUTRITION_ORDER.length : i
+}
+
 export default async function RecipeDetailPage({
   params,
 }: {
@@ -148,12 +163,19 @@ export default async function RecipeDetailPage({
             <Card>
               <p className="text-sm font-medium text-ink mb-3">Voedingswaarden (per portie)</p>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                {Object.entries(nutrition).map(([key, value]) => (
-                  <div key={key} className="flex justify-between">
-                    <span className="text-ink-soft capitalize">{key}</span>
-                    <span className="text-ink font-medium">{value}</span>
-                  </div>
-                ))}
+                {Object.entries(nutrition)
+                  .sort(([a], [b]) => nutritionOrder(a) - nutritionOrder(b))
+                  .map(([key, value]) => (
+                    <div key={key} className="flex justify-between">
+                      <span className="text-ink-soft">{NUTRITION_LABELS[key]?.label ?? key}</span>
+                      <span className="text-ink font-medium tabular-nums">
+                        {String(value)}
+                        {NUTRITION_LABELS[key]?.unit && /^\d+([.,]\d+)?$/.test(String(value).trim())
+                          ? ` ${NUTRITION_LABELS[key].unit}`
+                          : ""}
+                      </span>
+                    </div>
+                  ))}
               </div>
             </Card>
           )}

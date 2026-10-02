@@ -30,6 +30,7 @@ const UNIT_WORDS = new Set([
   "theelepel",
   "theelepels",
   "blik",
+  "blikken",
   "blikje",
   "blikjes",
   "teentje",
@@ -58,6 +59,7 @@ const UNIT_ALIASES: Record<string, string> = {
   teentjes: "teentje",
   sneetjes: "snee",
   stuks: "stuk",
+  blikken: "blik",
   blikje: "blik",
   blikjes: "blik",
   plakjes: "plakje",
@@ -111,8 +113,15 @@ function formatQuantity(amount: number, unit: string): string {
     blik: "blikken",
     stuk: "stuks",
   }
-  let displayUnit = unit
-  if (Math.abs(amount - 1) > 0.05 && plural[unit]) displayUnit = plural[unit]
+  const singular: Record<string, string> = {
+    teentjes: "teentje",
+    sneetjes: "snee",
+    plakjes: "plakje",
+    blikken: "blik",
+    stuks: "stuk",
+  }
+  // Dutch: "½ blik", "1 blik", "2 blikken" — only more than one is plural.
+  const displayUnit = amount > 1.05 ? (plural[unit] ?? unit) : (singular[unit] ?? unit)
   return `${n} ${displayUnit}`
 }
 

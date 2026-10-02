@@ -7,6 +7,7 @@ import { nl } from "date-fns/locale"
 import { ShoppingCart, ChevronRight, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
+import { phaseTagline } from "@/lib/cycle/day-lens"
 import {
   formatPresentedCycleHeadline,
   softMenstruationNote,
@@ -32,6 +33,10 @@ interface WeekViewProps {
   movementEnabled: boolean
   nutritionEnabled: boolean
   completedWorkoutsByDate?: Record<string, CompletedWorkoutInfo>
+  /** 40+ / irregular / overgang signals — phase is only a rough guess. */
+  changingCycle?: boolean
+  /** Today's check-in says tired / in need of rest. */
+  todayLow?: boolean
 }
 
 export function WeekView({
@@ -45,6 +50,8 @@ export function WeekView({
   movementEnabled,
   nutritionEnabled,
   completedWorkoutsByDate = {},
+  changingCycle = false,
+  todayLow = false,
 }: WeekViewProps) {
   const todayIndex = Math.max(
     0,
@@ -132,7 +139,12 @@ export function WeekView({
               ? (day.anticipationNote ??
                   softMenstruationNote(day.menstruationSoftHint) ??
                   PREDICTED_MENSTRUATION_NOTE)
-              : (day.anticipationNote ?? phaseContent.shortDescription)}
+              : (day.anticipationNote ??
+                  (day.isToday && todayLow
+                    ? phaseTagline(day.cycleEstimate.phase, { lowDay: true })
+                    : changingCycle
+                      ? phaseTagline(day.cycleEstimate.phase, { changingCycle: true })
+                      : phaseContent.shortDescription))}
           </span>
         </p>
       )}
@@ -292,7 +304,8 @@ export function WeekView({
         {/* Snack/hydration tips live on Vandaag and phase nutrition on the
             Cyclusdag page — Week stays the plan only (usertest: the same
             tips showed up three times). */}
-        {day.focusTips[0] && (
+        {/* A phase "use your energy" tip never contradicts a tired check-in. */}
+        {day.focusTips[0] && !(day.isToday && todayLow) && (
           <p className="text-sm text-ink-soft leading-relaxed px-0.5 mt-4 inline-flex gap-2">
             <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5 text-sage-dark" strokeWidth={1.75} aria-hidden />
             <span>{day.focusTips[0]}</span>

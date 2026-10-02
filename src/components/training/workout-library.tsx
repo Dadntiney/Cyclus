@@ -69,7 +69,7 @@ export function WorkoutLibrary({ workouts }: { workouts: Workout[] }) {
                     <p className="text-xs text-ink-soft">
                       {DIFFICULTY_LABELS[workout.difficulty] ?? workout.difficulty}
                     </p>
-                    <p className="font-medium text-ink text-sm mt-0.5 truncate">{workout.title}</p>
+                    <p className="font-medium text-ink text-sm mt-0.5 line-clamp-2 break-words">{workout.title}</p>
                   </div>
                 </div>
                 <span className="text-xs text-ink-soft shrink-0">{workout.duration} min</span>

@@ -1,10 +1,18 @@
 "use client"
 
-import { useEffect, useRef, useState, useTransition, type FormEvent } from "react"
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useTransition,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react"
 import { Send } from "lucide-react"
 import { sendBuddyMessage } from "@/lib/actions/buddy"
 import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/input"
 import { EmptyState } from "@/components/ui/empty-state"
 import { BuddyMark } from "@/components/buddy/buddy-mark"
 import type { Tables } from "@/types/database"
@@ -14,6 +22,10 @@ type Message = Tables<"buddy_messages">
 
 let localIdCounter = 0
 
+/** Composer grows with her message up to this many px, then scrolls. */
+const COMPOSER_MAX_HEIGHT = 140
+/** Within this distance of the end, the thread counts as "at the bottom". */
+const BOTTOM_SLACK = 80
 
 const STARTER_QUESTIONS = [
   "Waarom slaap ik slechter rond mijn menstruatie?",
@@ -36,6 +48,38 @@ export function ChatWindow({
   const scrollRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const didMountScroll = useRef(false)
+  const composerRef = useRef<HTMLTextAreaElement>(null)
+  // Whether she is reading the newest messages — then a shrinking view
+  // (soft keyboard opening) keeps the newest message in sight instead of
+  // hiding it under the composer.
+  const atBottom = useRef(true)
+
+  useEffect(() => {
+    const scroller = scrollRef.current
+    if (!scroller) return
+    const onScroll = () => {
+      atBottom.current =
+        scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < BOTTOM_SLACK
+    }
+    const observer = new ResizeObserver(() => {
+      if (atBottom.current) scroller.scrollTop = scroller.scrollHeight
+    })
+    scroller.addEventListener("scroll", onScroll, { passive: true })
+    observer.observe(scroller)
+    return () => {
+      scroller.removeEventListener("scroll", onScroll)
+      observer.disconnect()
+    }
+  }, [])
+
+  // Auto-grow the composer so a longer message stays readable while typing.
+  useLayoutEffect(() => {
+    const el = composerRef.current
+    if (!el) return
+    el.style.height = "auto"
+    el.style.height = `${Math.min(el.scrollHeight, COMPOSER_MAX_HEIGHT)}px`
+    el.style.overflowY = el.scrollHeight > COMPOSER_MAX_HEIGHT ? "auto" : "hidden"
+  }, [input])
 
   function scrollToBottom(behavior: ScrollBehavior = "smooth") {
     const run = () => {
@@ -63,6 +107,14 @@ export function ChatWindow({
     scrollToBottom("smooth")
   }, [messages, isPending])
 
+  function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    // Enter sends (the keyboard shows "verstuur"); Shift+Enter is a new line.
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault()
+      e.currentTarget.form?.requestSubmit()
+    }
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     const trimmed = input.trim()
@@ -76,6 +128,7 @@ export function ChatWindow({
       message: trimmed,
       created_at: new Date().toISOString(),
     }
+    atBottom.current = true
     setMessages((prev) => [...prev, optimisticMessage])
     setInput("")
 
@@ -107,7 +160,11 @@ export function ChatWindow({
     <div className="flex flex-col flex-1 min-h-0">
       <div
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 lg:px-8 py-4 flex flex-col gap-3"
+        role="log"
+        aria-live="polite"
+        aria-label="Gesprek met je Buddy"
+        tabIndex={0}
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 lg:px-8 py-4 flex flex-col gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sage/40"
       >
         {messages.length === 0 && (
           <div className="flex flex-col items-center">
@@ -122,7 +179,10 @@ export function ChatWindow({
                 <button
                   key={q}
                   type="button"
-                  onClick={() => setInput(q)}
+                  onClick={() => {
+                    setInput(q)
+                    composerRef.current?.focus()
+                  }}
                   className="text-left text-sm text-ink rounded-2xl bg-surface border border-line px-4 py-3 min-h-11 touch-manipulation transition-colors hover:border-ink/30 active:bg-cream-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
                 >
                   {q}
@@ -155,8 +215,16 @@ export function ChatWindow({
         {isPending && (
           <div className="flex justify-start items-end gap-2">
             <BuddyMark size="sm" className="mb-0.5" decorative />
-            <div className="bg-surface border border-line rounded-[1.25rem] rounded-bl-md px-4 py-3 text-sm text-ink-soft">
-              Aan het typen...
+            <div className="bg-surface border border-line rounded-[1.25rem] rounded-bl-md px-4 py-4 flex items-center gap-1.5">
+              <span className="sr-only">Je Buddy schrijft een antwoord</span>
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  aria-hidden
+                  className="h-1.5 w-1.5 rounded-full bg-ink-soft/60 motion-safe:animate-[typing-dot_1.2s_ease-in-out_infinite]"
+                  style={{ animationDelay: `${i * 0.18}s` }}
+                />
+              ))}
             </div>
           </div>
         )}
@@ -167,22 +235,25 @@ export function ChatWindow({
 
       <form
         onSubmit={handleSubmit}
-        className="shrink-0 flex items-center gap-2 py-3 border-t border-line bg-cream"
+        className="shrink-0 flex items-end gap-2 py-3 border-t border-line bg-cream"
         style={{
           paddingLeft: "max(1.25rem, env(safe-area-inset-left))",
           paddingRight: "max(1.25rem, env(safe-area-inset-right))",
         }}
       >
-        <Input
+        <Textarea
+          ref={composerRef}
+          rows={1}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Typ een bericht..."
+          onKeyDown={handleKeyDown}
+          placeholder="Typ een bericht…"
           aria-label="Typ een bericht aan je Buddy"
           maxLength={4000}
           enterKeyHint="send"
           autoComplete="off"
           autoCorrect="on"
-          className="rounded-full min-h-12"
+          className="rounded-3xl min-h-12 py-3 leading-6 overscroll-contain"
         />
         <button
           type="submit"

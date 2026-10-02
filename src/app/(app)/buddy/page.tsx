@@ -20,14 +20,15 @@ export default async function BuddyPage() {
 
   return (
     <BuddyShell>
-      <div className="px-5 lg:px-8 pt-4 lg:pt-8 pb-2 shrink-0 border-b border-line bg-cream">
-        <div className="flex items-center gap-2.5 mb-1">
+      <div className="px-5 lg:px-8 pt-3 lg:pt-8 pb-2.5 shrink-0 border-b border-line bg-cream">
+        <div className="flex items-center gap-2.5">
           <BuddyMark size="md" />
-          <h1 className="font-display text-3xl lg:text-4xl text-ink">Buddy</h1>
+          <h1 className="font-display text-2xl lg:text-4xl text-ink">Buddy</h1>
         </div>
-        <p className="text-sm text-ink-soft mt-1">
-          Geen diagnoses — wel een luisterend oor. Bij ernstige klachten: raadpleeg een
-          zorgprofessional.
+        {/* Hidden while typing so the conversation keeps the room. */}
+        <p className="text-xs lg:text-sm text-ink-soft mt-1.5 leading-relaxed group-data-[keyboard=open]/buddy:hidden">
+          Geen diagnoses, wel een luisterend oor. Bij ernstige klachten: neem contact op met
+          je huisarts.
         </p>
       </div>
       {needsAiConsent && <BuddyAiConsentCard />}

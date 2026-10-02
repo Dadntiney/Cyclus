@@ -20,7 +20,8 @@ export function ServingsStepper({
   className?: string
   size?: "sm" | "md"
 }) {
-  const btn = size === "sm" ? "h-9 w-9" : "h-11 w-11"
+  // Small variant keeps its look but still gets a 44px hit area.
+  const btn = size === "sm" ? "relative h-9 w-9 after:absolute after:-inset-1" : "h-11 w-11"
   const num = size === "sm" ? "text-sm min-w-6" : "text-base min-w-7"
 
   return (

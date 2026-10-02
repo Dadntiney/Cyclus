@@ -19,7 +19,7 @@ export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
         sizes="(min-width: 1024px) 25vw, 50vw"
       />
       <div className="flex flex-col flex-1 p-3 sm:p-4">
-        <p className="font-display text-base sm:text-lg leading-snug text-ink line-clamp-2">
+        <p className="font-display text-base sm:text-lg leading-snug text-ink line-clamp-2 break-words hyphens-auto">
           {recipe.title}
         </p>
         {recipe.description && (

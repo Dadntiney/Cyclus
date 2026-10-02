@@ -222,7 +222,7 @@ export function MedicationWizard({
       {stepId === "reminder" && <ReminderStep data={data} setData={setData} />}
       {stepId === "notes" && (
         <div>
-          <h2 className="font-display text-2xl text-ink mb-2">Nog iets voor jezelf?</h2>
+          <h1 className="font-display text-2xl text-ink mb-2">Nog iets voor jezelf?</h1>
           <p className="text-ink-soft text-sm mb-6">
             Optioneel. Bijvoorbeeld een opmerking van je arts of iets wat je wilt onthouden.
           </p>
@@ -267,7 +267,7 @@ function CategoryStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Wat wil je toevoegen?</h2>
+      <h1 className="font-display text-2xl text-ink mb-2">Wat wil je toevoegen?</h1>
       <p className="text-ink-soft text-sm mb-6">
         Kies wat het beste past. Je kunt hierna altijd meer items toevoegen.
       </p>
@@ -304,7 +304,7 @@ function NameStep({
 
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Wat gebruik je?</h2>
+      <h1 className="font-display text-2xl text-ink mb-2">Wat gebruik je?</h1>
       <p className="text-ink-soft text-sm mb-6">
         Voer hier alleen in wat je van je arts, apotheker of bijsluiter hebt gekregen. De app
         geeft geen persoonlijk medisch advies en bepaalt niet welke dosering of behandeling voor
@@ -354,7 +354,7 @@ function FormStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Hoe gebruik je het?</h2>
+      <h1 className="font-display text-2xl text-ink mb-2">Hoe gebruik je het?</h1>
       <p className="text-ink-soft text-sm mb-6">Optioneel, maar handig voor je eigen overzicht.</p>
 
       <p className="text-sm font-medium text-ink mb-2">Vorm</p>
@@ -395,7 +395,7 @@ function ScheduleStep({
 
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Wat is jouw voorgeschreven schema?</h2>
+      <h1 className="font-display text-2xl text-ink mb-2">Wat is jouw voorgeschreven schema?</h1>
       <p className="text-ink-soft text-sm mb-6">
         Precies zoals jij het gebruikt — de app bepaalt hier niets voor je, het onthoudt alleen
         wat jij invult.
@@ -607,7 +607,7 @@ function ReminderStep({
 
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Wil je hier een herinnering voor?</h2>
+      <h1 className="font-display text-2xl text-ink mb-2">Wil je hier een herinnering voor?</h1>
       <p className="text-ink-soft text-sm mb-6">
         We laten dan een rustige melding zien, bijvoorbeeld &ldquo;Herinnering: je hebt vandaag{" "}
         {data.name.trim() || "dit"} ingepland.&rdquo; Dit stel je hier in bij deze medicatie — niet
@@ -730,7 +730,7 @@ function ReviewStep({ data }: { data: WizardData }) {
   const stopLabel = isCyclisch ? "pauze-herinnering" : "stopmelding"
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Klopt dit?</h2>
+      <h1 className="font-display text-2xl text-ink mb-2">Klopt dit?</h1>
       <p className="text-ink-soft text-sm mb-6">
         Je kunt dit altijd later aanpassen of verwijderen bij &ldquo;Mijn medicatie&rdquo;.
       </p>

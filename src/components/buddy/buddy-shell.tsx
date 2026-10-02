@@ -81,7 +81,11 @@ export function BuddyShell({ children }: { children: ReactNode }) {
   return (
     <div
       ref={ref}
-      className="fixed inset-x-0 z-10 flex flex-col bg-cream max-w-3xl mx-auto md:static md:inset-auto md:z-auto md:top-auto md:bottom-auto md:h-[calc(100dvh-2.5rem)]"
+      // Pull-to-refresh stays off here: a pull at the top of the history is
+      // her scrolling back, not a request to reload the conversation.
+      data-no-pull-refresh=""
+      data-keyboard={frame.keyboardOpen ? "open" : "closed"}
+      className="group/buddy fixed inset-x-0 z-10 flex flex-col bg-cream max-w-3xl mx-auto md:static md:inset-auto md:z-auto md:top-auto md:bottom-auto md:h-[calc(100dvh-2.5rem)]"
       style={{
         top: "var(--mobile-header-h, 77px)",
         bottom: "var(--bottom-nav-h, 82px)",
