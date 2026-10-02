@@ -479,18 +479,18 @@ function WelcomeStep({
   return (
     <div className="text-center">
       <p className="text-sage-dark font-medium mb-3">Welkom bij GoFiev</p>
-      <h1 className="font-display text-3xl leading-snug text-ink mb-4">
+      <h1 className="font-display text-4xl leading-tight text-ink mb-4">
         Jouw lichaam.
         <br />
         Jouw ritme.
         <br />
         Jouw dag.
       </h1>
-      <p className="text-ink-soft text-sm mb-5">
+      <p className="text-ink-soft text-base leading-relaxed mb-6">
         Een paar korte vragen — ongeveer 2 minuten. Alles kun je later nog aanpassen in je
         profiel. Jij houdt de regie; niets hoeft perfect.
       </p>
-      <label className="flex items-start gap-2.5 text-left text-sm text-ink leading-snug cursor-pointer rounded-2xl bg-sage-soft/40 px-3.5 py-3">
+      <label className="flex items-start gap-2.5 text-left text-sm text-ink leading-snug cursor-pointer rounded-[1.25rem] bg-surface border border-line px-3.5 py-3">
         <input
           type="checkbox"
           checked={healthConsent}
@@ -517,8 +517,8 @@ function WelcomeStep({
 function NameStep({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Hoe mogen we je noemen?</h2>
-      <p className="text-ink-soft text-sm mb-6">Je naam gebruiken we om je welkom te heten.</p>
+      <h2 className="font-display text-3xl text-ink mb-3">Hoe mogen we je noemen?</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">Je naam gebruiken we om je welkom te heten.</p>
       <Label htmlFor="name">Naam</Label>
       <Input
         id="name"
@@ -534,8 +534,8 @@ function NameStep({ value, onChange }: { value: string; onChange: (v: string) =>
 function AgeStep({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Wat is je leeftijd?</h2>
-      <p className="text-ink-soft text-sm mb-6">
+      <h2 className="font-display text-3xl text-ink mb-3">Wat is je leeftijd?</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">
         Dit helpt ons om passendere aanbevelingen te doen.
       </p>
       <Label htmlFor="age">Leeftijd</Label>
@@ -563,8 +563,8 @@ function BodyStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Jouw lichaamsgegevens</h2>
-      <p className="text-ink-soft text-sm mb-6">
+      <h2 className="font-display text-3xl text-ink mb-3">Jouw lichaamsgegevens</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">
         Optioneel, maar helpt ons om je advies preciezer te maken. Je kunt dit altijd
         overslaan of later aanpassen.
       </p>
@@ -622,8 +622,8 @@ function CycleStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Jouw cyclus</h2>
-      <p className="text-ink-soft text-sm mb-6">
+      <h2 className="font-display text-3xl text-ink mb-3">Jouw cyclus</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">
         Elke cyclus is anders. We gaan nooit uit van een standaard van 28 dagen.
       </p>
 
@@ -728,8 +728,8 @@ function MultiSelectStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">{title}</h2>
-      <p className="text-ink-soft text-sm mb-6">{subtitle}</p>
+      <h2 className="font-display text-3xl text-ink mb-3">{title}</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">{subtitle}</p>
       <div className="flex flex-wrap gap-2">
         {options.map((opt) => (
           <Chip key={opt} selected={selected.includes(opt)} onClick={() => onToggle(opt)}>
@@ -751,8 +751,8 @@ function HealthStep({
   const hasAnySelection = data.healthConditions.length > 0 || data.movementLimitations.length > 0
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Aandachtspunten</h2>
-      <p className="text-ink-soft text-sm mb-6">
+      <h2 className="font-display text-3xl text-ink mb-3">Aandachtspunten</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">
         Optioneel. Dit helpt ons om trainingen en voeding beter op jou af te stemmen. GoFiev
         stelt geen diagnoses — dit is puur om je advies passender te maken.
       </p>
@@ -817,8 +817,8 @@ function OptionalModuleToggleStep({
       <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center">
         <Icon className="h-6 w-6 text-sage-dark" strokeWidth={1.75} />
       </div>
-      <h2 className="font-display text-2xl text-ink mb-2">{title}</h2>
-      <p className="text-ink-soft text-sm mb-6">{subtitle}</p>
+      <h2 className="font-display text-3xl text-ink mb-3">{title}</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">{subtitle}</p>
       <div className="flex gap-2 justify-center">
         <Chip selected={value === true} onClick={() => onChange(true)}>
           {yesLabel}
@@ -843,8 +843,8 @@ function MentalWellbeingToggleStep({
       <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center">
         <Brain className="h-6 w-6 text-sage-dark" strokeWidth={1.75} />
       </div>
-      <h2 className="font-display text-2xl text-ink mb-2">Wil je ook ondersteuning voor je mentale rust?</h2>
-      <p className="text-ink-soft text-sm mb-6">
+      <h2 className="font-display text-3xl text-ink mb-3">Wil je ook ondersteuning voor je mentale rust?</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">
         Denk aan korte meditaties, mindfulness-oefeningen en affirmaties. Helemaal optioneel — en
         dit kun je later altijd aanpassen in je profiel.
       </p>
@@ -872,8 +872,8 @@ function MentalWellbeingPreferencesStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Bij welke gevoelens wil je ondersteuning?</h2>
-      <p className="text-ink-soft text-sm mb-6">
+      <h2 className="font-display text-3xl text-ink mb-3">Bij welke gevoelens wil je ondersteuning?</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">
         Optioneel, en je kunt er meerdere kiezen. Zo laten we je sneller passende meditaties,
         mindfulness-oefeningen en affirmaties zien.
       </p>
@@ -898,8 +898,8 @@ function NutritionStyleStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Voedingsvoorkeur</h2>
-      <p className="text-ink-soft text-sm mb-6">
+      <h2 className="font-display text-3xl text-ink mb-3">Voedingsvoorkeur</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">
         Kies een stijl die bij je past. We laten je nooit een extreem of streng dieet zien.
       </p>
       <div className="flex flex-col gap-3">
@@ -937,8 +937,8 @@ function FrequencyStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Hoe vaak wil je bewegen?</h2>
-      <p className="text-ink-soft text-sm mb-6">
+      <h2 className="font-display text-3xl text-ink mb-3">Hoe vaak wil je bewegen?</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">
         Per week, van 1 tot 7 dagen. We stellen hier een passend weekprogramma op.
       </p>
       <div className="flex flex-wrap gap-2">
@@ -961,8 +961,8 @@ function MedicationStatusStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Hormonale medicatie</h2>
-      <p className="text-ink-soft text-sm mb-6">
+      <h2 className="font-display text-3xl text-ink mb-3">Hormonale medicatie</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">
         Gebruik je hormonale medicatie of medicatie die invloed kan hebben op je cyclus of
         hormonen? Dit is puur informatief — als je hier iets anders dan &ldquo;Nee&rdquo; kiest,
         kun je daarna zelf je eigen schema bijhouden. Je past dit later altijd aan in je profiel.
@@ -992,8 +992,8 @@ function StyleStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Welke stijl past bij jou?</h2>
-      <p className="text-ink-soft text-sm mb-6">Dit kleurt de toon van je aanbevelingen.</p>
+      <h2 className="font-display text-3xl text-ink mb-3">Welke stijl past bij jou?</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">Dit kleurt de toon van je aanbevelingen.</p>
       <div className="flex flex-col gap-3">
         {STYLE_OPTIONS.map((opt) => (
           <button
@@ -1031,8 +1031,8 @@ function BuddyStyleStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-2xl text-ink mb-2">Hoe praat je Buddy met je?</h2>
-      <p className="text-ink-soft text-sm mb-6">
+      <h2 className="font-display text-3xl text-ink mb-3">Hoe praat je Buddy met je?</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">
         Optioneel. Kies één of meerdere stijlen die bij je passen — je berichten, tips en
         weetjes krijgen dan die toon. Later altijd aan te passen via Profiel.
       </p>
@@ -1067,7 +1067,7 @@ function BuddyIntroStep({ name, styles }: { name: string; styles: string[] }) {
       <div className="mx-auto mb-4 flex justify-center">
         <BuddyMark size="xl" />
       </div>
-      <h2 className="font-display text-2xl text-ink mb-2">Maak kennis met je Buddy</h2>
+      <h2 className="font-display text-3xl text-ink mb-3">Maak kennis met je Buddy</h2>
       <p className="text-ink-soft text-sm">
         {name ? `${name}, je` : "Je"} Buddy is er om mee te praten over hoe je je voelt, je
         cyclus en je dag. Geen diagnoses, wel een luisterend oor en praktische tips. Bij

@@ -480,7 +480,7 @@ function ScheduleStep({
             className="mb-4"
           />
 
-          <div className="rounded-2xl bg-sage-soft/50 p-4 mb-4">
+          <div className="rounded-[1.25rem] bg-surface border border-line p-4 mb-4">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-sm font-medium text-ink">Pauze-herinnering</p>
@@ -631,7 +631,7 @@ function ReminderStep({
             className="max-w-[160px]"
           />
           {(isCyclisch || hasEndDate) && (
-            <div className="mt-4 rounded-3xl bg-sage-soft/50 p-4">
+            <div className="mt-4 rounded-[1.25rem] bg-surface border border-line p-4">
               {isCyclisch && (
                 <p className="text-sm text-ink-soft leading-relaxed mb-4">
                   Bij een wel/niet-schema herhalen start- en dagelijkse herinneringen zich
@@ -707,7 +707,7 @@ function ReminderStep({
                 )}
               </div>
               {isCyclisch && (
-                <p className="text-xs text-ink-soft leading-relaxed mt-4 pt-4 border-t border-sage/20">
+                <p className="text-xs text-ink-soft leading-relaxed mt-4 pt-4 border-t border-line">
                   GoFiev volgt uitsluitend het schema dat jij zelf hebt ingesteld. De app bepaalt
                   niet wanneer je moet starten of stoppen, en geeft geen persoonlijk medisch
                   advies.
@@ -733,7 +733,7 @@ function ReviewStep({ data }: { data: WizardData }) {
       <p className="text-ink-soft text-sm mb-6">
         Je kunt dit altijd later aanpassen of verwijderen bij &ldquo;Mijn medicatie&rdquo;.
       </p>
-      <div className="rounded-3xl bg-sage-soft/50 p-4 flex flex-col gap-2">
+      <div className="rounded-[1.25rem] bg-surface border border-line p-4 flex flex-col gap-2">
         <p className="text-sm font-medium text-ink inline-flex items-center gap-1.5">
           {category && <category.icon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />}
           {data.name || "—"}

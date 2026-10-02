@@ -25,7 +25,7 @@ export function CycleSetupCard() {
         </span>
         <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
       </Link>
-      <div className="border-t border-sage/15 px-3.5">
+      <div className="border-t border-line px-3.5">
         <MenstruationQuickAction isActive={false} day={null} variant="quiet" />
       </div>
     </div>

@@ -4,7 +4,7 @@ import { RegisterForm } from "./register-form"
 export default function RegisterPage() {
   return (
     <div>
-      <h1 className="font-display text-xl text-ink mb-1">Maak je account aan</h1>
+      <h1 className="font-display text-2xl text-ink mb-1.5">Maak je account aan</h1>
       <p className="text-sm text-ink-soft mb-6">
         Jouw lichaam. Jouw ritme. Jouw dag.
       </p>

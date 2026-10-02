@@ -161,21 +161,22 @@ export function WeekView({
               aria-pressed={selected}
               aria-label={`${d.weekday} ${format(parseISO(d.date), "d MMMM", { locale: nl })}${d.isToday ? ", vandaag" : ""}${predicted ? ", menstruatie kan komen" : ""}${anticipated ? ", bij jou vaak zwaarder" : ""}`}
               className={cn(
-                "flex flex-col items-center gap-1.5 rounded-2xl px-1 py-2.5 min-h-11 touch-manipulation transition-colors",
-                selected ? "bg-sage-fill text-white" : "bg-sage-soft/50 text-ink",
-                (anticipated || predicted) && !selected && "ring-1 ring-sage/40",
+                "flex flex-col items-center gap-1.5 rounded-2xl border px-1 py-2.5 min-h-14 touch-manipulation transition-colors",
+                selected ? "bg-sage-fill border-sage-fill text-white" : "bg-surface border-line text-ink",
+                (anticipated || predicted) && !selected && "border-sage-dark/50",
+                d.isToday && !selected && "border-2 border-sage-dark",
               )}
             >
-              <span className="text-[10px] font-medium uppercase opacity-80">{d.weekdayShort}</span>
-              <span className="text-sm font-semibold">{format(parseISO(d.date), "d")}</span>
-              {dPhase && (
-                <span
-                  className={cn(
-                    "h-1.5 w-1.5 rounded-full",
-                    selected ? "bg-surface/80" : dPhase.colors.dot,
-                  )}
-                />
-              )}
+              <span className="text-xs font-medium opacity-80">{d.weekdayShort}</span>
+              <span className="text-base font-semibold tabular-nums">{format(parseISO(d.date), "d")}</span>
+              {/* A slice of the Ritmeband: the phase colour for this day. */}
+              <span
+                aria-hidden
+                className={cn(
+                  "h-1 w-5 rounded-full",
+                  dPhase ? (selected ? "bg-white/80" : dPhase.colors.dot) : "bg-transparent",
+                )}
+              />
             </button>
           )
         })}
@@ -183,7 +184,7 @@ export function WeekView({
 
       <div>
         <div className="flex items-baseline justify-between gap-3 mb-1">
-          <h2 className="font-display text-lg text-ink capitalize">{day.weekday}</h2>
+          <h2 className="font-display text-xl text-ink capitalize">{day.weekday}</h2>
           <span className="text-xs text-ink-soft">
             {format(parseISO(day.date), "d MMMM", { locale: nl })}
           </span>
@@ -199,7 +200,7 @@ export function WeekView({
         )}
 
         {hasPlan ? (
-          <div className="rounded-3xl bg-sage-soft/55 overflow-hidden">
+          <div className="rounded-[1.25rem] bg-surface border border-line overflow-hidden">
             {showMovement && (
               <TodayMovementCard
                 userId={userId}
@@ -237,8 +238,8 @@ export function WeekView({
             {(showMeals || showGrocery) && (
               <div
                 className={cn(
-                  "divide-y divide-sage/15",
-                  showMovement && "border-t border-sage/15",
+                  "divide-y divide-line",
+                  showMovement && "border-t border-line",
                 )}
               >
                 {showMeals && (
@@ -280,7 +281,7 @@ export function WeekView({
                         href="/deze-week/boodschappen?modus=dag"
                         className="text-xs font-medium text-sage-dark touch-manipulation min-h-11 inline-flex items-center shrink-0"
                       >
-                        Voor vandaag →
+                        Voor vandaag
                       </Link>
                     ) : (
                       <Link

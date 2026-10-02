@@ -343,7 +343,7 @@ export function ProfileForm({
       <div className={group === "all" ? "grid gap-5 lg:grid-cols-2 lg:items-start" : "flex flex-col gap-5"}>
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-3">Naam & leeftijd</h2>
+        <h2 className="font-display text-xl text-ink mb-3">Naam & leeftijd</h2>
         <div className="flex flex-col gap-4">
           <div>
             <Label htmlFor="name">Naam</Label>
@@ -370,7 +370,7 @@ export function ProfileForm({
 
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-1">Motivatie</h2>
+        <h2 className="font-display text-xl text-ink mb-1">Motivatie</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Waarom doe jij dit voor jezelf? Dit lees jij later terug, voor niemand
           anders zichtbaar.
@@ -387,7 +387,7 @@ export function ProfileForm({
 
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-1">Lichaam</h2>
+        <h2 className="font-display text-xl text-ink mb-1">Lichaam</h2>
         <p className="text-xs text-ink-soft mb-3">Optioneel — helpt om je advies preciezer te maken.</p>
         <div className="flex flex-col gap-4">
           <div>
@@ -429,7 +429,7 @@ export function ProfileForm({
 
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-3">Doelen</h2>
+        <h2 className="font-display text-xl text-ink mb-3">Doelen</h2>
         <div className="flex flex-wrap gap-2">
           {GOAL_OPTIONS.map((opt) => (
             <Chip
@@ -446,7 +446,7 @@ export function ProfileForm({
 
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-3">Aandachtspunten</h2>
+        <h2 className="font-display text-xl text-ink mb-3">Aandachtspunten</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Geen diagnoses — puur om je advies passender te maken.
         </p>
@@ -484,7 +484,7 @@ export function ProfileForm({
       {is("modules") && (
       <Card id="beweging" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-lg text-ink">Beweging</h2>
+          <h2 className="font-display text-xl text-ink">Beweging</h2>
           <div className="flex gap-1.5">
             <Chip
               selected={state.movementEnabled}
@@ -511,7 +511,6 @@ export function ProfileForm({
               className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mb-3 min-h-11 touch-manipulation"
             >
               Open bewegingsbibliotheek
-              <span aria-hidden>→</span>
             </Link>
             <div className="flex flex-wrap gap-2 mb-4">
               {TRAINING_OPTIONS.map((opt) => (
@@ -553,7 +552,7 @@ export function ProfileForm({
       {is("modules") && (
       <Card id="voeding" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-lg text-ink">Voeding</h2>
+          <h2 className="font-display text-xl text-ink">Voeding</h2>
           <div className="flex gap-1.5">
             <Chip
               selected={state.nutritionEnabled}
@@ -580,7 +579,6 @@ export function ProfileForm({
               className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mb-3 min-h-11 touch-manipulation"
             >
               Open recepten
-              <span aria-hidden>→</span>
             </Link>
             <div className="flex flex-wrap gap-2 mb-4">
               {NUTRITION_STYLE_OPTIONS.map((opt) => (
@@ -661,7 +659,7 @@ export function ProfileForm({
       {is("modules") && (
       <Card id="mentale-rust" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-lg text-ink">Mentale rust</h2>
+          <h2 className="font-display text-xl text-ink">Mentale rust</h2>
           <div className="flex gap-1.5">
             <Chip
               selected={state.mentalWellbeingEnabled}
@@ -688,7 +686,6 @@ export function ProfileForm({
               className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mb-3 min-h-11 touch-manipulation"
             >
               Open mentale rust
-              <span aria-hidden>→</span>
             </Link>
             <div className="flex flex-wrap gap-2">
               {MENTAL_WELLBEING_CATEGORY_OPTIONS.map((opt) => (
@@ -723,7 +720,7 @@ export function ProfileForm({
       {is("meldingen") && (
       <Card id="goedemorgen" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-lg text-ink">Goedemorgen</h2>
+          <h2 className="font-display text-xl text-ink">Goedemorgen</h2>
           <div className="flex gap-1.5">
             <Chip
               selected={state.morningReminderEnabled}
@@ -798,8 +795,8 @@ export function ProfileForm({
                       }, "immediate")
                     }
                     className={cn(
-                      "text-left rounded-3xl px-3.5 py-2.5 touch-manipulation transition-colors",
-                      selected ? "bg-sage-soft ring-1 ring-sage/40" : "bg-sage-soft/40 hover:bg-sage-soft/70",
+                      "text-left rounded-2xl border px-3.5 py-3 touch-manipulation transition-colors",
+                      selected ? "bg-sage-soft border-sage-dark" : "bg-surface border-line hover:border-ink/30",
                     )}
                     aria-pressed={selected}
                   >
@@ -821,7 +818,7 @@ export function ProfileForm({
       {is("modules") && (
       <Card id="slaap" className="scroll-mt-24">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-lg text-ink">Slaap bijhouden</h2>
+          <h2 className="font-display text-xl text-ink">Slaap bijhouden</h2>
           <div className="flex gap-1.5">
             <Chip
               selected={state.sleepTrackingEnabled}
@@ -848,7 +845,6 @@ export function ProfileForm({
               className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mt-2 min-h-11 touch-manipulation"
             >
               Open slaap
-              <span aria-hidden>→</span>
             </Link>
           </>
         ) : (
@@ -862,7 +858,7 @@ export function ProfileForm({
 
       {is("modules") && (
       <Card id="medicatie" className="scroll-mt-24">
-        <h2 className="font-display text-lg text-ink mb-1">Medicatie & hormonen</h2>
+        <h2 className="font-display text-xl text-ink mb-1">Medicatie & hormonen</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Gebruik je hormonale medicatie of medicatie die invloed kan hebben op je
           cyclus of hormonen?
@@ -886,7 +882,7 @@ export function ProfileForm({
           of behandeling voor jou geschikt is.
         </p>
         <Link href="/medicatie" className="inline-block text-sm font-medium text-sage-dark mb-4">
-          {hasMedications ? "Mijn medicatie beheren →" : "Medicatie toevoegen →"}
+          {hasMedications ? "Mijn medicatie beheren" : "Medicatie toevoegen"}
         </Link>
 
         {hasMedications && (
@@ -920,7 +916,7 @@ export function ProfileForm({
       <Card id="buddy" className="scroll-mt-24">
         <div className="flex items-center gap-2 mb-1">
           <BuddyMark size="sm" decorative />
-          <h2 className="font-display text-lg text-ink">Buddy</h2>
+          <h2 className="font-display text-xl text-ink">Buddy</h2>
         </div>
         <p className="text-xs text-ink-soft mb-3">
           Kies hoe je Buddy klinkt. Niets kiezen = de standaard, warme toon.
@@ -962,7 +958,7 @@ export function ProfileForm({
       )}
       {is("account") && (
       <Card>
-        <h2 className="font-display text-lg text-ink mb-1">Notitie voor mezelf</h2>
+        <h2 className="font-display text-xl text-ink mb-1">Notitie voor mezelf</h2>
         <p className="text-xs text-ink-soft mb-3">
           Een plekje voor jezelf. Alleen jij ziet dit terug.
         </p>
@@ -978,7 +974,7 @@ export function ProfileForm({
 
       {is("cyclus") && (
       <Card id="cyclus" className="scroll-mt-24">
-        <h2 className="font-display text-lg text-ink mb-3">Cyclusgegevens</h2>
+        <h2 className="font-display text-xl text-ink mb-3">Cyclusgegevens</h2>
         <div className="flex flex-col gap-4">
           <div>
             <p className="text-sm font-medium text-ink mb-2">Heb je momenteel een menstruatiecyclus?</p>
@@ -1110,10 +1106,10 @@ export function ProfileForm({
                       "immediate",
                     )
                   }
-                  className={`text-left rounded-3xl px-3 py-2.5 touch-manipulation transition-colors ${
+                  className={`text-left rounded-2xl border px-3.5 py-3 touch-manipulation transition-colors ${
                     state.lifeStage === opt.value
-                      ? "bg-sage-soft ring-1 ring-sage/40"
-                      : "bg-sage-soft/40 hover:bg-sage-soft/70"
+                      ? "bg-sage-soft border-sage-dark"
+                      : "bg-surface border-line hover:border-ink/30"
                   }`}
                 >
                   <span className="block text-sm font-medium text-ink">{opt.label}</span>

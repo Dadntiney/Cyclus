@@ -6,7 +6,7 @@ const ProfileForm = dynamic(
   () => import("@/components/profile/profile-form").then((m) => ({ default: m.ProfileForm })),
   {
     loading: () => (
-      <div className="rounded-3xl bg-sage-soft/50 p-5 min-h-48 skeleton" aria-hidden />
+      <div className="rounded-[1.25rem] bg-surface border border-line p-5 min-h-48 skeleton" aria-hidden />
     ),
   },
 )
@@ -19,7 +19,7 @@ export default async function ProfielCyclusPage() {
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-5">
       <div>
         <BackButton href="/profiel" label="Profiel" />
-        <h1 className="font-display text-2xl lg:text-3xl text-ink">Mijn cyclus</h1>
+        <h1 className="font-display text-3xl lg:text-4xl text-ink">Mijn cyclus</h1>
         <p className="text-sm text-ink-soft mt-1">Lengte, levensfase en wat je in je lichaam merkt.</p>
       </div>
       <ProfileForm

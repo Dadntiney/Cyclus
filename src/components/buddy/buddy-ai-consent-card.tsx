@@ -15,7 +15,7 @@ export function BuddyAiConsentCard() {
   if (dismissed) return null
 
   return (
-    <div className="mx-5 lg:mx-8 mt-3 mb-1 rounded-2xl border border-line/70 bg-sage-soft/40 px-4 py-3.5 shrink-0">
+    <div className="mx-5 lg:mx-8 mt-3 mb-1 rounded-[1.25rem] border border-line bg-surface px-4 py-4 shrink-0">
       <p className="text-sm font-medium text-ink mb-1">Buddy en AI</p>
       <p className="text-sm text-ink-soft leading-relaxed mb-3">
         Als je wilt, mag Buddy een AI-dienst gebruiken om mee te denken. Dan kunnen

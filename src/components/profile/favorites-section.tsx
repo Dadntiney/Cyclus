@@ -18,7 +18,7 @@ export function FavoritesSection({
 
   return (
     <Card>
-      <h2 className="font-display text-lg text-ink mb-3">Mijn favorieten</h2>
+      <h2 className="font-display text-xl text-ink mb-3">Mijn favorieten</h2>
       {isEmpty ? (
         <EmptyState
           icon={<Heart className="h-6 w-6" strokeWidth={1.5} />}
@@ -44,7 +44,7 @@ export function FavoritesSection({
               </div>
               {favoriteRecipes.length > 4 && (
                 <Link href="/voeding/favorieten" className="text-xs text-sage-dark mt-2 inline-block">
-                  Alle favoriete recepten →
+                  Alle favoriete recepten
                 </Link>
               )}
             </div>
@@ -67,7 +67,7 @@ export function FavoritesSection({
               </div>
               {favoriteExercises.length > 4 && (
                 <Link href="/training/favorieten" className="text-xs text-sage-dark mt-2 inline-block">
-                  Alle favoriete oefeningen →
+                  Alle favoriete oefeningen
                 </Link>
               )}
             </div>

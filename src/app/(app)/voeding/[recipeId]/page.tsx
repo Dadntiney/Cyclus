@@ -70,7 +70,7 @@ export default async function RecipeDetailPage({
       />
 
       <div className="flex items-start justify-between gap-4 mb-1">
-        <h1 className="font-display text-2xl lg:text-3xl text-ink">{recipe.title}</h1>
+        <h1 className="font-display text-3xl lg:text-4xl text-ink">{recipe.title}</h1>
         <FavoriteButton recipeId={recipe.id} initialFavorited={favoriteIds.has(recipe.id)} />
       </div>
       {recipe.description && (

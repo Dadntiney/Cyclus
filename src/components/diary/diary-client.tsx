@@ -30,7 +30,7 @@ export function DiaryClient({ entries }: { entries: Entry[] }) {
     <div className="flex flex-col gap-6">
       <Card>
         <div className="flex items-baseline justify-between gap-3 mb-1">
-          <h2 className="font-display text-lg text-ink">Nieuw</h2>
+          <h2 className="font-display text-xl text-ink">Nieuw</h2>
           <ActionToast message={toast.message} />
         </div>
         <p className="text-sm text-ink-soft mb-3">Schrijf van je af. Alleen jij ziet dit.</p>
@@ -66,7 +66,7 @@ export function DiaryClient({ entries }: { entries: Entry[] }) {
       </Card>
 
       <div>
-        <h2 className="font-display text-lg text-ink mb-3">Eerdere notities</h2>
+        <h2 className="font-display text-xl text-ink mb-3">Eerdere notities</h2>
         {entries.length === 0 ? (
           <EmptyState
             icon={<NotebookPen className="h-6 w-6" strokeWidth={1.5} />}

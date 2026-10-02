@@ -36,7 +36,7 @@ export default async function KennisPage() {
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
       <BackButton href="/cyclus" label="Cyclus" />
       <div>
-        <h1 className="font-display text-2xl lg:text-3xl text-ink">Kennis</h1>
+        <h1 className="font-display text-3xl lg:text-4xl text-ink">Kennis</h1>
         <p className="text-sm text-ink-soft mt-1">
           Heldere uitleg over hormonen, overgang en leefstijl — geen medisch advies.
         </p>

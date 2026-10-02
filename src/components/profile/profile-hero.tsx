@@ -18,7 +18,7 @@ export function ProfileHero({
     <div className="flex items-center gap-4">
       <AvatarUpload userId={userId} name={name} initialAvatarUrl={avatarUrl} />
       <div className="min-w-0 flex-1">
-        <h1 className="font-display text-2xl lg:text-3xl text-ink truncate">
+        <h1 className="font-display text-3xl lg:text-4xl text-ink truncate">
           {name?.trim() || "Jouw profiel"}
         </h1>
         {memberSince ? (

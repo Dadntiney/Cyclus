@@ -13,6 +13,13 @@ type Message = Tables<"buddy_messages">
 
 let localIdCounter = 0
 
+
+const STARTER_QUESTIONS = [
+  "Waarom slaap ik slechter rond mijn menstruatie?",
+  "Wat kan ik doen als ik me deze week moe voel?",
+  "Hoe weet ik of mijn klachten bij de overgang horen?",
+] as const
+
 export function ChatWindow({
   initialConversationId,
   initialMessages,
@@ -102,11 +109,26 @@ export function ChatWindow({
         className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 lg:px-8 py-4 flex flex-col gap-3"
       >
         {messages.length === 0 && (
-          <EmptyState
-            icon={<BuddyMark size="lg" decorative />}
-            title="Stel een vraag of vertel hoe je je voelt"
-            description="Je Buddy denkt mee op basis van je profiel en check-ins."
-          />
+          <div className="flex flex-col items-center">
+            <EmptyState
+              icon={<BuddyMark size="lg" decorative />}
+              title="Stel een vraag of vertel hoe je je voelt"
+              description="Je Buddy denkt mee op basis van je profiel en check-ins."
+            />
+            {/* Starting points — they only fill the input; she decides to send. */}
+            <div className="flex flex-col items-stretch gap-2 w-full max-w-sm -mt-4">
+              {STARTER_QUESTIONS.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => setInput(q)}
+                  className="text-left text-sm text-ink rounded-2xl bg-surface border border-line px-4 py-3 min-h-11 touch-manipulation transition-colors hover:border-ink/30 active:bg-cream-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
         {messages.map((m) => (
           <div
@@ -119,10 +141,10 @@ export function ChatWindow({
             {m.role === "assistant" && <BuddyMark size="sm" className="mb-0.5" decorative />}
             <div
               className={cn(
-                "max-w-[80%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed",
+                "max-w-[82%] rounded-[1.25rem] px-4 py-3 text-base leading-relaxed whitespace-pre-wrap",
                 m.role === "user"
                   ? "bg-sage-fill text-white rounded-br-md"
-                  : "bg-sage-soft/60 text-ink rounded-bl-md",
+                  : "bg-surface border border-line text-ink rounded-bl-md",
               )}
             >
               {m.message}
@@ -132,7 +154,7 @@ export function ChatWindow({
         {isPending && (
           <div className="flex justify-start items-end gap-2">
             <BuddyMark size="sm" className="mb-0.5" decorative />
-            <div className="bg-sage-soft/60 rounded-2xl rounded-bl-md px-4 py-2.5 text-sm text-ink-soft">
+            <div className="bg-surface border border-line rounded-[1.25rem] rounded-bl-md px-4 py-3 text-sm text-ink-soft">
               Aan het typen...
             </div>
           </div>
@@ -144,7 +166,7 @@ export function ChatWindow({
 
       <form
         onSubmit={handleSubmit}
-        className="shrink-0 flex items-center gap-2 py-3 border-t border-sage/20 bg-cream"
+        className="shrink-0 flex items-center gap-2 py-3 border-t border-line bg-cream"
         style={{
           paddingLeft: "max(1.25rem, env(safe-area-inset-left))",
           paddingRight: "max(1.25rem, env(safe-area-inset-right))",
@@ -159,16 +181,16 @@ export function ChatWindow({
           enterKeyHint="send"
           autoComplete="off"
           autoCorrect="on"
-          className="rounded-full min-h-11"
+          className="rounded-full min-h-12"
         />
         <button
           type="submit"
           disabled={isPending || !input.trim()}
           aria-label="Verstuur bericht"
           className={cn(
-            "h-11 w-11 shrink-0 rounded-full bg-sage-fill text-white flex items-center justify-center",
+            "h-12 w-12 shrink-0 rounded-full bg-sage-fill text-white flex items-center justify-center",
             "transition-[background-color,transform] duration-150 touch-manipulation motion-safe:active:scale-[0.94]",
-            "hover:bg-sage-fill-darker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+            "hover:bg-sage-fill-darker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream",
             "disabled:opacity-50 disabled:pointer-events-none",
           )}
         >

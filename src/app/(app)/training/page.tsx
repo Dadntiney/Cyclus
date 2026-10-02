@@ -20,7 +20,7 @@ export default async function TrainingPage() {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
         <BackButton href="/vandaag" label="Vandaag" />
-        <h1 className="font-display text-2xl lg:text-3xl text-ink mb-1">Beweging</h1>
+        <h1 className="font-display text-3xl lg:text-4xl text-ink mb-1">Beweging</h1>
         <p className="text-sm text-ink-soft mb-6">Jouw weekplanning en trainingsbibliotheek.</p>
         <Card>
           <EmptyState
@@ -52,7 +52,7 @@ export default async function TrainingPage() {
         <BackButton href="/vandaag" label="Vandaag" />
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="font-display text-2xl lg:text-3xl text-ink">Beweging</h1>
+            <h1 className="font-display text-3xl lg:text-4xl text-ink">Beweging</h1>
             <p className="text-sm text-ink-soft mt-1">
               Jouw trainingsbibliotheek. Het advies voor vandaag staat op Vandaag.
             </p>
@@ -69,7 +69,7 @@ export default async function TrainingPage() {
 
       <div>
         <div className="flex items-baseline justify-between mb-3">
-          <h2 className="font-display text-lg text-ink">
+          <h2 className="font-display text-xl text-ink">
             {rawPreferences.length ? "Trainingen voor jou" : "Alle trainingen"}
           </h2>
           <Link

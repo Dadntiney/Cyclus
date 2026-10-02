@@ -75,7 +75,7 @@ export function SleepCard({
           </div>
         </button>
         {(observation || historyHref) && (
-          <div className="border-t border-sage/15 px-4 py-3 flex flex-col gap-0.5">
+          <div className="border-t border-line px-4 py-3 flex flex-col gap-0.5">
             {observation && <p className="text-xs text-ink-soft leading-relaxed">{observation}</p>}
             {historyHref && (
               <Link
