@@ -7,6 +7,10 @@ import { getBuddyProvider } from "@/lib/buddy"
 import type { BuddyChatMessage } from "@/lib/buddy/types"
 
 const MAX_MESSAGE_LENGTH = 4000
+/** Most recent messages sent along as conversation memory. */
+const HISTORY_WINDOW = 20
+/** Fair-use cap on her own messages per rolling 24 hours. */
+const DAILY_MESSAGE_LIMIT = 60
 
 export async function sendBuddyMessage(conversationId: string | null, message: string) {
   const trimmed = message.trim()
@@ -47,24 +51,44 @@ export async function sendBuddyMessage(conversationId: string | null, message: s
     activeConversationId = conversation.id
   }
 
+  // Fair-use cap: each AI reply has a real cost, so a runaway client (or a
+  // script with her session) can't send unlimited messages.
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  const { count: sentToday } = await supabase
+    .from("buddy_messages")
+    .select("id, buddy_conversations!inner(user_id)", { count: "exact", head: true })
+    .eq("buddy_conversations.user_id", user.id)
+    .eq("role", "user")
+    .gte("created_at", since.toISOString())
+  if ((sentToday ?? 0) >= DAILY_MESSAGE_LIMIT) {
+    return {
+      error: "Je hebt het afgelopen etmaal al veel met de Buddy gepraat. Straks kun je weer verder. 💛",
+    }
+  }
+
+  // History BEFORE inserting the new message: the newest messages (not the
+  // oldest), so long conversations keep their recent context, and the new
+  // message is passed separately exactly once.
+  const { data: historyRows } = await supabase
+    .from("buddy_messages")
+    .select("role, message")
+    .eq("conversation_id", activeConversationId)
+    .order("created_at", { ascending: false })
+    .limit(HISTORY_WINDOW)
+
+  const history: BuddyChatMessage[] = (historyRows ?? [])
+    .reverse()
+    .map((row) => ({
+      role: row.role as BuddyChatMessage["role"],
+      message: row.message,
+    }))
+
   const { error: insertUserError } = await supabase.from("buddy_messages").insert({
     conversation_id: activeConversationId,
     role: "user",
     message: trimmed,
   })
   if (insertUserError) return { error: "Versturen is niet gelukt." }
-
-  const { data: historyRows } = await supabase
-    .from("buddy_messages")
-    .select("role, message")
-    .eq("conversation_id", activeConversationId)
-    .order("created_at", { ascending: true })
-    .limit(30)
-
-  const history: BuddyChatMessage[] = (historyRows ?? []).map((row) => ({
-    role: row.role as BuddyChatMessage["role"],
-    message: row.message,
-  }))
 
   const contextLines = await buildBuddyContext(user.id)
 

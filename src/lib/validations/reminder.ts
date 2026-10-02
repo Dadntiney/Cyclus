@@ -1,11 +1,8 @@
 import { z } from "zod"
+import { normalizeReminderTime } from "@/lib/reminders/options"
 
 /** Browsers (esp. iOS) may emit `HH:MM:SS` from `<input type="time">`. */
-export function normalizeReminderTime(time: string): string {
-  const match = /^(\d{2}):(\d{2})(?::\d{2})?$/.exec(time.trim())
-  if (!match) return time.trim()
-  return `${match[1]}:${match[2]}`
-}
+export { normalizeReminderTime }
 
 export const reminderSchema = z.object({
   type: z.enum([

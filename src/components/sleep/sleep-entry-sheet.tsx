@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { WAKE_FEELING_OPTIONS, SLEEP_QUALITY_OPTIONS, WAKE_COUNT_OPTIONS } from "@/lib/constants"
 import { saveSleepEntry } from "@/lib/actions/sleep"
 import type { Tables } from "@/types/database"
+import { runAction } from "@/lib/client/run-action"
 
 type SleepEntry = Tables<"sleep_entries">
 
@@ -70,14 +71,14 @@ export function SleepEntrySheet({
   function handleSave() {
     setError(null)
     startTransition(async () => {
-      const result = await saveSleepEntry({
+      const result = await runAction(() => saveSleepEntry({
         date,
         bedtime: bedtime || null,
         wakeTime: wakeTime || null,
         wakeFeeling: wakeFeeling as never,
         sleepQuality: sleepQuality as never,
         wakeCount,
-      })
+      }))
       if (result?.error) {
         setError(result.error)
         return

@@ -6,6 +6,7 @@ import { toggleSavedMoment } from "@/lib/actions/moments"
 import type { SavedMomentKind } from "@/lib/data/moments"
 import { ActionToast, useActionToast } from "@/components/ui/action-toast"
 import { cn } from "@/lib/utils"
+import { runAction } from "@/lib/client/run-action"
 
 /**
  * Heart for tips / quotes / affirmations — same gesture as recipe favorites.
@@ -41,7 +42,7 @@ export function MomentFavoriteButton({
     onFavoritedChange?.(next)
     toast.show(next ? "Opgeslagen" : "Verwijderd")
     startTransition(async () => {
-      const result = await toggleSavedMoment({ kind, text, source, sourceKey })
+      const result = await runAction(() => toggleSavedMoment({ kind, text, source, sourceKey }))
       if (result?.favorited !== undefined) {
         setFavorited(result.favorited)
         onFavoritedChange?.(result.favorited)

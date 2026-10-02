@@ -102,6 +102,17 @@ export async function GET(request: NextRequest) {
       .eq("date", dateISO),
   ])
 
+  // Only mark a reminder as sent when a device actually received it, so a
+  // transient push-service failure is retried on the next run instead of
+  // being silently recorded as delivered.
+  async function markSent(
+    sent: number,
+    row: { user_id: string; source_type: string; source_id: string; date: string },
+  ) {
+    if (sent <= 0) return
+    await service.from("push_notification_log").upsert(row, { onConflict: "source_type,source_id,date" })
+  }
+
   const profileById = new Map((profileRows ?? []).map((p) => [p.id, p]))
   const remindersByUser = new Map<string, NonNullable<typeof allReminderRows>>()
   for (const row of allReminderRows ?? []) {
@@ -174,9 +185,7 @@ export async function GET(request: NextRequest) {
           tag: `reminder-${reminder.id}`,
         })
         if (sent > 0) userHasSend = true
-        await service
-          .from("push_notification_log")
-          .upsert({ user_id: userId, source_type: "reminder", source_id: reminder.id, date: dateISO }, { onConflict: "source_type,source_id,date" })
+        await markSent(sent, { user_id: userId, source_type: "reminder", source_id: reminder.id, date: dateISO })
         notificationsSent += sent
       }
 
@@ -236,9 +245,7 @@ export async function GET(request: NextRequest) {
           tag: `medication-${m.id}`,
         })
         if (sent > 0) userHasSend = true
-        await service
-          .from("push_notification_log")
-          .upsert({ user_id: userId, source_type: sourceType, source_id: m.id, date: dateISO }, { onConflict: "source_type,source_id,date" })
+        await markSent(sent, { user_id: userId, source_type: sourceType, source_id: m.id, date: dateISO })
         notificationsSent += sent
       }
 
@@ -258,17 +265,7 @@ export async function GET(request: NextRequest) {
           tag: `doctor-appointment-${appt.id}`,
         })
         if (sent > 0) userHasSend = true
-        await service
-          .from("push_notification_log")
-          .upsert(
-            {
-              user_id: userId,
-              source_type: "doctor_appointment",
-              source_id: appt.id,
-              date: dateISO,
-            },
-            { onConflict: "source_type,source_id,date" },
-          )
+        await markSent(sent, { user_id: userId, source_type: "doctor_appointment", source_id: appt.id, date: dateISO })
         notificationsSent += sent
       }
 
@@ -297,12 +294,7 @@ export async function GET(request: NextRequest) {
           tag: "morning-reminder",
         })
         if (sent > 0) userHasSend = true
-        await service
-          .from("push_notification_log")
-          .upsert(
-            { user_id: userId, source_type: "morning_reminder", source_id: "singleton", date: dateISO },
-            { onConflict: "source_type,source_id,date" },
-          )
+        await markSent(sent, { user_id: userId, source_type: "morning_reminder", source_id: "singleton", date: dateISO })
         notificationsSent += sent
       }
 

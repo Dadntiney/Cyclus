@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { EmptyState } from "@/components/ui/empty-state"
 import { BuddyMark } from "@/components/buddy/buddy-mark"
 import type { Tables } from "@/types/database"
+import { runAction } from "@/lib/client/run-action"
 
 type Message = Tables<"buddy_messages">
 
@@ -79,7 +80,7 @@ export function ChatWindow({
     setInput("")
 
     startTransition(async () => {
-      const result = await sendBuddyMessage(conversationId, trimmed)
+      const result = await runAction(() => sendBuddyMessage(conversationId, trimmed))
       if (result.error) {
         setError(result.error)
         setMessages((prev) => prev.filter((m) => m.id !== optimisticMessage.id))

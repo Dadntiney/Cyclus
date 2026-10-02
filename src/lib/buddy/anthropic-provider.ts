@@ -33,6 +33,9 @@ export class AnthropicBuddyProvider implements BuddyProvider {
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
+      // Never leave her waiting on a hung request; the action falls back to
+      // a friendly "probeer het zo nog eens" message on timeout.
+      signal: AbortSignal.timeout(25_000),
       headers: {
         "content-type": "application/json",
         "x-api-key": this.apiKey,

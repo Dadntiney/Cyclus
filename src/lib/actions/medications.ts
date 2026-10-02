@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
+import { isPastOrTodayISODate } from "@/lib/validations/dates"
 import { medicationSchema, type MedicationInput } from "@/lib/validations/medication"
 
 function toRow(data: MedicationInput) {
@@ -94,6 +95,8 @@ export async function deleteMedication(id: string) {
 
 /** Toggles whether today's (or a given date's) dose was marked as taken. */
 export async function toggleMedicationTaken(medicationId: string, date: string) {
+  if (!isPastOrTodayISODate(date)) return { error: "Je kunt alleen innames tot en met vandaag afvinken." }
+
   const supabase = await createClient()
   const {
     data: { user },

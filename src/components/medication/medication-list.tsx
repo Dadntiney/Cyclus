@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { deleteMedication } from "@/lib/actions/medications"
 import { describeSchedule, type MedicationSchedule } from "@/lib/medication/schedule"
 import type { Tables } from "@/types/database"
+import { runAction } from "@/lib/client/run-action"
 
 type Medication = Tables<"medications">
 
@@ -35,7 +36,7 @@ export function MedicationList({ medications }: { medications: Medication[] }) {
     setItems((prev) => prev.filter((m) => m.id !== id))
     setConfirmId(null)
     startTransition(async () => {
-      const result = await deleteMedication(id)
+      const result = await runAction(() => deleteMedication(id))
       if (result?.error) {
         // Roll back: put the item back so it doesn't look deleted when it wasn't.
         if (removed) setItems((prev) => [...prev, removed].sort((a, b) => a.name.localeCompare(b.name)))

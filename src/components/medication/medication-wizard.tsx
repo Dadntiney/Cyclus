@@ -19,6 +19,7 @@ import { createMedication, updateMedication } from "@/lib/actions/medications"
 import { describeSchedule } from "@/lib/medication/schedule"
 import type { MedicationInput } from "@/lib/validations/medication"
 import { cn } from "@/lib/utils"
+import { runAction } from "@/lib/client/run-action"
 
 type Category = MedicationInput["category"]
 type ScheduleType = MedicationInput["scheduleType"]
@@ -187,8 +188,8 @@ export function MedicationWizard({
     startTransition(async () => {
       const result =
         mode === "edit" && medicationId
-          ? await updateMedication(medicationId, input)
-          : await createMedication(input)
+          ? await runAction(() => updateMedication(medicationId, input))
+          : await runAction(() => createMedication(input))
       if (result.error) {
         setError(result.error)
         return

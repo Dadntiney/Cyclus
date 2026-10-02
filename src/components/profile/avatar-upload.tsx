@@ -4,7 +4,6 @@ import { useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Camera, Loader2, Leaf } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
 import { updateAvatar } from "@/lib/actions/profile"
 import { cn } from "@/lib/utils"
 
@@ -57,6 +56,9 @@ export function AvatarUpload({
 
     setIsUploading(true)
     try {
+      // Loaded on demand: the Supabase browser SDK (~70 KB gzip) is only
+      // needed for this upload, not on every page.
+      const { createClient } = await import("@/lib/supabase/client")
       const supabase = createClient()
       const extension = file.name.split(".").pop()?.toLowerCase() || "jpg"
       const path = `${userId}/avatar.${extension}`

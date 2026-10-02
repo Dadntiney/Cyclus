@@ -5,6 +5,7 @@ import Link from "next/link"
 import { toggleMedicationTaken } from "@/lib/actions/medications"
 import type { MedicationDashboardItem } from "@/lib/data/medications"
 import { cn } from "@/lib/utils"
+import { runAction } from "@/lib/client/run-action"
 
 /**
  * Optional "Mijn medicatie vandaag" widget — only rendered when she has
@@ -23,7 +24,7 @@ export function MedicationTodayCard({ items, date }: { items: MedicationDashboar
     setError(null)
     setLogs((prev) => new Map(prev).set(id, !prev.get(id)))
     startTransition(async () => {
-      const result = await toggleMedicationTaken(id, date)
+      const result = await runAction(() => toggleMedicationTaken(id, date))
       if (result?.error) {
         // Roll back the optimistic flip so the checkbox reflects reality.
         setLogs((prev) => new Map(prev).set(id, !prev.get(id)))

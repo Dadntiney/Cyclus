@@ -1,10 +1,19 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { eachDayOfInterval, format, parseISO } from "date-fns"
+import { addDays, differenceInCalendarDays, eachDayOfInterval, format, parseISO } from "date-fns"
 import { createClient } from "@/lib/supabase/server"
 import { todayISO } from "@/lib/dates/amsterdam"
 import { computeCycleHistory } from "@/lib/cycle/history"
+import { isPastOrTodayISODate } from "@/lib/validations/dates"
+
+/** How far back she may say "het begon eigenlijk op…". */
+const MAX_START_BACKDATE_DAYS = 14
+
+function daysBetween(start: string, end: string): string[] {
+  if (start > end) return []
+  return eachDayOfInterval({ start: parseISO(start), end: parseISO(end) }).map((d) => format(d, "yyyy-MM-dd"))
+}
 
 function revalidateCyclePages() {
   revalidatePath("/cyclus")
@@ -54,7 +63,16 @@ async function syncLastPeriodStartFromLogs(userId: string) {
  * so this structurally rules out double/conflicting registrations rather
  * than just discouraging them in the UI.
  */
-export async function startMenstruationPeriod() {
+export async function startMenstruationPeriod(startDate?: string) {
+  const today = todayISO()
+  const start = startDate ?? today
+  if (!isPastOrTodayISODate(start, today)) {
+    return { error: "Kies een dag van vandaag of eerder." }
+  }
+  if (differenceInCalendarDays(parseISO(today), parseISO(start)) > MAX_START_BACKDATE_DAYS) {
+    return { error: "Kies een dag in de afgelopen twee weken, of zet eerdere dagen in de kalender." }
+  }
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -70,16 +88,21 @@ export async function startMenstruationPeriod() {
     return { error: "Er loopt al een menstruatie." }
   }
 
-  const today = todayISO()
   const { error: profileError } = await supabase
     .from("cycle_profiles")
-    .update({ active_period_start: today })
+    .update({ active_period_start: start })
     .eq("user_id", user.id)
   if (profileError) return { error: "Opslaan is niet gelukt." }
 
+  // Every day from her chosen start through today is a period day. Existing
+  // rows are updated (she is telling us these days were menstruation now),
+  // so flow and other details on them are kept.
   const { error: logError } = await supabase
     .from("cycle_logs")
-    .upsert({ user_id: user.id, date: today, menstruation: true }, { onConflict: "user_id,date" })
+    .upsert(
+      daysBetween(start, today).map((date) => ({ user_id: user.id, date, menstruation: true })),
+      { onConflict: "user_id,date" },
+    )
   if (logError) return { error: "Opslaan is niet gelukt." }
 
   await syncLastPeriodStartFromLogs(user.id)
@@ -99,7 +122,7 @@ export async function startMenstruationPeriod() {
  * one, which only affects retrospective pattern insights, not the day
  * count or calendar dots for the range actually covered).
  */
-export async function stopMenstruationPeriod() {
+export async function stopMenstruationPeriod(endDate?: string) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -115,10 +138,13 @@ export async function stopMenstruationPeriod() {
   if (!start) return { error: "Er loopt geen menstruatie om te stoppen." }
 
   const today = todayISO()
-  const dayDates =
-    start <= today
-      ? eachDayOfInterval({ start: parseISO(start), end: parseISO(today) }).map((d) => format(d, "yyyy-MM-dd"))
-      : []
+  // Her last bleeding day: today by default, or an earlier day when she
+  // forgot to tap "Stoppen" in time.
+  const end = endDate ?? today
+  if (!isPastOrTodayISODate(end, today) || end < start) {
+    return { error: "Kies een dag tussen de start van je menstruatie en vandaag." }
+  }
+  const dayDates = daysBetween(start, end)
 
   if (dayDates.length) {
     const { data: existingLogs } = await supabase
@@ -126,7 +152,7 @@ export async function stopMenstruationPeriod() {
       .select("date")
       .eq("user_id", user.id)
       .gte("date", start)
-      .lte("date", today)
+      .lte("date", end)
     const existingDates = new Set((existingLogs ?? []).map((l) => l.date))
     const missing = dayDates.filter((d) => !existingDates.has(d))
 
@@ -141,6 +167,20 @@ export async function stopMenstruationPeriod() {
     }
   }
 
+  // Days after her chosen last day were never period days — undo any that
+  // were marked while the period was (wrongly) still running.
+  if (end < today) {
+    const dayAfterEnd = format(addDays(parseISO(end), 1), "yyyy-MM-dd")
+    const { error: clearError } = await supabase
+      .from("cycle_logs")
+      .update({ menstruation: false, flow: null })
+      .eq("user_id", user.id)
+      .eq("menstruation", true)
+      .gte("date", dayAfterEnd)
+      .lte("date", today)
+    if (clearError) return { error: "Opslaan is niet gelukt." }
+  }
+
   const { error: profileError } = await supabase
     .from("cycle_profiles")
     .update({ active_period_start: null })
@@ -153,6 +193,8 @@ export async function stopMenstruationPeriod() {
 }
 
 export async function toggleMenstruationDay(date: string) {
+  if (!isPastOrTodayISODate(date)) return { error: "Je kunt alleen dagen tot en met vandaag markeren." }
+
   const supabase = await createClient()
   const {
     data: { user },
@@ -212,6 +254,8 @@ const FLOW_VALUES = ["geen", "licht", "gemiddeld", "hevig"] as const
  * without unmarking the day; unmarking itself is still `toggleMenstruationDay`.
  */
 export async function setCycleLogFlow(date: string, flow: (typeof FLOW_VALUES)[number] | null) {
+  if (!isPastOrTodayISODate(date)) return { error: "Je kunt alleen dagen tot en met vandaag invullen." }
+
   const supabase = await createClient()
   const {
     data: { user },

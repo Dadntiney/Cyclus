@@ -151,7 +151,8 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         return data.name.trim().length > 0 ? null : "Vul je naam in."
       case "age": {
         const age = Number(data.age)
-        return age >= 10 && age <= 100 ? null : "Vul een geldige leeftijd in."
+        if (age >= 10 && age < 16) return "GoFiev is bedoeld voor vrouwen vanaf 16 jaar."
+        return age >= 16 && age <= 100 ? null : "Vul een geldige leeftijd in."
       }
       case "cycle":
         if (data.hasCycle === null) return "Laat ons weten of je een cyclus hebt."
@@ -208,7 +209,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
   function handleFinish() {
     startTransition(async () => {
       try {
-        await completeOnboarding({
+        const result = await completeOnboarding({
           name: data.name.trim(),
           age: Number(data.age),
           heightCm: data.heightCm ? Number(data.heightCm) : undefined,
@@ -275,8 +276,9 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             | "uit"
             | undefined,
         })
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Er ging iets mis. Probeer het opnieuw.")
+        if (result?.error) setError(result.error)
+      } catch {
+        setError("Opslaan is niet gelukt. Controleer je verbinding en probeer het opnieuw.")
       }
     })
   }
@@ -543,7 +545,7 @@ function AgeStep({ value, onChange }: { value: string; onChange: (v: string) => 
         id="age"
         type="number"
         inputMode="numeric"
-        min={10}
+        min={16}
         max={100}
         value={value}
         onChange={(e) => onChange(e.target.value)}

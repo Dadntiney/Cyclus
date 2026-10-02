@@ -78,7 +78,9 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (wasPending.current && !isPending) {
-      paintTop(0)
+      // Reset inline (not via paintTop) so the effect only depends on isPending.
+      pullRef.current = 0
+      if (indicatorRef.current) indicatorRef.current.style.height = "0px"
       if (iconWrapRef.current) iconWrapRef.current.style.transform = ""
     }
     wasPending.current = isPending

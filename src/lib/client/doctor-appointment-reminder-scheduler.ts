@@ -1,7 +1,6 @@
 import { format, parseISO, subDays } from "date-fns"
 import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
-import { normalizeReminderTime } from "@/lib/validations/reminder"
-import { doctorReminderLeadLabel } from "@/lib/validations/doctor-appointment"
+import { doctorReminderLeadLabel, normalizeReminderTime } from "@/lib/reminders/options"
 
 /**
  * One-shot appointment reminders — fire on appointment_date minus

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { exportUserData } from "@/lib/actions/export-data"
+import { runAction } from "@/lib/client/run-action"
 
 export function ExportDataButton() {
   const [error, setError] = useState<string | null>(null)
@@ -12,7 +13,7 @@ export function ExportDataButton() {
   function handleExport() {
     setError(null)
     startTransition(async () => {
-      const result = await exportUserData()
+      const result = await runAction(() => exportUserData())
       if (result.error || !result.data || !result.filename) {
         setError(result.error ?? "Export is niet gelukt.")
         return

@@ -6,6 +6,7 @@ import { toggleExerciseFavorite } from "@/lib/actions/training"
 import { triggerHaptic } from "@/lib/platform"
 import { ActionToast, useActionToast } from "@/components/ui/action-toast"
 import { cn } from "@/lib/utils"
+import { runAction } from "@/lib/client/run-action"
 
 export function ExerciseFavoriteButton({
   exerciseId,
@@ -24,7 +25,7 @@ export function ExerciseFavoriteButton({
     setFavorited(next)
     toast.show(next ? "Opgeslagen" : "Verwijderd")
     startTransition(async () => {
-      const result = await toggleExerciseFavorite(exerciseId)
+      const result = await runAction(() => toggleExerciseFavorite(exerciseId))
       if (result?.favorited !== undefined) {
         setFavorited(result.favorited)
       } else {

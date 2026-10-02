@@ -4,11 +4,8 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/service"
-import {
-  buildPeriodSeedDates,
-  clampPeriodLength,
-  isPeriodStillActive,
-} from "@/lib/cycle/period-seed"
+import { planProfileCycleUpdate } from "@/lib/cycle/profile-cycle-sync"
+import { profileIssueMessage, updateProfileSchema } from "@/lib/validations/profile"
 
 export interface UpdateProfileInput {
   name: string
@@ -51,15 +48,15 @@ export interface UpdateProfileInput {
   buddyMessageFrequency: string | null
 }
 
-const LIFE_STAGE_VALUES = new Set([
-  "regelmatig",
-  "veranderend",
-  "perimenopauze",
-  "menopauze",
-  "onbekend",
-])
+export async function updateProfile(rawInput: UpdateProfileInput) {
+  // Validate everything before the first write, so a bad value can never
+  // leave the profile saved but the cycle settings rejected (half-saved).
+  const parsed = updateProfileSchema.safeParse(rawInput, { error: profileIssueMessage })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Controleer je invoer." }
+  }
+  const input = parsed.data
 
-export async function updateProfile(input: UpdateProfileInput) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -105,80 +102,43 @@ export async function updateProfile(input: UpdateProfileInput) {
 
   if (profileError) return { error: "Opslaan van je profiel is niet gelukt." }
 
-  if (input.averageCycleLength !== null && (input.averageCycleLength < 15 || input.averageCycleLength > 60)) {
-    return { error: "Vul een gemiddelde cyclusduur tussen 15 en 60 dagen in." }
-  }
-
-  const averagePeriodLength =
-    input.hasCycle && input.lastPeriodStart
-      ? clampPeriodLength(input.averagePeriodLength)
-      : null
-
-  if (
-    input.averagePeriodLength !== null &&
-    (input.averagePeriodLength < 2 || input.averagePeriodLength > 14)
-  ) {
-    return { error: "Vul een menstruatieduur tussen 2 en 14 dagen in." }
-  }
-
-  const lifeStage =
-    input.lifeStage && LIFE_STAGE_VALUES.has(input.lifeStage) ? input.lifeStage : null
-
-  const { data: existingCycle } = await supabase
+  const { data: storedCycle } = await supabase
     .from("cycle_profiles")
-    .select("active_period_start")
+    .select("last_period_start, active_period_start")
     .eq("user_id", user.id)
     .maybeSingle()
 
-  const periodOngoing =
-    Boolean(input.hasCycle && input.lastPeriodStart && averagePeriodLength) &&
-    isPeriodStillActive(input.lastPeriodStart!, averagePeriodLength!)
-
-  // Mirror live Start when the profile-seeded bleed is still going; don't
-  // overwrite a differently dated active period she started from Vandaag.
-  let nextActivePeriodStart = existingCycle?.active_period_start ?? null
-  if (periodOngoing && input.lastPeriodStart) {
-    if (!nextActivePeriodStart || nextActivePeriodStart === input.lastPeriodStart) {
-      nextActivePeriodStart = input.lastPeriodStart
-    }
-  } else if (
-    nextActivePeriodStart &&
-    input.lastPeriodStart &&
-    nextActivePeriodStart === input.lastPeriodStart &&
-    !periodOngoing
-  ) {
-    nextActivePeriodStart = null
-  }
+  const lastPeriodStart = input.hasCycle ? input.lastPeriodStart : null
+  const plan = planProfileCycleUpdate(
+    {
+      hasCycle: input.hasCycle,
+      lastPeriodStart,
+      averagePeriodLength: input.averagePeriodLength,
+    },
+    storedCycle ?? null,
+  )
 
   const { error: cycleError } = await supabase
     .from("cycle_profiles")
     .update({
       has_cycle: input.hasCycle,
-      last_period_start: input.lastPeriodStart,
-      average_cycle_length: input.averageCycleLength,
-      average_period_length: averagePeriodLength,
-      regularity: input.regularity,
-      life_stage: lifeStage,
+      last_period_start: lastPeriodStart,
+      average_cycle_length: input.hasCycle ? input.averageCycleLength : null,
+      average_period_length: plan.averagePeriodLength,
+      regularity: input.hasCycle ? input.regularity : null,
+      life_stage: input.lifeStage,
       perimenopause_information: input.perimenopauseInfo,
-      active_period_start: input.hasCycle ? nextActivePeriodStart : null,
+      active_period_start: plan.activePeriodStart,
     })
     .eq("user_id", user.id)
 
   if (cycleError) return { error: "Opslaan van je cyclusinstellingen is niet gelukt." }
 
-  if (input.hasCycle && input.lastPeriodStart) {
-    const seedDates = buildPeriodSeedDates(
-      input.lastPeriodStart,
-      averagePeriodLength ?? 5,
-    )
+  if (plan.seedDates.length) {
+    // Insert-if-missing: never flip a day she unmarked back on.
     const { error: logError } = await supabase.from("cycle_logs").upsert(
-      seedDates.map((date) => ({
-        user_id: user.id,
-        date,
-        menstruation: true,
-        symptoms: [],
-      })),
-      { onConflict: "user_id,date" },
+      plan.seedDates.map((date) => ({ user_id: user.id, date, menstruation: true })),
+      { onConflict: "user_id,date", ignoreDuplicates: true },
     )
     if (logError) return { error: "Opslaan van je cyclusinstellingen is niet gelukt." }
   }
@@ -244,6 +204,12 @@ export async function updateAvatar(avatarUrl: string | null) {
   } = await supabase.auth.getUser()
   if (!user) return { error: "Je bent niet ingelogd." }
 
+  // Only her own file in the avatars bucket — never an arbitrary URL.
+  const ownPrefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${user.id}/`
+  if (avatarUrl !== null && (!avatarUrl.startsWith(ownPrefix) || avatarUrl.length > 500)) {
+    return { error: "Opslaan van je foto is niet gelukt." }
+  }
+
   const { error } = await supabase
     .from("profiles")
     .update({ avatar_url: avatarUrl })
@@ -271,6 +237,18 @@ export async function deleteAccount() {
   if (!user) return { error: "Je bent niet ingelogd." }
 
   const service = createServiceClient()
+
+  // Storage files don't cascade with the account, so remove her profile
+  // photo(s) first. Best effort: a storage hiccup must not block deletion.
+  try {
+    const { data: files } = await service.storage.from("avatars").list(user.id, { limit: 100 })
+    if (files?.length) {
+      await service.storage.from("avatars").remove(files.map((file) => `${user.id}/${file.name}`))
+    }
+  } catch {
+    // ignore — account deletion below is what matters
+  }
+
   const { error } = await service.auth.admin.deleteUser(user.id)
   if (error) return { error: "Verwijderen van je account is niet gelukt. Probeer het later opnieuw." }
 

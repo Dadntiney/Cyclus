@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils"
 import { todayISO as amsterdamTodayISO, todayDate } from "@/lib/dates/amsterdam"
 import { toggleMenstruationDay, setCycleLogFlow } from "@/lib/actions/cycle"
 import { FLOW_OPTIONS } from "@/lib/constants"
+import { runAction } from "@/lib/client/run-action"
 
 interface CalendarProps {
   menstruationDates: Set<string>
@@ -76,7 +77,7 @@ export function Calendar({
       return next
     })
     startTransition(async () => {
-      const result = await toggleMenstruationDay(iso)
+      const result = await runAction(() => toggleMenstruationDay(iso))
       setPendingDate(null)
       if (result?.error) {
         // Roll back: flip the day back to how it was before the tap.
@@ -112,7 +113,7 @@ export function Calendar({
       })
       setFlowPickerDate(null)
       startTransition(async () => {
-        const result = await toggleMenstruationDay(iso)
+        const result = await runAction(() => toggleMenstruationDay(iso))
         if (result?.error) {
           setDates((prev) => new Set(prev).add(iso))
           setFlowByDate((prev) => new Map(prev).set(iso, previousFlow))
@@ -125,7 +126,7 @@ export function Calendar({
     setDates((prev) => new Set(prev).add(iso))
     setFlowByDate((prev) => new Map(prev).set(iso, flow))
     startTransition(async () => {
-      const result = await setCycleLogFlow(iso, flow)
+      const result = await runAction(() => setCycleLogFlow(iso, flow))
       if (result?.error) {
         setFlowByDate((prev) => new Map(prev).set(iso, previousFlow))
         if (!wasMarked) {

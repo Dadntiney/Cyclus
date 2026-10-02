@@ -20,7 +20,7 @@ import {
   DOCTOR_REMINDER_LEAD_OPTIONS,
   doctorReminderLeadLabel,
   type DoctorReminderLeadDays,
-} from "@/lib/validations/doctor-appointment"
+} from "@/lib/reminders/options"
 import { todayISO } from "@/lib/dates/amsterdam"
 import { cn } from "@/lib/utils"
 

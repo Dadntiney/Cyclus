@@ -8,6 +8,7 @@ import {
   revokeBuddyAiConsent,
 } from "@/lib/actions/consent"
 import { Button } from "@/components/ui/button"
+import { runAction } from "@/lib/client/run-action"
 
 export function PrivacyConsentControls({
   healthConsentAt,
@@ -40,7 +41,7 @@ export function PrivacyConsentControls({
             onClick={() => {
               setError(null)
               startTransition(async () => {
-                const result = await acceptHealthDataConsent()
+                const result = await runAction(() => acceptHealthDataConsent())
                 if (result.error) setError(result.error)
                 else router.refresh()
               })
@@ -68,7 +69,7 @@ export function PrivacyConsentControls({
                 onClick={() => {
                   setError(null)
                   startTransition(async () => {
-                    const result = await acceptBuddyAiConsent()
+                    const result = await runAction(() => acceptBuddyAiConsent())
                     if (result.error) setError(result.error)
                     else router.refresh()
                   })
@@ -83,7 +84,7 @@ export function PrivacyConsentControls({
                 onClick={() => {
                   setError(null)
                   startTransition(async () => {
-                    const result = await revokeBuddyAiConsent()
+                    const result = await runAction(() => revokeBuddyAiConsent())
                     if (result.error) setError(result.error)
                     else router.refresh()
                   })
