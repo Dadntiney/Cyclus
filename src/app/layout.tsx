@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next"
-import { cookies } from "next/headers"
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google"
 import { ClientBootstrap } from "@/components/bootstrap/client-bootstrap"
 import {
@@ -8,7 +7,7 @@ import {
   APP_TAGLINE,
   BRAND_HEX,
 } from "@/lib/theme/brand"
-import { THEME_COOKIE, readThemeAttr } from "@/lib/theme/theme-cookie"
+import { THEME_COOKIE } from "@/lib/theme/theme-cookie"
 import "./globals.css"
 
 const bodyFont = Plus_Jakarta_Sans({
@@ -55,17 +54,22 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
 }
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // Theme from a light cookie — no Supabase round-trip on every HTML shell.
-  const jar = await cookies()
-  const themeAttr = readThemeAttr(jar.get(THEME_COOKIE)?.value)
+// Applies the Dag/Nacht choice from its cookie before first paint. Reading
+// the cookie here instead of on the server keeps the root layout free of
+// request data, so public pages (login, privacy, terms) can be served
+// statically from the CDN.
+const themeScript = `try{var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=(light|dark)/);if(m)document.documentElement.dataset.theme=m[1]}catch(e){}`
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="nl"
-      data-theme={themeAttr}
+      suppressHydrationWarning
       className={`${bodyFont.variable} ${displayFont.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-full flex flex-col bg-cream text-ink font-sans">
         {children}
         <ClientBootstrap />

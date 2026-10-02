@@ -166,9 +166,9 @@ export type ThemePreference = "light" | "dark" | "auto"
  * Persists the Dag/Nacht/Automatisch display setting (profiel → Weergave).
  * Applying it instantly and flash-free on the next load is handled outside
  * this action: the client sets the `data-theme` attribute directly for the
- * current session (see ThemeSection), and the root layout reads this same
- * column server-side on every request to render the right attribute from
- * the first byte — this call only needs to make the choice durable.
+ * current session (see ThemeSection), and an inline script in the root
+ * layout applies the cookie set below before first paint — this call only
+ * needs to make the choice durable.
  */
 export async function updateThemePreference(theme: ThemePreference) {
   const supabase = await createClient()
