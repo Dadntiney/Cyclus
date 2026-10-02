@@ -1,8 +1,8 @@
-# Cyclus
+# GoFiev
 
 Jouw lichaam. Jouw ritme. Jouw dag.
 
-Cyclus is een Nederlandstalige wellness-app die training, voeding en herstel
+GoFiev is een Nederlandstalige wellness-app die training, voeding en herstel
 afstemt op jouw eigen cyclus en dagelijkse check-ins. Gebouwd met Next.js
 (App Router), TypeScript, Tailwind CSS en Supabase (Postgres, Auth, Row
 Level Security).

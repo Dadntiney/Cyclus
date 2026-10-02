@@ -1,4 +1,4 @@
-# Cyclus — centraal doel en positionering
+# GoFiev — centraal doel en positionering
 
 Dit document is het uitgangspunt voor alle ontwikkeling aan Cyclus: nieuwe
 functionaliteiten, schermen, teksten en UX-keuzes worden hieraan getoetst

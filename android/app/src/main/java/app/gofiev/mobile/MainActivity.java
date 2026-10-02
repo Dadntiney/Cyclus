@@ -1,4 +1,4 @@
-package app.cyclus.mobile;
+package app.gofiev.mobile;
 
 import com.getcapacitor.BridgeActivity;
 

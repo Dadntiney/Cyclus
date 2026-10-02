@@ -40,12 +40,10 @@ cookie-based Supabase-auth) — een static export zou dat allemaal breken.
 
 ## Wat jij (op een Mac/met Android Studio) nog moet doen
 
-1. **App-id beslissen.** `capacitor.config.ts` gebruikt nu de placeholder
-   `app.cyclus.mobile`. Dit **kan niet meer veranderd worden na de eerste
-   App Store Connect/Play Console-indiening** — kies 'm bewust voordat je
-   verder gaat, en werk 'm bij in `capacitor.config.ts` én in
-   `ios/App/App.xcodeproj` (Xcode: General → Bundle Identifier) en
-   `android/app/build.gradle` (`applicationId`).
+1. **App-id.** Gekozen op 2 oktober 2026: `app.gofiev.mobile`, en bijgewerkt
+   in `capacitor.config.ts`, `ios/App/App.xcodeproj` en
+   `android/app/build.gradle`. Dit **kan niet meer veranderd worden na de
+   eerste App Store Connect/Play Console-indiening**.
 2. **iOS**: `npx cap sync ios`, dan `ios/App/App.xcworkspace` openen in
    Xcode (niet het `.xcodeproj` — CocoaPods-integratie verwacht de
    workspace). Team/signing instellen, op een simulator/toestel draaien.
