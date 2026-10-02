@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Flower2, Leaf } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import type { MindfulExercise } from "@/lib/data/mindful-exercises"
+import { MENTAL_WELLBEING_CATEGORY_OPTIONS } from "@/lib/constants"
 
 const KIND_ICON: Record<MindfulExercise["kind"], typeof Flower2> = {
   meditatie: Flower2,
@@ -9,7 +10,11 @@ const KIND_ICON: Record<MindfulExercise["kind"], typeof Flower2> = {
 }
 
 export function MindfulExerciseCard({ exercise }: { exercise: MindfulExercise }) {
-  const Icon = KIND_ICON[exercise.kind]
+  // The topic icon (adem, maan, wolk …) tells exercises apart better than
+  // one shared meditation icon on twenty cards.
+  const Icon =
+    MENTAL_WELLBEING_CATEGORY_OPTIONS.find((opt) => opt.value === exercise.categories[0])?.icon ??
+    KIND_ICON[exercise.kind]
   return (
     <Link href={`/mentale-rust/${exercise.id}`} className="block">
       <Card interactive className="p-4">
