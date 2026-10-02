@@ -132,7 +132,7 @@ export function DoctorAppointmentsSection({
     <Card className="print:hidden">
       <div className="flex items-start justify-between gap-3 mb-1">
         <div>
-          <h2 className="font-display text-lg text-ink">Afspraken &amp; notities</h2>
+          <h2 className="font-display text-xl text-ink">Afspraken &amp; notities</h2>
           <p className="text-sm text-ink-soft mt-1 leading-relaxed">
             Optioneel. Noteer een afspraakdatum, wat je met je arts hebt afgesproken (bijv. HT
             aangepast), en zet desgewenst een herinnering aan.
@@ -147,7 +147,7 @@ export function DoctorAppointmentsSection({
       </div>
 
       {open && (
-        <div className="mt-4 rounded-3xl bg-sage-soft/50 p-4 flex flex-col gap-3">
+        <div className="mt-4 rounded-[1.25rem] bg-surface border border-line p-4 flex flex-col gap-3">
           <div>
             <Label htmlFor="appt-date">Afspraakdatum (optioneel)</Label>
             <Input
@@ -247,7 +247,7 @@ export function DoctorAppointmentsSection({
                   isPast && "opacity-80",
                 )}
               >
-                <span className="h-9 w-9 rounded-xl bg-surface/80 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="h-9 w-9 rounded-xl bg-sage-soft flex items-center justify-center shrink-0 mt-0.5">
                   <CalendarDays className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
                 </span>
                 <button

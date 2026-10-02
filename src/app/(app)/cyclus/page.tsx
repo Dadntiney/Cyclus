@@ -25,6 +25,7 @@ import { computeSymptomCoOccurrences } from "@/lib/cycle/co-occurrence"
 import { computeWhatHelpedInsights } from "@/lib/cycle/what-helped"
 import { composeYourStory } from "@/lib/cycle/your-story"
 import { YourStoryCard } from "@/components/cycle/your-story-card"
+import { RhythmBand } from "@/components/cycle/rhythm-band"
 import { estimateNextPeriod, formatNextPeriodEstimate } from "@/lib/cycle/next-period"
 import { computeCycleDeviationAlerts } from "@/lib/cycle/deviation"
 import { computeMonthChangeInsights } from "@/lib/cycle/month-change"
@@ -302,7 +303,7 @@ export default async function CyclusPage() {
 
   const insightsBlock = (
       <section>
-        <h2 className="font-display text-lg text-ink mb-1">Jouw inzichten</h2>
+        <h2 className="font-display text-xl text-ink mb-1">Jouw inzichten</h2>
         <p className="text-sm text-ink-soft mb-3">
           Gebaseerd op je check-ins — ter herkenning, geen diagnose.
         </p>
@@ -314,7 +315,7 @@ export default async function CyclusPage() {
         )}
 
         {insightLines.length > 0 ? (
-          <Card className="p-0 divide-y divide-sage/20 mb-3">
+          <Card className="p-0 divide-y divide-line mb-3">
             {insightLines.map((text) => (
               <div key={text} className="flex gap-3 px-4 py-3.5">
                 <Lightbulb className="h-4 w-4 shrink-0 text-sage-dark mt-0.5" strokeWidth={1.75} />
@@ -347,13 +348,13 @@ export default async function CyclusPage() {
   )
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
+    <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-8 lg:gap-10">
       {/* 1. Title */}
       <div>
-        <h1 className="font-display text-2xl lg:text-3xl text-ink">
+        <h1 className="font-display text-3xl lg:text-4xl text-ink">
           {postCycleMode ? "Mijn lichaam & klachten" : "Mijn cyclus"}
         </h1>
-        <p className="text-sm text-ink-soft mt-1">
+        <p className="text-base text-ink-soft mt-2">
           {postCycleMode
             ? "Houd bij wat speelt — zonder menstruatiekalender."
             : "Houd je menstruatie bij en zie wat er bij jou verandert."}
@@ -395,7 +396,7 @@ export default async function CyclusPage() {
           )}
         </Card>
       ) : hasCycle ? (
-        <Card className={cn(phaseTone?.bg)}>
+        <Card className={cn("rounded-[1.75rem] border-transparent p-6", phaseTone?.bg)}>
           {cycleEstimate ? (
             <>
               <p className={cn("text-sm font-medium mb-1", phaseTone?.text ?? "text-sage-dark")}>Nu</p>
@@ -408,12 +409,22 @@ export default async function CyclusPage() {
                 </>
               ) : (
                 <>
-                  <p className="font-display text-2xl text-ink">
-                    {cycleEstimate.phase === "menstruatie" && cycleProfile?.active_period_start
-                      ? nuHeadline
-                      : `Cyclusdag ${cycleEstimate.cycleDay}`}
-                  </p>
-                  <p className="text-sm text-ink-soft mt-1">
+                  {cycleEstimate.phase === "menstruatie" && cycleProfile?.active_period_start ? (
+                    <p className="font-display text-2xl text-ink">{nuHeadline}</p>
+                  ) : (
+                    <p className="flex items-baseline gap-3 text-ink">
+                      <span
+                        className={cn(
+                          "font-display text-[3.25rem] leading-none tabular-nums",
+                          phaseTone?.text,
+                        )}
+                      >
+                        {cycleEstimate.cycleDay}
+                      </span>
+                      <span className="font-display text-xl">Cyclusdag</span>
+                    </p>
+                  )}
+                  <p className="text-sm text-ink-soft mt-2">
                     {cycleEstimate.phase === "menstruatie" && cycleProfile?.active_period_start
                       ? "Bezig · op jouw start"
                       : `${cycleEstimate.phaseLabel} · schatting`}
@@ -427,8 +438,18 @@ export default async function CyclusPage() {
             </p>
           )}
 
+          {cycleEstimate && cycleProfile?.average_cycle_length ? (
+            <RhythmBand
+              className="mt-5"
+              cycleLength={cycleProfile.average_cycle_length}
+              periodLength={cycleProfile.average_period_length}
+              cycleDay={softMenstruationMode ? null : cycleEstimate.cycleDay}
+              phase={cycleEstimate.phase}
+            />
+          ) : null}
+
           {lastPeriod && (
-            <div className="mt-4 rounded-xl bg-surface/70 px-3 py-2.5 space-y-2">
+            <div className="mt-5 rounded-2xl bg-surface/80 px-4 py-3.5 space-y-2.5">
               <div>
                 <p className="text-sm font-medium text-ink">Laatste menstruatie</p>
                 <p className="text-sm text-ink-soft mt-1 leading-relaxed">
@@ -451,7 +472,7 @@ export default async function CyclusPage() {
           )}
 
           {!lastPeriod && nextPeriod && (
-            <div className="mt-4 rounded-xl bg-surface/70 px-3 py-2.5">
+            <div className="mt-5 rounded-2xl bg-surface/80 px-4 py-3.5">
               <p className="text-sm font-medium text-ink">Volgende menstruatie</p>
               <p className="text-sm text-ink-soft mt-1 leading-relaxed">
                 {formatNextPeriodEstimate(nextPeriod)}
@@ -498,7 +519,7 @@ export default async function CyclusPage() {
       {/* 4. Calendar — primary logging action */}
       {!postCycleMode && (
         <section>
-          <h2 className="font-display text-lg text-ink mb-3">Kalender</h2>
+          <h2 className="font-display text-xl text-ink mb-3">Kalender</h2>
           <Card>
             <Calendar
               menstruationDates={menstruationDates}
@@ -512,9 +533,9 @@ export default async function CyclusPage() {
       {/* 5. History */}
       {!postCycleMode && (
         <section>
-          <h2 className="font-display text-lg text-ink mb-3">Eerdere cycli</h2>
+          <h2 className="font-display text-xl text-ink mb-3">Eerdere cycli</h2>
           {recentHistory.length ? (
-            <Card className="p-0 divide-y divide-sage/20">
+            <Card className="p-0 divide-y divide-line">
               {completedLengths.length >= 2 && (
                 <div className="px-4 py-3.5">
                   <p className="text-xs text-ink-soft mb-2">Cyclusduur (recent)</p>
@@ -557,7 +578,7 @@ export default async function CyclusPage() {
       {/* 6. Changes — only when relevant */}
       {uniqueChanges.length > 0 && (
         <section>
-          <h2 className="font-display text-lg text-ink mb-3">Veranderingen</h2>
+          <h2 className="font-display text-xl text-ink mb-3">Veranderingen</h2>
           <div className="flex flex-col gap-3">
             {uniqueChanges.map((item) => (
               <Card key={item.title}>
@@ -576,18 +597,18 @@ export default async function CyclusPage() {
 
       {/* 7. More — secondary tools & education */}
       <section>
-        <h2 className="font-display text-lg text-ink mb-3">Meer</h2>
-        <div className="flex flex-col gap-2">
+        <h2 className="font-display text-xl text-ink mb-3">Meer</h2>
+        <div className="rounded-[1.25rem] bg-surface border border-line divide-y divide-line overflow-hidden">
           <Link
             href="/cyclus/samenvatting"
-            className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
+            className="flex items-center justify-between gap-3 px-4 py-4 min-h-14 touch-manipulation transition-colors active:bg-cream-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sage/50"
           >
             <span className="min-w-0">
-              <span className="block text-sm font-medium text-ink inline-flex items-center gap-1.5">
+              <span className="text-base font-medium text-ink inline-flex items-center gap-2">
                 <Stethoscope className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
                 Voor je arts
               </span>
-              <span className="block text-xs text-ink-soft mt-0.5">
+              <span className="block text-sm text-ink-soft mt-0.5">
                 Samenvatting om mee te nemen naar een afspraak.
               </span>
             </span>
@@ -596,14 +617,14 @@ export default async function CyclusPage() {
 
           <Link
             href="/cyclus/klachtenlast"
-            className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
+            className="flex items-center justify-between gap-3 px-4 py-4 min-h-14 touch-manipulation transition-colors active:bg-cream-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sage/50"
           >
             <span className="min-w-0">
-              <span className="block text-sm font-medium text-ink inline-flex items-center gap-1.5">
+              <span className="text-base font-medium text-ink inline-flex items-center gap-2">
                 <ClipboardList className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
                 Klachtenlast
               </span>
-              <span className="block text-xs text-ink-soft mt-0.5">
+              <span className="block text-sm text-ink-soft mt-0.5">
                 {periLatest?.score != null
                   ? `Laatste score: ${periLatest.score}/100`
                   : "Maandelijkse check voor jezelf of je arts."}
@@ -614,14 +635,14 @@ export default async function CyclusPage() {
 
           <Link
             href="/kennis"
-            className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
+            className="flex items-center justify-between gap-3 px-4 py-4 min-h-14 touch-manipulation transition-colors active:bg-cream-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sage/50"
           >
             <span className="min-w-0">
-              <span className="block text-sm font-medium text-ink inline-flex items-center gap-1.5">
+              <span className="text-base font-medium text-ink inline-flex items-center gap-2">
                 <Lightbulb className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
                 Kennis
               </span>
-              <span className="block text-xs text-ink-soft mt-0.5">
+              <span className="block text-sm text-ink-soft mt-0.5">
                 Uitleg over hormonen, overgang en leefstijl.
               </span>
             </span>
@@ -630,14 +651,14 @@ export default async function CyclusPage() {
 
           <Link
             href="/cyclus/overgang"
-            className="flex items-center justify-between rounded-3xl bg-sage-soft/50 px-4 py-3.5 touch-manipulation"
+            className="flex items-center justify-between gap-3 px-4 py-4 min-h-14 touch-manipulation transition-colors active:bg-cream-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sage/50"
           >
             <span className="min-w-0">
-              <span className="block text-sm font-medium text-ink inline-flex items-center gap-1.5">
+              <span className="text-base font-medium text-ink inline-flex items-center gap-2">
                 <Sunset className="h-4 w-4 text-info" strokeWidth={1.75} />
                 {overgangMode ? "Overgang & verandering" : "Cyclus & ouder worden"}
               </span>
-              <span className="block text-xs text-ink-soft mt-0.5">
+              <span className="block text-sm text-ink-soft mt-0.5">
                 Wat er kan veranderen naarmate je ouder wordt.
               </span>
             </span>
