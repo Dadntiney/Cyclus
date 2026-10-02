@@ -6,9 +6,12 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { useLinkStatus } from "next/link"
 import { cn } from "@/lib/utils"
+import { ICON } from "@/lib/ui/icon"
+import { useImmersiveActive } from "@/lib/hooks/use-immersive"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
 import { useVisualViewportFrame } from "@/lib/hooks/use-visual-viewport-frame"
-import { NAV_ITEMS, isNavActive } from "./nav-items"
+import { useActiveTab } from "@/lib/navigation/hooks"
+import { NAV_ITEMS } from "./nav-items"
 
 function NavPendingHint() {
   const { pending } = useLinkStatus()
@@ -17,7 +20,7 @@ function NavPendingHint() {
       aria-hidden
       className={cn(
         "pointer-events-none absolute inset-x-5 bottom-1 h-0.5 rounded-full bg-sage/70",
-        "opacity-0 transition-opacity duration-150",
+        "opacity-0 transition-opacity duration-fast ease-standard",
         pending && "opacity-100 motion-safe:animate-pulse",
       )}
     />
@@ -25,15 +28,25 @@ function NavPendingHint() {
 }
 
 /**
- * Always `fixed bottom-0` — never synced to visualViewport top/height.
- * Optimistic active tab on press so the bar reacts like a native tab bar
- * before the RSC route commits.
+ * The tab bar. Always `fixed bottom-0` — never synced to visualViewport top/height.
+ *
+ * Active tab = the tab she is in (tab of origin, from the navigation
+ * store), not the canonical owner of the route: a recipe opened from
+ * Vandaag keeps Vandaag lit. On the server and during hydration it is the
+ * owner of the route. A press lights the tab immediately (optimistic), like
+ * a native tab bar, before the route commits.
+ *
+ * Steps aside (slides down, `--bottom-nav-h` = 0) while the soft keyboard
+ * is open and in immersive mode (training, listening, medication wizard).
  */
 export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
   const pathname = usePathname()
   const ref = useRef<HTMLElement>(null)
   const { keyboardOpen } = useVisualViewportFrame()
-  useMeasuredHeightVar(ref, "--bottom-nav-h", keyboardOpen)
+  const immersive = useImmersiveActive()
+  const hidden = keyboardOpen || immersive
+  useMeasuredHeightVar(ref, "--bottom-nav-h", hidden)
+  const activeTab = useActiveTab(pathname)
   const [optimisticHref, setOptimisticHref] = useState<string | null>(null)
   const [pathForOptimistic, setPathForOptimistic] = useState(pathname)
   if (pathname !== pathForOptimistic) {
@@ -41,23 +54,24 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
     if (optimisticHref != null) setOptimisticHref(null)
   }
 
-  const displayPath = optimisticHref ?? pathname
+  const displayTab = optimisticHref ?? activeTab
 
   return (
     <nav
       ref={ref}
       aria-label="Hoofdnavigatie"
-      aria-hidden={keyboardOpen || undefined}
+      aria-hidden={hidden || undefined}
+      inert={hidden}
       className={cn(
         "md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-line safe-bottom safe-x",
-        "transition-transform duration-200 ease-out motion-reduce:transition-none",
-        keyboardOpen && "translate-y-full pointer-events-none",
+        "transition-transform duration-base ease-enter motion-reduce:transition-none",
+        hidden && "translate-y-full pointer-events-none",
       )}
     >
       <ul className="flex items-stretch justify-between px-2">
         {NAV_ITEMS.map((item) => {
           const { href, label, icon: Icon } = item
-          const active = isNavActive(displayPath, item)
+          const active = displayTab === href
           const isProfile = href === "/profiel"
           return (
             <li key={href} className="flex-1">
@@ -67,8 +81,8 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
                 aria-current={active ? "page" : undefined}
                 onClick={() => setOptimisticHref(href)}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-1 pt-3 pb-2.5 min-h-[56px] text-xs font-medium touch-manipulation transition-[color,transform,background-color] duration-150 motion-safe:active:scale-[0.94]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset",
+                  "relative flex flex-col items-center justify-center gap-1 pt-3 pb-2.5 min-h-14 rounded-inset text-xs font-medium touch-manipulation -outline-offset-2",
+                  "transition-[color,transform] duration-fast ease-standard motion-safe:active:scale-[0.97]",
                   active ? "text-sage-dark font-semibold" : "text-ink-soft",
                 )}
               >
@@ -76,7 +90,7 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
                 <span
                   aria-hidden
                   className={cn(
-                    "absolute top-0 left-1/2 -translate-x-1/2 h-[3px] w-6 rounded-b-full bg-sage-dark transition-opacity duration-150",
+                    "absolute top-0 left-1/2 -translate-x-1/2 h-0.75 w-6 rounded-b-full bg-sage-dark transition-opacity duration-fast",
                     active ? "opacity-100" : "opacity-0",
                   )}
                 />
@@ -91,7 +105,7 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
                       <Image src={avatarUrl} alt="" width={20} height={20} className="h-full w-full object-cover" />
                     </span>
                   ) : (
-                    <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
+                    <Icon {...ICON.md} aria-hidden />
                   )}
                 </span>
                 {label}

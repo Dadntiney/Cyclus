@@ -854,3 +854,78 @@ select {
     animation: rhythm-land 0.35s 0.45s ease-out both;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   SHELL — navigation chrome (foundation-shell stream, besluit 2).
+   App bar, tab bar, toast layer, StickyActionBar and immersive mode.
+   Everything above this block belongs to the design system; keep shell
+   additions inside this block.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Height of the mobile app bar before it measures itself (first paint of
+   the server HTML): a fixed 48px row under the safe area. MobileHeader
+   publishes the real value inline; md+ has no app bar. */
+:root {
+  --mobile-header-h: calc(3rem + env(safe-area-inset-top));
+}
+
+@media (min-width: 768px) {
+  :root {
+    --mobile-header-h: 0px;
+  }
+}
+
+/* Component rules sit in the components layer, so a utility class passed
+   by a page (className) still wins. */
+@layer components {
+  /* Toasts float 12px above the tab bar and any StickyActionBar, and never
+     below the safe area (tab bar hidden: keyboard, immersive, desktop). */
+  [data-toast-region] {
+    bottom: max(
+      calc(var(--bottom-nav-h, 0px) + var(--sticky-action-h, 0px) + 0.75rem),
+      calc(env(safe-area-inset-bottom) + 0.75rem)
+    );
+  }
+
+  @media (min-width: 768px) {
+    [data-toast-region] {
+      bottom: calc(var(--sticky-action-h, 0px) + 1.5rem);
+    }
+
+    /* Centred over the content column, not across the sidebar (md:w-64,
+       xl:w-72). Margin, so the region's own px-5 utility still applies. */
+    html:has(#app-root):not([data-immersive="true"]) [data-toast-region] {
+      margin-left: 16rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    html:has(#app-root):not([data-immersive="true"]) [data-toast-region] {
+      margin-left: 18rem;
+    }
+  }
+
+  /* StickyActionBar: right above the tab bar (whose height is 0 while it is
+     hidden), the primary action in the thumb zone. */
+  .sticky-action-bar {
+    bottom: var(--bottom-nav-h, 0px);
+    padding-bottom: 0.75rem;
+  }
+
+  /* Immersive mode: no tab bar below it, so it rests on the safe area. */
+  html[data-immersive="true"] .sticky-action-bar {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .sticky-action-bar-bleed {
+    margin-inline: calc(var(--page-gutter) * -1);
+    padding-inline: var(--page-gutter);
+  }
+
+  @media (min-width: 768px) {
+    .sticky-action-bar {
+      bottom: 0;
+    }
+  }
+}
+/* ═══════════════════════════ END SHELL ═══════════════════════════════ */

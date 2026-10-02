@@ -1,51 +1,51 @@
 "use client"
 
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
-import { hasNavigatedInApp } from "@/lib/client/navigation-depth"
+import { APP_BAR_PRIORITY, useAppBarRegistration, useHasAppBar } from "@/components/nav/app-bar-context"
+import { BackLink } from "@/components/nav/back-link"
+import { useBackTarget } from "@/lib/navigation/hooks"
+import { ICON } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
 /**
- * The back link used at the top of every sub-page. Label reads as the
- * logical parent page's name (matching how this app — and iOS — already
- * shows the previous screen's title next to the chevron, which reads
- * better than a generic "Terug"), but the actual navigation prefers real
- * browser history: several of these sub-pages are reachable from more than
- * one place (a workout from Vandaag, Deze week, Beweging, or Profiel's
- * favorites, say), so a hardcoded href would silently be wrong for every
- * path except the one it was written for. `href` is only the fallback for
- * when there's no in-app history to go back to (a fresh page load or a
- * direct link) — a real `<Link>` under the hood so it still works with
- * JS disabled or a middle-click/open-in-new-tab.
+ * "‹ Vorige" for a sub-page. The label tells the truth: it names the screen
+ * she actually came from (router.back()), and `href`/`label` are only the
+ * fallback for when there is no in-app history (a deep link or a fresh
+ * load) — then the current screen is *replaced* by that parent.
+ *
+ * Inside the app shell the control lives in the mobile app bar: this
+ * component registers its fallback there and renders in the page flow only
+ * from md up. Outside the shell (no app bar) it renders on every size.
+ * New pages use <PageHeader back={…}>, which does this for them.
  */
 export function BackButton({
   href,
   label,
   className,
 }: {
+  /** Fallback destination without history (the logical parent). */
   href: string
+  /** Name of that fallback destination. */
   label: string
   className?: string
 }) {
-  const router = useRouter()
+  const pathname = usePathname()
+  const hasAppBar = useHasAppBar()
+  useAppBarRegistration(APP_BAR_PRIORITY.backButton, { back: { href, label } })
+  const target = useBackTarget(pathname, { href, label }) ?? { mode: "link" as const, href, label }
 
   return (
-    <Link
-      href={href}
-      onClick={(e) => {
-        if (hasNavigatedInApp()) {
-          e.preventDefault()
-          router.back()
-        }
-      }}
+    <BackLink
+      target={target}
       className={cn(
-        "inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft -ml-2 mb-2 px-2 py-2.5 min-h-11 rounded-lg touch-manipulation transition-colors active:bg-cream-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
+        "items-center gap-1 text-sm font-medium text-sage-dark -ml-2 mb-2 px-2 py-2.5 min-h-11 rounded-inset transition-colors duration-fast active:bg-cream-soft",
+        hasAppBar ? "hidden md:inline-flex" : "inline-flex",
         className,
       )}
     >
-      <ChevronLeft className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-      {label}
-    </Link>
+      <ChevronLeft {...ICON.sm} aria-hidden />
+      {target.label}
+    </BackLink>
   )
 }

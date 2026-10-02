@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next"
 import Script from "next/script"
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google"
 import { ClientBootstrap } from "@/components/bootstrap/client-bootstrap"
+import { NavigationTracker } from "@/components/nav/navigation-tracker"
+import { ToastHost } from "@/components/ui/toast"
 import {
   APP_DESCRIPTION,
   APP_DISPLAY_NAME,
@@ -72,7 +74,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full flex flex-col bg-cream text-ink font-sans">
+        <NavigationTracker />
         {children}
+        {/* Top-level layer for toasts and other floating feedback, outside
+            #app-root: stays live while an overlay makes the app inert. */}
+        <div id="toast-layer" />
+        <ToastHost />
         <ClientBootstrap />
         {/* Vercel Speed Insights: real load times from real phones, visible in
             the Vercel dashboard once Speed Insights is enabled there. Loaded
