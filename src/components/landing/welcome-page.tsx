@@ -42,7 +42,7 @@ export function WelcomePage() {
             Voor vrouwen van 30 en ouder die merken dat hun cyclus, energie of slaap anders voelt
             dan vroeger. GoFiev helpt je begrijpen wat er speelt en wat jou kan helpen.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 mt-8 max-w-md">
+          <div className="flex flex-col sm:flex-row gap-3 mt-8 max-w-lg [&>a]:whitespace-nowrap">
             <Link href="/registreren" className={buttonVariants({ className: "sm:flex-1" })}>
               Probeer GoFiev
             </Link>
