@@ -12,6 +12,7 @@ import { DayCloseCard } from "@/components/today/day-close-card"
 import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
+import { ProfileCompleteCard } from "@/components/today/profile-complete-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { greeting } from "@/lib/greeting"
 import { estimateNextPeriod } from "@/lib/cycle/next-period"
@@ -93,6 +94,10 @@ export default async function VandaagPage() {
   const sleepEnabled = profile?.sleep_tracking_enabled === true
   const hasCycle = Boolean(cycleProfile?.has_cycle)
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
+  const profileIncomplete =
+    !profile?.hormonal_medication_status &&
+    (profile?.health_conditions?.length ?? 0) === 0 &&
+    (profile?.movement_limitations?.length ?? 0) === 0
   const nextPeriod = estimateNextPeriod({
     lastPeriodStart: cycleProfile?.last_period_start ?? null,
     averageCycleLength: cycleProfile?.average_cycle_length ?? null,
@@ -271,6 +276,8 @@ export default async function VandaagPage() {
               )}
 
               {buddyQuote && <BuddyQuoteCard quote={buddyQuote} />}
+
+              {profileIncomplete && <ProfileCompleteCard />}
 
               <DayCloseCard
                 userId={user.id}
