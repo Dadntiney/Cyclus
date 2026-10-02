@@ -15,7 +15,9 @@ export function ProfileCompleteCard() {
   const [dismissed, setDismissed] = useState(true)
 
   useEffect(() => {
+    // localStorage only on client — render nothing on the server, then decide.
     try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDismissed(window.localStorage.getItem(DISMISS_KEY) === "1")
     } catch {
       setDismissed(false)
