@@ -25,17 +25,17 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <div className="absolute inset-0 bg-ink/40" onClick={onClose} aria-hidden="true" />
+      <div className="absolute inset-0 bg-ink/45" onClick={onClose} aria-hidden="true" />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative w-full sm:max-w-sm bg-surface-elevated rounded-t-3xl sm:rounded-3xl shadow-[var(--shadow-elevated)] motion-safe:animate-[sheet-in_0.25s_cubic-bezier(0.32,0.72,0,1)] max-h-[85vh] flex flex-col"
+        className="relative w-full sm:max-w-sm bg-surface-elevated rounded-t-[1.75rem] sm:rounded-[1.75rem] shadow-[var(--shadow-elevated)] motion-safe:animate-[sheet-in_0.25s_cubic-bezier(0.32,0.72,0,1)] max-h-[85vh] flex flex-col"
         style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom))" }}
       >
         <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-line shrink-0 sm:hidden" aria-hidden="true" />
         <div className="flex items-center justify-between px-5 pt-3 pb-1 shrink-0">
-          {title && <p className="font-display text-lg text-ink">{title}</p>}
+          {title && <p className="font-display text-xl text-ink">{title}</p>}
           <button
             type="button"
             onClick={onClose}

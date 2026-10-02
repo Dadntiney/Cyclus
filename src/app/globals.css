@@ -1,55 +1,53 @@
 @import "tailwindcss";
 
 /* ==========================================================
-   Cyclus color system
+   GoFiev color system — "Ritme"
    ----------------------------------------------------------
-   Research conclusion (App Store readiness color audit):
+   Porcelain ground, aubergine ink, deep eucalyptus for actions and
+   rose-wood (from the brand droplet in public/brand/) as the warm accent.
 
-   KEEP the sage + peach + cream identity. It is the strongest fit for a
-   daily cycle/wellbeing app: natural and calm without clinical blue,
-   warm without pink/purple cliché, and already carrying primary actions,
-   menstruation/favorites, and success across the product.
+   Token NAMES are kept from the earlier sage/peach/cream system so every
+   existing utility (bg-sage-soft, text-peach, bg-cream …) picks up the new
+   palette without touching call sites:
+   - cream  → porselein (page ground)
+   - sage   → eucalyptus (primary / success)
+   - peach  → rozenhout (accent, menstruatie, favorites)
+   - ink    → aubergine ink
 
-   REFINE into a real semantic system:
-   - Brand (sage/peach) stays the face of the product
-   - Status (success/warning/danger/info) stays functional — not phase colors
-   - Cycle phases get dedicated tokens so they no longer borrow warning/info
-   - Light and Dark share one identity with surface hierarchy
+   Phase palette (one family, not a rainbow):
+   - Menstruatie → rozenhout
+   - Folliculair → eucalyptus
+   - Ovulatie    → honing
+   - Luteaal     → mauve
 
-   Phase palette (warm natural family, not a rainbow):
-   - Menstruatie → peach (warmth / body)
-   - Folliculair → sage (growth / energy)
-   - Ovulatie   → honey gold (peak — distinct, on-brand)
-   - Luteaal    → dusty rose (winding down — not "warning amber")
-
-   Accessibility: text-bearing pairs target WCAG AA (4.5:1 normal text).
-   Mid-sage is intentionally NOT for body text (~3.5:1).
+   Accessibility: every text-bearing pair below meets WCAG AA (4.5:1) in
+   both themes. Mid-sage (--color-sage) is for rings/marks, not body text.
    ========================================================== */
 
 :root {
   /* ——— Neutrals / surfaces ——— */
-  --color-cream: #faf6f0;
-  --color-cream-soft: #f3ece2;
-  --color-ink: #2c2a26;
-  --color-ink-soft: #6b665d;
-  --color-line: #e8e1d5;
+  --color-cream: #f6f1ee;
+  --color-cream-soft: #efe7e3;
+  --color-ink: #2e2529;
+  --color-ink-soft: #6e6166;
+  --color-line: #e7ddd9;
   --color-white: #ffffff;
-  --color-surface: #ffffff;
+  --color-surface: #fffdfc;
   /* Slightly lifted layer for sheets/modals above cards */
   --color-surface-elevated: #ffffff;
 
-  /* ——— Brand: sage (primary) ——— */
-  --color-sage: #7c8f6f;
-  --color-sage-dark: #4d5d44;
-  --color-sage-darker: #3d4a36;
-  --color-sage-soft: #e4e9de;
+  /* ——— Brand: eucalyptus (primary) ——— */
+  --color-sage: #6f928a;
+  --color-sage-dark: #3e5c55;
+  --color-sage-darker: #2f4843;
+  --color-sage-soft: #e1ece7;
   /* Opaque fills — theme-stable (white label contrast) */
-  --color-sage-fill: #4d5d44;
-  --color-sage-fill-darker: #3d4a36;
+  --color-sage-fill: #3e5c55;
+  --color-sage-fill-darker: #2f4843;
 
-  /* ——— Brand: peach (accent) ——— */
-  --color-peach: #e8a37e;
-  --color-peach-soft: #fbe6d8;
+  /* ——— Brand: rozenhout (accent) ——— */
+  --color-peach: #c98a7e;
+  --color-peach-soft: #f5e3de;
 
   /* ——— Status (functional — do not reuse for cycle phases) ——— */
   --color-danger: #a34952;
@@ -59,33 +57,33 @@
   --color-danger-fill-darker: #8f3f47;
   --color-warning: #8a5a1e;
   --color-warning-soft: #f5e6cf;
-  /* Soft ink-sage for informational banners — stays on-brand, not purple */
-  --color-info: #5a6354;
-  --color-info-soft: #e8ebe4;
+  /* Muted plum-ink for informational lines — on-brand, not bright purple */
+  --color-info: #5e5560;
+  --color-info-soft: #eee8ec;
   --color-success: var(--color-sage-dark);
   --color-success-soft: var(--color-sage-soft);
 
   /* ——— Cycle phases (dedicated) ——— */
-  --color-phase-menstruatie: #e8a37e;
-  --color-phase-menstruatie-soft: #fbe6d8;
-  --color-phase-menstruatie-text: #2c2a26;
+  --color-phase-menstruatie: #c98a7e;
+  --color-phase-menstruatie-soft: #f5e3de;
+  --color-phase-menstruatie-text: #2e2529;
 
-  --color-phase-folliculair: #4d5d44;
-  --color-phase-folliculair-soft: #e4e9de;
-  --color-phase-folliculair-text: #4d5d44;
+  --color-phase-folliculair: #3e5c55;
+  --color-phase-folliculair-soft: #e1ece7;
+  --color-phase-folliculair-text: #3e5c55;
 
-  --color-phase-ovulatie: #c4a35a;
-  --color-phase-ovulatie-soft: #f3edd8;
-  --color-phase-ovulatie-text: #7a6230;
+  --color-phase-ovulatie: #c9a050;
+  --color-phase-ovulatie-soft: #f5ebd3;
+  --color-phase-ovulatie-text: #7a5a2a;
 
-  --color-phase-luteaal: #b07a7e;
-  --color-phase-luteaal-soft: #f3e6e6;
-  --color-phase-luteaal-text: #7a4e52;
+  --color-phase-luteaal: #9c7a93;
+  --color-phase-luteaal-soft: #eee3eb;
+  --color-phase-luteaal-text: #6e4f67;
 
   /* ——— Charts ——— */
-  --color-chart-1: #7c8f6f;
-  --color-chart-2: #e8a37e;
-  --color-chart-track: #f3ece2;
+  --color-chart-1: #6f928a;
+  --color-chart-2: #c98a7e;
+  --color-chart-track: #efe7e3;
 
   /* ——— Semantic aliases (prefer these in new UI) ——— */
   --color-bg: var(--color-cream);
@@ -101,103 +99,104 @@
   --color-accent: var(--color-peach);
   --color-accent-soft: var(--color-peach-soft);
 
-  --shadow-card: 0 2px 16px rgba(44, 42, 38, 0.05);
-  --shadow-elevated: 0 8px 28px rgba(44, 42, 38, 0.1);
+  /* Depth is reserved for sheets and floating chrome; cards use a hairline. */
+  --shadow-card: 0 1px 2px rgba(46, 37, 41, 0.04);
+  --shadow-elevated: 0 12px 36px rgba(46, 37, 41, 0.14);
 }
 
-/* Dark: same identity, re-tuned surfaces — not inverted light */
+/* Nacht: same identity, re-tuned surfaces — not inverted light */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-cream: #1d1b18;
-    --color-cream-soft: #26241f;
-    --color-ink: #f2ede3;
-    --color-ink-soft: #ada597;
-    --color-sage: #8fa280;
-    --color-sage-dark: #a8c191;
-    --color-sage-darker: #bcd1a8;
-    --color-sage-soft: #2f3a29;
-    --color-peach: #e0a37e;
-    --color-peach-soft: #3d2c22;
-    --color-line: #3a372f;
-    --color-surface: #2b2924;
-    --color-surface-elevated: #32302a;
+    --color-cream: #1c1719;
+    --color-cream-soft: #241e21;
+    --color-ink: #f3ecea;
+    --color-ink-soft: #b3a6aa;
+    --color-sage: #8db3a8;
+    --color-sage-dark: #a3c4ba;
+    --color-sage-darker: #b9d3cb;
+    --color-sage-soft: #24312d;
+    --color-peach: #d9a397;
+    --color-peach-soft: #3a2a27;
+    --color-line: #3a3135;
+    --color-surface: #262023;
+    --color-surface-elevated: #2e272b;
     --color-danger: #d98891;
     --color-danger-dark: #e8a7ae;
     --color-danger-soft: #3a2225;
     --color-warning: #d9a54a;
     --color-warning-soft: #3a2f1a;
-    --color-info: #a8b39c;
-    --color-info-soft: #2a2e26;
+    --color-info: #bbafc0;
+    --color-info-soft: #2c2630;
 
-    --color-phase-menstruatie: #e0a37e;
-    --color-phase-menstruatie-soft: #3d2c22;
-    --color-phase-menstruatie-text: #f2ede3;
+    --color-phase-menstruatie: #d9a397;
+    --color-phase-menstruatie-soft: #3a2a27;
+    --color-phase-menstruatie-text: #f3ecea;
 
-    --color-phase-folliculair: #a8c191;
-    --color-phase-folliculair-soft: #2f3a29;
-    --color-phase-folliculair-text: #a8c191;
+    --color-phase-folliculair: #a3c4ba;
+    --color-phase-folliculair-soft: #24312d;
+    --color-phase-folliculair-text: #a3c4ba;
 
-    --color-phase-ovulatie: #d4c08a;
-    --color-phase-ovulatie-soft: #3a3424;
-    --color-phase-ovulatie-text: #d4c08a;
+    --color-phase-ovulatie: #d9be85;
+    --color-phase-ovulatie-soft: #3a3224;
+    --color-phase-ovulatie-text: #d9be85;
 
-    --color-phase-luteaal: #d4a8ac;
-    --color-phase-luteaal-soft: #3a282a;
-    --color-phase-luteaal-text: #d4a8ac;
+    --color-phase-luteaal: #c2a1b9;
+    --color-phase-luteaal-soft: #33272f;
+    --color-phase-luteaal-text: #d2b6ca;
 
-    --color-chart-1: #8fa280;
-    --color-chart-2: #e0a37e;
-    --color-chart-track: #26241f;
+    --color-chart-1: #8db3a8;
+    --color-chart-2: #d9a397;
+    --color-chart-track: #241e21;
 
-    --shadow-card: 0 2px 20px rgba(0, 0, 0, 0.45);
-    --shadow-elevated: 0 10px 32px rgba(0, 0, 0, 0.55);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-elevated: 0 12px 36px rgba(0, 0, 0, 0.55);
   }
 }
 
 :root[data-theme="dark"] {
-  --color-cream: #1d1b18;
-  --color-cream-soft: #26241f;
-  --color-ink: #f2ede3;
-  --color-ink-soft: #ada597;
-  --color-sage: #8fa280;
-  --color-sage-dark: #a8c191;
-  --color-sage-darker: #bcd1a8;
-  --color-sage-soft: #2f3a29;
-  --color-peach: #e0a37e;
-  --color-peach-soft: #3d2c22;
-  --color-line: #3a372f;
-  --color-surface: #2b2924;
-  --color-surface-elevated: #32302a;
+  --color-cream: #1c1719;
+  --color-cream-soft: #241e21;
+  --color-ink: #f3ecea;
+  --color-ink-soft: #b3a6aa;
+  --color-sage: #8db3a8;
+  --color-sage-dark: #a3c4ba;
+  --color-sage-darker: #b9d3cb;
+  --color-sage-soft: #24312d;
+  --color-peach: #d9a397;
+  --color-peach-soft: #3a2a27;
+  --color-line: #3a3135;
+  --color-surface: #262023;
+  --color-surface-elevated: #2e272b;
   --color-danger: #d98891;
   --color-danger-dark: #e8a7ae;
   --color-danger-soft: #3a2225;
   --color-warning: #d9a54a;
   --color-warning-soft: #3a2f1a;
-  --color-info: #a8b39c;
-  --color-info-soft: #2a2e26;
+  --color-info: #bbafc0;
+  --color-info-soft: #2c2630;
 
-  --color-phase-menstruatie: #e0a37e;
-  --color-phase-menstruatie-soft: #3d2c22;
-  --color-phase-menstruatie-text: #f2ede3;
+  --color-phase-menstruatie: #d9a397;
+  --color-phase-menstruatie-soft: #3a2a27;
+  --color-phase-menstruatie-text: #f3ecea;
 
-  --color-phase-folliculair: #a8c191;
-  --color-phase-folliculair-soft: #2f3a29;
-  --color-phase-folliculair-text: #a8c191;
+  --color-phase-folliculair: #a3c4ba;
+  --color-phase-folliculair-soft: #24312d;
+  --color-phase-folliculair-text: #a3c4ba;
 
-  --color-phase-ovulatie: #d4c08a;
-  --color-phase-ovulatie-soft: #3a3424;
-  --color-phase-ovulatie-text: #d4c08a;
+  --color-phase-ovulatie: #d9be85;
+  --color-phase-ovulatie-soft: #3a3224;
+  --color-phase-ovulatie-text: #d9be85;
 
-  --color-phase-luteaal: #d4a8ac;
-  --color-phase-luteaal-soft: #3a282a;
-  --color-phase-luteaal-text: #d4a8ac;
+  --color-phase-luteaal: #c2a1b9;
+  --color-phase-luteaal-soft: #33272f;
+  --color-phase-luteaal-text: #d2b6ca;
 
-  --color-chart-1: #8fa280;
-  --color-chart-2: #e0a37e;
-  --color-chart-track: #26241f;
+  --color-chart-1: #8db3a8;
+  --color-chart-2: #d9a397;
+  --color-chart-track: #241e21;
 
-  --shadow-card: 0 2px 20px rgba(0, 0, 0, 0.45);
-  --shadow-elevated: 0 10px 32px rgba(0, 0, 0, 0.55);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-elevated: 0 12px 36px rgba(0, 0, 0, 0.55);
 }
 
 @theme inline {
@@ -265,6 +264,35 @@
   --shadow-elevated: var(--shadow-elevated);
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
+
+  /* Type scale — larger than Tailwind's defaults for 30+/40+ readers.
+     Smallest text is 13px; running text 15–17px. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.45;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.55;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.3;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 1.25;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 1.15;
+  --text-3xl: 2rem;
+  --text-3xl--line-height: 1.1;
+}
+
+@layer base {
+  /* Fraunces with its soft axis: rounder, calmer headings. Utilities such
+     as font-medium still win because this sits in the base layer. */
+  .font-display {
+    font-variation-settings: "SOFT" 100, "WONK" 0;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
 }
 
 html {

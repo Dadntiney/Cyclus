@@ -31,7 +31,7 @@ export function RatingScale({
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream",
               value === n
                 ? "bg-sage-fill text-white border-sage-dark"
-                : "bg-surface text-ink-soft border-line hover:border-sage/60 active:border-sage/60",
+                : "bg-surface text-ink border-line hover:border-ink/30 active:border-ink/30",
             )}
           >
             {n}

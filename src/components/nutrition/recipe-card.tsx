@@ -33,14 +33,14 @@ export function RecipeCard({ recipe }: { recipe: RecipeCardData }) {
         )}
         <div className="flex flex-wrap gap-1.5 mt-3">
           {recipe.is_budget && (
-            <span className="text-[11px] font-medium text-white bg-sage-fill rounded-full px-2.5 py-1">
+            <span className="text-xs font-medium text-white bg-sage-fill rounded-full px-2.5 py-1">
               Budget
             </span>
           )}
           {recipe.category.slice(0, 2).map((c) => (
             <span
               key={c}
-              className="text-[11px] font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1"
+              className="text-xs font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1"
             >
               {c}
             </span>

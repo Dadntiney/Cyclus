@@ -8,10 +8,15 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
   media?: ReactNode
 }
 
-/** Soft sage panel — same calm surface language as Vandaag (no white bordered cards). */
-const baseClasses = "rounded-3xl bg-sage-soft/50 border border-transparent"
+/**
+ * Ritme surface: a quiet raised sheet with a hairline — reserved for things
+ * you act on (a recipe, a workout, a settings group). Explanations about the
+ * body use a phase tint instead (pass the tone's bg class), and plain text
+ * sits straight on the page without a card.
+ */
+const baseClasses = "rounded-[1.25rem] bg-surface border border-line"
 const interactiveClasses =
-  "transition-[background-color,transform] duration-150 motion-safe:active:scale-[0.985] hover:bg-sage-soft/70 active:bg-sage-soft/80"
+  "transition-[background-color,border-color,transform] duration-150 motion-safe:active:scale-[0.985] hover:border-ink/20 active:bg-cream-soft/60"
 
 export function Card({ className, interactive, media, children, ...props }: CardProps) {
   if (media) {

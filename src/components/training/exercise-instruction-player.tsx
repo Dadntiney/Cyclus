@@ -131,7 +131,7 @@ export function ExerciseInstructionPlayer({
       <div className="bg-surface/80 backdrop-blur-sm px-3.5 py-3 flex flex-col gap-2.5">
         <p className="text-sm font-medium text-ink leading-snug min-h-[1.25rem]">{cue}</p>
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[11px] text-ink-soft">
+          <p className="text-xs text-ink-soft">
             Nederlandse uitleg · dezelfde gids bij elke oefening
           </p>
           {speechSupported ? (
@@ -154,7 +154,7 @@ export function ExerciseInstructionPlayer({
               {speaking ? "Stop" : "Beluister"}
             </button>
           ) : (
-            <p className="text-[11px] text-ink-soft shrink-0">Lees de tekst hierboven</p>
+            <p className="text-xs text-ink-soft shrink-0">Lees de tekst hierboven</p>
           )}
         </div>
         {speaking && (

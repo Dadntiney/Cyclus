@@ -105,7 +105,7 @@ export function TodayMealsRows({
             <div key={meal.slot} className="px-4 py-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="text-[11px] font-medium text-sage-dark">{meal.label}</p>
+                  <p className="text-xs font-medium text-sage-dark">{meal.label}</p>
                   <p className="text-sm text-ink-soft italic">Vandaag overgeslagen — ook goed</p>
                 </div>
                 <button
@@ -125,7 +125,7 @@ export function TodayMealsRows({
             <div key={meal.slot} className="px-4 py-3">
               <div className="flex items-start gap-2">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium text-sage-dark">{meal.label}</p>
+                  <p className="text-xs font-medium text-sage-dark">{meal.label}</p>
                   <p className="text-sm font-medium text-ink">{custom.text}</p>
                   <p className="text-xs text-ink-soft mt-0.5">Eigen maaltijd</p>
                 </div>
@@ -171,7 +171,7 @@ export function TodayMealsRows({
             <div key={meal.slot} className="px-4 py-3">
               <div className="flex items-center gap-2">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium text-sage-dark">{meal.label}</p>
+                  <p className="text-xs font-medium text-sage-dark">{meal.label}</p>
                   <p className="text-sm text-ink-soft">Nog geen voorstel</p>
                 </div>
                 <AdjustIconButton
@@ -220,10 +220,10 @@ export function TodayMealsRows({
                   sizes="44px"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium text-sage-dark">{meal.label}</p>
+                  <p className="text-xs font-medium text-sage-dark">{meal.label}</p>
                   <p className="text-sm font-medium text-ink leading-snug truncate">{title}</p>
                   {swapped && meal.recipe && (
-                    <p className="text-[11px] text-ink-soft mt-0.5 truncate">
+                    <p className="text-xs text-ink-soft mt-0.5 truncate">
                       Jouw keuze · advies was {meal.recipe.title}
                     </p>
                   )}
@@ -317,7 +317,7 @@ function MealAdjustPanel({
   if (mode === "swap") {
     return (
       <div className="mt-2 flex flex-col gap-1.5">
-        <p className="text-[11px] text-ink-soft mb-0.5">Vervang door:</p>
+        <p className="text-xs text-ink-soft mb-0.5">Vervang door:</p>
         {alternatives.map((alt) => (
           <button
             key={alt.id}
@@ -336,7 +336,7 @@ function MealAdjustPanel({
         <button
           type="button"
           onClick={() => setMode("idle")}
-          className="text-[11px] font-medium text-ink-soft self-start touch-manipulation min-h-11"
+          className="text-xs font-medium text-ink-soft self-start touch-manipulation min-h-11"
         >
           Annuleren
         </button>

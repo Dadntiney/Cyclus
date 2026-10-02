@@ -13,22 +13,22 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const variantClasses: Record<Variant, string> = {
   primary:
     "bg-primary-fill text-white hover:bg-primary-fill-hover active:bg-primary-fill-hover",
-  secondary: "bg-surface text-ink border border-border hover:bg-bg-subtle active:bg-bg-subtle",
+  secondary:
+    "bg-surface text-ink border border-ink/15 hover:border-ink/30 hover:bg-bg-subtle active:bg-bg-subtle",
   ghost: "bg-transparent text-ink hover:bg-bg-subtle active:bg-bg-subtle",
   danger: "bg-danger-fill text-white hover:bg-danger-fill-darker active:bg-danger-fill-darker",
 }
 
 const sizeClasses: Record<Size, string> = {
-  sm: "text-sm px-3.5 py-2.5 rounded-xl min-h-11",
-  // 16px (not 15px): the size iOS treats as "real" body text and the
-  // threshold that keeps Safari from auto-zooming on focus — this is the
-  // default every primary CTA in the app uses unless it opts into sm/lg.
-  md: "text-base px-5 py-3 rounded-2xl min-h-11",
-  lg: "text-base px-6 py-3.5 rounded-2xl min-h-12",
+  sm: "text-sm px-4 py-2.5 rounded-full min-h-11",
+  // text-base (17px in the Ritme scale) — the default every primary CTA in
+  // the app uses unless it opts into sm/lg. Pill shape, 48px tall.
+  md: "text-base px-6 py-3 rounded-full min-h-12",
+  lg: "text-base px-7 py-3.5 rounded-full min-h-13",
 }
 
 const baseClasses =
-  "inline-flex items-center justify-center gap-2 font-medium transition-[background-color,box-shadow,transform] duration-150 touch-manipulation select-none " +
+  "inline-flex items-center justify-center gap-2 font-semibold transition-[background-color,box-shadow,transform] duration-150 touch-manipulation select-none " +
   "motion-safe:active:scale-[0.97] " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg " +
   "disabled:opacity-50 disabled:pointer-events-none"
@@ -44,7 +44,7 @@ export function buttonVariants({
 /** Calm text action for navigation / tertiary CTAs (not a filled button). */
 export function textActionClass(className?: string) {
   return cn(
-    "inline-flex items-center gap-1 text-sm font-medium text-sage-dark min-h-11 touch-manipulation rounded-lg",
+    "inline-flex items-center gap-1 text-sm font-semibold text-sage-dark min-h-11 touch-manipulation rounded-lg underline-offset-4 hover:underline",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
     className,
   )

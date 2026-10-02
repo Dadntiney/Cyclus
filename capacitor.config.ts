@@ -43,7 +43,7 @@ const config: CapacitorConfig = {
     StatusBar: {
       // Cream background is light -> dark (ink-colored) status bar text/icons.
       style: "light",
-      backgroundColor: "#faf6f0",
+      backgroundColor: BRAND_HEX.cream,
     },
     Keyboard: {
       resize: "body",

@@ -23,7 +23,7 @@ export function PhaseNutritionBasics({
           {nutrition.exampleFoods.map((food) => (
             <span
               key={food}
-              className="text-[11px] font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1"
+              className="text-xs font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1"
             >
               {food}
             </span>
@@ -47,7 +47,7 @@ export function PhaseNutritionBasics({
               {basic.foods.map((food) => (
                 <span
                   key={food}
-                  className="text-[11px] font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1"
+                  className="text-xs font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1"
                 >
                   {food}
                 </span>

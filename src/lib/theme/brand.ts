@@ -4,10 +4,10 @@
  * Keep in sync with src/app/globals.css :root tokens.
  */
 export const BRAND_HEX = {
-  cream: "#faf6f0",
-  creamDark: "#1d1b18",
-  sageFill: "#4d5d44",
-  peach: "#e8a37e",
+  cream: "#f6f1ee",
+  creamDark: "#1c1719",
+  sageFill: "#3e5c55",
+  peach: "#c98a7e",
 } as const
 
 /**

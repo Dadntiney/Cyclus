@@ -131,7 +131,7 @@ export function TodayCards({
                 href={`/mentale-rust/${mentalSuggestion.exercise.id}`}
                 className="block px-4 py-3 touch-manipulation motion-safe:active:bg-sage-soft/80 transition-colors"
               >
-                <p className="text-[11px] font-medium text-info mb-0.5">Voor je hoofd</p>
+                <p className="text-xs font-medium text-info mb-0.5">Voor je hoofd</p>
                 <p className="text-sm text-ink leading-snug">{mentalSuggestion.text}</p>
                 <p className="text-xs font-medium text-info mt-1 inline-flex items-center gap-0.5">
                   {mentalSuggestion.exercise.title} · {mentalSuggestion.exercise.durationMinutes} min
@@ -147,7 +147,7 @@ export function TodayCards({
                   className="flex items-center justify-between gap-3 px-4 py-3 touch-manipulation motion-safe:active:bg-sage-soft/80 transition-colors"
                 >
                   <div className="min-w-0">
-                    <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
+                    <p className="text-xs font-medium text-sage-dark">Even voor jezelf</p>
                     <p className="text-sm font-medium text-ink truncate">
                       {recovery.title}
                       <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
@@ -157,7 +157,7 @@ export function TodayCards({
                 </Link>
               ) : (
                 <div className="px-4 py-3">
-                  <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
+                  <p className="text-xs font-medium text-sage-dark">Even voor jezelf</p>
                   <p className="text-sm font-medium text-ink">
                     {recovery.title}
                     <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>

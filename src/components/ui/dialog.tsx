@@ -23,14 +23,14 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-5">
-      <div className="absolute inset-0 bg-ink/40" onClick={onClose} aria-hidden="true" />
+      <div className="absolute inset-0 bg-ink/45" onClick={onClose} aria-hidden="true" />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative w-full max-w-sm bg-surface rounded-3xl shadow-[var(--shadow-card)] p-5 motion-safe:animate-pop-in"
+        className="relative w-full max-w-sm bg-surface-elevated rounded-[1.75rem] shadow-[var(--shadow-elevated)] p-6 motion-safe:animate-pop-in"
       >
-        <p className="font-display text-lg text-ink mb-3">{title}</p>
+        <p className="font-display text-xl text-ink mb-3">{title}</p>
         {children}
       </div>
     </div>,

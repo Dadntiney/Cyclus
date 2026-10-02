@@ -95,14 +95,14 @@ export default async function RecipeDetailPage({
 
       <div className="flex flex-wrap gap-1.5 mb-6">
         {recipe.is_budget && (
-          <span className="text-[11px] font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1">
+          <span className="text-xs font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1">
             Budgetvriendelijk
           </span>
         )}
         {recipe.category.map((c) => (
           <span
             key={c}
-            className="text-[11px] font-medium text-ink-soft bg-cream-soft rounded-full px-2.5 py-1"
+            className="text-xs font-medium text-ink-soft bg-cream-soft rounded-full px-2.5 py-1"
           >
             {c}
           </span>
@@ -129,7 +129,7 @@ export default async function RecipeDetailPage({
                 <ol className="flex flex-col gap-2.5">
                   {steps.map((step, i) => (
                     <li key={i} className="flex gap-3 text-[15px] text-ink-soft leading-relaxed">
-                      <span className="shrink-0 h-5 w-5 rounded-full bg-sage-soft text-sage-dark text-[11px] font-semibold flex items-center justify-center">
+                      <span className="shrink-0 h-6 w-6 rounded-full bg-sage-soft text-sage-dark text-xs font-semibold flex items-center justify-center">
                         {i + 1}
                       </span>
                       {step}
