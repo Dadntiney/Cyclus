@@ -7,24 +7,21 @@ import { doctorAppointmentReminderFireDate } from "@/lib/client/doctor-appointme
 import { resolveReminderText } from "@/lib/buddy/reminder-labels"
 import { getMorningMessage } from "@/lib/data/morning-messages"
 import { REMINDER_TYPE_OPTIONS, type MorningReminderContentType } from "@/lib/constants"
-import { todayDate, todayISO } from "@/lib/dates/amsterdam"
+import { nowMinutesInAmsterdam, todayDate, todayISO } from "@/lib/dates/amsterdam"
+import { isPushTimeDue } from "@/lib/reminders/push-timing"
 
 export const dynamic = "force-dynamic"
 export const maxDuration = 60
 
-// Cyclus is a Dutch-market app with no per-profile timezone setting yet, so
-// "today" is computed in Europe/Amsterdam (correctly handling CET/CEST)
-// rather than the server's UTC clock.
+// GoFiev is a Dutch-market app with no per-profile timezone setting yet, so
+// "today" and "now" are computed in Europe/Amsterdam (CET/CEST) rather than
+// the server's UTC clock.
 //
-// Important, honest limitation: this project is on Vercel's Hobby plan,
-// which only allows a cron job to run once a day (see vercel.json) — not
-// every few minutes. So unlike the in-app toast (getDueReminders, which
-// still matches her exact chosen time while Cyclus is open), this route
-// can't fire "at 20:00" for an evening reminder. Instead it sends once
-// daily, at this cron's fixed time, for whatever is enabled and scheduled
-// for today — a day-level match, not a time-of-day match. Upgrading to
-// Vercel Pro and tightening vercel.json's schedule (e.g. every 15 minutes)
-// is what would be needed for exact per-user times.
+// Timing: Supabase pg_cron calls this route every 15 minutes (see
+// docs/REMINDERS.md); Vercel Cron calls it once a day as a fallback (Hobby
+// plan). Each run sends what is due *now*: her chosen time has passed, within
+// the grace window of isPushTimeDue. push_notification_log keeps every item
+// to one send per day, so overlapping or missed runs are harmless.
 function todayInTimezone(): { date: Date; dateISO: string } {
   return { date: todayDate(), dateISO: todayISO() }
 }
@@ -55,6 +52,7 @@ export async function GET(request: NextRequest) {
   const service = createServiceClient()
   const { date: today, dateISO } = todayInTimezone()
   const weekday = isoWeekday(today)
+  const nowMinutes = nowMinutesInAmsterdam()
 
   const { data: subscribedUserRows } = await service.from("push_subscriptions").select("user_id")
   const userIds = [...new Set((subscribedUserRows ?? []).map((r) => r.user_id))]
@@ -162,6 +160,7 @@ export async function GET(request: NextRequest) {
       }))
       const dueReminders = reminders.filter((r) => {
         if (!isReminderDueToday(r, weekday)) return false
+        if (!isPushTimeDue(r.time, nowMinutes)) return false
         if (alreadySent.has(`reminder:${r.id}`)) return false
         if (r.type === "voeding" && profile?.nutrition_enabled === false) return false
         if (r.type === "beweging" && profile?.movement_enabled === false) return false
@@ -199,6 +198,7 @@ export async function GET(request: NextRequest) {
           startDate: m.start_date,
           endDate: m.end_date,
         }
+        if (!isPushTimeDue(m.time_of_day, nowMinutes)) return false
         const isStop = isScheduleStopDay(schedule, today)
         // false = a computed "off" day, stay silent — except on a
         // user-chosen stop date. true or null (e.g. "eigen schema") still remind.
@@ -255,6 +255,7 @@ export async function GET(request: NextRequest) {
         const lead = appt.reminder_lead_days ?? 0
         const fireDate = doctorAppointmentReminderFireDate(appt.appointment_date, lead)
         if (fireDate !== dateISO) continue
+        if (!isPushTimeDue(appt.reminder_time, nowMinutes, "09:00")) continue
         // Generic on the lock screen — no free-text visit notes in push preview.
         const when =
           lead === 0 ? "vandaag" : lead === 1 ? "morgen" : lead === 7 ? "over een week" : `over ${lead} dagen`
@@ -270,13 +271,10 @@ export async function GET(request: NextRequest) {
       }
 
       // ---- Morning reminder (Goedemorgen) ----
-      // Day-level match only, same honest limitation as generic reminders
-      // above: her chosen time is respected exactly by the in-app toast
-      // while Cyclus is open, but this once-daily cron can only send around
-      // its own fixed run time (see vercel.json / the Amsterdam-timezone comment).
       if (
         profile?.morning_reminder_enabled === true &&
         profile.morning_reminder_days.includes(weekday) &&
+        isPushTimeDue(profile.morning_reminder_time, nowMinutes) &&
         !alreadySent.has("morning_reminder:singleton")
       ) {
         const message = getMorningMessage({

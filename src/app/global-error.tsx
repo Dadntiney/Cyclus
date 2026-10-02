@@ -1,13 +1,20 @@
 "use client"
 
+import { useEffect } from "react"
 import { Leaf } from "lucide-react"
+import { reportError } from "@/lib/monitoring/report-error"
 
 export default function GlobalError({
+  error,
   reset,
 }: {
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  useEffect(() => {
+    reportError(error)
+  }, [error])
+
   return (
     <html lang="nl">
       <body className="min-h-screen flex items-center justify-center bg-cream text-ink font-sans px-6">
