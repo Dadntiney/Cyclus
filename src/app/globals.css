@@ -22,6 +22,11 @@
 
    Accessibility: every text-bearing pair below meets WCAG AA (4.5:1) in
    both themes. Mid-sage (--color-sage) is for rings/marks, not body text.
+   Interactive boundaries use --color-line-strong (≥3:1); the focus ring is
+   --color-focus (sage-dark, ≥6.5:1).
+
+   The full system — roles, type, radius, spacing, motion, components and
+   migration rules — is documented in docs/DESIGN_SYSTEM.md.
    ========================================================== */
 
 :root {
@@ -31,6 +36,9 @@
   --color-ink: #2e2529;
   --color-ink-soft: #6e6166;
   --color-line: #e7ddd9;
+  /* Interactive boundary (input, switch-off, checkbox, chip): ≥3:1 on
+     cream and surface. --color-line stays the quiet passive hairline. */
+  --color-line-strong: #958890;
   --color-white: #ffffff;
   --color-surface: #fffdfc;
   /* Slightly lifted layer for sheets/modals above cards */
@@ -49,7 +57,8 @@
   --color-peach: #c98a7e;
   --color-peach-soft: #f5e3de;
 
-  /* ——— Status (functional — do not reuse for cycle phases) ——— */
+  /* ——— Status (functional — do not reuse for cycle phases) ———
+     danger = validation errors and destructive actions only. */
   --color-danger: #a34952;
   --color-danger-dark: #8f3f47;
   --color-danger-soft: #f7e2e2;
@@ -67,6 +76,10 @@
   --color-phase-menstruatie: #c98a7e;
   --color-phase-menstruatie-soft: #f5e3de;
   --color-phase-menstruatie-text: #2e2529;
+  /* Icon + text for "menstruatie actief" (instead of danger). */
+  --color-phase-menstruatie-strong: #8f5247;
+  /* Day number ON a filled bg-phase-menstruatie cell (≥4.5:1, both themes). */
+  --color-phase-menstruatie-on: #2e2529;
 
   --color-phase-folliculair: #3e5c55;
   --color-phase-folliculair-soft: #e1ece7;
@@ -85,7 +98,20 @@
   --color-chart-2: #c98a7e;
   --color-chart-track: #efe7e3;
 
-  /* ——— Semantic aliases (prefer these in new UI) ——— */
+  /* ——— Overlay + focus ——— */
+  /* Behind sheets and dialogs. Never bg-ink/45: ink turns light in Nacht. */
+  --color-scrim: rgba(46, 37, 41, 0.45);
+  /* The one focus ring (6.5:1 on cream, 9.4:1 in Nacht). */
+  --color-focus: var(--color-sage-dark);
+
+  /* ——— DEPRECATED semantic aliases ———
+     Do not use in new UI; the Ritme names above are canonical
+     (docs/DESIGN_SYSTEM.md). Kept only so old call sites keep working until
+     the sweep removes them: bg → cream, bg-subtle → cream-soft,
+     text → ink, text-muted → ink-soft, border → line, primary → sage,
+     primary-text → sage-dark, primary-soft → sage-soft,
+     primary-fill(-hover) → sage-fill(-darker), accent(-soft) → peach(-soft),
+     success(-soft) → sage-dark / sage-soft. */
   --color-bg: var(--color-cream);
   --color-bg-subtle: var(--color-cream-soft);
   --color-text: var(--color-ink);
@@ -99,12 +125,66 @@
   --color-accent: var(--color-peach);
   --color-accent-soft: var(--color-peach-soft);
 
-  /* Depth is reserved for sheets and floating chrome; cards use a hairline. */
+  /* ——— Elevation ———
+     Depth is reserved for sheets and floating chrome; cards use a hairline. */
   --shadow-card: 0 1px 2px rgba(46, 37, 41, 0.04);
   --shadow-elevated: 0 12px 36px rgba(46, 37, 41, 0.14);
+  /* Small lift for a control's moving part (segmented thumb, switch knob). */
+  --shadow-control: 0 1px 3px rgba(46, 37, 41, 0.12);
+
+  /* ——— Motion ——— */
+  --duration-press: 100ms;
+  --duration-fast: 160ms;
+  --duration-base: 240ms;
+  --duration-exit: 180ms;
+  --duration-slow: 480ms;
+  /* Brand curve (the iOS sheet curve) for anything entering. */
+  --ease-enter: cubic-bezier(0.32, 0.72, 0, 1);
+  /* Colour, height and transforms at rest. */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Anything leaving. */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Composed animations behind the animate-* utilities (see @theme below).
+     Enter animations fill backwards only, so nothing keeps a transform
+     after it lands (a transform would trap `fixed` children). */
+  --motion-sheet-in: sheet-in var(--duration-base) var(--ease-enter) backwards;
+  --motion-sheet-out: sheet-out var(--duration-exit) var(--ease-exit) forwards;
+  --motion-fade-in: fade-in var(--duration-fast) var(--ease-standard) backwards;
+  --motion-fade-out: fade-out var(--duration-exit) var(--ease-exit) forwards;
+  --motion-dialog-in: dialog-in var(--duration-base) var(--ease-enter) backwards;
+  --motion-dialog-out: dialog-out var(--duration-exit) var(--ease-exit) forwards;
+  --motion-rise-in: rise-in var(--duration-base) var(--ease-enter) backwards;
+  --motion-page-push: page-soft var(--duration-fast) var(--ease-enter);
+
+  /* ——— Layout ——— */
+  /* Page gutter (= px-5 lg:px-8); edge-bleed scrollers read it. */
+  --page-gutter: 1.25rem;
 }
 
-/* Nacht: same identity, re-tuned surfaces — not inverted light */
+@media (min-width: 64rem) {
+  :root {
+    --page-gutter: 2rem;
+  }
+}
+
+/* Reduced motion: no slides, scales or rises. Fades stay ≤160ms. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-sheet-in: none;
+    --motion-sheet-out: none;
+    --motion-dialog-in: fade-in var(--duration-fast) var(--ease-standard) backwards;
+    --motion-dialog-out: none;
+    --motion-rise-in: fade-in var(--duration-fast) var(--ease-standard) backwards;
+    --motion-page-push: none;
+    --motion-fade-out: none;
+  }
+}
+
+/* Nacht: same identity, re-tuned surfaces — not inverted light.
+   (Written out twice on purpose — the OS preference and the explicit
+   data-theme="dark" choice. light-dark() is not an option for iOS < 17.5.
+   Keep both blocks identical.) */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --color-cream: #1c1719;
@@ -118,6 +198,7 @@
     --color-peach: #d9a397;
     --color-peach-soft: #3a2a27;
     --color-line: #3a3135;
+    --color-line-strong: #7d7176;
     --color-surface: #262023;
     --color-surface-elevated: #2e272b;
     --color-danger: #d98891;
@@ -131,6 +212,8 @@
     --color-phase-menstruatie: #d9a397;
     --color-phase-menstruatie-soft: #3a2a27;
     --color-phase-menstruatie-text: #f3ecea;
+    --color-phase-menstruatie-strong: #e7b4a9;
+    --color-phase-menstruatie-on: #2e2529;
 
     --color-phase-folliculair: #a3c4ba;
     --color-phase-folliculair-soft: #24312d;
@@ -148,8 +231,11 @@
     --color-chart-2: #d9a397;
     --color-chart-track: #241e21;
 
+    --color-scrim: rgba(0, 0, 0, 0.6);
+
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow-elevated: 0 12px 36px rgba(0, 0, 0, 0.55);
+    --shadow-control: 0 1px 3px rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -165,6 +251,7 @@
   --color-peach: #d9a397;
   --color-peach-soft: #3a2a27;
   --color-line: #3a3135;
+  --color-line-strong: #7d7176;
   --color-surface: #262023;
   --color-surface-elevated: #2e272b;
   --color-danger: #d98891;
@@ -178,6 +265,8 @@
   --color-phase-menstruatie: #d9a397;
   --color-phase-menstruatie-soft: #3a2a27;
   --color-phase-menstruatie-text: #f3ecea;
+  --color-phase-menstruatie-strong: #e7b4a9;
+  --color-phase-menstruatie-on: #2e2529;
 
   --color-phase-folliculair: #a3c4ba;
   --color-phase-folliculair-soft: #24312d;
@@ -195,8 +284,11 @@
   --color-chart-2: #d9a397;
   --color-chart-track: #241e21;
 
+  --color-scrim: rgba(0, 0, 0, 0.6);
+
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-elevated: 0 12px 36px rgba(0, 0, 0, 0.55);
+  --shadow-control: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 @theme inline {
@@ -215,6 +307,7 @@
   --color-peach: var(--color-peach);
   --color-peach-soft: var(--color-peach-soft);
   --color-line: var(--color-line);
+  --color-line-strong: var(--color-line-strong);
   --color-surface: var(--color-surface);
   --color-surface-elevated: var(--color-surface-elevated);
   --color-white: var(--color-white);
@@ -229,10 +322,14 @@
   --color-info-soft: var(--color-info-soft);
   --color-success: var(--color-success);
   --color-success-soft: var(--color-success-soft);
+  --color-scrim: var(--color-scrim);
+  --color-focus: var(--color-focus);
 
   --color-phase-menstruatie: var(--color-phase-menstruatie);
   --color-phase-menstruatie-soft: var(--color-phase-menstruatie-soft);
   --color-phase-menstruatie-text: var(--color-phase-menstruatie-text);
+  --color-phase-menstruatie-strong: var(--color-phase-menstruatie-strong);
+  --color-phase-menstruatie-on: var(--color-phase-menstruatie-on);
   --color-phase-folliculair: var(--color-phase-folliculair);
   --color-phase-folliculair-soft: var(--color-phase-folliculair-soft);
   --color-phase-folliculair-text: var(--color-phase-folliculair-text);
@@ -247,6 +344,7 @@
   --color-chart-2: var(--color-chart-2);
   --color-chart-track: var(--color-chart-track);
 
+  /* DEPRECATED aliases — see the note in :root. */
   --color-bg: var(--color-bg);
   --color-bg-subtle: var(--color-bg-subtle);
   --color-text: var(--color-text);
@@ -262,8 +360,34 @@
 
   --shadow-card: var(--shadow-card);
   --shadow-elevated: var(--shadow-elevated);
+  --shadow-control: var(--shadow-control);
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
+
+  /* Motion utilities: duration-press|fast|base|exit|slow,
+     ease-enter|standard|exit, animate-* (composed in :root). */
+  --transition-duration-press: var(--duration-press);
+  --transition-duration-fast: var(--duration-fast);
+  --transition-duration-base: var(--duration-base);
+  --transition-duration-exit: var(--duration-exit);
+  --transition-duration-slow: var(--duration-slow);
+  --ease-enter: var(--ease-enter);
+  --ease-standard: var(--ease-standard);
+  --ease-exit: var(--ease-exit);
+  --animate-sheet-in: var(--motion-sheet-in);
+  --animate-sheet-out: var(--motion-sheet-out);
+  --animate-fade-in: var(--motion-fade-in);
+  --animate-fade-out: var(--motion-fade-out);
+  --animate-dialog-in: var(--motion-dialog-in);
+  --animate-dialog-out: var(--motion-dialog-out);
+  --animate-rise-in: var(--motion-rise-in);
+  --animate-page-push: var(--motion-page-push);
+  /* DEPRECATED: pop-in now uses dialog-in (no overshoot); page-in and
+     page-soft are kept for old call sites. Use dialog-in / rise-in /
+     page-push in new UI. */
+  --animate-pop-in: var(--motion-dialog-in);
+  --animate-page-in: page-in var(--duration-fast) var(--ease-enter) backwards;
+  --animate-page-soft: var(--motion-page-push);
 
   /* Type scale — larger than Tailwind's defaults for 30+/40+ readers.
      Smallest text is 13px; running text 15–17px. */
@@ -281,6 +405,119 @@
   --text-2xl--line-height: 1.15;
   --text-3xl: 2rem;
   --text-3xl--line-height: 1.1;
+  /* Desktop-only display size (type-page-title at lg). */
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 1.1;
+  /* The big cycle-day number (prefer type-numeral, which adds Fraunces). */
+  --text-numeral: 2.75rem;
+  --text-numeral--line-height: 0.9;
+}
+
+/* Shape: three radii plus pill. rounded-xs is for the checkbox only. */
+@theme {
+  --radius-xs: 0.375rem;
+  --radius-inset: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-sheet: 1.75rem;
+}
+
+/* ——— Type roles ———
+   Set family, size, line-height (and weight for display roles); never a
+   colour. Pair with text-ink / text-ink-soft / text-sage-dark as needed. */
+@utility type-page-title {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 100, "WONK" 0;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-size: 2rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+
+  @media (min-width: 64rem) {
+    font-size: 2.25rem;
+  }
+}
+
+@utility type-section-title {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 100, "WONK" 0;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+@utility type-card-title {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 100, "WONK" 0;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+@utility type-numeral {
+  font-family: var(--font-display);
+  font-variation-settings: "SOFT" 100, "WONK" 0;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-size: 2.75rem;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility type-body-lg {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+@utility type-body {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+@utility type-caption {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* Small label above a title: pair with text-sage-dark or a phase -text. */
+@utility type-eyebrow {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+/* Label above a ListGroup / settings group: pair with text-ink-soft. */
+@utility type-group-label {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+/* Horizontal chip/tile scroller that bleeds to the screen edge and keeps
+   room for the focus outline (2px + 2px offset) above and below. */
+@utility scroller-bleed {
+  margin-inline: calc(var(--page-gutter) * -1);
+  padding-inline: var(--page-gutter);
+  scroll-padding-inline: var(--page-gutter);
+  padding-block: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer base {
@@ -292,6 +529,21 @@
     font-weight: 400;
     letter-spacing: -0.01em;
     text-wrap: balance;
+  }
+
+  /* One focus ring for everything (WCAG 2.4.7 / 2.4.13, ≥3:1). Components
+     never add focus-visible:ring-* or outline-none; rows inside a rounded
+     list use -outline-offset-2, inputs outline-offset-0. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  /* Programmatic focus targets (an overlay panel or its title, a page h1
+     with tabIndex=-1) are not controls: they receive focus so screen
+     readers announce them, but draw no ring. */
+  [data-focus-target]:focus-visible {
+    outline: none;
   }
 }
 
@@ -371,7 +623,7 @@ select {
   a,
   button,
   [role="button"] {
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-timing-function: var(--ease-standard);
   }
 }
 
@@ -416,6 +668,8 @@ select {
   }
 }
 
+/* DEPRECATED overshoot pop-in. Nothing references it any more
+   (animate-pop-in now runs dialog-in); the sweep deletes it. */
 @keyframes pop-in {
   0% {
     opacity: 0;
@@ -446,6 +700,66 @@ select {
     transform: translateY(100%);
   }
   to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheet-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes dialog-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
     transform: translateY(0);
   }
 }
@@ -488,28 +802,12 @@ select {
   .animate-menstruatie-adem {
     animation: none;
   }
-}
 
-@layer utilities {
-  .animate-pop-in {
-    animation: pop-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  }
-
-  .animate-page-in {
-    animation: page-in 0.18s ease-out both;
-  }
-
-  /* Soft enter for sub-pages only — never fades to blank, no slide. */
+  /* Deprecated aliases: off entirely for reduced motion, as before. */
+  .animate-pop-in,
+  .animate-page-in,
   .animate-page-soft {
-    animation: page-soft 0.16s ease-out both;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .animate-pop-in,
-    .animate-page-in,
-    .animate-page-soft {
-      animation: none;
-    }
+    animation: none;
   }
 }
 
