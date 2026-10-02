@@ -136,7 +136,7 @@ export function normalizeIngredientName(name: string): string {
     .replace(/[^a-z0-9\s]/g, "")
     .replace(/\s+/g, " ")
     .replace(
-      /^(rijpe?|verse?|gedroogde|bevroren|kleine|grote|zoete|gesnipperde|fijngehakte|gehakte|geraspte|gesneden|uitgelekte)\s+/g,
+      /^(rijpe?|verse?|gedroogde|bevroren|kleine|grote|zoete|gesnipperde|fijngehakte|gehakte|geraspte|gesneden|uitgelekte|liter)\s+/g,
       "",
     )
     .replace(/\b(avocados|avocado's)\b/g, "avocado")

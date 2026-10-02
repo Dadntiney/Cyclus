@@ -94,7 +94,7 @@ export function PhaseContextCard({
       : softHint === "predicted"
         ? "Nog niet gestart"
         : nextPeriodStart
-          ? `Volgende rond ${format(parseISO(nextPeriodStart), "d MMM", { locale: nl })}`
+          ? `Volgende ~${format(parseISO(nextPeriodStart), "d MMM", { locale: nl })}`
           : "Nu niet ongesteld"
 
   // A period that runs well past her usual length most likely ended and
