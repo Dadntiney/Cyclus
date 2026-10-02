@@ -439,6 +439,27 @@ export type Database = {
           },
         ]
       }
+      user_client_state: {
+        Row: {
+          user_id: string
+          key: string
+          value: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          key: string
+          value: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          key?: string
+          value?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       saved_moments: {
         Row: {
           created_at: string
