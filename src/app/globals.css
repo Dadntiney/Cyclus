@@ -315,15 +315,23 @@ html[data-theme="dark"] {
   }
 }
 
+/*
+ * `contain` (not `none`): keeps the native elastic edge — iOS rubber-band,
+ * Android stretch, trackpad bounce — while still suppressing the browser's
+ * own pull-to-refresh, so only our PullToRefresh fires (no double refresh).
+ * `none` turned every page edge into a hard wall. BuddyShell sets `none`
+ * inline while Buddy is open, where the document is locked and only the
+ * message list scrolls (with its own native bounce).
+ */
 html {
-  overscroll-behavior-y: none;
+  overscroll-behavior-y: contain;
 }
 
 body {
   background: var(--color-cream);
   color: var(--color-ink);
   -webkit-tap-highlight-color: transparent;
-  overscroll-behavior-y: none;
+  overscroll-behavior-y: contain;
 }
 
 input[type="date"],
