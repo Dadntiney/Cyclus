@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { NAV_ITEMS } from "./nav-items"
 import { logout } from "@/lib/actions/auth"
 import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
+import { DropletMark } from "@/components/brand/droplet-mark"
 
 const navLinkFocus =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset"
@@ -41,13 +42,14 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
 
   return (
     <aside
-      className="hidden md:flex md:flex-col md:w-64 xl:w-72 md:shrink-0 border-r border-line bg-surface/60 px-4 py-6"
+      className="hidden md:flex md:flex-col md:w-64 xl:w-72 md:shrink-0 border-r border-line bg-surface px-5 py-8"
     >
       <Link
         href="/vandaag"
         prefetch
-        className="font-display text-xl text-sage-dark px-2 mb-8 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+        className="inline-flex items-center gap-2.5 font-display text-2xl text-ink px-2 mb-10 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
       >
+        <DropletMark className="h-[22px] w-[18px]" />
         {APP_DISPLAY_NAME}
       </Link>
 
@@ -64,10 +66,10 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
                   aria-current={active ? "page" : undefined}
                   onClick={() => setOptimisticHref(href)}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150",
+                    "relative flex items-center gap-3 rounded-full px-4 py-3 text-base font-medium transition-colors duration-150",
                     navLinkFocus,
                     active
-                      ? "bg-sage-soft text-sage-dark"
+                      ? "bg-sage-soft text-sage-darker font-semibold"
                       : "text-ink-soft hover:bg-cream-soft hover:text-ink",
                   )}
                 >
@@ -92,7 +94,7 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
           <button
             type="submit"
             className={cn(
-              "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-soft hover:bg-cream-soft hover:text-ink transition-colors",
+              "w-full flex items-center gap-3 rounded-full px-4 py-3 text-base font-medium text-ink-soft hover:bg-cream-soft hover:text-ink transition-colors",
               navLinkFocus,
             )}
           >

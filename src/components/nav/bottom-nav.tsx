@@ -16,7 +16,7 @@ function NavPendingHint() {
     <span
       aria-hidden
       className={cn(
-        "pointer-events-none absolute inset-x-3 bottom-1.5 h-0.5 rounded-full bg-sage/70",
+        "pointer-events-none absolute inset-x-5 bottom-1 h-0.5 rounded-full bg-sage/70",
         "opacity-0 transition-opacity duration-150",
         pending && "opacity-100 motion-safe:animate-pulse",
       )}
@@ -49,7 +49,7 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
       aria-label="Hoofdnavigatie"
       aria-hidden={keyboardOpen || undefined}
       className={cn(
-        "md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-line safe-bottom safe-x",
+        "md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-line safe-bottom safe-x",
         "transition-transform duration-200 ease-out motion-reduce:transition-none",
         keyboardOpen && "translate-y-full pointer-events-none",
       )}
@@ -66,22 +66,25 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
                 aria-current={active ? "page" : undefined}
                 onClick={() => setOptimisticHref(href)}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-1 py-2.5 min-h-[52px] text-xs font-medium touch-manipulation transition-[color,transform,background-color] duration-150 motion-safe:active:scale-[0.94]",
+                  "relative flex flex-col items-center justify-center gap-1 pt-3 pb-2.5 min-h-[56px] text-xs font-medium touch-manipulation transition-[color,transform,background-color] duration-150 motion-safe:active:scale-[0.94]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset",
-                  active ? "text-sage-dark" : "text-ink-soft",
+                  active ? "text-sage-dark font-semibold" : "text-ink-soft",
                 )}
               >
+                {/* Ritme: a short eucalyptus stroke above the active tab — no pill. */}
                 <span
+                  aria-hidden
                   className={cn(
-                    "flex items-center justify-center h-7 w-9 rounded-full transition-colors duration-150",
-                    active && "bg-sage-soft",
+                    "absolute top-0 left-1/2 -translate-x-1/2 h-[3px] w-6 rounded-b-full bg-sage-dark transition-opacity duration-150",
+                    active ? "opacity-100" : "opacity-0",
                   )}
-                >
+                />
+                <span className="flex items-center justify-center h-7 w-9">
                   {isProfile && avatarUrl ? (
                     <span
                       className={cn(
                         "h-5 w-5 rounded-full overflow-hidden shrink-0",
-                        active && "ring-2 ring-white",
+                        active && "ring-2 ring-sage-dark ring-offset-1 ring-offset-surface",
                       )}
                     >
                       <Image src={avatarUrl} alt="" width={20} height={20} className="h-full w-full object-cover" />
