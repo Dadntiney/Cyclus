@@ -1,7 +1,9 @@
 "use client"
 
+import { useLayoutEffect, useRef, useState } from "react"
 import { Chip } from "@/components/ui/chip"
 import { useRovingRadio } from "@/lib/hooks/use-roving-radio"
+import { chipLabelsFit } from "@/lib/ui/chip-grid"
 import { cn } from "@/lib/utils"
 
 interface ChipRadioOption<T extends string | number> {
@@ -19,8 +21,11 @@ interface ChipRadioGroupProps<T extends string | number> {
   "aria-labelledby"?: string
   "aria-describedby"?: string
   /**
-   * Equal-width grid. 4 columns fall back to 2 below 360px (besluit 17);
-   * omit for a wrapping row of content-width chips.
+   * Equal-width grid of `fill` chips. 4 columns fall back to 2 when a
+   * label would not fit its cell (measured against the real container, so
+   * "Gemiddeld" gets 2×2 on a phone while "Ernstig" keeps 4; besluit 17).
+   * 2 and 3 columns stay as asked: keep their labels short. Omit for a
+   * wrapping row of content-width chips.
    */
   columns?: 2 | 3 | 4
   className?: string
@@ -30,8 +35,55 @@ interface ChipRadioGroupProps<T extends string | number> {
 const columnClasses = {
   2: "grid grid-cols-2 gap-2",
   3: "grid grid-cols-3 gap-2",
+  // Before the first measurement (server render): the viewport rule.
   4: "grid grid-cols-2 min-[360px]:grid-cols-4 gap-2",
 } as const
+
+/**
+ * Whether four columns fit the labels, re-checked when the container
+ * resizes or the web font arrives. null = not measured yet.
+ */
+function useFourColumnsFit(enabled: boolean, labelKey: string) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [fits, setFits] = useState<boolean | null>(null)
+
+  useLayoutEffect(() => {
+    const group = ref.current
+    if (!enabled || !group) return
+
+    function measure() {
+      if (!group || group.clientWidth === 0) return // hidden: keep the CSS rule
+      let widestLabel = 0
+      for (const label of Array.from(group.querySelectorAll<HTMLElement>("[data-chip-label]"))) {
+        // offsetWidth ignores the press scale transform.
+        widestLabel = Math.max(widestLabel, label.offsetWidth)
+      }
+      const style = getComputedStyle(group)
+      const px = (value: string) => Number.parseFloat(value) || 0
+      const containerWidth = group.clientWidth - px(style.paddingLeft) - px(style.paddingRight)
+      setFits(chipLabelsFit({ containerWidth, gap: px(style.columnGap), columns: 4, widestLabel }))
+    }
+
+    measure()
+    let cancelled = false
+    document.fonts?.ready.then(() => {
+      if (!cancelled) measure()
+    })
+    if (typeof ResizeObserver === "undefined") {
+      return () => {
+        cancelled = true
+      }
+    }
+    const observer = new ResizeObserver(measure)
+    observer.observe(group)
+    return () => {
+      cancelled = true
+      observer.disconnect()
+    }
+  }, [enabled, labelKey])
+
+  return { ref, fits }
+}
 
 /**
  * One choice out of a few short options, shown as chips — a real radio
@@ -57,14 +109,22 @@ export function ChipRadioGroup<T extends string | number>({
     onSelect: (i) => onChange(options[i].value),
     isDisabled: (i) => Boolean(options[i]?.disabled),
   })
+  const { ref, fits } = useFourColumnsFit(columns === 4, options.map((o) => o.label).join("\u0000"))
+  const gridClass =
+    columns === 4 && fits !== null
+      ? cn("grid gap-2", fits ? "grid-cols-4" : "grid-cols-2")
+      : columns
+        ? columnClasses[columns]
+        : "flex flex-wrap gap-2"
 
   return (
     <div
+      ref={ref}
       role="radiogroup"
       aria-label={ariaLabel}
       aria-labelledby={ariaLabelledBy}
       aria-describedby={ariaDescribedBy}
-      className={cn(columns ? columnClasses[columns] : "flex flex-wrap gap-2", className)}
+      className={cn(gridClass, className)}
     >
       {options.map((opt, i) => (
         <Chip
@@ -77,7 +137,7 @@ export function ChipRadioGroup<T extends string | number>({
           className={chipClassName}
           {...getItemProps(i)}
         >
-          {opt.label}
+          <span data-chip-label="">{opt.label}</span>
         </Chip>
       ))}
     </div>
