@@ -339,8 +339,11 @@ export function getDailyBuddyQuote(
   seed: string,
   phase: CyclePhase | null,
   preferredStyles: BuddyStyle[] = [],
+  opts: { skipPhaseQuotes?: boolean } = {},
 ): BuddyQuote {
-  const phaseMatches = phase ? PHASE_QUOTES.filter((q) => q.phases?.includes(phase)) : []
+  // On a tired day, phase quotes ("an 'ik kan alles'-dagje?") clash with
+  // what she just told us — stay with the general, gentle pool.
+  const phaseMatches = phase && !opts.skipPhaseQuotes ? PHASE_QUOTES.filter((q) => q.phases?.includes(phase)) : []
   const usePhaseQuote =
     phaseMatches.length > 0 && pickRotating([0, 1, 2, 3], `${seed}-phase-gate`, "phase-gate") === 0
   const basePool = usePhaseQuote ? phaseMatches : GENERAL_QUOTES

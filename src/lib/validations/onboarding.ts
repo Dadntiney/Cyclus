@@ -10,6 +10,7 @@ export const onboardingSchema = z.object({
   averagePeriodLength: z.number().int().min(2).max(14).optional(),
   regularity: z.enum(["regelmatig", "onregelmatig", "onbekend"]).optional(),
   perimenopauseInfo: z.string().max(500).optional(),
+  lifeStage: z.enum(["regelmatig", "veranderend", "perimenopauze", "menopauze", "onbekend"]).optional(),
   goals: z.array(z.string()).min(1, "Kies minstens één doel."),
   movementEnabled: z.boolean(),
   trainingPreferences: z.array(z.string()),

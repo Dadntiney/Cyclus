@@ -15,6 +15,7 @@ import { SleepCard } from "@/components/sleep/sleep-card"
 import { ProfileCompleteCard } from "@/components/today/profile-complete-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { greeting } from "@/lib/greeting"
+import { phaseTagline } from "@/lib/cycle/day-lens"
 import { estimateNextPeriod } from "@/lib/cycle/next-period"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
@@ -36,13 +37,6 @@ const PHASE_TONE: Record<CyclePhase, { bg: string; text: string }> = {
     bg: "bg-phase-luteaal-soft",
     text: "text-phase-luteaal-text",
   },
-}
-
-const PHASE_TAGLINE: Record<CyclePhase, string> = {
-  menstruatie: "Een moment om het rustiger aan te doen.",
-  folliculair: "Je energie bouwt zich vaak op in deze fase.",
-  ovulatie: "Voor veel vrouwen een piek in energie.",
-  luteaal: "Je lichaam bouwt rustig toe naar rust.",
 }
 
 /**
@@ -75,6 +69,8 @@ export default async function VandaagPage() {
     bodyRecognition,
     anticipation,
     hormoneRoadmap,
+    changingCycle,
+    lowDay,
     checkin,
     today,
     weekStartISO,
@@ -139,6 +135,7 @@ export default async function VandaagPage() {
         `${user.id}-${today}-vandaag`,
         cycleEstimate?.phase ?? null,
         preferredStyles,
+        { skipPhaseQuotes: lowDay },
       )
     : null
 
@@ -150,13 +147,17 @@ export default async function VandaagPage() {
 
   // When roadmap follows, keep the phase chip short — avoid repeating the same story.
   // Predicted bleed (not started): soft line instead of a hard cycle-day claim.
+  // A tired day or a changing cycle never gets a confident "peak in energy".
+  const tagline = cycleEstimate
+    ? phaseTagline(cycleEstimate.phase, { lowDay, changingCycle })
+    : ""
   const phaseSubtitle =
     predictedMenstruation && !isMenstruationActive
       ? ""
       : cycleEstimate
         ? hormoneRoadmap
-          ? PHASE_TAGLINE[cycleEstimate.phase]
-          : (bodyRecognition?.text ?? PHASE_TAGLINE[cycleEstimate.phase])
+          ? tagline
+          : (bodyRecognition?.text ?? tagline)
         : ""
 
   const checkinFormProps = {
@@ -191,6 +192,7 @@ export default async function VandaagPage() {
               <PhaseContextCard
                 phase={cycleEstimate.phase}
                 phaseLabel={cycleEstimate.phaseLabel}
+                roughEstimate={changingCycle}
                 cycleDay={cycleEstimate.cycleDay}
                 subtitle={phaseSubtitle}
                 hasCycle={hasCycle}
@@ -239,6 +241,7 @@ export default async function VandaagPage() {
                   roadmap={hormoneRoadmap}
                   phaseTone={tone}
                   savedTexts={savedTexts}
+                  changingCycle={changingCycle}
                 />
               )}
             </>

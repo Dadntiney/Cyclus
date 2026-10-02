@@ -48,6 +48,11 @@ export interface ComposeYourStoryInput {
    * so “In beeld” only carries trends — not a repeat of cyclusdag.
    */
   omitDaySummary?: boolean
+  /**
+   * Her recent check-ins lean tired / in need of rest. Then the week line
+   * follows her, not the phase's generic intensity.
+   */
+  recentlyLow?: boolean
 }
 
 export function composeYourStory(input: ComposeYourStoryInput): YourStory | null {
@@ -63,6 +68,7 @@ export function composeYourStory(input: ComposeYourStoryInput): YourStory | null
     whatHelped = [],
     includeWeekGuide = true,
     omitDaySummary = false,
+    recentlyLow = false,
   } = input
 
   const inViewParts: string[] = []
@@ -105,7 +111,9 @@ export function composeYourStory(input: ComposeYourStoryInput): YourStory | null
   let whatFitsThisWeek: string | null = null
   if (includeWeekGuide && phase && hasCycle) {
     const content = getPhaseContent(phase)
-    const movement = content.movement.preferGentler
+    const movement = recentlyLow
+      ? "Je gaf onlangs aan dat je moe bent of rust nodig hebt. Zachtere beweging past dan vaak beter, wat de fase ook doet."
+      : content.movement.preferGentler
       ? "Zachtere beweging past vaak beter in deze fase."
       : `Beweging op ${content.movement.intensityLabel.toLowerCase()} past vaak bij deze fase.`
     // Movement only: the phase nutrition line already shows on Vandaag and

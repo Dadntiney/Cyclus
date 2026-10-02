@@ -24,6 +24,10 @@ import { computePersonalInsights } from "@/lib/cycle/insights"
 import { computeSymptomCoOccurrences } from "@/lib/cycle/co-occurrence"
 import { computeWhatHelpedInsights } from "@/lib/cycle/what-helped"
 import { composeYourStory } from "@/lib/cycle/your-story"
+import { mostlyLowRecently, usesChangingCycleLens } from "@/lib/cycle/day-lens"
+import { composeCycleRecap, composeInsightProgress } from "@/lib/cycle/cycle-recap"
+import { InsightProgressCard } from "@/components/cycle/insight-progress-card"
+import { CycleRecapCard } from "@/components/cycle/cycle-recap-card"
 import { YourStoryCard } from "@/components/cycle/your-story-card"
 import { RhythmBand } from "@/components/cycle/rhythm-band"
 import { estimateNextPeriod, formatNextPeriodEstimate } from "@/lib/cycle/next-period"
@@ -240,6 +244,25 @@ export default async function CyclusPage() {
     includeWeekGuide: Boolean(cycleEstimate) && !postCycleMode,
     // Nu card already states day + phase — don’t repeat it in Jouw verhaal.
     omitDaySummary: Boolean(cycleEstimate) && !postCycleMode,
+    // Checkins are newest first: her last week decides the week line.
+    recentlyLow: mostlyLowRecently(
+      (checkins ?? []).filter((c) => c.date >= format(subDays(todayDate(), 7), "yyyy-MM-dd")),
+    ),
+  })
+  const changingCycle = usesChangingCycleLens({
+    lifeStage,
+    age: profile?.age ?? null,
+    regularity: cycleProfile?.regularity ?? null,
+    perimenopauseInfo: cycleProfile?.perimenopause_information ?? null,
+    recentSymptoms: (checkins ?? []).slice(0, 30).flatMap((c) => c.symptoms ?? []),
+  })
+  const cycleRecap = postCycleMode ? null : composeCycleRecap(history, checkins ?? [])
+  const insightProgress = composeInsightProgress({
+    hasCycle: Boolean(cycleProfile?.has_cycle) && !postCycleMode,
+    completedCycles: history.filter((p) => p.cycleLength !== null).length,
+    checkinCount: (checkins ?? []).length,
+    hasPersonalPattern:
+      allPhaseInsights.length > 0 || whatHelpedInsights.length > 0 || coOccurrences.length > 0,
   })
   const deviationAlerts = computeCycleDeviationAlerts({
     history,
@@ -308,6 +331,18 @@ export default async function CyclusPage() {
           Gebaseerd op je check-ins — ter herkenning, geen diagnose.
         </p>
 
+        {cycleRecap && (
+          <div className="mb-3">
+            <CycleRecapCard recap={cycleRecap} />
+          </div>
+        )}
+
+        {insightProgress && (
+          <div className="mb-3">
+            <InsightProgressCard progress={insightProgress} />
+          </div>
+        )}
+
         {yourStory && (
           <div className="mb-3">
             <YourStoryCard story={yourStory} />
@@ -323,7 +358,7 @@ export default async function CyclusPage() {
               </div>
             ))}
           </Card>
-        ) : !yourStory ? (
+        ) : !yourStory && !insightProgress ? (
           <Card className="mb-3">
             <EmptyState
               icon={<Sparkles className="h-6 w-6" />}
@@ -373,7 +408,9 @@ export default async function CyclusPage() {
         <Card className="bg-cream-soft">
           <p className="text-sm font-medium text-ink mb-1">Welke fase past bij jou?</p>
           <p className="text-sm text-ink-soft mb-3">
-            Regelmatig, veranderend, overgang of daarna: dan past de uitleg beter. Geen diagnose.
+            {changingCycle
+              ? "Wat je noteert, past bij een cyclus die aan het veranderen is. Kies wat bij je past, dan sluit de uitleg beter aan. Geen diagnose."
+              : "Regelmatig, veranderend, overgang of daarna: dan past de uitleg beter. Geen diagnose."}
           </p>
           <Link href="/profiel/cyclus" className="text-sm font-medium text-sage-dark underline">
             Levensfase kiezen

@@ -54,6 +54,7 @@ export function PhaseContextCard({
   cycleLength = null,
   periodLength = null,
   nextPeriodStart = null,
+  roughEstimate = false,
 }: {
   phase: CyclePhase
   phaseLabel: string
@@ -69,6 +70,8 @@ export function PhaseContextCard({
   periodLength?: number | null
   /** Estimated next period start (ISO), shown instead of a bare status. */
   nextPeriodStart?: string | null
+  /** Changing cycle (40+, irregular): mark the phase as a rough guess. */
+  roughEstimate?: boolean
 }) {
   const [sheetOpen, setSheetOpen] = useState(false)
   const tone = PHASE_TONE[phase]
@@ -83,7 +86,9 @@ export function PhaseContextCard({
       ? phaseLabel
       : isMenstruationActive && menstruationDay
         ? `${phaseLabel} · dag ${menstruationDay}`
-        : phaseLabel
+        : roughEstimate
+          ? `${phaseLabel} · schatting`
+          : phaseLabel
 
   const line = softMode ? (softMenstruationNote(softHint) ?? subtitle) : subtitle
 

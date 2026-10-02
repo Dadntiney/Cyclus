@@ -20,6 +20,7 @@ import {
   BUDDY_STYLE_OPTIONS,
   BUDDY_FREQUENCY_OPTIONS,
   MENTAL_WELLBEING_CATEGORY_OPTIONS,
+  LIFE_STAGE_OPTIONS,
 } from "@/lib/constants"
 import { completeOnboarding } from "@/lib/actions/onboarding"
 import { acceptHealthDataConsent } from "@/lib/actions/consent"
@@ -37,6 +38,7 @@ interface FormData {
   averagePeriodLength: string
   regularity: string
   perimenopauseInfo: string
+  lifeStage: string
   goals: string[]
   healthConditions: string[]
   movementLimitations: string[]
@@ -119,6 +121,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
     averageCycleLength: "",
     averagePeriodLength: "",
     regularity: "",
+    lifeStage: "",
     perimenopauseInfo: "",
     goals: [],
     healthConditions: [],
@@ -225,6 +228,13 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             | "onbekend"
             | undefined,
           perimenopauseInfo: data.perimenopauseInfo || undefined,
+          lifeStage: (data.lifeStage || undefined) as
+            | "regelmatig"
+            | "veranderend"
+            | "perimenopauze"
+            | "menopauze"
+            | "onbekend"
+            | undefined,
           goals: data.goals,
           movementEnabled: data.movementEnabled ?? false,
           trainingPreferences: data.trainingPreferences,
@@ -604,7 +614,18 @@ function CycleStep({
                 <Chip
                   key={opt.value}
                   selected={data.regularity === opt.value}
-                  onClick={() => setData((d) => ({ ...d, regularity: opt.value }))}
+                  onClick={() =>
+                    setData((d) => ({
+                      ...d,
+                      regularity: opt.value,
+                      // 40+ with an irregular cycle: suggest "veranderend"
+                      // (visible below, she can change or clear it).
+                      lifeStage:
+                        !d.lifeStage && opt.value === "onregelmatig" && Number(d.age) >= 40
+                          ? "veranderend"
+                          : d.lifeStage,
+                    }))
+                  }
                 >
                   {opt.label}
                 </Chip>
@@ -613,6 +634,26 @@ function CycleStep({
           </div>
         </div>
       )}
+
+      <div className="mb-5">
+        <p className="text-sm font-medium text-ink mb-1">Waar sta je nu? (optioneel)</p>
+        <p className="text-xs text-ink-soft mb-2">
+          Dan past de uitleg beter bij jou. Geen diagnose, je kunt het later aanpassen.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {LIFE_STAGE_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value}
+              selected={data.lifeStage === opt.value}
+              onClick={() =>
+                setData((d) => ({ ...d, lifeStage: d.lifeStage === opt.value ? "" : opt.value }))
+              }
+            >
+              {opt.label}
+            </Chip>
+          ))}
+        </div>
+      </div>
 
       <div>
         <Label htmlFor="perimenopauseInfo">

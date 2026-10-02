@@ -15,6 +15,7 @@ import { computeSymptomCoOccurrences } from "@/lib/cycle/co-occurrence"
 import { composeBodyRecognition } from "@/lib/cycle/body-translator"
 import { composeAnticipation } from "@/lib/cycle/anticipation"
 import { composeTodayRoadmap } from "@/lib/cycle/today-roadmap"
+import { isLowDay, usesChangingCycleLens } from "@/lib/cycle/day-lens"
 import {
   computeWhatHelpedInsights,
   getWhatHelpedForToday,
@@ -375,6 +376,15 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
       })
     : null
 
+  const changingCycle = usesChangingCycleLens({
+    lifeStage: cycleProfile?.life_stage ?? null,
+    age: profile?.age ?? null,
+    regularity: cycleProfile?.regularity ?? null,
+    perimenopauseInfo: cycleProfile?.perimenopause_information ?? null,
+    recentSymptoms: checkinsForPatterns.slice(0, 30).flatMap((c) => c.symptoms ?? []),
+  })
+  const lowDay = isLowDay(checkin ?? null)
+
   const hormoneRoadmap = dayCycleEstimate
     ? composeTodayRoadmap({
         phase: dayCycleEstimate.phase,
@@ -384,6 +394,8 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
         needs: checkin?.needs ?? [],
         energy: checkin?.energy ?? null,
         stress: checkin?.stress ?? null,
+        mood: checkin?.mood ?? null,
+        changingCycle,
         bodyRecognition,
         whatHelped: whatHelpedToday,
         dailyTip: dailyTip
@@ -408,6 +420,8 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     bodyRecognition,
     anticipation,
     hormoneRoadmap,
+    changingCycle,
+    lowDay,
     whatHelped: whatHelpedToday,
     today,
     weekStartISO,
