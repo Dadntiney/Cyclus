@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ListenMode } from "@/components/mental-wellbeing/listen-mode"
 import type { MindfulExercise } from "@/lib/data/mindful-exercises"
+import { leaveFlow } from "@/lib/client/navigation-depth"
 
 function formatElapsed(seconds: number): string {
   const m = Math.floor(seconds / 60)
@@ -71,7 +72,7 @@ export function GuidedExercise({ exercise }: { exercise: MindfulExercise }) {
           <Button onClick={reset}>Nog een keer</Button>
           <button
             type="button"
-            onClick={() => router.push("/mentale-rust")}
+            onClick={() => leaveFlow(router, "/mentale-rust")}
             className="text-sm font-medium text-ink-soft min-h-11 px-2 touch-manipulation"
           >
             Terug naar overzicht

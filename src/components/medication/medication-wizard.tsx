@@ -20,6 +20,7 @@ import { describeSchedule } from "@/lib/medication/schedule"
 import type { MedicationInput } from "@/lib/validations/medication"
 import { cn } from "@/lib/utils"
 import { runAction } from "@/lib/client/run-action"
+import { leaveFlow } from "@/lib/client/navigation-depth"
 
 type Category = MedicationInput["category"]
 type ScheduleType = MedicationInput["scheduleType"]
@@ -194,8 +195,7 @@ export function MedicationWizard({
         setError(result.error)
         return
       }
-      router.push("/medicatie")
-      router.refresh()
+      leaveFlow(router, "/medicatie")
     })
   }
 

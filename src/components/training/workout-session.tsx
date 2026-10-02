@@ -15,6 +15,7 @@ import { lookupExerciseInstruction } from "@/lib/training/exercise-instructions"
 import { formatExercisePrescription } from "@/lib/training/prescription"
 import { triggerHaptic } from "@/lib/platform"
 import type { Tables } from "@/types/database"
+import { leaveFlow } from "@/lib/client/navigation-depth"
 
 type Exercise = Tables<"exercises">
 type Workout = Tables<"workouts">
@@ -85,8 +86,7 @@ export function WorkoutSession({
         setFinishError(result.error)
         return
       }
-      router.push("/training")
-      router.refresh()
+      leaveFlow(router, "/training")
     })
   }
 

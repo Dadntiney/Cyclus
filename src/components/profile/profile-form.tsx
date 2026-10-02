@@ -292,14 +292,15 @@ export function ProfileForm({
    * snapshot), then schedule a save — skipped entirely if nothing actually
    * changed (e.g. re-tapping an already-selected chip). */
   function applyUpdate(updater: (prev: FormState) => FormState, mode: "immediate" | "debounced") {
-    let changed = true
-    setState((prev) => {
-      const next = updater(prev)
-      changed = JSON.stringify(next) !== JSON.stringify(prev)
-      stateRef.current = next
-      return next
-    })
-    if (changed) scheduleSave(mode === "immediate")
+    // Compute from the ref, not inside a setState updater: React only runs
+    // an updater eagerly when nothing else is pending, so from the second
+    // quick tap on an immediate save would read the previous snapshot.
+    const prev = stateRef.current
+    const next = updater(prev)
+    if (JSON.stringify(next) === JSON.stringify(prev)) return
+    stateRef.current = next
+    setState(next)
+    scheduleSave(mode === "immediate")
   }
 
   function flushDebounce() {

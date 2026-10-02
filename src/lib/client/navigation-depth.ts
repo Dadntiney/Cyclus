@@ -44,3 +44,16 @@ export function consumePopNavigationFlag(): boolean {
   isPopNavigation = false
   return was
 }
+
+/**
+ * Leaving a finished flow (workout done, exercise done, medication saved):
+ * go back to wherever she came from. Pushing the parent page instead put it
+ * on top of the finished screen, so the next "back" reopened that screen.
+ */
+export function leaveFlow(
+  router: { back(): void; replace(href: string): void },
+  fallbackHref: string,
+) {
+  if (hasNavigatedInApp()) router.back()
+  else router.replace(fallbackHref)
+}
