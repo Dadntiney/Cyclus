@@ -130,7 +130,7 @@ export function GroceryList({
   return (
     <div className="flex flex-col gap-5">
       <div
-        className="inline-flex self-start rounded-2xl bg-sage-soft/60 p-1"
+        className="inline-flex self-start rounded-full bg-cream-soft border border-line p-1"
         role="tablist"
         aria-label="Boodschappenweergave"
       >
@@ -147,8 +147,10 @@ export function GroceryList({
             aria-selected={mode === tab.id}
             onClick={() => selectMode(tab.id)}
             className={cn(
-              "min-h-11 px-4 rounded-xl text-sm font-medium touch-manipulation transition-colors",
-              mode === tab.id ? "bg-surface text-ink shadow-sm" : "text-ink-soft",
+              "min-h-10 px-5 rounded-full text-sm font-medium touch-manipulation transition-colors",
+              mode === tab.id
+                ? "bg-surface-elevated text-ink font-semibold ring-1 ring-line shadow-[0_1px_3px_rgba(46,37,41,0.12)]"
+                : "text-ink-soft",
             )}
           >
             {tab.label}
@@ -168,19 +170,19 @@ export function GroceryList({
                 aria-pressed={selected}
                 aria-label={`${d.weekday} ${format(parseISO(d.date), "d MMMM", { locale: nl })}${d.isToday ? ", vandaag" : ""}`}
                 className={cn(
-                  "flex flex-col items-center gap-1 rounded-2xl px-1 py-2.5 min-h-11 touch-manipulation transition-colors",
-                  selected ? "bg-sage-fill text-white" : "bg-sage-soft/50 text-ink",
+                  "flex flex-col items-center gap-1 rounded-2xl border px-1 py-2.5 min-h-14 touch-manipulation transition-colors",
+                  selected ? "bg-sage-fill border-sage-fill text-white" : "bg-surface border-line text-ink",
                 )}
               >
-                <span className="text-[10px] font-medium uppercase opacity-80">{d.weekdayShort}</span>
-                <span className="text-sm font-semibold">{format(parseISO(d.date), "d")}</span>
+                <span className="text-xs font-medium opacity-80">{d.weekdayShort}</span>
+                <span className="text-base font-semibold tabular-nums">{format(parseISO(d.date), "d")}</span>
               </button>
             )
           })}
         </div>
       )}
 
-      <div className="rounded-2xl bg-sage-soft/40 px-4 py-3 flex items-center justify-between gap-3">
+      <div className="rounded-[1.25rem] bg-surface border border-line px-4 py-3.5 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-medium text-ink">Basis porties</p>
           <p className="text-xs text-ink-soft mt-0.5 leading-snug">
@@ -215,8 +217,8 @@ export function GroceryList({
       ) : (
         categories.map((cat) => (
           <div key={cat.category}>
-            <h2 className="font-display text-base text-ink mb-2">{cat.category}</h2>
-            <div className="rounded-3xl bg-sage-soft/50 divide-y divide-sage/20 overflow-hidden">
+            <h2 className="font-display text-lg text-ink mb-2.5">{cat.category}</h2>
+            <div className="rounded-[1.25rem] bg-surface border border-line divide-y divide-line overflow-hidden">
               {cat.items.map((item) => {
                 const isChecked = checked.has(item.id)
                 const subtitle = groceryItemSubtitle(item, mode)
@@ -227,19 +229,19 @@ export function GroceryList({
                     role="checkbox"
                     aria-checked={isChecked}
                     onClick={() => toggle(item.id)}
-                    className="w-full flex items-center gap-3 px-4 py-3 min-h-12 text-left touch-manipulation"
+                    className="w-full flex items-center gap-3 px-4 py-3.5 min-h-13 text-left touch-manipulation transition-colors active:bg-cream-soft"
                   >
                     {/* Small checkbox (not a thumbnail-sized tile); row stays ≥44px for touch. */}
                     <span
                       aria-hidden
                       className={cn(
-                        "shrink-0 h-5 w-5 rounded-md border-2 flex items-center justify-center transition-colors",
+                        "shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors",
                         isChecked
                           ? "bg-sage-fill border-sage-dark text-white"
                           : "border-sage-dark/45 bg-surface",
                       )}
                     >
-                      {isChecked && <Check className="h-3 w-3" strokeWidth={3} />}
+                      {isChecked && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span
