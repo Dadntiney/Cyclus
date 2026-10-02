@@ -34,7 +34,9 @@ proberen te draaien die live al zijn toegepast.
   6 FK-indexen, avatars niet meer opvraagbaar als lijst, en documentatie bij
   `push_notification_log`. De migratie is lokaal gevalideerd tegen een
   nagebouwd schema (PGlite), twee keer achter elkaar zonder fouten.
-  **Nog niet toegepast op live.**
+  **Toegepast op live op 2 oktober 2026**, in delen (`audit_security_part1`,
+  `audit_rls_initplan_part1..3`). Stap 4 (avatars) moet via de SQL-editor,
+  omdat de MCP-koppeling op `storage.objects` blijft hangen.
 
 ## Aanbevolen herstel (vraagt een schrijfactie op de migratietabel)
 
