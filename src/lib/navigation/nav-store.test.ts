@@ -69,8 +69,11 @@ function fakeWindow(startUrl: string, storage = new Map<string, string>()) {
   return { win, storage }
 }
 
-async function load(startUrl: string, storage?: Map<string, string>) {
+async function load(startUrl: string, storage?: Map<string, string>, navigationType?: string) {
   const { win } = fakeWindow(startUrl, storage)
+  if (navigationType) {
+    Object.assign(win, { performance: { getEntriesByType: () => [{ type: navigationType }] } })
+  }
   vi.stubGlobal("window", win)
   vi.resetModules()
   const store = await import("./nav-store")
@@ -136,6 +139,25 @@ describe("nav-store in the browser", () => {
     const reloaded = await load("/kennis", storage)
     expect(reloaded.store.getActiveTab("/kennis")).toBe("/cyclus")
     expect(reloaded.store.hasHistory()).toBe(true)
+  })
+
+  it("restores the stack on a reload, not on a fresh load of the same URL", async () => {
+    const storage = new Map<string, string>()
+    const first = await load("/vandaag", storage)
+    first.history.pushState(null, "", "/voeding/abc")
+
+    const reloaded = await load("/voeding/abc", storage, "reload")
+    expect(reloaded.store.getActiveTab("/voeding/abc")).toBe("/vandaag")
+    expect(reloaded.store.hasHistory()).toBe(true)
+
+    // Same URL opened again from outside the app (new history entry):
+    // router.back() would leave the app, so it is a deep link.
+    const fresh = await load("/voeding/abc", storage, "navigate")
+    expect(fresh.store.getActiveTab("/voeding/abc")).toBe("/ontdek")
+    expect(fresh.store.hasHistory()).toBe(false)
+    expect(fresh.store.getBackTarget("/voeding/abc", { href: "/voeding", label: "Voeding" })).toMatchObject({
+      mode: "link",
+    })
   })
 
   it("a deep link gets the canonical tab and the fallback back link", async () => {

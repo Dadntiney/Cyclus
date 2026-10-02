@@ -67,8 +67,26 @@ function notify() {
   })
 }
 
+/**
+ * Did this page load return to history the browser still has (a reload,
+ * or back/forward into the app)? Only then is the stored stack still true.
+ * A fresh load of the same URL (a link from outside, a typed URL, a PWA
+ * launch) has no in-app screen behind it. Unknown → keep the stack.
+ */
+function loadReturnsToHistory(): boolean {
+  try {
+    const [entry] = (window.performance?.getEntriesByType?.("navigation") ?? []) as PerformanceNavigationTiming[]
+    if (!entry?.type) return true
+    return entry.type === "reload" || entry.type === "back_forward"
+  } catch {
+    return true
+  }
+}
+
 function getState(): NavState {
-  if (!state) state = initState(currentUrl(), readPersisted())
+  if (!state) {
+    state = initState(currentUrl(), readPersisted(), { restoreStack: loadReturnsToHistory() })
+  }
   return state
 }
 

@@ -148,6 +148,17 @@ function isUnder(path: string, base: string): boolean {
   return path === base || path.startsWith(`${base}/`)
 }
 
+/**
+ * Is this a screen of the app itself, owned by one of the five tabs? The
+ * welcome page, login, registration, onboarding and the legal pages are
+ * not. Once she is in the app those are never "the previous screen":
+ * after logging in, back must not lead to the login form.
+ */
+export function isAppPath(path: string): boolean {
+  const p = normalizePath(path)
+  return OWNERSHIP.some(([prefix]) => isUnder(p, prefix))
+}
+
 export function isTabRoot(path: string): path is TabHref {
   return (TAB_ROOTS as readonly string[]).includes(normalizePath(path))
 }

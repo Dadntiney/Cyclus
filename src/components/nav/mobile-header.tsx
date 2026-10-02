@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, type RefObject } from "react"
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react"
 import { usePathname } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
@@ -16,6 +16,8 @@ import { BackLink } from "./back-link"
 
 /** The hairline appears once the page has scrolled this far. */
 const SCROLLED_PX = 4
+/** How long after a route change the bar's chrome switches without fading. */
+const SETTLE_MS = 150
 
 function useScrolledPast(px: number): boolean {
   const [scrolled, setScrolled] = useState(false)
@@ -28,19 +30,27 @@ function useScrolledPast(px: number): boolean {
   return scrolled
 }
 
+const UNREAD_HEADING = { el: null, text: null, loading: true } as const
+
 /**
  * The page's large title: the element a page registered (PageHeader,
  * useAppBarTitle), else the first `main h1` (besluit 9). Re-read when the
  * page streams in (loading skeleton → content) or its h1 text changes.
  */
 function usePageHeading(pathname: string, titleRef: RefObject<HTMLElement | null> | undefined) {
-  const [heading, setHeading] = useState<{ el: HTMLElement | null; text: string | null; loading: boolean }>({
-    el: null,
-    text: null,
-    loading: false,
-  })
+  // Starts unread (server render, hydration): no compact title until the
+  // h1 has been looked at, so a first load never flashes it.
+  const [state, setHeading] = useState<{
+    path: string
+    el: HTMLElement | null
+    text: string | null
+    loading: boolean
+  }>({ path: "", el: null, text: null, loading: true })
 
-  useEffect(() => {
+  // Layout effect: the new screen's h1 is read before the first paint, so
+  // the previous screen's heading (and its "scrolled under" state) never
+  // shows on the next screen.
+  useLayoutEffect(() => {
     const main = document.querySelector("main")
     let frame = 0
     const read = () => {
@@ -49,7 +59,9 @@ function usePageHeading(pathname: string, titleRef: RefObject<HTMLElement | null
       const text = el?.textContent?.replace(/\s+/g, " ").trim() || null
       const loading = !el && !!main?.querySelector('[aria-busy="true"]')
       setHeading((prev) =>
-        prev.el === el && prev.text === text && prev.loading === loading ? prev : { el, text, loading },
+        prev.path === pathname && prev.el === el && prev.text === text && prev.loading === loading
+          ? prev
+          : { path: pathname, el, text, loading },
       )
     }
     read()
@@ -64,6 +76,10 @@ function usePageHeading(pathname: string, titleRef: RefObject<HTMLElement | null
     }
   }, [pathname, titleRef])
 
+  // Until the new screen has been read, nothing is known about its heading
+  // (treated like a page that is still loading: no compact title yet).
+  const heading = state.path === pathname ? state : UNREAD_HEADING
+
   // Its h1 names this screen in the next screen's back label (when the page
   // did not register a name itself).
   useEffect(() => {
@@ -71,6 +87,20 @@ function usePageHeading(pathname: string, titleRef: RefObject<HTMLElement | null
   }, [pathname, heading.text])
 
   return heading
+}
+
+/**
+ * True for a moment right after a route change. Chrome then switches
+ * without a transition: a tab switch is instant and the next screen never
+ * fades out the previous screen's compact title or hairline (§6.2).
+ */
+function useJustNavigated(pathname: string): boolean {
+  const [settledPath, setSettledPath] = useState(pathname)
+  useEffect(() => {
+    const id = window.setTimeout(() => setSettledPath(pathname), SETTLE_MS)
+    return () => window.clearTimeout(id)
+  }, [pathname])
+  return settledPath !== pathname
 }
 
 /** True once `el` has scrolled up under the app bar (bar height `barRef`). */
@@ -121,6 +151,7 @@ export function MobileHeader() {
   const showBack = !tabRoot && options.back !== false && backTarget !== null
 
   const scrolled = useScrolledPast(SCROLLED_PX)
+  const justNavigated = useJustNavigated(pathname)
   const heading = usePageHeading(pathname, options.titleRef)
   const scrolledUnder = useScrolledUnder(heading.el, ref)
   const title = options.title ?? titleForPath(pathname) ?? heading.text
@@ -149,12 +180,16 @@ export function MobileHeader() {
       <span
         aria-hidden
         className={cn(
-          "pointer-events-none absolute inset-x-0 top-full h-px bg-line transition-opacity duration-fast ease-standard motion-reduce:transition-none",
+          "pointer-events-none absolute inset-x-0 top-full h-px bg-line",
+          justNavigated ? "transition-none" : "transition-opacity duration-fast ease-standard motion-reduce:transition-none",
           (scrolled || options.divider) && !appBarHidden ? "opacity-100" : "opacity-0",
         )}
       />
       {!appBarHidden && (
-        <div className="grid h-12 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1">
+        // Both sides are at least as wide as their content and share the
+        // rest equally, so the title stays centred when there is room and
+        // shifts (then truncates) instead of running under "‹ Vorige".
+        <div className="grid h-12 grid-cols-[minmax(max-content,1fr)_minmax(0,max-content)_minmax(max-content,1fr)] items-center gap-1">
           <div className="flex min-w-0 items-center justify-self-start">
             {options.leading ??
               (showBack && backTarget ? (
@@ -164,7 +199,7 @@ export function MobileHeader() {
                   className="inline-flex min-h-11 max-w-full items-center gap-0.5 rounded-inset pr-2 text-sm font-medium text-sage-dark transition-opacity duration-fast active:opacity-60"
                 >
                   <ChevronLeft {...ICON.md} aria-hidden />
-                  <span className="truncate">{compactBackLabel(backTarget.label)}</span>
+                  <span className="min-w-0 truncate">{compactBackLabel(backTarget.label)}</span>
                 </BackLink>
               ) : null)}
           </div>
@@ -172,8 +207,10 @@ export function MobileHeader() {
           <p
             aria-hidden={titleVisible ? undefined : true}
             className={cn(
-              "max-w-[50vw] truncate text-center text-base font-semibold text-ink",
-              "transition-[opacity,translate] duration-fast ease-enter motion-reduce:transition-none",
+              "max-w-[50vw] min-w-0 truncate text-center text-base font-semibold text-ink",
+              justNavigated
+                ? "transition-none"
+                : "transition-[opacity,translate] duration-fast ease-enter motion-reduce:transition-none",
               titleVisible ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0 motion-reduce:translate-y-0",
             )}
           >

@@ -448,7 +448,7 @@ Die naam is overal dezelfde: linktekst = h1 = titel in de app-balk = terug-label
 op het volgende scherm. Typ namen dus niet met de hand, maar importeer ze.
 
 ```ts
-import { FEATURES, ownerTab, titleForPath, parentOf, isTabRoot } from "@/lib/navigation/features"
+import { FEATURES, ownerTab, titleForPath, parentOf, isTabRoot, isAppPath } from "@/lib/navigation/features"
 
 FEATURES.mentaleRust.label        // "Mentale rust"
 FEATURES.week.linkLabel           // "Hele week" (contextuele link; de h1 blijft "Deze week")
@@ -456,6 +456,7 @@ ownerTab("/voeding/abc")          // "/ontdek"  — canonieke tab (deep link, se
 titleForPath("/profiel/cyclus")   // "Cyclusinstellingen"; null voor dynamische pagina's
 parentOf("/cyclus/overgang")      // { href: "/cyclus", label: "Cyclus" } — fallback zonder geschiedenis
 isTabRoot("/profiel")             // true
+isAppPath("/login")               // false — welkom, inloggen, onboarding en juridisch horen niet bij de app
 ```
 
 - `NAV_ITEMS` (`@/components/nav/nav-items`) wordt hieruit afgeleid en blijft
@@ -477,8 +478,15 @@ Zo werkt het: de navigatiestore (`@/lib/navigation/nav-store`) omhult
 `history.pushState`/`replaceState` één keer en luistert naar `popstate`
 (besluit 7). Elke stap is dus push, replace, terug of vooruit — zonder
 gokken. De stapel (pad, tab, titel) staat in `sessionStorage`, zodat
-herladen de tab bewaart. Op de server en in de eerste frame geldt
-`ownerTab`; daarna corrigeert de client in één frame (besluit 8).
+herladen (of terug/vooruit de app in) de tab bewaart; dezelfde URL opnieuw
+openen via een link van buiten begint vers, als een deep link. Op de server
+en in de eerste frame geldt `ownerTab`; daarna corrigeert de client in één
+frame (besluit 8).
+
+Schermen buiten de app (welkom, inloggen, registreren, onboarding, juridisch)
+zijn nooit "het vorige scherm" van een app-scherm: wie na het inloggen op
+`/profiel/meldingen` landt, ziet "‹ Profiel" (logische ouder, replace) en
+niet een weg terug naar het inlogformulier (`isAppPath` in `features.ts`).
 
 Hooks voor eigen chrome (meestal niet nodig): `useActiveTab(pathname)`,
 `useBackTarget(pathname, fallback)`, `useNavState()` uit
@@ -551,6 +559,12 @@ compacte titel, rechts hoogstens één actie. Geen logo.
   wordt het een link met **replace** naar de logische ouder — er komt nooit
   een extra stap op de stapel.
 - Op tab-roots geen terugknop. Een hairline verschijnt zodra er gescrold is.
+- De titel staat in het midden zolang dat past; op een smal scherm met een
+  lang terug-label schuift hij op en kort hij af, maar loopt nooit onder
+  "‹ Vorige" of de actie door.
+- Direct na een routewissel wisselen titel en hairline zonder overgang: een
+  tabwissel is instant en het volgende scherm laat nooit de titel van het
+  vorige uitfaden.
 
 ```tsx
 // Scherm zonder PageHeader (Buddy, trainingssessie, wizardstap):

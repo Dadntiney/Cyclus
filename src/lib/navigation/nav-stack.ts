@@ -1,4 +1,4 @@
-import { isTabRoot, normalizePath, ownerTab, titleForPath, type TabHref } from "./features"
+import { isAppPath, isTabRoot, normalizePath, ownerTab, titleForPath, type TabHref } from "./features"
 
 /**
  * Pure model of the in-app history (no DOM): which screens she passed,
@@ -73,10 +73,25 @@ export function isNavState(value: unknown): value is NavState {
  * Start for the page that just loaded. A reload of the same screen keeps
  * the persisted stack (the browser kept its history too); anything else is
  * a fresh start: one entry, owned by its canonical tab.
+ *
+ * `restoreStack: false` = this load did not return to existing history (a
+ * link from outside, a typed URL, a PWA launch): start fresh even when the
+ * stored stack happens to end on this URL — "back" would otherwise leave
+ * the app. Known titles are kept either way.
  */
-export function initState(url: string, persisted?: unknown): NavState {
+export function initState(
+  url: string,
+  persisted?: unknown,
+  options: { restoreStack?: boolean } = {},
+): NavState {
   const { key } = toKey(url)
-  if (isNavState(persisted) && persisted.stack.length > 0 && persisted.stack[persisted.stack.length - 1].key === key) {
+  const restoreStack = options.restoreStack ?? true
+  if (
+    restoreStack &&
+    isNavState(persisted) &&
+    persisted.stack.length > 0 &&
+    persisted.stack[persisted.stack.length - 1].key === key
+  ) {
     return {
       stack: persisted.stack.slice(-MAX_STACK),
       forward: (persisted.forward ?? []).slice(-MAX_STACK),
@@ -97,14 +112,27 @@ export function initState(url: string, persisted?: unknown): NavState {
   }
 }
 
+/**
+ * Coming into the app from a screen outside it (login, onboarding, the
+ * welcome or a legal page): like a deep link — that screen is no "previous
+ * screen" to return to, and the app's back never leads out of the app.
+ */
+function entersApp(path: string, from: NavEntry | undefined): boolean {
+  return !!from && !isAppPath(from.path) && isAppPath(path)
+}
+
 /** Tab for a screen opened from `from` with a push. */
 function inheritedTab(path: string, from: NavEntry | undefined): TabHref {
   if (isTabRoot(path)) return path
+  if (entersApp(path, from)) return ownerTab(path)
   return from?.tab ?? ownerTab(path)
 }
 
 export function applyPush(state: NavState, url: string): NavState {
   const { key, path } = toKey(url)
+  if (entersApp(path, top(state))) {
+    return { ...state, stack: [entryFor(url, ownerTab(path))], forward: [], last: { action: "push", key } }
+  }
   const stack = [...state.stack, { key, path, tab: inheritedTab(path, top(state)) }]
   return {
     ...state,
@@ -118,6 +146,9 @@ export function applyReplace(state: NavState, url: string): NavState {
   const { key, path } = toKey(url)
   const current = top(state)
   if (current && current.key === key) return state
+  if (entersApp(path, current)) {
+    return { ...state, stack: [entryFor(url, ownerTab(path))], forward: [], last: { action: "replace", key } }
+  }
   // A lone entry came from a deep link: it has no origin to inherit from.
   const tab: TabHref = isTabRoot(path)
     ? path
@@ -258,7 +289,7 @@ export function backTargetFor(
     // On its first render a pushed screen is not on the stack yet: the
     // screen below it will be the current top.
     const previous = current && current.path === path ? state.stack[n - 2] : current
-    if (previous) {
+    if (previous && !entersApp(path, previous)) {
       return {
         mode: "history",
         href: previous.key,

@@ -174,6 +174,15 @@ describe("deep link and reload", () => {
     expect(hasHistory(after)).toBe(true)
   })
 
+  it("a fresh load of the same URL (not a reload) starts fresh", () => {
+    const before = applyTitle(run("/vandaag", [["push", "/voeding/abc"]]), "/voeding/abc", "Shakshuka")
+    const after = initState("/voeding/abc", JSON.parse(JSON.stringify(before)), { restoreStack: false })
+    expect(paths(after)).toEqual(["/voeding/abc"])
+    expect(activeTabFor(after, "/voeding/abc")).toBe("/ontdek")
+    expect(hasHistory(after)).toBe(false)
+    expect(after.titles["/voeding/abc"]).toBe("Shakshuka")
+  })
+
   it("a different page load starts fresh but keeps the known titles", () => {
     const before = applyTitle(run("/vandaag", [["push", "/voeding/abc"]]), "/voeding/abc", "Shakshuka")
     const after = initState("/cyclus/vandaag", JSON.parse(JSON.stringify(before)))
@@ -247,5 +256,36 @@ describe("limits and keys", () => {
   it("keys keep the query and drop the hash", () => {
     expect(toKey("/deze-week/?dag=1#x")).toEqual({ key: "/deze-week?dag=1", path: "/deze-week" })
     expect(toKey("/cyclus#jouw-verhaal")).toEqual({ key: "/cyclus", path: "/cyclus" })
+  })
+})
+
+describe("coming into the app from outside it (login, onboarding, legal)", () => {
+  it("login → deep page: canonical tab, no way back to the login form", () => {
+    const meldingen = { href: "/profiel", label: "Profiel" }
+    const before = initState("/login?next=%2Fprofiel%2Fmeldingen")
+    // First render of the new screen, before the history write is seen.
+    expect(activeTabFor(before, "/profiel/meldingen")).toBe("/profiel")
+    expect(backTargetFor(before, "/profiel/meldingen", meldingen)).toEqual({ mode: "link", ...meldingen })
+
+    const s = applyPush(before, "/profiel/meldingen")
+    expect(paths(s)).toEqual(["/profiel/meldingen"])
+    expect(activeTabFor(s, "/profiel/meldingen")).toBe("/profiel")
+    expect(hasHistory(s)).toBe(false)
+    expect(backTargetFor(s, "/profiel/meldingen", meldingen)).toEqual({ mode: "link", ...meldingen })
+    expect(s.last.action).toBe("push")
+  })
+
+  it("onboarding / welcome → Vandaag (push or replace) starts a fresh history", () => {
+    expect(paths(run("/onboarding", [["push", "/vandaag"]]))).toEqual(["/vandaag"])
+    expect(hasHistory(run("/onboarding", [["replace", "/vandaag"]]))).toBe(false)
+    expect(hasHistory(run("/", [["push", "/vandaag"]]))).toBe(false)
+    expect(hasHistory(run("/profiel", [["push", "/privacy"], ["push", "/vandaag"]]))).toBe(false)
+  })
+
+  it("outside → outside and app → legal page keep their history", () => {
+    expect(hasHistory(run("/", [["push", "/login"]]))).toBe(true)
+    expect(hasHistory(run("/login", [["push", "/privacy"]]))).toBe(true)
+    const s = run("/profiel", [["push", "/privacy"]])
+    expect(backTargetFor(s, "/privacy", null)).toMatchObject({ mode: "history", href: "/profiel" })
   })
 })

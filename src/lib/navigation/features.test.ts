@@ -3,6 +3,7 @@ import {
   FEATURES,
   TAB_ROOTS,
   featureForPath,
+  isAppPath,
   isTabRoot,
   normalizePath,
   ownerTab,
@@ -177,5 +178,26 @@ describe("normalizePath", () => {
     expect(normalizePath("/a/b/?x#y")).toBe("/a/b")
     expect(normalizePath("/")).toBe("/")
     expect(normalizePath("")).toBe("/")
+  })
+})
+
+describe("isAppPath (screens inside the app)", () => {
+  it.each([
+    ["/vandaag", true],
+    ["/profiel/meldingen", true],
+    ["/voeding/abc?x=1", true],
+    ["/medicatie/nieuw", true],
+    ["/", false],
+    ["/login", false],
+    ["/login?next=%2Fvandaag", false],
+    ["/registreren", false],
+    ["/wachtwoord-vergeten", false],
+    ["/onboarding", false],
+    ["/auth/callback", false],
+    ["/privacy", false],
+    ["/voorwaarden", false],
+    ["/vandaagx", false],
+  ])("%s → %s", (path, expected) => {
+    expect(isAppPath(path)).toBe(expected)
   })
 })
