@@ -1,5 +1,13 @@
-import { parseIngredientLine, parseIngredientList } from "@/lib/nutrition/ingredient-parse"
-import { scaleQuantityForGrocery, tryAddQuantities } from "@/lib/nutrition/scale-ingredient"
+import {
+  normalizeIngredientName,
+  parseIngredientLine,
+  parseIngredientList,
+} from "@/lib/nutrition/ingredient-parse"
+import {
+  parseQuantityParts,
+  scaleQuantityForGrocery,
+  tryAddQuantities,
+} from "@/lib/nutrition/scale-ingredient"
 
 export interface GroceryItem {
   /** Stable id for React keys and localStorage checkbox state: `${category}:${normalized}`. */
@@ -113,6 +121,34 @@ function groceryDisplayName(name: string, normalized: string): string {
   return capitalize(stripped || name)
 }
 
+/**
+ * Round a summed amount to something you can actually buy: "266,7g" reads
+ * as a calculation error in a shop. Weights/volumes round up to 5 (small)
+ * or 25 (larger amounts); loose counts round up to a whole piece.
+ */
+export function roundForShopping(quantity: string | null): string | null {
+  if (!quantity) return quantity
+  const parts = parseQuantityParts(quantity)
+  if (!parts) return quantity
+  const unit = parts.unit.toLowerCase()
+  const { amount } = parts
+  let rounded = amount
+  if (unit === "g" || unit === "ml") {
+    const step = amount < 100 ? 5 : 25
+    rounded = Math.ceil(amount / step - 1e-9) * step
+    return `${rounded}${parts.unit}`
+  }
+  if (unit === "kg" || unit === "l") {
+    rounded = Math.ceil(amount * 10 - 1e-9) / 10
+    return `${String(rounded).replace(".", ",")}${parts.unit}`
+  }
+  if ((unit === "" || unit === "stuk" || unit === "stuks") && amount > 1 && !Number.isInteger(amount)) {
+    rounded = Math.ceil(amount - 1e-9)
+    return unit ? `${rounded} ${rounded === 1 ? "stuk" : "stuks"}` : String(rounded)
+  }
+  return quantity
+}
+
 function normalizeInputs(recipeIngredients: Array<GroceryRecipeInput | unknown>): GroceryRecipeInput[] {
   return recipeIngredients.map((entry) => {
     if (entry && typeof entry === "object" && "ingredients" in (entry as object)) {
@@ -139,11 +175,16 @@ export function buildGroceryList(
   for (const { ingredients, factor = 1 } of normalizeInputs(recipeIngredients)) {
     for (const raw of parseIngredientList(ingredients)) {
       const parsed = parseIngredientLine(raw)
-      if (!parsed.normalized) continue
-      const category = categorize(parsed.normalized)
-      const id = `${category}:${parsed.normalized}`
+      // On a shopping list anything after a comma is a prep note
+      // ("knoflook, fijngehakt", "ui, gesnipperd") — not another product.
+      // Kept local: recipes and allergy matching still need the full line.
+      const baseName = parsed.name.split(",")[0]?.trim() || parsed.name
+      const normalized = normalizeIngredientName(baseName)
+      if (!normalized) continue
+      const category = categorize(normalized)
+      const id = `${category}:${normalized}`
       const quantity = scaleQuantityForGrocery(parsed.quantity, factor)
-      const displayName = groceryDisplayName(parsed.name, parsed.normalized)
+      const displayName = groceryDisplayName(baseName, normalized)
       const existing = byId.get(id)
       if (existing) {
         existing.count += 1
@@ -179,6 +220,8 @@ export function buildGroceryList(
 
   const grouped = new Map<string, GroceryItem[]>()
   for (const item of byId.values()) {
+    item.totalQuantity = roundForShopping(item.totalQuantity)
+    item.quantities = item.quantities.map((q) => roundForShopping(q) ?? q)
     const list = grouped.get(item.category) ?? []
     list.push(item)
     grouped.set(item.category, list)

@@ -135,13 +135,24 @@ export function normalizeIngredientName(name: string): string {
     .replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9\s]/g, "")
     .replace(/\s+/g, " ")
-    .replace(/^(rijpe?|verse?|gedroogde|bevroren|kleine|grote|zoete)\s+/g, "")
+    .replace(
+      /^(rijpe?|verse?|gedroogde|bevroren|kleine|grote|zoete|gesnipperde|fijngehakte|gehakte|geraspte|gesneden|uitgelekte)\s+/g,
+      "",
+    )
     .replace(/\b(avocados|avocado's)\b/g, "avocado")
     .replace(/\b(eieren)\b/g, "ei")
     .replace(/\b(tomaten)\b/g, "tomaat")
     .replace(/\b(bananen)\b/g, "banaan")
     .replace(/\b(wortelen|wortels)\b/g, "wortel")
     .replace(/\b(uie?n)\b/g, "ui")
+    .replace(/\b(courgettes)\b/g, "courgette")
+    .replace(/\b(paprikas)\b/g, "paprika")
+    .replace(/\b(komkommers)\b/g, "komkommer")
+    .replace(/\b(champignons)\b/g, "champignon")
+    .replace(/\b(aardappels|aardappelen)\b/g, "aardappel")
+    .replace(/\b(appels)\b/g, "appel")
+    .replace(/\b(citroenen)\b/g, "citroen")
+    .replace(/\b(limoenen)\b/g, "limoen")
     .trim()
 }
 
