@@ -59,6 +59,20 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     .eq("user_id", userId)
     .eq("date", today)
     .maybeSingle()
+    // Query builders are lazy; .then() sends the request now instead of
+    // after the profile has loaded.
+    .then((r) => r)
+  // Fetched regardless of the movement setting so it runs in the first
+  // wave; ignored below when movement is off.
+  const historySessionsPromise = supabase
+    .from("workout_sessions")
+    .select("date, completed, workout_id, created_at")
+    .eq("user_id", userId)
+    .eq("completed", true)
+    .gte("date", ninetyDaysAgo)
+    .lte("date", today)
+    .order("created_at", { ascending: false })
+    .then((r) => r.data ?? [])
   const recentCheckinsPromise = getRecentCheckinsForHistory(userId)
   const cycleLogsPromise = getCycleLogsForHistory(userId)
 
@@ -86,15 +100,7 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     wantWeekPlan ? weekCtxPromise : Promise.resolve(null),
     recentCheckinsPromise,
     movementEnabled
-      ? supabase
-          .from("workout_sessions")
-          .select("date, completed, workout_id, created_at")
-          .eq("user_id", userId)
-          .eq("completed", true)
-          .gte("date", ninetyDaysAgo)
-          .lte("date", today)
-          .order("created_at", { ascending: false })
-          .then((r) => r.data ?? [])
+      ? historySessionsPromise
       : Promise.resolve(
           [] as { date: string; completed: boolean; workout_id: string; created_at: string }[],
         ),

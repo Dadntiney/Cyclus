@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog } from "@/components/ui/dialog"
 import { deleteAccount } from "@/lib/actions/profile"
+import { clearLocalUserData } from "@/lib/client/account-sync"
 import { runAction } from "@/lib/client/run-action"
 
 export function DeleteAccountButton() {
@@ -34,6 +35,9 @@ export function DeleteAccountButton() {
             disabled={isPending}
             onClick={() =>
               startTransition(async () => {
+                // Device copies go too; if deleting fails, they come back
+                // from the account on the next page load.
+                clearLocalUserData()
                 const result = await runAction(() => deleteAccount())
                 if (result?.error) setError(result.error)
               })

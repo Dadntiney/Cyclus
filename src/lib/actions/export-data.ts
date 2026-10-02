@@ -26,6 +26,7 @@ export async function exportUserData(): Promise<
     favorites,
     savedMoments,
     doctorAppointments,
+    clientState,
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
     supabase.from("cycle_profiles").select("*").eq("user_id", user.id).maybeSingle(),
@@ -40,6 +41,7 @@ export async function exportUserData(): Promise<
     supabase.from("favorites").select("*").eq("user_id", user.id),
     supabase.from("saved_moments").select("*").eq("user_id", user.id).order("created_at", { ascending: true }),
     supabase.from("doctor_appointments").select("*").eq("user_id", user.id).order("created_at", { ascending: true }),
+    supabase.from("user_client_state").select("key, value, updated_at").eq("user_id", user.id),
   ])
 
   const payload = {
@@ -59,6 +61,7 @@ export async function exportUserData(): Promise<
     favorites: favorites.data ?? [],
     savedMoments: savedMoments.data ?? [],
     doctorAppointments: doctorAppointments.data ?? [],
+    weekPlanAndGroceryState: clientState.data ?? [],
   }
 
   const date = todayISO()

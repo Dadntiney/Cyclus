@@ -1,7 +1,9 @@
+import { syncToAccount } from "@/lib/client/account-sync"
+
 /**
  * Household + per-recipe servings live in localStorage (same pattern as week
- * overrides / grocery checks): personal scratch state that must not require a
- * schema migration, and that grocery scaling can read on the client.
+ * overrides / grocery checks) so grocery scaling can read them synchronously
+ * on the client; account-sync.ts mirrors them to her account.
  */
 
 export const DEFAULT_HOUSEHOLD_SERVINGS = 2
@@ -63,17 +65,17 @@ export function loadServingsPrefs(userId: string): ServingsPrefs {
 }
 
 export function saveServingsPrefs(userId: string, prefs: ServingsPrefs): void {
+  const key = prefsKey(userId)
+  const value = JSON.stringify({
+    defaultServings: clampServings(prefs.defaultServings),
+    byRecipeId: prefs.byRecipeId,
+  })
   try {
-    localStorage.setItem(
-      prefsKey(userId),
-      JSON.stringify({
-        defaultServings: clampServings(prefs.defaultServings),
-        byRecipeId: prefs.byRecipeId,
-      }),
-    )
+    localStorage.setItem(key, value)
   } catch {
     // Storage unavailable — change won't persist.
   }
+  syncToAccount(key, value)
   try {
     window.dispatchEvent(new Event(SERVINGS_CHANGED_EVENT))
   } catch {

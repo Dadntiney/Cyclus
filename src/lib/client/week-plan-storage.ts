@@ -1,14 +1,16 @@
 "use client"
 
+import { syncToAccount } from "@/lib/client/account-sync"
+
 /**
  * The week plan itself is computed server-side (deterministic, like the
  * rest of the recommendation engine) rather than stored in the database —
  * see `buildWeekPlan`. But the user should still be able to adjust it
  * ("dit vervang ik", "deze workout sla ik over") without us standing up a
- * new database table + migration for what is, in effect, personal scratch
- * state. We keep those adjustments — and the grocery checklist — in
- * localStorage, scoped per signed-in user and per ISO week, so they persist
- * across visits on the same device without touching the shared schema.
+ * new database table per kind of adjustment. We keep those adjustments —
+ * and the grocery checklist — in localStorage, scoped per signed-in user and
+ * per ISO week, and mirror them to the account (see account-sync.ts) so they
+ * also show up on her other devices.
  * Every accessor is wrapped in try/catch: storage can throw or be
  * unavailable (private browsing, blocked site data), and the plan must
  * still render correctly without it.
@@ -50,11 +52,14 @@ export function loadWeekOverrides(userId: string, weekStartISO: string): WeekOve
 }
 
 export function saveWeekOverrides(userId: string, weekStartISO: string, overrides: WeekOverrides): void {
+  const key = overridesKey(userId, weekStartISO)
+  const value = JSON.stringify(overrides)
   try {
-    localStorage.setItem(overridesKey(userId, weekStartISO), JSON.stringify(overrides))
+    localStorage.setItem(key, value)
   } catch {
     // Storage unavailable — the change simply won't persist across reloads.
   }
+  syncToAccount(key, value)
 }
 
 export const WEEK_OVERRIDES_CHANGED_EVENT = "cyclus:week-overrides-changed"
@@ -97,9 +102,12 @@ export function loadCheckedGroceryIds(userId: string, weekStartISO: string): Set
 }
 
 export function saveCheckedGroceryIds(userId: string, weekStartISO: string, ids: Set<string>): void {
+  const key = groceryKey(userId, weekStartISO)
+  const value = JSON.stringify([...ids])
   try {
-    localStorage.setItem(groceryKey(userId, weekStartISO), JSON.stringify([...ids]))
+    localStorage.setItem(key, value)
   } catch {
     // Ignore — checklist state just won't persist across reloads.
   }
+  syncToAccount(key, value)
 }

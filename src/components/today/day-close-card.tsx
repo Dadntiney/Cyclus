@@ -1,5 +1,6 @@
 "use client"
 
+import { ACCOUNT_STATE_APPLIED_EVENT, syncToAccount } from "@/lib/client/account-sync"
 import { useEffect, useRef, useState, useTransition } from "react"
 import Link from "next/link"
 import { Moon, CheckCircle2, Circle, Heart, Sparkles, NotebookPen, ChevronDown } from "lucide-react"
@@ -49,8 +50,10 @@ export function DayCloseCard({
   const [isPending, startTransition] = useTransition()
   const didInitExpandRef = useRef(false)
 
-  const storageKey = `cyclus:day-closed:${date}`
-  const gratitudeKey = `cyclus:day-gratitude:${date}`
+  // Per user, so a shared device never shows someone else's evening; the
+  // closed flag is also mirrored to the account (account-sync.ts).
+  const storageKey = `cyclus:day-closed:${userId}:${date}`
+  const gratitudeKey = `cyclus:day-gratitude:${userId}:${date}`
   const closeLine = getDayCloseLine(date)
   const affirmation = getEveningAffirmation(date)
 
@@ -82,9 +85,11 @@ export function DayCloseCard({
     }
     syncFromClient()
     window.addEventListener(WEEK_OVERRIDES_CHANGED_EVENT, syncFromClient)
+    window.addEventListener(ACCOUNT_STATE_APPLIED_EVENT, syncFromClient)
     window.addEventListener("focus", syncFromClient)
     return () => {
       window.removeEventListener(WEEK_OVERRIDES_CHANGED_EVENT, syncFromClient)
+      window.removeEventListener(ACCOUNT_STATE_APPLIED_EVENT, syncFromClient)
       window.removeEventListener("focus", syncFromClient)
     }
   }, [storageKey, gratitudeKey, userId, weekStartISO, date, movementDone])
@@ -95,6 +100,7 @@ export function DayCloseCard({
     } catch {
       /* ignore */
     }
+    syncToAccount(storageKey, "1")
     setClosed(true)
   }
 
@@ -134,6 +140,7 @@ export function DayCloseCard({
     } catch {
       /* ignore */
     }
+    syncToAccount(storageKey, null)
     setClosed(false)
     setExpanded(true)
   }

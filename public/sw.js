@@ -2,11 +2,19 @@
 // (Next.js build output + app icons). Deliberately does NOT cache pages,
 // API routes or Server Action POSTs — those must always hit the network so
 // auth state and data stay correct. Bump CACHE_NAME to invalidate old caches
-// on the next deploy.
-const CACHE_NAME = "gofiev-static-v1"
+// on the next deploy. Page loads that fail without a connection fall back
+// to the precached /offline.html instead of the browser's error screen.
+const CACHE_NAME = "gofiev-static-v2"
 const CACHEABLE_PATH_PREFIXES = ["/_next/static/", "/icons/"]
+const OFFLINE_URL = "/offline.html"
 
-self.addEventListener("install", () => {
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll([OFFLINE_URL, "/icons/icon-192.png"]))
+      .catch(() => {}),
+  )
   self.skipWaiting()
 })
 
@@ -27,6 +35,15 @@ function isCacheable(request) {
 }
 
 self.addEventListener("fetch", (event) => {
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request).catch(() =>
+        caches.match(OFFLINE_URL).then((cached) => cached || Response.error()),
+      ),
+    )
+    return
+  }
+
   if (!isCacheable(event.request)) return
 
   event.respondWith(

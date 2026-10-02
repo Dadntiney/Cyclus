@@ -1,5 +1,6 @@
 "use client"
 
+import { ACCOUNT_STATE_APPLIED_EVENT } from "@/lib/client/account-sync"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { ChevronRight, Repeat, X, Check, SlidersHorizontal } from "lucide-react"
@@ -62,7 +63,11 @@ export function TodayMealsRows({
     }
     refresh()
     window.addEventListener(WEEK_OVERRIDES_CHANGED_EVENT, refresh)
-    return () => window.removeEventListener(WEEK_OVERRIDES_CHANGED_EVENT, refresh)
+    window.addEventListener(ACCOUNT_STATE_APPLIED_EVENT, refresh)
+    return () => {
+      window.removeEventListener(WEEK_OVERRIDES_CHANGED_EVENT, refresh)
+      window.removeEventListener(ACCOUNT_STATE_APPLIED_EVENT, refresh)
+    }
   }, [userId, weekStartISO])
 
   function applyOverride(slot: MealSlotKey, next: DayOverride | null) {

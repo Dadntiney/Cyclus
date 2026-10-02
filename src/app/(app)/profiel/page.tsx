@@ -15,8 +15,7 @@ import { ProfileHero } from "@/components/profile/profile-hero"
 import { ThemeSection } from "@/components/profile/theme-section"
 import { ProfileHubGroup } from "@/components/profile/profile-hub-list"
 import type { ThemePreference } from "@/lib/actions/profile"
-import { logout } from "@/lib/actions/auth"
-import { Button } from "@/components/ui/button"
+import { LogoutForm } from "@/components/profile/logout-form"
 
 /**
  * Profiel hub — doors only.
@@ -115,11 +114,7 @@ export default async function ProfielPage() {
 
       <ProfileHubGroup title="Account" items={ACCOUNT} />
 
-      <form action={logout}>
-        <Button type="submit" variant="secondary" className="w-full">
-          Uitloggen
-        </Button>
-      </form>
+      <LogoutForm />
     </div>
   )
 }
