@@ -29,7 +29,14 @@ const displayFont = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: `${APP_DISPLAY_NAME} — ${APP_TAGLINE}`,
+  // Every page exports `metadata.title` ("Ontdek") and reads as
+  // "Ontdek · GoFiev" in the tab, history, app switcher and screen reader
+  // (Next's route announcer only speaks when the title changes). Pages
+  // without a title keep the full brand line.
+  title: {
+    default: `${APP_DISPLAY_NAME} — ${APP_TAGLINE}`,
+    template: `%s · ${APP_DISPLAY_NAME}`,
+  },
   description: APP_DESCRIPTION,
   manifest: "/manifest.webmanifest",
   icons: {

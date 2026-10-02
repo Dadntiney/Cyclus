@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import type { LucideIcon } from "lucide-react"
 import {
@@ -14,6 +15,10 @@ import {
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { cn } from "@/lib/utils"
+import { Page } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
+
+export const metadata: Metadata = { title: "Ontdek" }
 
 type Tile = {
   href: string
@@ -97,11 +102,13 @@ export default async function OntdekPage() {
   ]
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <h1 className="font-display text-3xl lg:text-4xl text-ink">Ontdek</h1>
-      <p className="text-sm text-ink-soft mt-1 mb-6">
-        Alles wat GoFiev voor je heeft, op één plek. Kies wat je nu fijn lijkt.
-      </p>
+    // Pilot of <Page> + <PageHeader> (foundation-shell); the tiles below are
+    // reworked into the 2×2 by the discover stream.
+    <Page>
+      <PageHeader
+        title="Ontdek"
+        subtitle="Alles wat GoFiev voor je heeft, op één plek. Kies wat je nu fijn lijkt."
+      />
       <ul className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         {tiles.map((tile) => (
           <li key={tile.href} className={cn(tile.wide && "col-span-2 lg:col-span-3")}>
@@ -145,6 +152,6 @@ export default async function OntdekPage() {
           </li>
         ))}
       </ul>
-    </div>
+    </Page>
   )
 }
