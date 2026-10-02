@@ -60,8 +60,10 @@ export default function PrivacyPage() {
           <h2 className="font-display text-xl">Verwerkers</h2>
           <p>
             We gebruiken dienstverleners om de app te hosten en te laten draaien, waaronder
-            database/auth/opslag (Supabase), hosting (Vercel) en — alleen met jouw Buddy-AI-
-            toestemming — een AI-provider. Met hen bestaan passende verwerkersafspraken waar dat
+            database/auth/opslag (Supabase), hosting (Vercel), foutmeldingen (Sentry) en — alleen
+            met jouw Buddy-AI-toestemming — een AI-provider. Naar Sentry gaat alleen technische
+            informatie over een fout (wat er misging en op welke pagina), zonder je naam, e-mail,
+            IP-adres of wat je hebt ingevuld. Met hen bestaan passende verwerkersafspraken waar dat
             vereist is.
           </p>
         </section>

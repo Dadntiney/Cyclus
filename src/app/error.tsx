@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { Leaf } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { reportError } from "@/lib/monitoring/report-error"
 
 export default function ErrorBoundary({
   error,
@@ -12,7 +13,7 @@ export default function ErrorBoundary({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error(error)
+    reportError(error)
   }, [error])
 
   return (
