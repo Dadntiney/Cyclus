@@ -34,7 +34,7 @@ export function ThemeSection({ initial }: { initial: ThemePreference }) {
   }
 
   return (
-    <div className="rounded-3xl bg-sage-soft/50 px-4 py-3.5">
+    <div className="rounded-[1.25rem] bg-surface border border-line px-4 py-3.5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-sm font-medium text-ink">Weergave</p>
