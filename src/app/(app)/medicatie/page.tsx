@@ -17,7 +17,7 @@ export default async function MedicatiePage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <BackButton href="/profiel" label="Mijn profiel" />
+      <BackButton href="/ontdek" label="Ontdek" />
 
       <div className="flex items-center justify-between mb-1">
         <h1 className="font-display text-2xl text-ink">Mijn medicatie</h1>

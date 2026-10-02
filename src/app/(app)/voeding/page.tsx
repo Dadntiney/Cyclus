@@ -18,7 +18,7 @@ export default async function VoedingPage() {
   if (profile && !profile.nutrition_enabled) {
     return (
       <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <BackButton href="/vandaag" label="Vandaag" />
+        <BackButton href="/ontdek" label="Ontdek" />
         <h1 className="font-display text-3xl lg:text-4xl text-ink mb-1">Voeding</h1>
         <p className="text-sm text-ink-soft mb-6">Recepten die passen bij jouw voorkeuren.</p>
         <Card>
@@ -40,7 +40,7 @@ export default async function VoedingPage() {
   return (
     <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
       <div>
-        <BackButton href="/vandaag" label="Vandaag" />
+        <BackButton href="/ontdek" label="Ontdek" />
         <div className="flex items-start justify-between">
           <div>
             <h1 className="font-display text-3xl lg:text-4xl text-ink">Voeding</h1>
