@@ -132,7 +132,7 @@ export function ExerciseInstructionPlayer({
         <p className="text-sm font-medium text-ink leading-snug min-h-[1.25rem]">{cue}</p>
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs text-ink-soft">
-            Nederlandse uitleg · dezelfde gids bij elke oefening
+            {speechSupported ? "Liever luisteren? Laat de uitleg voorlezen." : "Volg de uitleg stap voor stap."}
           </p>
           {speechSupported ? (
             <button

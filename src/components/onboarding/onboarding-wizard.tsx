@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 import { Footprints, Salad, Brain, Moon } from "lucide-react"
 import { BuddyMark } from "@/components/buddy/buddy-mark"
 import type { LucideIcon } from "lucide-react"
@@ -105,11 +105,18 @@ function toggleNutritionPreference(list: string[], value: string) {
     : next.filter((v) => v !== NO_NUTRITION_PREFERENCE)
 }
 
-export function OnboardingWizard({ initialName }: { initialName: string }) {
+export function OnboardingWizard({
+  initialName,
+  consentGiven = false,
+}: {
+  initialName: string
+  /** She already agreed to health-data processing when registering. */
+  consentGiven?: boolean
+}) {
   const [step, setStep] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-  const [healthConsent, setHealthConsent] = useState(false)
+  const [healthConsent, setHealthConsent] = useState(consentGiven)
   const [data, setData] = useState<FormData>({
     name: initialName,
     age: "",
@@ -146,6 +153,11 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
   const stepSequence = useMemo(() => buildStepSequence(data), [data])
   const stepId = stepSequence[step]
   const totalSteps = stepSequence.length
+
+  // Each step starts at its top, also after scrolling down a long step.
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+  }, [step])
 
   function validateStep(): string | null {
     switch (stepId) {
@@ -187,10 +199,15 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
     const validationError = validateStep()
     if (validationError) {
       setError(validationError)
+      if (stepId === "movement-details") {
+        document
+          .getElementById("onboarding-frequency")
+          ?.scrollIntoView({ behavior: "smooth", block: "center" })
+      }
       return
     }
     setError(null)
-    if (stepId === "welcome" && healthConsent) {
+    if (stepId === "welcome" && healthConsent && !consentGiven) {
       startTransition(async () => {
         await acceptHealthDataConsent()
         setStep((s) => Math.min(s + 1, totalSteps - 1))
@@ -308,7 +325,11 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
 
       <div className="flex-1 flex flex-col justify-center">
         {stepId === "welcome" && (
-          <WelcomeStep healthConsent={healthConsent} onHealthConsentChange={setHealthConsent} />
+          <WelcomeStep
+            healthConsent={healthConsent}
+            onHealthConsentChange={setHealthConsent}
+            consentGiven={consentGiven}
+          />
         )}
         {stepId === "about" && (
           <AboutStep
@@ -450,9 +471,11 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
 function WelcomeStep({
   healthConsent,
   onHealthConsentChange,
+  consentGiven,
 }: {
   healthConsent: boolean
   onHealthConsentChange: (v: boolean) => void
+  consentGiven: boolean
 }) {
   return (
     <div className="text-center">
@@ -468,26 +491,28 @@ function WelcomeStep({
         Een paar korte vragen — ongeveer 2 minuten. Alles kun je later nog aanpassen in je
         profiel. Jij houdt de regie; niets hoeft perfect.
       </p>
-      <label className="flex items-start gap-2.5 text-left text-sm text-ink leading-snug cursor-pointer rounded-[1.25rem] bg-surface border border-line px-3.5 py-3">
-        <input
-          type="checkbox"
-          checked={healthConsent}
-          onChange={(e) => onHealthConsentChange(e.target.checked)}
-          className="mt-1 h-4 w-4 rounded border-line accent-sage-fill shrink-0"
-        />
-        <span>
-          Ik bevestig dat mijn gezondheids- en cyclusgegevens mogen worden verwerkt om GoFiev
-          persoonlijker te maken.{" "}
-          <a
-            href="/privacy"
-            target="_blank"
-            rel="noreferrer"
-            className="text-sage-dark font-medium underline-offset-2 hover:underline"
-          >
-            Privacyverklaring
-          </a>
-        </span>
-      </label>
+      {!consentGiven && (
+        <label className="flex items-start gap-2.5 text-left text-sm text-ink leading-snug cursor-pointer rounded-[1.25rem] bg-surface border border-line px-3.5 py-3">
+          <input
+            type="checkbox"
+            checked={healthConsent}
+            onChange={(e) => onHealthConsentChange(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-line accent-sage-fill shrink-0"
+          />
+          <span>
+            Ik bevestig dat mijn gezondheids- en cyclusgegevens mogen worden verwerkt om GoFiev
+            persoonlijker te maken.{" "}
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noreferrer"
+              className="text-sage-dark font-medium underline-offset-2 hover:underline"
+            >
+              Privacyverklaring
+            </a>
+          </span>
+        </label>
+      )}
     </div>
   )
 }
@@ -880,7 +905,9 @@ function FrequencyStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Hoe vaak wil je bewegen?</h2>
+      <h2 id="onboarding-frequency" className="font-display text-3xl text-ink mb-3 scroll-mt-6">
+        Hoe vaak wil je bewegen?
+      </h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">
         Per week, van 1 tot 7 dagen. We stellen hier een passend weekprogramma op.
       </p>

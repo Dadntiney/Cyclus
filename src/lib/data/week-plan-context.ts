@@ -25,6 +25,7 @@ import { computePhaseSymptomInsights } from "@/lib/cycle/patterns"
 import { composeAnticipation } from "@/lib/cycle/anticipation"
 import { loggedMenstruationDateSet } from "@/lib/cycle/presented-estimate"
 import type { Tables } from "@/types/database"
+import { isLowDay, usesChangingCycleLens } from "@/lib/cycle/day-lens"
 
 export type CompletedWorkoutInfo = {
   workoutId: string
@@ -47,6 +48,10 @@ export interface WeekPlanContext {
   recipePoolBySlot: Record<MealSlot, WeekPlanRecipe[]>
   /** Completed workouts keyed by date (yyyy-MM-dd) — shared with Vandaag. */
   completedWorkoutsByDate: Record<string, CompletedWorkoutInfo>
+  /** 40+ / irregular / overgang signals — phase is only a rough guess. */
+  changingCycle: boolean
+  /** Today's check-in says tired / in need of rest. */
+  todayLow: boolean
 }
 
 /**
@@ -206,5 +211,13 @@ export const loadWeekPlanContext = cache(async (userId: string): Promise<WeekPla
     recipes: recipeRows,
     recipePoolBySlot,
     completedWorkoutsByDate,
+    changingCycle: usesChangingCycleLens({
+      lifeStage: cycleProfile?.life_stage ?? null,
+      age: profile.age ?? null,
+      regularity: cycleProfile?.regularity ?? null,
+      perimenopauseInfo: cycleProfile?.perimenopause_information ?? null,
+      recentSymptoms: recentCheckins.slice(0, 30).flatMap((c) => c.symptoms ?? []),
+    }),
+    todayLow: isLowDay(todayCheckin),
   }
 })

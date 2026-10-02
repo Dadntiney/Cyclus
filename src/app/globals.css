@@ -450,6 +450,18 @@ select {
   }
 }
 
+/* Buddy "schrijft…" indicator: three dots that gently rise in turn. */
+@keyframes typing-dot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
 /* Soft “live” breath for active menstruatie — calm, not alarming.
    Plain class (not motion-safe:…) so the rule always matches the DOM class. */
 @keyframes menstruatie-adem {

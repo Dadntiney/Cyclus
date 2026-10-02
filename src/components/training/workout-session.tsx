@@ -103,7 +103,7 @@ export function WorkoutSession({
           priority
         />
         <Card>
-          <p className="font-display text-xl text-ink mb-1">{workout.title}</p>
+          <h1 className="font-display text-xl text-ink mb-1">{workout.title}</h1>
           <p className="text-sm text-ink-soft mb-4">
             {workout.duration} minuten · {exercises.length} oefeningen
           </p>
@@ -136,7 +136,7 @@ export function WorkoutSession({
                           <button
                             type="button"
                             onClick={() => setPreviewId(expanded ? null : ex.id)}
-                            className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-sage-dark touch-manipulation"
+                            className="relative mt-1 inline-flex items-center gap-1 text-xs font-medium text-sage-dark touch-manipulation after:absolute after:-inset-x-2 after:-inset-y-3.5"
                           >
                             <PlayCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
                             {expanded ? "Verberg uitvoering" : "Bekijk uitvoering"}
@@ -173,9 +173,9 @@ export function WorkoutSession({
     return (
       <Card className="text-center">
         <PartyPopper className="h-8 w-8 mx-auto mb-2 text-sage-dark" strokeWidth={1.5} />
-        <p className="font-display text-xl text-ink mb-1">
+        <h1 className="font-display text-xl text-ink mb-1">
           Mooi gedaan{name ? `, ${name}` : ""}.
-        </p>
+        </h1>
         <p className="text-sm text-ink-soft mb-1">
           Je hebt {doneCount} van de {exercises.length} oefeningen afgerond.
         </p>
@@ -196,6 +196,7 @@ export function WorkoutSession({
 
   return (
     <Card>
+      <h1 className="sr-only">{workout.title}</h1>
       <p className="text-xs text-ink-soft mb-1">
         Oefening {index + 1} van {exercises.length}
         {current.muscle_group ? ` · ${current.muscle_group}` : ""}
@@ -214,7 +215,7 @@ export function WorkoutSession({
         />
       )}
       <div className="flex items-start justify-between gap-3 mb-2">
-        <p className="font-display text-xl text-ink">{current.name}</p>
+        <h2 className="font-display text-xl text-ink">{current.name}</h2>
         <ExerciseFavoriteButton
           exerciseId={current.id}
           initialFavorited={favoriteExerciseIds.includes(current.id)}

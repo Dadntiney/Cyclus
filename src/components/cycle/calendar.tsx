@@ -14,12 +14,14 @@ import {
   subMonths,
 } from "date-fns"
 import { nl } from "date-fns/locale"
-import { ChevronLeft, ChevronRight, X, Droplet, Circle } from "lucide-react"
+import { ChevronLeft, ChevronRight, Droplet, Circle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { todayISO as amsterdamTodayISO, todayDate } from "@/lib/dates/amsterdam"
 import { toggleMenstruationDay, setCycleLogFlow } from "@/lib/actions/cycle"
 import { FLOW_OPTIONS } from "@/lib/constants"
 import { runAction } from "@/lib/client/run-action"
+import { BottomSheet } from "@/components/ui/bottom-sheet"
+import { Button } from "@/components/ui/button"
 
 interface CalendarProps {
   menstruationDates: Set<string>
@@ -57,7 +59,7 @@ export function Calendar({
   )
   const [isPending, startTransition] = useTransition()
   const [pendingDate, setPendingDate] = useState<string | null>(null)
-  const [flowPickerDate, setFlowPickerDate] = useState<string | null>(null)
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const days = useMemo(() => {
@@ -72,37 +74,42 @@ export function Calendar({
   function handleDayClick(day: Date) {
     const iso = format(day, "yyyy-MM-dd")
     if (iso > todayISO) return
-    // Ignore double-taps while this day (or another) is still saving.
+    // Ignore taps while a day is still saving.
     if (pendingDate) return
     setError(null)
+    // A bare tap never changes data: it opens the day so she confirms what
+    // she means (usertest/audit: a tap while scrolling marked a period).
+    setSelectedDate(iso)
+  }
 
-    if (trackFlowEnabled) {
-      // Never assume anything on a bare tap — always ask "hoeveel
-      // bloedverlies?" first. Marking, changing, or removing a day all
-      // happen through the flow choice below (handleSetFlow), never as a
-      // side effect of just opening this panel.
-      setFlowPickerDate(iso)
-      return
-    }
-
-    setPendingDate(iso)
+  function flipLocal(iso: string, on: boolean) {
     setDates((prev) => {
       const next = new Set(prev)
-      if (next.has(iso)) next.delete(iso)
-      else next.add(iso)
+      if (on) next.add(iso)
+      else next.delete(iso)
       return next
     })
+  }
+
+  function handleToggle(iso: string) {
+    const wasMarked = dates.has(iso)
+    const previousFlow = flowByDate.get(iso) ?? null
+    setSelectedDate(null)
+    setPendingDate(iso)
+    flipLocal(iso, !wasMarked)
+    if (wasMarked) {
+      setFlowByDate((prev) => {
+        const next = new Map(prev)
+        next.delete(iso)
+        return next
+      })
+    }
     startTransition(async () => {
       const result = await runAction(() => toggleMenstruationDay(iso))
       setPendingDate(null)
       if (result?.error) {
-        // Roll back: flip the day back to how it was before the tap.
-        setDates((prev) => {
-          const next = new Set(prev)
-          if (next.has(iso)) next.delete(iso)
-          else next.add(iso)
-          return next
-        })
+        flipLocal(iso, wasMarked)
+        if (wasMarked) setFlowByDate((prev) => new Map(prev).set(iso, previousFlow))
         setError(result.error)
       }
     })
@@ -113,45 +120,16 @@ export function Calendar({
     const wasMarked = dates.has(iso)
     const previousFlow = flowByDate.get(iso) ?? null
 
-    if (wasMarked && previousFlow === flow) {
-      // Tapping the already-selected level again removes the day entirely
-      // — the one, consistent way to undo a wrongly-included day (e.g. she
-      // stopped a period a day too late), without a separate hidden step.
-      setDates((prev) => {
-        const next = new Set(prev)
-        next.delete(iso)
-        return next
-      })
-      setFlowByDate((prev) => {
-        const next = new Map(prev)
-        next.delete(iso)
-        return next
-      })
-      setFlowPickerDate(null)
-      startTransition(async () => {
-        const result = await runAction(() => toggleMenstruationDay(iso))
-        if (result?.error) {
-          setDates((prev) => new Set(prev).add(iso))
-          setFlowByDate((prev) => new Map(prev).set(iso, previousFlow))
-          setError(result.error)
-        }
-      })
-      return
-    }
-
-    setDates((prev) => new Set(prev).add(iso))
+    setSelectedDate(null)
+    setPendingDate(iso)
+    flipLocal(iso, true)
     setFlowByDate((prev) => new Map(prev).set(iso, flow))
     startTransition(async () => {
       const result = await runAction(() => setCycleLogFlow(iso, flow))
+      setPendingDate(null)
       if (result?.error) {
         setFlowByDate((prev) => new Map(prev).set(iso, previousFlow))
-        if (!wasMarked) {
-          setDates((prev) => {
-            const next = new Set(prev)
-            next.delete(iso)
-            return next
-          })
-        }
+        if (!wasMarked) flipLocal(iso, false)
         setError(result.error)
       }
     })
@@ -204,9 +182,9 @@ export function Calendar({
               disabled={future || pendingDate === iso}
               onClick={() => handleDayClick(day)}
               aria-label={`${format(day, "d MMMM yyyy", { locale: nl })}${
-                isMenstruation ? ", menstruatie — tik om uit te zetten" : ", tik om menstruatie te markeren"
+                isMenstruation ? ", menstruatie" : ""
               }${isAmsterdamToday ? ", vandaag" : ""}${isPredicted ? ", menstruatie verwacht (schatting)" : future ? ", toekomst" : ""}`}
-              aria-pressed={isMenstruation}
+              aria-haspopup="dialog"
               className={cn(
                 "relative h-11 rounded-full text-sm mx-auto w-11 flex items-center justify-center transition-colors touch-manipulation",
                 isSameMonth(day, month) ? "text-ink" : "text-ink-soft/40",
@@ -251,65 +229,71 @@ export function Calendar({
       <p className="text-xs text-ink-soft mt-3">
         {trackFlowEnabled
           ? "Tik op een dag om menstruatie en bloedverlies bij te houden."
-          : "Tik op een dag om menstruatie te markeren."}
+          : "Tik op een dag om menstruatie te noteren of te wijzigen."}
       </p>
       {error && <p className="text-xs text-danger mt-2">{error}</p>}
 
-      {trackFlowEnabled && flowPickerDate && (
-        <div className="mt-4 rounded-2xl bg-cream-soft p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-sm font-medium text-ink">
-                {format(new Date(flowPickerDate), "d MMMM", { locale: nl })}
-              </p>
-              <p className="text-xs text-ink-soft mt-0.5">
-                {dates.has(flowPickerDate) ? "Menstruatiedag" : "Nog geen menstruatiedag"}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setFlowPickerDate(null)}
-              className="h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-surface touch-manipulation"
-              aria-label="Sluiten"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-
-          <p className="text-xs font-medium text-ink mb-2">Bloedverlies deze dag</p>
-          <div className="flex flex-wrap gap-2">
-            {FLOW_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => handleSetFlow(flowPickerDate, opt.value)}
-                className={cn(
-                  "rounded-full border px-3.5 py-2.5 min-h-11 text-sm font-medium touch-manipulation transition-colors",
-                  flowByDate.get(flowPickerDate) === opt.value
-                    ? "bg-sage-fill text-white border-sage-dark"
-                    : "bg-surface text-ink border-line hover:border-ink/30",
-                )}
-              >
-                <span className="mr-1 inline-flex items-center" aria-hidden>
-                  {opt.intensity === 0 ? (
-                    <Circle className="h-3 w-3" strokeWidth={1.75} />
-                  ) : (
-                    Array.from({ length: opt.intensity }).map((_, i) => (
-                      <Droplet key={i} className="h-3 w-3" strokeWidth={1.75} fill="currentColor" />
-                    ))
-                  )}
-                </span>
-                {opt.label}
-              </button>
-            ))}
-          </div>
-          {dates.has(flowPickerDate) && (
-            <p className="text-xs text-ink-soft mt-3">
-              Tik nogmaals op het geselecteerde niveau om deze dag te verwijderen.
+      <BottomSheet
+        open={selectedDate !== null}
+        onClose={() => setSelectedDate(null)}
+        title={selectedDate ? format(parseISO(selectedDate), "EEEE d MMMM", { locale: nl }) : undefined}
+      >
+        {selectedDate && (
+          <div className="flex flex-col gap-4 pt-1 pb-2">
+            <p className="text-sm text-ink-soft">
+              {dates.has(selectedDate)
+                ? "Deze dag staat genoteerd als menstruatiedag."
+                : "Was je deze dag ongesteld?"}
             </p>
-          )}
-        </div>
-      )}
+
+            {trackFlowEnabled && (
+              <div>
+                <p className="text-sm font-medium text-ink mb-2">Bloedverlies</p>
+                <div className="flex flex-wrap gap-2">
+                  {FLOW_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleSetFlow(selectedDate, opt.value)}
+                      aria-pressed={flowByDate.get(selectedDate) === opt.value}
+                      className={cn(
+                        "rounded-full border px-3.5 py-2.5 min-h-11 text-sm font-medium touch-manipulation transition-colors",
+                        flowByDate.get(selectedDate) === opt.value
+                          ? "bg-sage-fill text-white border-sage-dark"
+                          : "bg-surface text-ink border-line hover:border-ink/30",
+                      )}
+                    >
+                      <span className="mr-1 inline-flex items-center" aria-hidden>
+                        {opt.intensity === 0 ? (
+                          <Circle className="h-3 w-3" strokeWidth={1.75} />
+                        ) : (
+                          Array.from({ length: opt.intensity }).map((_, i) => (
+                            <Droplet key={i} className="h-3 w-3" strokeWidth={1.75} fill="currentColor" />
+                          ))
+                        )}
+                      </span>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {dates.has(selectedDate) ? (
+              <Button variant="secondary" onClick={() => handleToggle(selectedDate)} className="w-full">
+                Geen menstruatie op deze dag
+              </Button>
+            ) : (
+              !trackFlowEnabled && (
+                <Button onClick={() => handleToggle(selectedDate)} className="w-full">
+                  <Droplet className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                  Markeer als menstruatiedag
+                </Button>
+              )
+            )}
+          </div>
+        )}
+      </BottomSheet>
     </div>
   )
 }

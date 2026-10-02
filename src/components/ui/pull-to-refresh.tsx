@@ -14,6 +14,8 @@ function isNearTop(target: EventTarget | null): boolean {
   if (window.scrollY > 1) return false
 
   let el: Element | null = target instanceof Element ? target : null
+  // Screens with their own scroll model (Buddy chat) opt out entirely.
+  if (el?.closest("[data-no-pull-refresh]")) return false
   while (el && el !== document.documentElement) {
     const style = window.getComputedStyle(el)
     const oy = style.overflowY

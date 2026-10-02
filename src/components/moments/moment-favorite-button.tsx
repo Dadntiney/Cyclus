@@ -65,7 +65,8 @@ export function MomentFavoriteButton({
         aria-label={favorited ? "Verwijder uit favorieten" : "Bewaar als favoriet"}
         className={cn(
           "rounded-full flex items-center justify-center transition-colors touch-manipulation",
-          size === "sm" ? "h-9 w-9" : "h-11 w-11",
+          // Small variant keeps its look but still gets a 44px hit area.
+          size === "sm" ? "relative h-9 w-9 after:absolute after:-inset-1" : "h-11 w-11",
           favorited ? "bg-peach-soft text-peach" : "bg-surface/70 text-ink-soft hover:text-peach",
         )}
       >

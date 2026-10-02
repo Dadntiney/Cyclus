@@ -35,6 +35,8 @@ export default async function DezeWeekPage() {
         movementEnabled={ctx.profile.movement_enabled}
         nutritionEnabled={ctx.profile.nutrition_enabled}
         completedWorkoutsByDate={ctx.completedWorkoutsByDate}
+        changingCycle={ctx.changingCycle}
+        todayLow={ctx.todayLow}
       />
     </div>
   )

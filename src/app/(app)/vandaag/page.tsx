@@ -135,7 +135,7 @@ export default async function VandaagPage() {
         `${user.id}-${today}-vandaag`,
         cycleEstimate?.phase ?? null,
         preferredStyles,
-        { skipPhaseQuotes: lowDay },
+        { skipPhaseQuotes: lowDay || changingCycle },
       )
     : null
 
