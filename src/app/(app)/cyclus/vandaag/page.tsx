@@ -21,12 +21,10 @@ import { buttonVariants } from "@/components/ui/button"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
 import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
-import { PhaseSnackTipCard } from "@/components/cycle/phase-snack-tip-card"
 import { BuddyMark } from "@/components/buddy/buddy-mark"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { getSavedMomentTexts } from "@/lib/data/moments"
 import { cn } from "@/lib/utils"
-import { getDailyPhaseSnackTip } from "@/lib/cycle/phase-content"
 
 /**
  * Ritme reading page: explanations sit on the page ground in a reading
@@ -225,9 +223,6 @@ export default async function CyclusdagPage() {
         <section>
           <h2 className="font-display text-xl text-ink mb-3">Voeding in deze fase</h2>
           <PhaseNutritionBasics nutrition={view.nutrition} />
-          <div className="mt-3">
-            <PhaseSnackTipCard tip={getDailyPhaseSnackTip(view.phase, `${user.id}-${today}`)} />
-          </div>
         </section>
 
         <Expandable label="Meer weten over deze fase">

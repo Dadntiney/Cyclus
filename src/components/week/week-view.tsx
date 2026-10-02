@@ -12,9 +12,6 @@ import {
   softMenstruationNote,
   PREDICTED_MENSTRUATION_NOTE,
 } from "@/lib/cycle/presented-estimate"
-import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
-import { PhaseSnackTipCard } from "@/components/cycle/phase-snack-tip-card"
-import { PhaseHydrationTipCard } from "@/components/cycle/phase-hydration-tip-card"
 import type { WeekDayPlan, WeekPlanRecipe, WeekPlanWorkout, MealSlot } from "@/lib/recommendations/week-plan"
 import { TodayMovementCard } from "@/components/today/today-movement-card"
 import {
@@ -138,13 +135,6 @@ export function WeekView({
               : (day.anticipationNote ?? phaseContent.shortDescription)}
           </span>
         </p>
-      )}
-
-      {phaseContent && nutritionEnabled && (
-        <section>
-          <p className="text-xs font-medium text-ink-soft mb-2">Voeding in deze fase</p>
-          <PhaseNutritionBasics nutrition={phaseContent.nutrition} compact />
-        </section>
       )}
 
       <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
@@ -299,18 +289,9 @@ export function WeekView({
           </div>
         ) : null}
 
-        {nutritionEnabled && day.snackTip && (
-          <div className="mt-4">
-            <PhaseSnackTipCard tip={day.snackTip} compact />
-          </div>
-        )}
-
-        {day.hydrationTip && (
-          <div className={nutritionEnabled && day.snackTip ? "mt-2.5" : "mt-4"}>
-            <PhaseHydrationTipCard tip={day.hydrationTip} compact />
-          </div>
-        )}
-
+        {/* Snack/hydration tips live on Vandaag and phase nutrition on the
+            Cyclusdag page — Week stays the plan only (usertest: the same
+            tips showed up three times). */}
         {day.focusTips[0] && (
           <p className="text-sm text-ink-soft leading-relaxed px-0.5 mt-4 inline-flex gap-2">
             <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5 text-sage-dark" strokeWidth={1.75} aria-hidden />
