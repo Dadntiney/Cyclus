@@ -60,10 +60,7 @@ export function getDueReminders(
 
 /**
  * Day-level "is this reminder due today" — enabled + scheduled for this
- * weekday, ignoring its exact time. Used by the once-a-day push cron
- * (Vercel Hobby plan only allows daily cron jobs, so push can't match her
- * chosen time-of-day the way the in-app toast's getDueReminders does; it
- * sends once daily instead, for whatever's relevant today).
+ * weekday. The push cron combines it with isPushTimeDue for the time of day.
  */
 export function isReminderDueToday(reminder: ReminderLike, weekday: number): boolean {
   return reminder.enabled && reminder.days.includes(weekday)

@@ -64,6 +64,6 @@ export async function exportUserData(): Promise<
   const date = todayISO()
   return {
     data: JSON.stringify(payload, null, 2),
-    filename: `cyclus-gegevens-${date}.json`,
+    filename: `gofiev-gegevens-${date}.json`,
   }
 }
