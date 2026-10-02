@@ -1,7 +1,11 @@
 import { symptomLabel } from "@/lib/constants"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
-import { getPhaseKnowledge } from "@/lib/cycle/phase-knowledge"
+import {
+  CHANGING_CYCLE_WHY,
+  PHASE_SHORT_WHY,
+  isLowDay,
+} from "@/lib/cycle/day-lens"
 import type { BodyRecognition } from "@/lib/cycle/body-translator"
 import {
   type WhatHelpedInsight,
@@ -129,6 +133,18 @@ function cleanSymptoms(symptoms: string[]): string[] {
   return symptoms.filter((s) => s && !IGNORED.has(s))
 }
 
+/** Her own words first: what she noted today, in one plain clause. */
+function personalOpening(
+  symptoms: string[],
+  needs: string[],
+  energy: number | null,
+): string | null {
+  if (symptoms.length) return `Je noteerde vandaag ${symptomLabel(symptoms[0]).toLowerCase()}.`
+  if (needs.includes("rust") || needs.includes("mezelf")) return "Je gaf aan dat je naar rust verlangt."
+  if (energy !== null && energy <= 2) return "Je energie is vandaag wat lager."
+  return null
+}
+
 function firstSentence(text: string): string {
   const trimmed = text.trim()
   const match = trimmed.match(/^(.+?[.!?])(?:\s|$)/)
@@ -152,6 +168,9 @@ export interface ComposeTodayRoadmapInput {
   nutritionEnabled?: boolean
   /** When Vandaag already shows a concrete workout, skip generic beweging support. */
   hasConcreteWorkout?: boolean
+  /** 40+ with irregular cycle / overgang signals — phase is only a rough guess. */
+  changingCycle?: boolean
+  mood?: number | null
 }
 
 /**
@@ -173,20 +192,27 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
     movementEnabled = true,
     nutritionEnabled = true,
     hasConcreteWorkout = false,
+    changingCycle = false,
+    mood = null,
   } = input
 
-  const knowledge = getPhaseKnowledge(phase)
   const content = getPhaseContent(phase)
   const todaySymptoms = cleanSymptoms(symptoms ?? [])
   const todayNeeds = needs ?? []
+  const lowDay = isLowDay({ energy, mood, stress, symptoms: todaySymptoms, needs: todayNeeds })
 
-  const hormonalWhy = firstSentence(knowledge.whyExplainer)
-  // Keep whyNow to one calm beat — personal signal first, phase why only as fallback.
+  // One short beat about *her* day. Her check-in always wins over the phase:
+  // a tired day never gets "a peak in energy" as its explanation.
+  const opening = personalOpening(todaySymptoms, todayNeeds, energy)
   const whyNow = bodyRecognition
     ? bodyRecognition.text
-    : todaySymptoms.length
-      ? `Je noteerde vandaag o.a. ${symptomLabel(todaySymptoms[0]).toLowerCase()}. ${hormonalWhy}`
-      : hormonalWhy
+    : opening
+      ? lowDay
+        ? `${opening} Luister daar vandaag naar; dat telt meer dan de fase.`
+        : `${opening} Hieronder staat wat kan helpen.`
+      : changingCycle
+        ? CHANGING_CYCLE_WHY
+        : PHASE_SHORT_WHY[phase]
 
   const supports: RoadmapSupport[] = []
   const usedKinds = new Set<RoadmapSupportKind>()
@@ -212,6 +238,7 @@ export function composeTodayRoadmap(input: ComposeTodayRoadmapInput): TodayRoadm
 
   // 2) Movement — phase-aware, only if we still have room (max 2 total on Vandaag)
   const wantsRest =
+    lowDay ||
     todayNeeds.includes("rust") ||
     todayNeeds.includes("mezelf") ||
     (energy !== null && energy <= 2) ||

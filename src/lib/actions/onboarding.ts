@@ -80,6 +80,9 @@ export async function completeOnboarding(input: OnboardingInput): Promise<{ erro
       average_period_length: averagePeriodLength,
       regularity: data.hasCycle ? data.regularity ?? null : null,
       perimenopause_information: data.perimenopauseInfo || null,
+      // Optional: only written when she picked one, so a missing answer
+      // never overwrites a stage set later in Profiel.
+      ...(data.lifeStage ? { life_stage: data.lifeStage } : {}),
       active_period_start: periodOngoing ? data.lastPeriodStart! : null,
     },
     { onConflict: "user_id" },

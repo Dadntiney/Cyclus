@@ -20,10 +20,13 @@ export function HormoneRoadmapNote({
   roadmap,
   phaseTone,
   savedTexts = [],
+  changingCycle = false,
 }: {
   roadmap: TodayRoadmap
   phaseTone?: { bg: string; text: string } | null
   savedTexts?: string[]
+  /** Changing cycle: point to the overgang explainer instead of the phase page. */
+  changingCycle?: boolean
 }) {
   const saved = new Set(savedTexts)
 
@@ -98,13 +101,13 @@ export function HormoneRoadmapNote({
 
       <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1">
         <Link
-          href="/cyclus/vandaag"
+          href={changingCycle ? "/cyclus/overgang" : "/cyclus/vandaag"}
           className={cn(
             "inline-flex items-center gap-1 min-h-11 text-xs font-medium touch-manipulation",
             phaseTone?.text ?? "text-sage-dark",
           )}
         >
-          Meer over deze fase
+          {changingCycle ? "Over je veranderende cyclus" : "Meer over deze fase"}
           <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
         </Link>
         <Link
