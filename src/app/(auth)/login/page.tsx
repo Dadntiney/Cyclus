@@ -10,7 +10,7 @@ export default async function LoginPage({
 
   return (
     <div>
-      <h1 className="font-display text-lg text-ink mb-1">Welkom terug</h1>
+      <h1 className="font-display text-2xl text-ink mb-1.5">Welkom terug</h1>
       <p className="text-sm text-ink-soft mb-5">Log in om verder te gaan.</p>
       <LoginForm next={next} />
       <div className="mt-7 flex flex-col items-center gap-2.5 text-sm">
