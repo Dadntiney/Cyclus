@@ -5,6 +5,7 @@ import { Heart } from "lucide-react"
 import { toggleFavorite } from "@/lib/actions/nutrition"
 import { ActionToast, useActionToast } from "@/components/ui/action-toast"
 import { cn } from "@/lib/utils"
+import { runAction } from "@/lib/client/run-action"
 
 export function FavoriteButton({
   recipeId,
@@ -22,7 +23,7 @@ export function FavoriteButton({
     setFavorited(next)
     toast.show(next ? "Opgeslagen" : "Verwijderd")
     startTransition(async () => {
-      const result = await toggleFavorite(recipeId)
+      const result = await runAction(() => toggleFavorite(recipeId))
       if (result?.favorited !== undefined) {
         setFavorited(result.favorited)
       } else {

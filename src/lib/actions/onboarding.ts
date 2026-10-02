@@ -9,10 +9,15 @@ import {
   isPeriodStillActive,
 } from "@/lib/cycle/period-seed"
 
-export async function completeOnboarding(input: OnboardingInput) {
+/**
+ * Returns `{ error }` instead of throwing: in production Next.js replaces a
+ * thrown Server Action error with a generic English message, so a thrown
+ * Dutch explanation would never reach her.
+ */
+export async function completeOnboarding(input: OnboardingInput): Promise<{ error: string } | void> {
   const parsed = onboardingSchema.safeParse(input)
   if (!parsed.success) {
-    throw new Error(parsed.error.issues[0]?.message ?? "Ongeldige invoer.")
+    return { error: parsed.error.issues[0]?.message ?? "Controleer je antwoorden." }
   }
   const data = parsed.data
 
@@ -54,7 +59,7 @@ export async function completeOnboarding(input: OnboardingInput) {
     .eq("id", user.id)
 
   if (profileError) {
-    throw new Error("Opslaan van je profiel is niet gelukt.")
+    return { error: "Opslaan van je profiel is niet gelukt. Probeer het opnieuw." }
   }
 
   const averagePeriodLength = data.hasCycle
@@ -79,23 +84,18 @@ export async function completeOnboarding(input: OnboardingInput) {
   )
 
   if (cycleError) {
-    throw new Error("Opslaan van je cyclusgegevens is niet gelukt.")
+    return { error: "Opslaan van je cyclusgegevens is niet gelukt. Probeer het opnieuw." }
   }
 
   // Seed consecutive bleed days so history/duration match what she told us.
   if (data.hasCycle && data.lastPeriodStart) {
     const seedDates = buildPeriodSeedDates(data.lastPeriodStart, averagePeriodLength ?? 5)
     const { error: logError } = await supabase.from("cycle_logs").upsert(
-      seedDates.map((date) => ({
-        user_id: user.id,
-        date,
-        menstruation: true,
-        symptoms: [],
-      })),
-      { onConflict: "user_id,date" },
+      seedDates.map((date) => ({ user_id: user.id, date, menstruation: true })),
+      { onConflict: "user_id,date", ignoreDuplicates: true },
     )
     if (logError) {
-      throw new Error("Opslaan van je cyclusgegevens is niet gelukt.")
+      return { error: "Opslaan van je cyclusgegevens is niet gelukt. Probeer het opnieuw." }
     }
   }
 

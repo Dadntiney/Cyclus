@@ -11,6 +11,12 @@ const PUBLIC_PATHS = [
   "/voorwaarden",
 ]
 
+// Routes that authenticate themselves (Vercel Cron via CRON_SECRET, admin
+// tasks via ADMIN_TASK_SECRET). They never carry a user session, so the
+// login redirect below must not apply — otherwise Vercel Cron receives a
+// 307 to /login and the reminder job silently never runs.
+const SELF_AUTHENTICATED_PREFIXES = ["/api/cron/", "/api/admin/"]
+
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
@@ -18,6 +24,10 @@ function isPublicPath(pathname: string) {
 }
 
 export async function updateSession(request: NextRequest) {
+  if (SELF_AUTHENTICATED_PREFIXES.some((prefix) => request.nextUrl.pathname.startsWith(prefix))) {
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(

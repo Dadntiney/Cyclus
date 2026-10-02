@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { acceptBuddyAiConsent } from "@/lib/actions/consent"
 import { Button } from "@/components/ui/button"
+import { runAction } from "@/lib/client/run-action"
 
 export function BuddyAiConsentCard() {
   const router = useRouter()
@@ -35,7 +36,7 @@ export function BuddyAiConsentCard() {
           onClick={() => {
             setError(null)
             startTransition(async () => {
-              const result = await acceptBuddyAiConsent()
+              const result = await runAction(() => acceptBuddyAiConsent())
               if (result.error) {
                 setError(result.error)
                 return

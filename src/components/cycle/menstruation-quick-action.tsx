@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { addDays, format, parseISO } from "date-fns"
 import { Droplet } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { MenstruationDateSheet } from "@/components/cycle/menstruation-date-sheet"
+import { todayISO } from "@/lib/dates/amsterdam"
 import { cn } from "@/lib/utils"
-import { startMenstruationPeriod, stopMenstruationPeriod } from "@/lib/actions/cycle"
 
 /**
  * Menstruatie shortcut for Vandaag.
@@ -23,21 +24,16 @@ export function MenstruationQuickAction({
   day: number | null
   variant?: "card" | "quiet" | "inline"
 }) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
-
-  function handleClick() {
-    setError(null)
-    startTransition(async () => {
-      const result = isActive ? await stopMenstruationPeriod() : await startMenstruationPeriod()
-      if (result.error) {
-        setError(result.error)
-        return
-      }
-      router.refresh()
-    })
-  }
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const handleClick = () => setSheetOpen(true)
+  const sheet = (
+    <MenstruationDateSheet
+      mode={isActive ? "stop" : "start"}
+      open={sheetOpen}
+      onClose={() => setSheetOpen(false)}
+      periodStart={isActive && day ? format(addDays(parseISO(todayISO()), -(day - 1)), "yyyy-MM-dd") : null}
+    />
+  )
 
   if (variant === "quiet" && !isActive) {
     return (
@@ -45,13 +41,12 @@ export function MenstruationQuickAction({
         <button
           type="button"
           onClick={handleClick}
-          disabled={isPending}
           className="inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark min-h-11 touch-manipulation"
         >
           <Droplet className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
-          {isPending ? "Bezig…" : "Menstruatie starten"}
+          Menstruatie starten
         </button>
-        {error && <p className="text-xs text-danger mt-1">{error}</p>}
+        {sheet}
       </div>
     )
   }
@@ -73,12 +68,11 @@ export function MenstruationQuickAction({
         <button
           type="button"
           onClick={handleClick}
-          disabled={isPending}
           className="shrink-0 text-sm font-medium text-sage-dark min-h-11 px-1 touch-manipulation"
         >
-          {isPending ? "Bezig…" : "Stoppen"}
+          Stoppen
         </button>
-        {error && <p className="text-xs text-danger sr-only">{error}</p>}
+        {sheet}
       </div>
     )
   }
@@ -117,12 +111,11 @@ export function MenstruationQuickAction({
           size="sm"
           variant={isActive ? "secondary" : "primary"}
           onClick={handleClick}
-          disabled={isPending}
           aria-label={isActive ? "Menstruatie stoppen" : "Menstruatie starten"}
         >
-          {isPending ? "Bezig..." : isActive ? "Stoppen" : "Starten"}
+          {isActive ? "Stoppen" : "Starten"}
         </Button>
-        {error && <p className="text-xs text-danger">{error}</p>}
+        {sheet}
       </div>
     </div>
   )

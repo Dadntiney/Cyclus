@@ -1,8 +1,8 @@
-# Cyclus
+# GoFiev
 
 Jouw lichaam. Jouw ritme. Jouw dag.
 
-Cyclus is een Nederlandstalige wellness-app die training, voeding en herstel
+GoFiev is een Nederlandstalige wellness-app die training, voeding en herstel
 afstemt op jouw eigen cyclus en dagelijkse check-ins. Gebouwd met Next.js
 (App Router), TypeScript, Tailwind CSS en Supabase (Postgres, Auth, Row
 Level Security).
@@ -35,6 +35,18 @@ supabase link --project-ref <project-ref>
 supabase db push
 ```
 
+> Let op: voor het live project is `supabase db push` op dit moment niet
+> veilig. Zie [docs/MIGRATIONS.md](docs/MIGRATIONS.md).
+
+## Controleren
+
+```bash
+npm run typecheck   # TypeScript
+npm run lint        # ESLint
+npm test            # unit-tests (Vitest)
+npm run build       # productiebuild
+```
+
 ## Architectuur
 
 - `src/app` — routes (App Router), met route groups `(auth)` en `(app)`
@@ -45,7 +57,6 @@ supabase db push
 - `src/lib/cycle` — cyclus-schattingen en cyclushistorie
 - `src/lib/recommendations` — personalisatie-engine voor Vandaag
 - `src/lib/buddy` — chat-architectuur met vervangbare AI-provider
-- `src/lib/i18n` — vertaalarchitectuur (momenteel alleen `nl-NL`)
 
 ## Buddy / AI
 

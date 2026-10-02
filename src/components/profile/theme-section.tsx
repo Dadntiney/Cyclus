@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { Chip } from "@/components/ui/chip"
 import { updateThemePreference, type ThemePreference } from "@/lib/actions/profile"
 import { applyThemePreference } from "@/lib/theme/apply-theme"
+import { runAction } from "@/lib/client/run-action"
 
 const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
   { value: "light", label: "Dag" },
@@ -24,7 +25,7 @@ export function ThemeSection({ initial }: { initial: ThemePreference }) {
     setTheme(value)
     applyThemePreference(value)
     startTransition(async () => {
-      const result = await updateThemePreference(value)
+      const result = await runAction(() => updateThemePreference(value))
       if (result?.error) {
         setTheme(previous)
         applyThemePreference(previous)

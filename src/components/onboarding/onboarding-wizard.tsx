@@ -62,38 +62,30 @@ interface FormData {
   buddyMessageFrequency: string
 }
 
-// The step sequence is dynamic: whether movement/nutrition were switched on
-// decides whether their follow-up questions appear at all, so nobody who
-// says "not relevant for me" gets asked to configure it anyway.
+// The step sequence is dynamic: only modules she switches on get their
+// follow-up questions. Kept deliberately short — related questions share a
+// screen, and details like height/weight live in Profiel instead, so she
+// reaches her first Vandaag quickly (8–12 screens instead of up to 19).
 type StepId =
   | "welcome"
-  | "name"
-  | "age"
-  | "body"
+  | "about"
   | "cycle"
   | "goals"
   | "health"
-  | "movement-toggle"
-  | "movement-preferences"
-  | "movement-frequency"
-  | "nutrition-toggle"
-  | "nutrition-style"
-  | "nutrition-preferences"
-  | "wellbeing-toggle"
+  | "modules"
+  | "movement-details"
+  | "nutrition-details"
   | "wellbeing-preferences"
-  | "medication-status"
   | "wellness"
   | "buddy-style"
   | "buddy"
 
 function buildStepSequence(data: FormData): StepId[] {
-  const steps: StepId[] = ["welcome", "name", "age", "body", "cycle", "goals", "health", "movement-toggle"]
-  if (data.movementEnabled) steps.push("movement-preferences", "movement-frequency")
-  steps.push("nutrition-toggle")
-  if (data.nutritionEnabled) steps.push("nutrition-style", "nutrition-preferences")
-  steps.push("wellbeing-toggle")
+  const steps: StepId[] = ["welcome", "about", "cycle", "goals", "health", "modules"]
+  if (data.movementEnabled) steps.push("movement-details")
+  if (data.nutritionEnabled) steps.push("nutrition-details")
   if (data.mentalWellbeingChoice === "ja") steps.push("wellbeing-preferences")
-  steps.push("medication-status", "wellness", "buddy-style", "buddy")
+  steps.push("wellness", "buddy-style", "buddy")
   return steps
 }
 
@@ -147,11 +139,11 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         return healthConsent
           ? null
           : "Bevestig even de verwerking van je gezondheidsgegevens om verder te gaan."
-      case "name":
-        return data.name.trim().length > 0 ? null : "Vul je naam in."
-      case "age": {
+      case "about": {
+        if (data.name.trim().length === 0) return "Vul je naam in."
         const age = Number(data.age)
-        return age >= 10 && age <= 100 ? null : "Vul een geldige leeftijd in."
+        if (age >= 10 && age < 16) return "GoFiev is bedoeld voor vrouwen vanaf 16 jaar."
+        return age >= 16 && age <= 100 ? null : "Vul een geldige leeftijd in."
       }
       case "cycle":
         if (data.hasCycle === null) return "Laat ons weten of je een cyclus hebt."
@@ -168,14 +160,13 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         return null
       case "goals":
         return data.goals.length > 0 ? null : "Kies minstens één doel."
-      case "movement-toggle":
-        return data.movementEnabled === null ? "Laat ons weten of beweging relevant voor je is." : null
-      case "movement-frequency":
+      case "modules":
+        if (data.movementEnabled === null) return "Laat ons weten of beweging relevant voor je is."
+        if (data.nutritionEnabled === null) return "Laat ons weten of voeding relevant voor je is."
+        if (data.mentalWellbeingChoice === null) return "Laat ons weten of je ondersteuning voor mentale rust wilt."
+        return null
+      case "movement-details":
         return data.trainingFrequency ? null : "Kies hoe vaak je wilt bewegen."
-      case "nutrition-toggle":
-        return data.nutritionEnabled === null ? "Laat ons weten of voeding relevant voor je is." : null
-      case "wellbeing-toggle":
-        return data.mentalWellbeingChoice === null ? "Laat ons weten wat hier bij jou past." : null
       case "wellness":
         return data.wellnessPreference ? null : "Kies een stijl die bij je past."
       default:
@@ -208,7 +199,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
   function handleFinish() {
     startTransition(async () => {
       try {
-        await completeOnboarding({
+        const result = await completeOnboarding({
           name: data.name.trim(),
           age: Number(data.age),
           heightCm: data.heightCm ? Number(data.heightCm) : undefined,
@@ -275,8 +266,9 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             | "uit"
             | undefined,
         })
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Er ging iets mis. Probeer het opnieuw.")
+        if (result?.error) setError(result.error)
+      } catch {
+        setError("Opslaan is niet gelukt. Controleer je verbinding en probeer het opnieuw.")
       }
     })
   }
@@ -296,11 +288,14 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         {stepId === "welcome" && (
           <WelcomeStep healthConsent={healthConsent} onHealthConsentChange={setHealthConsent} />
         )}
-        {stepId === "name" && (
-          <NameStep value={data.name} onChange={(name) => setData((d) => ({ ...d, name }))} />
+        {stepId === "about" && (
+          <AboutStep
+            name={data.name}
+            age={data.age}
+            onNameChange={(name) => setData((d) => ({ ...d, name }))}
+            onAgeChange={(age) => setData((d) => ({ ...d, age }))}
+          />
         )}
-        {stepId === "age" && <AgeStep value={data.age} onChange={(age) => setData((d) => ({ ...d, age }))} />}
-        {stepId === "body" && <BodyStep data={data} setData={setData} />}
         {stepId === "cycle" && <CycleStep data={data} setData={setData} />}
         {stepId === "goals" && (
           <MultiSelectStep
@@ -311,109 +306,74 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             onToggle={(v) => setData((d) => ({ ...d, goals: toggle(d.goals, v) }))}
           />
         )}
-        {stepId === "health" && <HealthStep data={data} setData={setData} />}
-        {stepId === "movement-toggle" && (
-          <OptionalModuleToggleStep
-            icon={Footprints}
-            title="Wil je beweging gebruiken?"
-            subtitle="Sommige vrouwen willen liever geen trainingsadvies zien. Helemaal jouw keuze — dit kun je later altijd aanpassen in je profiel."
-            value={data.movementEnabled}
-            onChange={(movementEnabled) =>
-              setData((d) => ({ ...d, movementEnabled, trainingPreferences: movementEnabled ? d.trainingPreferences : [] }))
-            }
-            yesLabel="Ja, graag"
-            noLabel="Nee, niet nodig"
-          />
-        )}
-        {stepId === "movement-preferences" && (
-          <MultiSelectStep
-            title="Welke beweging spreekt je aan?"
-            subtitle="Kies wat je leuk vindt of wilt proberen. We laten je daarna alleen nog hierop afgestemde suggesties zien."
-            options={TRAINING_OPTIONS}
-            selected={data.trainingPreferences}
-            onToggle={(v) =>
-              setData((d) => ({ ...d, trainingPreferences: toggle(d.trainingPreferences, v) }))
-            }
-          />
-        )}
-        {stepId === "movement-frequency" && (
-          <FrequencyStep
-            value={data.trainingFrequency}
-            onChange={(trainingFrequency) => setData((d) => ({ ...d, trainingFrequency }))}
-          />
-        )}
-        {stepId === "nutrition-toggle" && (
-          <OptionalModuleToggleStep
-            icon={Salad}
-            title="Wil je voeding gebruiken?"
-            subtitle="Als voeding nu niet relevant voor je is, sla je dit gerust over. Ook dit pas je later altijd aan in je profiel."
-            value={data.nutritionEnabled}
-            onChange={(nutritionEnabled) =>
-              setData((d) => ({
-                ...d,
-                nutritionEnabled,
-                nutritionPreferences: nutritionEnabled ? d.nutritionPreferences : [],
-                dislikedFoods: nutritionEnabled ? d.dislikedFoods : [],
-                foodAllergies: nutritionEnabled ? d.foodAllergies : [],
-              }))
-            }
-            yesLabel="Ja, graag"
-            noLabel="Nee, niet nodig"
-          />
-        )}
-        {stepId === "nutrition-style" && (
-          <NutritionStyleStep
-            value={data.nutritionStyle}
-            onChange={(nutritionStyle) => setData((d) => ({ ...d, nutritionStyle }))}
-          />
-        )}
-        {stepId === "nutrition-preferences" && (
-          <div>
-            <MultiSelectStep
-              title="Heb je voedingsvoorkeuren?"
-              subtitle="Zo stellen we passende recepten voor."
-              options={NUTRITION_OPTIONS}
-              selected={data.nutritionPreferences}
-              onToggle={(v) =>
-                setData((d) => ({ ...d, nutritionPreferences: toggle(d.nutritionPreferences, v) }))
-              }
+        {stepId === "health" && (
+          <div className="flex flex-col gap-10">
+            <HealthStep data={data} setData={setData} />
+            <MedicationStatusStep
+              value={data.hormonalMedicationStatus}
+              onChange={(hormonalMedicationStatus) => setData((d) => ({ ...d, hormonalMedicationStatus }))}
             />
-            {data.nutritionPreferences.includes("Allergieën") && (
-              <div className="mt-4">
-                <p className="text-sm font-medium text-ink mb-2">Waarvoor ben je allergisch?</p>
-                <p className="text-xs text-ink-soft mb-2">
-                  We laten recepten met deze ingrediënten weg.
-                </p>
-                <TagListInput
-                  value={data.foodAllergies}
-                  onChange={(foodAllergies) => setData((d) => ({ ...d, foodAllergies }))}
-                  placeholder="Bijv. noten, gluten, lactose"
-                />
-              </div>
-            )}
-            {data.nutritionPreferences.includes("Dingen die ik niet lust") && (
-              <div className="mt-4">
-                <p className="text-sm font-medium text-ink mb-2">Welke gerechten of ingrediënten lust je niet?</p>
-                <TagListInput
-                  value={data.dislikedFoods}
-                  onChange={(dislikedFoods) => setData((d) => ({ ...d, dislikedFoods }))}
-                  placeholder="Bijv. paddenstoelen, spruitjes"
-                />
-              </div>
-            )}
           </div>
         )}
-        {stepId === "wellbeing-toggle" && (
-          <MentalWellbeingToggleStep
-            value={data.mentalWellbeingChoice}
-            onChange={(mentalWellbeingChoice) =>
-              setData((d) => ({
-                ...d,
-                mentalWellbeingChoice,
-                mentalWellbeingCategories: mentalWellbeingChoice === "ja" ? d.mentalWellbeingCategories : [],
-              }))
-            }
-          />
+        {stepId === "modules" && <ModulesStep data={data} setData={setData} />}
+        {stepId === "movement-details" && (
+          <div className="flex flex-col gap-10">
+            <MultiSelectStep
+              title="Welke beweging spreekt je aan?"
+              subtitle="Kies wat je leuk vindt of wilt proberen. We laten je daarna alleen nog hierop afgestemde suggesties zien."
+              options={TRAINING_OPTIONS}
+              selected={data.trainingPreferences}
+              onToggle={(v) =>
+                setData((d) => ({ ...d, trainingPreferences: toggle(d.trainingPreferences, v) }))
+              }
+            />
+            <FrequencyStep
+              value={data.trainingFrequency}
+              onChange={(trainingFrequency) => setData((d) => ({ ...d, trainingFrequency }))}
+            />
+          </div>
+        )}
+        {stepId === "nutrition-details" && (
+          <div className="flex flex-col gap-10">
+            <NutritionStyleStep
+              value={data.nutritionStyle}
+              onChange={(nutritionStyle) => setData((d) => ({ ...d, nutritionStyle }))}
+            />
+            <div>
+              <MultiSelectStep
+                title="Heb je voedingsvoorkeuren?"
+                subtitle="Zo stellen we passende recepten voor."
+                options={NUTRITION_OPTIONS}
+                selected={data.nutritionPreferences}
+                onToggle={(v) =>
+                  setData((d) => ({ ...d, nutritionPreferences: toggle(d.nutritionPreferences, v) }))
+                }
+              />
+              {data.nutritionPreferences.includes("Allergieën") && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-ink mb-2">Waarvoor ben je allergisch?</p>
+                  <p className="text-xs text-ink-soft mb-2">
+                    We laten recepten met deze ingrediënten weg.
+                  </p>
+                  <TagListInput
+                    value={data.foodAllergies}
+                    onChange={(foodAllergies) => setData((d) => ({ ...d, foodAllergies }))}
+                    placeholder="Bijv. noten, gluten, lactose"
+                  />
+                </div>
+              )}
+              {data.nutritionPreferences.includes("Dingen die ik niet lust") && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-ink mb-2">Welke gerechten of ingrediënten lust je niet?</p>
+                  <TagListInput
+                    value={data.dislikedFoods}
+                    onChange={(dislikedFoods) => setData((d) => ({ ...d, dislikedFoods }))}
+                    placeholder="Bijv. paddenstoelen, spruitjes"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         )}
         {stepId === "wellbeing-preferences" && (
           <MentalWellbeingPreferencesStep
@@ -421,12 +381,6 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             onToggle={(v) =>
               setData((d) => ({ ...d, mentalWellbeingCategories: toggle(d.mentalWellbeingCategories, v) }))
             }
-          />
-        )}
-        {stepId === "medication-status" && (
-          <MedicationStatusStep
-            value={data.hormonalMedicationStatus}
-            onChange={(hormonalMedicationStatus) => setData((d) => ({ ...d, hormonalMedicationStatus }))}
           />
         )}
         {stepId === "wellness" && (
@@ -514,98 +468,47 @@ function WelcomeStep({
   )
 }
 
-function NameStep({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Hoe mogen we je noemen?</h2>
-      <p className="text-ink-soft text-base leading-relaxed mb-7">Je naam gebruiken we om je welkom te heten.</p>
-      <Label htmlFor="name">Naam</Label>
-      <Input
-        id="name"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Bijvoorbeeld Sanne"
-        autoFocus
-      />
-    </div>
-  )
-}
-
-function AgeStep({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Wat is je leeftijd?</h2>
-      <p className="text-ink-soft text-base leading-relaxed mb-7">
-        Dit helpt ons om passendere aanbevelingen te doen.
-      </p>
-      <Label htmlFor="age">Leeftijd</Label>
-      <Input
-        id="age"
-        type="number"
-        inputMode="numeric"
-        min={10}
-        max={100}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Bijvoorbeeld 32"
-        autoFocus
-      />
-    </div>
-  )
-}
-
-function BodyStep({
-  data,
-  setData,
+function AboutStep({
+  name,
+  age,
+  onNameChange,
+  onAgeChange,
 }: {
-  data: FormData
-  setData: React.Dispatch<React.SetStateAction<FormData>>
+  name: string
+  age: string
+  onNameChange: (v: string) => void
+  onAgeChange: (v: string) => void
 }) {
   return (
     <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Jouw lichaamsgegevens</h2>
+      <h2 className="font-display text-3xl text-ink mb-3">Even kennismaken</h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">
-        Optioneel, maar helpt ons om je advies preciezer te maken. Je kunt dit altijd
-        overslaan of later aanpassen.
+        Je naam gebruiken we om je welkom te heten, je leeftijd helpt om passendere uitleg en
+        suggesties te geven.
       </p>
       <div className="flex flex-col gap-4">
         <div>
-          <Label htmlFor="heightCm">Lengte (cm)</Label>
+          <Label htmlFor="name">Naam</Label>
           <Input
-            id="heightCm"
+            id="name"
+            value={name}
+            onChange={(e) => onNameChange(e.target.value)}
+            placeholder="Bijvoorbeeld Sanne"
+            autoComplete="given-name"
+            autoFocus
+          />
+        </div>
+        <div>
+          <Label htmlFor="age">Leeftijd</Label>
+          <Input
+            id="age"
             type="number"
             inputMode="numeric"
-            min={120}
-            max={220}
-            value={data.heightCm}
-            onChange={(e) => setData((d) => ({ ...d, heightCm: e.target.value }))}
-            placeholder="Bijvoorbeeld 168"
-          />
-        </div>
-        <div>
-          <Label htmlFor="weightKg">Gewicht (kg)</Label>
-          <Input
-            id="weightKg"
-            type="number"
-            inputMode="decimal"
-            min={30}
-            max={250}
-            value={data.weightKg}
-            onChange={(e) => setData((d) => ({ ...d, weightKg: e.target.value }))}
-            placeholder="Bijvoorbeeld 68"
-          />
-        </div>
-        <div>
-          <Label htmlFor="goalWeightKg">Doelgewicht (kg, optioneel)</Label>
-          <Input
-            id="goalWeightKg"
-            type="number"
-            inputMode="decimal"
-            min={30}
-            max={250}
-            value={data.goalWeightKg}
-            onChange={(e) => setData((d) => ({ ...d, goalWeightKg: e.target.value }))}
-            placeholder="Alleen als je dit wilt bijhouden"
+            min={16}
+            max={100}
+            value={age}
+            onChange={(e) => onAgeChange(e.target.value)}
+            placeholder="Bijvoorbeeld 42"
           />
         </div>
       </div>
@@ -795,69 +698,99 @@ function HealthStep({
   )
 }
 
-function OptionalModuleToggleStep({
-  icon: Icon,
-  title,
-  subtitle,
-  value,
-  onChange,
-  yesLabel,
-  noLabel,
+function ModulesStep({
+  data,
+  setData,
 }: {
-  icon: LucideIcon
-  title: string
-  subtitle: string
-  value: boolean | null
-  onChange: (v: boolean) => void
-  yesLabel: string
-  noLabel: string
+  data: FormData
+  setData: React.Dispatch<React.SetStateAction<FormData>>
 }) {
   return (
-    <div className="text-center">
-      <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center">
-        <Icon className="h-6 w-6 text-sage-dark" strokeWidth={1.75} />
-      </div>
-      <h2 className="font-display text-3xl text-ink mb-3">{title}</h2>
-      <p className="text-ink-soft text-base leading-relaxed mb-7">{subtitle}</p>
-      <div className="flex gap-2 justify-center">
-        <Chip selected={value === true} onClick={() => onChange(true)}>
-          {yesLabel}
-        </Chip>
-        <Chip selected={value === false} onClick={() => onChange(false)}>
-          {noLabel}
-        </Chip>
+    <div>
+      <h2 className="font-display text-3xl text-ink mb-3">Waar wil je ondersteuning bij?</h2>
+      <p className="text-ink-soft text-base leading-relaxed mb-7">
+        Alles is optioneel. Kies alleen wat je nu fijn lijkt, je kunt dit later altijd aanpassen in
+        je profiel.
+      </p>
+      <div className="flex flex-col gap-3">
+        <ModuleRow
+          icon={Footprints}
+          title="Beweging"
+          description="Suggesties die passen bij je cyclusfase en energie."
+          options={[
+            { label: "Ja, graag", selected: data.movementEnabled === true, onSelect: () => setData((d) => ({ ...d, movementEnabled: true })) },
+            {
+              label: "Nee",
+              selected: data.movementEnabled === false,
+              onSelect: () => setData((d) => ({ ...d, movementEnabled: false, trainingPreferences: [] })),
+            },
+          ]}
+        />
+        <ModuleRow
+          icon={Salad}
+          title="Voeding"
+          description="Praktische ideeën en recepten, zonder verplichtingen."
+          options={[
+            { label: "Ja, graag", selected: data.nutritionEnabled === true, onSelect: () => setData((d) => ({ ...d, nutritionEnabled: true })) },
+            {
+              label: "Nee",
+              selected: data.nutritionEnabled === false,
+              onSelect: () =>
+                setData((d) => ({ ...d, nutritionEnabled: false, nutritionPreferences: [], dislikedFoods: [], foodAllergies: [] })),
+            },
+          ]}
+        />
+        <ModuleRow
+          icon={Brain}
+          title="Mentale rust"
+          description="Korte meditaties, mindfulness en affirmaties."
+          options={[
+            { label: "Ja, graag", selected: data.mentalWellbeingChoice === "ja", onSelect: () => setData((d) => ({ ...d, mentalWellbeingChoice: "ja" })) },
+            {
+              label: "Misschien later",
+              selected: data.mentalWellbeingChoice === "misschien_later",
+              onSelect: () => setData((d) => ({ ...d, mentalWellbeingChoice: "misschien_later", mentalWellbeingCategories: [] })),
+            },
+            {
+              label: "Nee",
+              selected: data.mentalWellbeingChoice === "nee",
+              onSelect: () => setData((d) => ({ ...d, mentalWellbeingChoice: "nee", mentalWellbeingCategories: [] })),
+            },
+          ]}
+        />
       </div>
     </div>
   )
 }
 
-function MentalWellbeingToggleStep({
-  value,
-  onChange,
+function ModuleRow({
+  icon: Icon,
+  title,
+  description,
+  options,
 }: {
-  value: "ja" | "misschien_later" | "nee" | null
-  onChange: (v: "ja" | "misschien_later" | "nee") => void
+  icon: LucideIcon
+  title: string
+  description: string
+  options: { label: string; selected: boolean; onSelect: () => void }[]
 }) {
   return (
-    <div className="text-center">
-      <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-sage-soft flex items-center justify-center">
-        <Brain className="h-6 w-6 text-sage-dark" strokeWidth={1.75} />
+    <div className="rounded-2xl bg-cream-soft p-4" role="group" aria-label={title}>
+      <div className="flex items-start gap-3">
+        <div className="h-10 w-10 shrink-0 rounded-full bg-sage-soft flex items-center justify-center">
+          <Icon className="h-5 w-5 text-sage-dark" strokeWidth={1.75} aria-hidden />
+        </div>
+        <div className="min-w-0">
+          <p className="font-medium text-ink">{title}</p>
+          <p className="text-sm text-ink-soft">{description}</p>
+        </div>
       </div>
-      <h2 className="font-display text-3xl text-ink mb-3">Wil je ook ondersteuning voor je mentale rust?</h2>
-      <p className="text-ink-soft text-base leading-relaxed mb-7">
-        Denk aan korte meditaties, mindfulness-oefeningen en affirmaties. Helemaal optioneel — en
-        dit kun je later altijd aanpassen in je profiel.
-      </p>
-      <div className="flex flex-col gap-2 items-center">
-        <Chip selected={value === "ja"} onClick={() => onChange("ja")}>
-          Ja, graag
-        </Chip>
-        <Chip selected={value === "misschien_later"} onClick={() => onChange("misschien_later")}>
-          Misschien later
-        </Chip>
-        <Chip selected={value === "nee"} onClick={() => onChange("nee")}>
-          Nee, liever niet
-        </Chip>
+      <div className="flex flex-wrap gap-2 mt-3">
+        {options.map((opt) => (
+          <Chip key={opt.label} selected={opt.selected} aria-pressed={opt.selected} onClick={opt.onSelect}>
+            {opt.label}
+          </Chip>
+        ))}
       </div>
     </div>
   )

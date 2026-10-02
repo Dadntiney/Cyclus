@@ -16,6 +16,7 @@ import {
   WEEK_OVERRIDES_CHANGED_EVENT,
   type DayOverride,
 } from "@/lib/client/week-plan-storage"
+import { runAction } from "@/lib/client/run-action"
 
 export type TodayWorkoutOption = {
   id: string
@@ -118,7 +119,7 @@ export function TodayMovementCard({
                 disabled={isPending}
                 onClick={() => {
                   startTransition(async () => {
-                    await undoTodaysWorkoutSession()
+                    await runAction(() => undoTodaysWorkoutSession())
                     router.refresh()
                   })
                 }}

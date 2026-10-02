@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 import Link from "next/link"
+import { addDays, format, parseISO } from "date-fns"
 import { ChevronRight, Droplet } from "lucide-react"
-import { startMenstruationPeriod, stopMenstruationPeriod } from "@/lib/actions/cycle"
+import { MenstruationDateSheet } from "@/components/cycle/menstruation-date-sheet"
+import { todayISO } from "@/lib/dates/amsterdam"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import {
   softMenstruationNote,
@@ -65,9 +66,7 @@ export function PhaseContextCard({
   cycleLength?: number | null
   periodLength?: number | null
 }) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
   const tone = PHASE_TONE[phase]
   const softHint =
     menstruationSoftHint ??
@@ -90,19 +89,15 @@ export function PhaseContextCard({
       ? "Gestopt"
       : "Nog niet gestart"
 
-  function handleMenstruation() {
-    setError(null)
-    startTransition(async () => {
-      const result = isMenstruationActive
-        ? await stopMenstruationPeriod()
-        : await startMenstruationPeriod()
-      if (result.error) {
-        setError(result.error)
-        return
-      }
-      router.refresh()
-    })
-  }
+  // A period that runs well past her usual length most likely ended and
+  // "Stoppen" was simply forgotten — ask gently instead of counting on.
+  const usualLength = periodLength ?? 5
+  const probablyForgotten =
+    isMenstruationActive && menstruationDay != null && menstruationDay > usualLength + 2
+  const periodStart =
+    isMenstruationActive && menstruationDay
+      ? format(addDays(parseISO(todayISO()), -(menstruationDay - 1)), "yyyy-MM-dd")
+      : null
 
   const shownDay = isMenstruationActive && menstruationDay ? menstruationDay : cycleDay
 
@@ -172,19 +167,27 @@ export function PhaseContextCard({
           </span>
           <button
             type="button"
-            onClick={handleMenstruation}
-            disabled={isPending}
+            onClick={() => setSheetOpen(true)}
             className="text-sm font-semibold text-sage-dark min-h-11 px-1 touch-manipulation shrink-0 underline-offset-4 hover:underline"
           >
-            {isPending
-              ? "Bezig…"
-              : isMenstruationActive
-                ? "Stoppen"
-                : "Menstruatie starten"}
+            {isMenstruationActive ? "Stoppen" : "Menstruatie starten"}
           </button>
         </div>
       )}
-      {error && <p className="text-xs text-danger px-5 pb-3">{error}</p>}
+      {hasCycle && probablyForgotten && (
+        <p className="text-sm text-ink-soft px-5 pb-4 -mt-1">
+          Je menstruatie duurt langer dan meestal. Is hij al gestopt? Tik op{" "}
+          <span className="font-medium text-ink">Stoppen</span> en kies je laatste dag.
+        </p>
+      )}
+      {hasCycle && (
+        <MenstruationDateSheet
+          mode={isMenstruationActive ? "stop" : "start"}
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          periodStart={periodStart}
+        />
+      )}
     </div>
   )
 }

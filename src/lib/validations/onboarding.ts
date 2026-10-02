@@ -1,10 +1,11 @@
 import { z } from "zod"
+import { pastOrTodayDateSchema } from "@/lib/validations/dates"
 
 export const onboardingSchema = z.object({
   name: z.string().trim().min(1, "Vul je naam in.").max(80),
-  age: z.number().int().min(10).max(100),
+  age: z.number().int().min(16, "GoFiev is bedoeld voor vrouwen vanaf 16 jaar.").max(100, "Vul een geldige leeftijd in."),
   hasCycle: z.boolean(),
-  lastPeriodStart: z.string().optional(),
+  lastPeriodStart: pastOrTodayDateSchema.optional(),
   averageCycleLength: z.number().int().min(15).max(60).optional(),
   averagePeriodLength: z.number().int().min(2).max(14).optional(),
   regularity: z.enum(["regelmatig", "onregelmatig", "onbekend"]).optional(),

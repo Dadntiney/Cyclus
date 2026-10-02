@@ -10,6 +10,7 @@ import { ExerciseDemo } from "@/components/training/exercise-demo"
 import { ExerciseInstructionPlayer } from "@/components/training/exercise-instruction-player"
 import { WorkoutImage } from "@/components/training/workout-image"
 import { completeWorkoutSession, fetchAlternativeExercise } from "@/lib/actions/training"
+import { runAction } from "@/lib/client/run-action"
 import { lookupExerciseInstruction } from "@/lib/training/exercise-instructions"
 import { formatExercisePrescription } from "@/lib/training/prescription"
 import { triggerHaptic } from "@/lib/platform"
@@ -79,7 +80,7 @@ export function WorkoutSession({
   function handleFinishWorkout() {
     setFinishError(null)
     startTransition(async () => {
-      const result = await completeWorkoutSession(workout.id)
+      const result = await runAction(() => completeWorkoutSession(workout.id))
       if (result?.error) {
         setFinishError(result.error)
         return

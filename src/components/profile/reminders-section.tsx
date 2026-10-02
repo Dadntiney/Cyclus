@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { REMINDER_TYPE_OPTIONS, REMINDER_DAY_OPTIONS } from "@/lib/constants"
 import { createReminder, updateReminder, deleteReminder, toggleReminder } from "@/lib/actions/reminders"
-import { normalizeReminderTime, type ReminderInput } from "@/lib/validations/reminder"
+import type { ReminderInput } from "@/lib/validations/reminder"
+import { normalizeReminderTime } from "@/lib/reminders/options"
 import type { Tables } from "@/types/database"
+import { runAction } from "@/lib/client/run-action"
 
 type Reminder = Tables<"reminders">
 
@@ -185,7 +187,7 @@ export function RemindersSection({
     startTransition(async () => {
       if (editingId) {
         const payload: ReminderInput = { ...base, type: draft.type }
-        const result = await updateReminder(editingId, payload)
+        const result = await runAction(() => updateReminder(editingId, payload))
         if (result.error) {
           setError(result.error)
           return
@@ -213,7 +215,7 @@ export function RemindersSection({
       } else {
         const created: Reminder[] = []
         for (const type of selectedTypes) {
-          const result = await createReminder({ ...base, type })
+          const result = await runAction(() => createReminder({ ...base, type }))
           if (result.error) {
             if (created.length) {
               setReminders((prev) => {
@@ -253,7 +255,7 @@ export function RemindersSection({
     deletedIdsRef.current.add(id)
     setReminders((prev) => prev.filter((r) => r.id !== id))
     startTransition(async () => {
-      const result = await deleteReminder(id)
+      const result = await runAction(() => deleteReminder(id))
       if (result?.error) {
         deletedIdsRef.current.delete(id)
         // Roll back: put the reminder back where it was.
@@ -277,7 +279,7 @@ export function RemindersSection({
     setReminders((prev) => prev.map((r) => (r.id === reminder.id ? { ...r, enabled: nextEnabled } : r)))
     if (nextEnabled) maybeRequestNotificationPermission()
     startTransition(async () => {
-      const result = await toggleReminder(reminder.id, nextEnabled)
+      const result = await runAction(() => toggleReminder(reminder.id, nextEnabled))
       if (result?.error) {
         setReminders((prev) => prev.map((r) => (r.id === reminder.id ? { ...r, enabled: !nextEnabled } : r)))
         setError(result.error)

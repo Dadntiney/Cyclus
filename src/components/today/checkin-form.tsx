@@ -365,7 +365,7 @@ export function CheckinForm({
   }
 
   function toggleNeed(value: string) {
-    // Same save queue as other fields — avoids racing setTodayNeeds vs saveCheckin.
+    // Same save queue as other fields — avoids racing two saveCheckin calls.
     applyUpdate((prev) => {
       const current = prev.needs
       const next = (

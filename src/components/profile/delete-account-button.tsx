@@ -4,6 +4,7 @@ import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog } from "@/components/ui/dialog"
 import { deleteAccount } from "@/lib/actions/profile"
+import { runAction } from "@/lib/client/run-action"
 
 export function DeleteAccountButton() {
   const [confirming, setConfirming] = useState(false)
@@ -33,7 +34,7 @@ export function DeleteAccountButton() {
             disabled={isPending}
             onClick={() =>
               startTransition(async () => {
-                const result = await deleteAccount()
+                const result = await runAction(() => deleteAccount())
                 if (result?.error) setError(result.error)
               })
             }

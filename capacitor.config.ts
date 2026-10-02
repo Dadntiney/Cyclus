@@ -9,11 +9,11 @@ import { BRAND_HEX } from "./src/lib/theme/brand"
 // (Next.js Server Components/Actions, cookie-based Supabase auth) far
 // better than bundling a static export would.
 //
-// appId is a placeholder ("app.cyclus.mobile") — decide the real one
-// BEFORE the first App Store Connect / Play Console submission, since it
-// cannot be changed afterwards without publishing as a new app.
+// appId "app.gofiev.mobile" follows the name chosen on 2026-10-02 (GoFiev).
+// It cannot be changed after the first App Store Connect / Play Console
+// submission without publishing as a new app.
 const config: CapacitorConfig = {
-  appId: "app.cyclus.mobile",
+  appId: "app.gofiev.mobile",
   appName: "GoFiev",
   webDir: ".capacitor-empty",
   server: {

@@ -9,6 +9,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
 } from "@/lib/validations/auth"
+import { safeNextPath } from "@/lib/safe-redirect"
 
 export interface ActionState {
   error?: string
@@ -50,8 +51,8 @@ export async function login(_prev: ActionState, formData: FormData): Promise<Act
     onboardingCompleted = profile?.onboarding_completed ?? false
   }
 
-  const next = formData.get("next")
-  if (typeof next === "string" && next && next !== "/login") {
+  const next = safeNextPath(formData.get("next"))
+  if (next && next !== "/login" && !next.startsWith("/login?")) {
     redirect(next)
   }
   redirect(onboardingCompleted ? "/vandaag" : "/onboarding")

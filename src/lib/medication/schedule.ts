@@ -34,8 +34,11 @@ function isoWeekday(date: Date): number {
  *   "show it as a static entry, don't claim to know today's on/off state".
  */
 export function isDosingDay(schedule: MedicationSchedule, date: Date): boolean | null {
-  if (schedule.endDate && date > parseISO(schedule.endDate)) return false
-  if (schedule.startDate && date < parseISO(schedule.startDate)) return false
+  // Compare calendar days, not instants: callers pass local-noon dates, so
+  // `date > parseISO(endDate)` (midnight) wrongly excluded the last day.
+  const dateISO = format(date, "yyyy-MM-dd")
+  if (schedule.endDate && dateISO > schedule.endDate) return false
+  if (schedule.startDate && dateISO < schedule.startDate) return false
 
   switch (schedule.scheduleType) {
     case "dagelijks":

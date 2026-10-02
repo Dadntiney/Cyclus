@@ -15,6 +15,7 @@ import {
   type PeriAnswers,
 } from "@/lib/cycle/peri-score"
 import { savePeriAssessment } from "@/lib/actions/peri-assessment"
+import { runAction } from "@/lib/client/run-action"
 
 const LEVELS = [
   { value: 0 as const, label: "Niet" },
@@ -44,7 +45,7 @@ export function PeriScoreForm({
   function handleSave() {
     setError(null)
     startTransition(async () => {
-      const result = await savePeriAssessment({ answers, notes })
+      const result = await runAction(() => savePeriAssessment({ answers, notes }))
       if (result.error) {
         setError(result.error)
         return

@@ -2,6 +2,28 @@
 
 import { createClient } from "@/lib/supabase/server"
 
+// The cron later POSTs to this URL from our server, so only accept the push
+// services browsers actually hand out — never an arbitrary address.
+const PUSH_SERVICE_HOSTS = [
+  /(^|\.)push\.services\.mozilla\.com$/,
+  /(^|\.)fcm\.googleapis\.com$/,
+  /(^|\.)android\.googleapis\.com$/,
+  /(^|\.)notify\.windows\.com$/,
+  /(^|\.)push\.apple\.com$/,
+]
+
+function isValidSubscription(input: PushSubscriptionInput): boolean {
+  if (!input?.endpoint || input.endpoint.length > 1000) return false
+  if (!input.keys?.p256dh || !input.keys?.auth) return false
+  if (input.keys.p256dh.length > 200 || input.keys.auth.length > 100) return false
+  try {
+    const url = new URL(input.endpoint)
+    return url.protocol === "https:" && PUSH_SERVICE_HOSTS.some((host) => host.test(url.hostname))
+  } catch {
+    return false
+  }
+}
+
 export interface PushSubscriptionInput {
   endpoint: string
   keys: { p256dh: string; auth: string }
@@ -25,6 +47,9 @@ export async function subscribeToPush(input: PushSubscriptionInput, userAgent?: 
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return { error: "Je bent niet ingelogd." }
+  if (!isValidSubscription(input)) {
+    return { error: "Deze browser gaf een onbekend meldingsadres terug. Meldingen inschakelen is niet gelukt." }
+  }
 
   await supabase.from("push_subscriptions").delete().eq("endpoint", input.endpoint).eq("user_id", user.id)
 
@@ -33,7 +58,7 @@ export async function subscribeToPush(input: PushSubscriptionInput, userAgent?: 
     endpoint: input.endpoint,
     p256dh: input.keys.p256dh,
     auth: input.keys.auth,
-    user_agent: userAgent ?? null,
+    user_agent: userAgent?.slice(0, 300) ?? null,
   })
 
   if (error) return { error: "Meldingen inschakelen is niet gelukt. Probeer het later opnieuw." }

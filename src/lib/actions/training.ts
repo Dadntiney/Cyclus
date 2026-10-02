@@ -31,12 +31,27 @@ export async function completeWorkoutSession(workoutId: string) {
   } = await supabase.auth.getUser()
   if (!user) return { error: "Je bent niet ingelogd." }
 
-  const { error } = await supabase.from("workout_sessions").insert({
-    user_id: user.id,
-    workout_id: workoutId,
-    date: todayISO(),
-    completed: true,
-  })
+  // Idempotent: a double tap or a retried request must not log the same
+  // workout twice today (there is no unique key on this table yet).
+  const today = todayISO()
+  const { data: existing } = await supabase
+    .from("workout_sessions")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("workout_id", workoutId)
+    .eq("date", today)
+    .eq("completed", true)
+    .limit(1)
+    .maybeSingle()
+
+  const { error } = existing
+    ? { error: null }
+    : await supabase.from("workout_sessions").insert({
+        user_id: user.id,
+        workout_id: workoutId,
+        date: today,
+        completed: true,
+      })
 
   if (error) return { error: "Opslaan van je training is niet gelukt." }
 
