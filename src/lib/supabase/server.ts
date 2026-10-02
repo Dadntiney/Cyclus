@@ -30,14 +30,15 @@ export const createClient = cache(async () => {
   )
 })
 
-// The layout and the page it wraps both need the authed user for the same
-// request; auth.getUser() re-validates the session against Supabase's Auth
-// server over the network, so without this every navigation paid for that
-// round-trip twice. React's cache() dedupes it to one call per request.
-export const getAuthedUser = cache(async () => {
+// The layout and the page it wraps both need the signed-in user for the
+// same request. getClaims() verifies the session JWT locally against the
+// project's asymmetric signing keys (fetched once and cached), so rendering
+// a page no longer waits on a round-trip to the Auth server. Pages only need
+// the user's id; server actions keep using auth.getUser(). React's cache()
+// dedupes it to one call per request.
+export const getAuthedUser = cache(async (): Promise<{ id: string } | null> => {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  return user
+  const { data } = await supabase.auth.getClaims()
+  const sub = data?.claims.sub
+  return sub ? { id: sub } : null
 })

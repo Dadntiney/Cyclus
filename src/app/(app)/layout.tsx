@@ -6,6 +6,7 @@ import { MobileHeader } from "@/components/nav/mobile-header"
 import { PageTransition } from "@/components/nav/page-transition"
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import { ReminderHostBoundary } from "@/components/reminders/reminder-host-boundary"
+import { AccountStateBoundary } from "@/components/client-state/account-state-boundary"
 import { getProfile } from "@/lib/data/profile"
 import type { MorningReminderSettings } from "@/components/reminders/reminder-toast-host"
 
@@ -53,6 +54,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           buddyStyles={profile.buddy_styles}
           morningReminder={morningReminder}
         />
+        <AccountStateBoundary userId={user.id} />
       </div>
     </div>
   )

@@ -9,6 +9,7 @@ import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { NAV_ITEMS, isNavActive } from "./nav-items"
 import { logout } from "@/lib/actions/auth"
+import { clearLocalUserData } from "@/lib/client/account-sync"
 import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
 import { DropletMark } from "@/components/brand/droplet-mark"
 
@@ -91,7 +92,7 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
       </nav>
 
       <div className="border-t border-line pt-4 mt-4 flex flex-col gap-1">
-        <form action={logout}>
+        <form action={logout} onSubmit={clearLocalUserData}>
           <button
             type="submit"
             className={cn(

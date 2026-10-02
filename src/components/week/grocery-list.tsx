@@ -1,5 +1,6 @@
 "use client"
 
+import { ACCOUNT_STATE_APPLIED_EVENT } from "@/lib/client/account-sync"
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { format, parseISO } from "date-fns"
@@ -67,8 +68,18 @@ export function GroceryList({
     function onServingsChange() {
       setServingsPrefs(loadServingsPrefs(userId))
     }
+    // Newer state from her account (another device) replaced the local copy.
+    function onAccountState() {
+      setChecked(loadCheckedGroceryIds(userId, weekStartISO))
+      setOverrides(loadWeekOverrides(userId, weekStartISO))
+      setServingsPrefs(loadServingsPrefs(userId))
+    }
     window.addEventListener(SERVINGS_CHANGED_EVENT, onServingsChange)
-    return () => window.removeEventListener(SERVINGS_CHANGED_EVENT, onServingsChange)
+    window.addEventListener(ACCOUNT_STATE_APPLIED_EVENT, onAccountState)
+    return () => {
+      window.removeEventListener(SERVINGS_CHANGED_EVENT, onServingsChange)
+      window.removeEventListener(ACCOUNT_STATE_APPLIED_EVENT, onAccountState)
+    }
   }, [userId, weekStartISO])
 
   const byId = useMemo(() => new Map(Object.entries(recipesById)), [recipesById])

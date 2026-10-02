@@ -9,6 +9,6 @@ export const config = {
   matcher: [
     // Static assets (incl. the PWA manifest and service worker, which must
     // load on the login screen too) skip the session check entirely.
-    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|offline.html|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 }

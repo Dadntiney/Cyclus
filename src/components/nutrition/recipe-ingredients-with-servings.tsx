@@ -1,5 +1,6 @@
 "use client"
 
+import { ACCOUNT_STATE_APPLIED_EVENT } from "@/lib/client/account-sync"
 import { useEffect, useState } from "react"
 import { IngredientList } from "@/components/nutrition/ingredient-info-sheet"
 import { ServingsStepper } from "@/components/nutrition/servings-stepper"
@@ -39,7 +40,11 @@ export function RecipeIngredientsWithServings({
     }
     refresh()
     window.addEventListener(SERVINGS_CHANGED_EVENT, refresh)
-    return () => window.removeEventListener(SERVINGS_CHANGED_EVENT, refresh)
+    window.addEventListener(ACCOUNT_STATE_APPLIED_EVENT, refresh)
+    return () => {
+      window.removeEventListener(SERVINGS_CHANGED_EVENT, refresh)
+      window.removeEventListener(ACCOUNT_STATE_APPLIED_EVENT, refresh)
+    }
   }, [userId])
 
   const resolved = prefs
