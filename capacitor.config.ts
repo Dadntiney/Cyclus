@@ -2,10 +2,10 @@ import type { CapacitorConfig } from "@capacitor/cli"
 import { BRAND_HEX } from "./src/lib/theme/brand"
 
 // Wraps the LIVE deployed web app rather than a locally bundled copy: the
-// native shell always shows whatever is currently on cyclus-eight.vercel.app,
+// native shell always shows whatever is currently on gofiev.vercel.app,
 // so a normal web deploy (git push -> Vercel) reaches the app immediately —
 // no App Store/Play Store resubmission needed for ordinary content or
-// bug-fix changes. This matches the architecture Cyclus already has
+// bug-fix changes. This matches the architecture GoFiev already has
 // (Next.js Server Components/Actions, cookie-based Supabase auth) far
 // better than bundling a static export would.
 //
@@ -17,7 +17,7 @@ const config: CapacitorConfig = {
   appName: "GoFiev",
   webDir: ".capacitor-empty",
   server: {
-    url: "https://cyclus-eight.vercel.app",
+    url: "https://gofiev.vercel.app",
     // Real https origin already — never allow a plaintext fallback.
     cleartext: false,
   },

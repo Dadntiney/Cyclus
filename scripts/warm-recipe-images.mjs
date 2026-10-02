@@ -158,7 +158,7 @@ async function fetchWikimedia(query) {
     "https://commons.wikimedia.org/w/api.php?action=query&list=search&srnamespace=6&format=json&srlimit=8&origin=*&srsearch=" +
     encodeURIComponent(query)
   const searchRes = await fetch(searchUrl, {
-    headers: { "User-Agent": "CyclusRecipeWarmer/1.1 (https://cyclus-eight.vercel.app; recipe image backfill)" },
+    headers: { "User-Agent": "CyclusRecipeWarmer/1.1 (https://gofiev.vercel.app; recipe image backfill)" },
   })
   if (!searchRes.ok) throw new Error(`Commons search ${searchRes.status}`)
   const searchData = await searchRes.json()
@@ -169,7 +169,7 @@ async function fetchWikimedia(query) {
       "https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url|mime|size&format=json&origin=*&titles=" +
       encodeURIComponent(hit.title)
     const infoRes = await fetch(infoUrl, {
-      headers: { "User-Agent": "CyclusRecipeWarmer/1.1 (https://cyclus-eight.vercel.app; recipe image backfill)" },
+      headers: { "User-Agent": "CyclusRecipeWarmer/1.1 (https://gofiev.vercel.app; recipe image backfill)" },
     })
     if (!infoRes.ok) continue
     const infoData = await infoRes.json()
@@ -178,7 +178,7 @@ async function fetchWikimedia(query) {
     if (!ii?.url || (ii.size && ii.size > 6_000_000)) continue
     if (!(ii.mime || "").startsWith("image/")) continue
     const img = await fetch(ii.url, {
-      headers: { "User-Agent": "CyclusRecipeWarmer/1.1 (https://cyclus-eight.vercel.app; recipe image backfill)" },
+      headers: { "User-Agent": "CyclusRecipeWarmer/1.1 (https://gofiev.vercel.app; recipe image backfill)" },
     })
     if (!img.ok) continue
     const buf = Buffer.from(await img.arrayBuffer())

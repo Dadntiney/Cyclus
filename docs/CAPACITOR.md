@@ -7,7 +7,7 @@ Android Studio (Android) gebeuren.
 
 ## Architectuur: wrapper om de live site, geen aparte build
 
-`capacitor.config.ts` zet `server.url` op `https://cyclus-eight.vercel.app`.
+`capacitor.config.ts` zet `server.url` op `https://gofiev.vercel.app`.
 De app laadt dus altijd de actuele, live website — niet een lokaal gebundelde
 kopie. Dat betekent:
 
