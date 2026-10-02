@@ -1,41 +1,18 @@
-import { Sun, Compass, CalendarHeart, MessageCircleHeart, User } from "lucide-react"
+import { TAB_FEATURES, ownerTab } from "@/lib/navigation/features"
 
 /**
- * Five primary tabs. Ontdek is the home for everything that used to be
- * reachable only via links on Vandaag or Profiel (weekplan, voeding,
- * beweging, mentale rust, slaap, kennis, dagboek) — the usertest showed she
- * couldn't find those back. Toggles stay under Profiel → Wat ik gebruik.
+ * The five primary tabs, derived from the one feature table
+ * (src/lib/navigation/features.ts) so names and icons never drift.
  *
- * Buddy uses MessageCircleHeart in nav-items as the semantic icon; the
- * bottom/side nav still render BuddyGlyph (same Lucide mark) for one source.
+ * Which tab is *active* is not decided here any more: a screen opened from
+ * another tab keeps that tab lit ("tab van herkomst"), see
+ * src/lib/navigation/nav-store.ts. `isNavActive` only answers the canonical
+ * question "who owns this route" (deep link, reload, server render).
  */
-export const NAV_ITEMS = [
-  { href: "/vandaag", label: "Vandaag", icon: Sun, matches: [] },
-  {
-    href: "/ontdek",
-    label: "Ontdek",
-    icon: Compass,
-    matches: [
-      "/deze-week",
-      "/voeding",
-      "/training",
-      "/mentale-rust",
-      "/slaap",
-      "/kennis",
-      "/dagboek",
-      "/favorieten",
-      "/medicatie",
-    ],
-  },
-  { href: "/cyclus", label: "Cyclus", icon: CalendarHeart, matches: [] },
-  { href: "/buddy", label: "Buddy", icon: MessageCircleHeart, matches: [] },
-  { href: "/profiel", label: "Profiel", icon: User, matches: [] },
-] as const
+export const NAV_ITEMS = TAB_FEATURES.map(({ href, label, icon }) => ({ href, label, icon }))
 
-function underPath(path: string, base: string) {
-  return path === base || path.startsWith(`${base}/`)
-}
+export type NavItem = (typeof NAV_ITEMS)[number]
 
-export function isNavActive(path: string, item: (typeof NAV_ITEMS)[number]): boolean {
-  return underPath(path, item.href) || item.matches.some((m: string) => underPath(path, m))
+export function isNavActive(path: string, item: NavItem): boolean {
+  return ownerTab(path) === item.href
 }
