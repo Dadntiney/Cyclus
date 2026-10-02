@@ -22,6 +22,7 @@ export const onboardingSchema = z.object({
   // explicit `false` ("nee"), see the mental_wellbeing migration comment.
   mentalWellbeingEnabled: z.boolean().nullable().optional(),
   mentalWellbeingCategories: z.array(z.string()).default([]),
+  sleepTrackingEnabled: z.boolean().optional(),
   wellnessPreference: z.enum(["natuurlijk", "gebalanceerd", "fitness"]),
   heightCm: z.number().int().min(120).max(220).optional(),
   weightKg: z.number().min(30).max(250).optional(),

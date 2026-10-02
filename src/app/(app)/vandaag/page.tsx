@@ -14,6 +14,7 @@ import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { greeting } from "@/lib/greeting"
+import { estimateNextPeriod } from "@/lib/cycle/next-period"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 
@@ -92,6 +93,13 @@ export default async function VandaagPage() {
   const sleepEnabled = profile?.sleep_tracking_enabled === true
   const hasCycle = Boolean(cycleProfile?.has_cycle)
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
+  const nextPeriod = estimateNextPeriod({
+    lastPeriodStart: cycleProfile?.last_period_start ?? null,
+    averageCycleLength: cycleProfile?.average_cycle_length ?? null,
+    hasCycle,
+    regularity: cycleProfile?.regularity ?? null,
+    lifeStage: cycleProfile?.life_stage ?? null,
+  })
 
   const hasMeaningfulCheckin = Boolean(
     checkin &&
@@ -184,6 +192,7 @@ export default async function VandaagPage() {
                 menstruationSoftHint={menstruationSoftHint}
                 cycleLength={cycleProfile?.average_cycle_length ?? null}
                 periodLength={cycleProfile?.average_period_length ?? null}
+                nextPeriodStart={nextPeriod && nextPeriod.daysUntil >= 0 ? nextPeriod.estimatedStart : null}
               />
             </div>
           ) : hasCycle && isMenstruationActive && menstruationDay ? (

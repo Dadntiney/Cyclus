@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import type { Milestone } from "@/lib/data/profile"
 
@@ -7,6 +8,19 @@ function StatTile({ value, label }: { value: number; label: string }) {
       <p className="font-display text-xl text-ink">{value}</p>
       <p className="text-xs text-ink-soft mt-0.5">{label}</p>
     </div>
+  )
+}
+
+/** A zero reads as failing — show a gentle first step instead of the number. */
+function InviteTile({ text, href, cta }: { text: string; href: string; cta: string }) {
+  return (
+    <Link
+      href={href}
+      className="rounded-2xl border border-dashed border-line px-3.5 py-3 block hover:bg-cream-soft/60 transition-colors"
+    >
+      <p className="text-xs text-ink-soft">{text}</p>
+      <p className="text-sm font-semibold text-sage-dark mt-1">{cta}</p>
+    </Link>
   )
 }
 
@@ -30,13 +44,23 @@ export function ProgressSection({
         Geen scores, geen druk — gewoon een overzicht van wat je al hebt opgebouwd.
       </p>
       <div className="grid grid-cols-2 gap-2.5 mb-4">
-        <StatTile value={totalWorkoutsCompleted} label="voor jezelf gedaan" />
-        <StatTile value={totalCheckins} label="check-ins" />
-        <StatTile
-          value={currentStreak}
-          label={currentStreak === 1 ? "dag bij jezelf" : "dagen bij jezelf"}
-        />
-        <StatTile value={bestStreak} label="langste bij jezelf" />
+        {totalWorkoutsCompleted > 0 ? (
+          <StatTile value={totalWorkoutsCompleted} label="voor jezelf gedaan" />
+        ) : (
+          <InviteTile text="Je eerste moment voor jezelf?" href="/training" cta="Kies een korte beweging" />
+        )}
+        {totalCheckins > 0 ? (
+          <StatTile value={totalCheckins} label="check-ins" />
+        ) : (
+          <InviteTile text="Hoe voel je je vandaag?" href="/vandaag" cta="Doe een check-in" />
+        )}
+        {currentStreak > 0 && (
+          <StatTile
+            value={currentStreak}
+            label={currentStreak === 1 ? "dag bij jezelf" : "dagen bij jezelf"}
+          />
+        )}
+        {bestStreak > 0 && <StatTile value={bestStreak} label="langste bij jezelf" />}
       </div>
 
       {milestones.length > 0 ? (
