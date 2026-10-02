@@ -54,8 +54,9 @@ Regels:
 - `danger` nooit voor menstruatie of een fase; menstruatie = `phase-menstruatie-*`.
 - Validatie en fouten altijd `danger` (rand + `role="alert"`-regel), nooit een fasekleur.
 - Contrast `line-strong`: licht 3,3:1 op surface en 3,0:1 op cream; Nacht 3,4:1
-  op surface en 3,2:1 op surface-elevated. Op `cream-soft` haalt hij geen 3:1:
-  **nooit omlijnde chips op cream-soft**.
+  op surface en 3,2:1 op surface-elevated. Op `cream-soft` (ook `Card tone="subtle"`
+  en de segmented-track) haalt hij in licht geen 3:1 (2,8:1):
+  **geen velden, checkboxes, switches of omlijnde chips op cream-soft**.
 - Kalender: "vandaag" = stip onder het nummer of vette inkt, **geen ring**
   (ring = focus/selectie).
 
@@ -275,8 +276,15 @@ interactief; een verwijderbaar filter is `<Chip removable>`.
 
 Gedrag: alle radiogroepen gebruiken `useRovingRadio` — **één tabstop per
 groep**, pijltjes verplaatsen én kiezen, Home/End springen, Spatie/Enter kiezen.
-`ChipRadioGroup columns={4}` valt onder 360px terug op 2 kolommen; chips in een
-raster (`fill`) houden hun breedte (vinkje als hoekje). Testen op 320 en 390px.
+`ChipRadioGroup columns={4}` valt terug op 2 kolommen zodra het breedste label
+niet in een cel past. Dat wordt gemeten tegen de echte breedte van de groep
+(ook in een kaart of sheet) en opnieuw bij draaien of als het lettertype
+binnenkomt; vóór de meting (server) geldt "4 kolommen vanaf 360px". Zo krijgt
+flow ("Gemiddeld") 2×2 op een telefoon en klachtenlast ("Ernstig") 4 naast
+elkaar vanaf 360px. `columns={2|3}` meet niet: houd die labels kort (bij 3
+kolommen op 320px ≈ 10 tekens), anders `OptionList`. Chips in een raster
+(`fill`) breken nooit af en houden hun breedte (vinkje als hoekje). Testen op
+320 en 390px.
 Chip zonder `role="radio"` = toggle (`aria-pressed`).
 
 ### 10.4 Lijsten
@@ -293,7 +301,9 @@ Chip zonder `role="radio"` = toggle (`aria-pressed`).
 Rij: icoontegel 36px (`rounded-inset bg-sage-soft text-sage-dark`, `ICON.sm`),
 titel 17/500, beschrijving 15 ink-soft (max. 2 regels), rechts één van
 chevron / waarde / Switch / Badge. Met `toggle` is de hele rij tikbaar en heet
-de switch zoals de titel. Groepslabel is standaard een h2 (`labelAs`).
+de switch zoals de titel. Groepslabel is standaard een h2 (`labelAs`). Op een
+smal scherm wijkt de waarde (wordt afgekapt met …), nooit de titel; houd
+waarden kort ("Automatisch", "Aan", "3 per week").
 
 ### 10.5 Uitklappen
 
@@ -305,6 +315,8 @@ de switch zoals de titel. Groepslabel is standaard een h2 (`labelAs`).
 
 Eén triggerstijl (15/500 sage-dark, chevron 16 die draait, 44px). De inhoud
 blijft gemount en is `inert` als hij dicht is; padding hoort *binnen* `Collapse`.
+Een dichte `Collapse` is 0px hoog maar telt in een `flex`/`grid` met `gap` nog
+als item (dus één extra gap): zet hem dan samen met zijn kop in één wrapper.
 `Expandable` (oud) werkt nog en rendert nu `Disclosure`.
 
 ### 10.6 Velden
@@ -365,8 +377,10 @@ Overlay alleen voor een korte taak of keuze. Bevestig verwijderen met
 EmptyState: altijd plat (nooit in een Card), icoon 24 in een sage-soft cirkel
 van 56, titel `type-card-title` (h2; `titleAs`), **altijd een actie**. Geef het
 icoon als component (`icon={Heart}`); een element werkt nog maar krijgt geen
-cirkel. In een Server Component mag dat gewoon; vanuit een Client Component
-naar een Server Component geef je geen componenten door.
+cirkel. `EmptyState` is geen Client Component, dus vanuit een Server Component
+geef je gewoon `icon={Heart}` mee. Zit hij binnen een Client Component, importeer
+het icoon dan dáár: een Server Component kan geen component (functie) als prop
+aan een Client Component doorgeven. Hetzelfde geldt voor `ListRow icon`.
 
 SkeletonPage spiegelt `<Page>` + `<PageHeader>` (zelfde container, titelhoogte
 en `mb-6`), zodat de kop niet springt. `ActionToast` alleen voor een korte
