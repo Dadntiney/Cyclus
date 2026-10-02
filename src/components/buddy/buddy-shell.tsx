@@ -26,8 +26,16 @@ export function BuddyShell({ children }: { children: ReactNode }) {
     const body = document.body
     const prevHtmlOverflow = html.style.overflow
     const prevBodyOverflow = body.style.overflow
+    const prevHtmlOverscroll = html.style.overscrollBehaviorY
+    const prevBodyOverscroll = body.style.overscrollBehaviorY
     html.style.overflow = "hidden"
     body.style.overflow = "hidden"
+    // The app allows a native elastic edge on the document (globals.css).
+    // Buddy's document is locked, so keep it rigid here: a rubber-band on the
+    // root would shift the visual viewport the shell is sized from. The
+    // message list keeps its own native bounce (overscroll-contain).
+    html.style.overscrollBehaviorY = "none"
+    body.style.overscrollBehaviorY = "none"
 
     const pinScroll = () => {
       if (window.scrollY !== 0 || window.scrollX !== 0) {
@@ -40,6 +48,8 @@ export function BuddyShell({ children }: { children: ReactNode }) {
     return () => {
       html.style.overflow = prevHtmlOverflow
       body.style.overflow = prevBodyOverflow
+      html.style.overscrollBehaviorY = prevHtmlOverscroll
+      body.style.overscrollBehaviorY = prevBodyOverscroll
       window.removeEventListener("scroll", pinScroll)
     }
   }, [])
