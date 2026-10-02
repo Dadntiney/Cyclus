@@ -49,7 +49,7 @@ export function VandaagCheckinSlot({
   }, [])
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div style={{ order: preferEarly ? 1 : 3 }}>
         <CheckinForm
           initial={initial}
@@ -65,7 +65,7 @@ export function VandaagCheckinSlot({
       <div style={{ order: preferEarly ? 3 : 2 }} className="empty:hidden">
         {plan}
       </div>
-      <div style={{ order: 4 }} className="flex flex-col gap-4 pt-1">
+      <div style={{ order: 4 }} className="flex flex-col gap-8">
         {lateExtras}
       </div>
     </div>

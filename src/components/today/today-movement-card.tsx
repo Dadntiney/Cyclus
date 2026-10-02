@@ -59,8 +59,8 @@ export function TodayMovementCard({
   const shell = embedded
     ? "px-4 pt-4 pb-3"
     : emphasis === "primary"
-      ? "rounded-3xl bg-sage-soft/70 p-4"
-      : "rounded-3xl bg-sage-soft/50 p-3.5"
+      ? "rounded-[1.25rem] bg-surface border border-line p-4"
+      : "rounded-[1.25rem] bg-surface border border-line p-3.5"
 
   const [override, setOverride] = useState<DayOverride | null>(null)
   const [swapping, setSwapping] = useState(false)
@@ -105,7 +105,7 @@ export function TodayMovementCard({
     return (
       <div className={shell}>
         <div className="flex items-start gap-3">
-          <span className="h-10 w-10 rounded-full bg-surface/70 flex items-center justify-center shrink-0">
+          <span className="h-10 w-10 rounded-full bg-sage-soft flex items-center justify-center shrink-0">
             <Check className="h-5 w-5 text-sage-dark" strokeWidth={2} />
           </span>
           <div className="min-w-0 flex-1">
@@ -149,7 +149,7 @@ export function TodayMovementCard({
     return (
       <div className={shell}>
         <div className="flex items-center gap-3">
-          <span className="h-14 w-14 rounded-xl bg-surface/70 flex items-center justify-center shrink-0">
+          <span className="h-14 w-14 rounded-xl bg-sage-soft flex items-center justify-center shrink-0">
             <Moon className="h-5 w-5 text-ink-soft" strokeWidth={1.75} />
           </span>
           <div className="min-w-0">
@@ -298,7 +298,7 @@ export function TodayMovementCard({
                         duration: alt.duration,
                       })
                     }
-                    className="text-left text-sm text-ink rounded-xl px-3 py-2.5 min-h-11 bg-surface/70 hover:bg-surface transition-colors touch-manipulation flex items-center justify-between gap-2"
+                    className="text-left text-sm text-ink rounded-xl px-3 py-2.5 min-h-11 bg-cream-soft hover:bg-sage-soft transition-colors touch-manipulation flex items-center justify-between gap-2"
                   >
                     <span className="truncate">{alt.title}</span>
                     <span className="text-xs text-ink-soft shrink-0">{alt.duration} min</span>

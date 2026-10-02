@@ -287,7 +287,7 @@ function AdjustIconButton({
       aria-expanded={expanded}
       className={cn(
         "shrink-0 h-11 w-11 inline-flex items-center justify-center rounded-xl touch-manipulation transition-colors",
-        expanded ? "bg-surface text-sage-dark" : "text-ink-soft hover:text-sage-dark",
+        expanded ? "bg-sage-soft text-sage-dark" : "text-ink-soft hover:text-sage-dark",
       )}
     >
       <SlidersHorizontal className="h-4 w-4" strokeWidth={1.75} />
@@ -325,7 +325,7 @@ function MealAdjustPanel({
             onClick={() =>
               onApply({ type: "swap-meal", slot, recipeId: alt.id, title: alt.title })
             }
-            className="text-left text-sm text-ink rounded-xl px-3 py-2.5 min-h-11 bg-surface/70 hover:bg-surface transition-colors touch-manipulation flex items-center justify-between gap-2"
+            className="text-left text-sm text-ink rounded-xl px-3 py-2.5 min-h-11 bg-cream-soft hover:bg-sage-soft transition-colors touch-manipulation flex items-center justify-between gap-2"
           >
             <span className="truncate">{alt.title}</span>
             {alt.preparation_time != null && (
