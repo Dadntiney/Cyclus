@@ -30,11 +30,13 @@ export function Checkbox({
   className,
   id,
   disabled,
+  "aria-describedby": ariaDescribedBy,
   ...inputProps
 }: CheckboxProps) {
   const autoId = useId()
   const inputId = id ?? autoId
   const descriptionId = description ? `${inputId}-desc` : undefined
+  const describedBy = [ariaDescribedBy, descriptionId].filter(Boolean).join(" ") || undefined
 
   return (
     <label
@@ -49,7 +51,7 @@ export function Checkbox({
         id={inputId}
         type="checkbox"
         disabled={disabled}
-        aria-describedby={descriptionId}
+        aria-describedby={describedBy}
         onChange={(e) => {
           onChange?.(e)
           onCheckedChange?.(e.target.checked)
