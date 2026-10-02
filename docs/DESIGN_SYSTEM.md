@@ -435,14 +435,253 @@ bevestiging op dezelfde plek; meldingen voor de hele app gaan via de toast-host
 | `scroll-mt-24` | `scroll-mt-4` (de app-balk zit in `scroll-padding-top`) |
 | `overflow-x-auto -mx-5 px-5` chiprij | `scroller-bleed` |
 
-## 12. Navigatie: tab van herkomst
+## 12. Navigatie en paginaskelet
 
-_Deze sectie vult de shell-stroom (foundation-shell) aan met de navigatiestore,
-`<Page>`, `<PageHeader>`, `useAppBarTitle`, `<AppBarConfig>`, de toast-host en
-`StickyActionBar`._
+De shell (foundation-shell) levert het frame om elke pagina: app-balk,
+tabbalk, sidebar, paginaovergang, toasts en de bouwstenen `<Page>` en
+`<PageHeader>`. Pagina's vullen alleen hun inhoud; de rest volgt vanzelf.
 
-Afgesproken regel (ontwerpvisie §4.3, besluit 13): een scherm dat je met een
-push opent, erft de tab van het scherm waar je vandaan kwam; alleen een tik op
-de tabbalk wisselt van tab. Bij een deep link, pushmelding of herladen zonder
-geschiedenis geldt de canonieke eigenaar van de route. Een keten zoals Profiel →
-Wat ik gebruik → bibliotheek blijft dus onder Profiel — zo bedoeld.
+### 12.1 Eén bron voor namen: `@/lib/navigation/features`
+
+`FEATURES` bevat per bestemming de ene **naam, icoon, URL en eigenaar-tab**.
+Die naam is overal dezelfde: linktekst = h1 = titel in de app-balk = terug-label
+op het volgende scherm. Typ namen dus niet met de hand, maar importeer ze.
+
+```ts
+import { FEATURES, ownerTab, titleForPath, parentOf, isTabRoot } from "@/lib/navigation/features"
+
+FEATURES.mentaleRust.label        // "Mentale rust"
+FEATURES.week.linkLabel           // "Hele week" (contextuele link; de h1 blijft "Deze week")
+ownerTab("/voeding/abc")          // "/ontdek"  — canonieke tab (deep link, server)
+titleForPath("/profiel/cyclus")   // "Cyclusinstellingen"; null voor dynamische pagina's
+parentOf("/cyclus/overgang")      // { href: "/cyclus", label: "Cyclus" } — fallback zonder geschiedenis
+isTabRoot("/profiel")             // true
+```
+
+- `NAV_ITEMS` (`@/components/nav/nav-items`) wordt hieruit afgeleid en blijft
+  werken; `isNavActive(path, item)` = `ownerTab(path) === item.href`.
+- Een nieuwe vaste bestemming? Voeg haar toe aan `FEATURES` (en een nieuw
+  URL-voorvoegsel aan de eigenaarstabel in hetzelfde bestand). Dynamische
+  pagina's (recept, artikel) staan er niet in; die geven hun titel zelf op.
+
+### 12.2 Tab van herkomst (besluit 13)
+
+Afgesproken regel (ontwerpvisie §4.3): een scherm dat je met een push opent,
+erft de tab van het scherm waar je vandaan kwam; alleen een tik op de tabbalk
+wisselt van tab. Bij een deep link, pushmelding of herladen zonder
+geschiedenis geldt de canonieke eigenaar van de route (`ownerTab`). Een keten
+zoals Profiel → Wat ik gebruik → bibliotheek blijft dus onder Profiel — zo
+bedoeld.
+
+Zo werkt het: de navigatiestore (`@/lib/navigation/nav-store`) omhult
+`history.pushState`/`replaceState` één keer en luistert naar `popstate`
+(besluit 7). Elke stap is dus push, replace, terug of vooruit — zonder
+gokken. De stapel (pad, tab, titel) staat in `sessionStorage`, zodat
+herladen de tab bewaart. Op de server en in de eerste frame geldt
+`ownerTab`; daarna corrigeert de client in één frame (besluit 8).
+
+Hooks voor eigen chrome (meestal niet nodig): `useActiveTab(pathname)`,
+`useBackTarget(pathname, fallback)`, `useNavState()` uit
+`@/lib/navigation/hooks`.
+
+### 12.3 `<Page>` en `<PageHeader>`
+
+```tsx
+// page.tsx (Server Component)
+export const metadata: Metadata = { title: "Slaap" }
+
+export default async function SlaapPage() {
+  return (
+    <Page>                                           {/* width="wide" voor recept/detail */}
+      <PageHeader
+        title="Slaap"
+        eyebrow="Cyclus"                             // optioneel
+        subtitle="Hoe je slaapt en wat kan helpen."  // of description=
+        action={<IconButton label="Instellingen" icon={Settings2} href="/profiel/gebruik" />}
+        actions={<Button size="sm">Nacht toevoegen</Button>}
+      />
+      <PageSections>…secties met <SectionHeader>…</PageSections>
+    </Page>
+  )
+}
+```
+
+- **`<Page width as className>`** — container: `max-w-2xl` (content) of
+  `max-w-6xl` (`width="wide"`), `px-5 pt-4 pb-8`, op `lg` `px-8 pt-10`.
+  `<PageSections>` = kolom met 32px tussen secties.
+- **`<PageHeader>`** — de enige paginakop, ritme exact volgens §5.4:
+  16px vanaf de app-balk (`pt-4` van Page) → eyebrow (`mb-1`) → h1
+  `type-page-title` → subtitle (`mt-1`, 15px ink-soft) → **24px** naar de
+  inhoud (`mb-6`). Op md+ staat er een terugknop boven (alleen buiten
+  tab-roots); `media` (recept-hero) komt vóór de eyebrow (`mb-5`).
+- Props:
+  - `title` (h1; als string ook de compacte titel en het terug-label),
+    `compactTitle` (korte naam als de h1 lang of geen string is:
+    "Goedemiddag, Testa" → "Vandaag").
+  - `action` — de ene kopactie (44px doel: `IconButton` of `textActionClass`).
+    Mobiel staat hij rechts in de app-balk, op md+ naast de h1.
+  - `inlineAction` — blijft op elk formaat naast de h1 (het bewaar-hartje
+    van een recept, besluit 12); gaat niet naar de app-balk.
+  - `actions` — knoppen op paginaniveau onder de subtitle.
+  - `back` — fallback voor "‹ Vorige" zonder geschiedenis; standaard
+    `parentOf(pathname)`. `false` = geen terug op dit scherm.
+  - `titleId` voor `aria-labelledby`, `className`.
+- De h1 heeft `tabIndex={-1}` en `data-focus-target`: na een push zet
+  PageTransition de focus erop (zonder ring, zonder scroll).
+- **Titelregel (H7):** elke pagina exporteert `metadata = { title: "…" }` of
+  `generateMetadata`. De root-layout maakt daar "`<titel> · GoFiev`" van
+  (`title.template`); zonder titel blijft het
+  "GoFiev — Jouw lichaam. Jouw ritme. Jouw dag.". Gebruik dezelfde naam als de
+  h1 (bij vaste bestemmingen: `FEATURES.x.label`).
+- `SkeletonPage` spiegelt Page + PageHeader; houd `loading.tsx` daarmee in lijn.
+
+### 12.4 De app-balk (mobiel)
+
+Vaste rij van 48px onder de safe area, volledig ondoorzichtig, publiceert
+`--mobile-header-h` (md+ = 0, daar is de sidebar). Links "‹ Vorige", midden de
+compacte titel, rechts hoogstens één actie. Geen logo.
+
+- **Compacte titel**: `AppBarConfig.title` → vaste naam (`titleForPath`) →
+  tekst van de eerste `main h1`. Hij vervaagt in zodra de grote titel onder de
+  balk schuift; zonder h1 staat hij er meteen. Een pagina zonder PageHeader
+  hoeft dus niets te doen zolang ze één h1 in `main` heeft.
+- **Terug-label** = de echte titel van het vorige scherm (geregistreerde
+  titel > vaste naam > geobserveerde h1), langer dan 18 tekens → "Terug".
+  Met geschiedenis doet de knop `router.back()`. Zonder geschiedenis (deep link)
+  wordt het een link met **replace** naar de logische ouder — er komt nooit
+  een extra stap op de stapel.
+- Op tab-roots geen terugknop. Een hairline verschijnt zodra er gescrold is.
+
+```tsx
+// Scherm zonder PageHeader (Buddy, trainingssessie, wizardstap):
+<AppBarConfig title="Buddy" alwaysShowTitle action={<IconButton label="Over Buddy" icon={Info} onClick={open} />} />
+<AppBarConfig leading={<Button variant="ghost" size="sm" onClick={askStop}>Stoppen</Button>} title="1 van 3" alwaysShowTitle />
+
+// Eigen grote titel (Profiel-hero): compacte titel vervaagt in als ref onder de balk schuift.
+const ref = useRef<HTMLHeadingElement>(null)
+useAppBarTitle(ref, "Profiel")
+```
+
+`AppBarConfig`-velden: `title`, `back` (`{href,label}` of `false`), `leading`
+(vervangt de terugknop), `action`, `alwaysShowTitle`, `divider`, `titleRef`.
+Per veld wint `AppBarConfig` van `PageHeader`, en die van `BackButton`.
+Op een Buddy-achtige pagina mag de h1 `sr-only md:not-sr-only` zijn, mét
+`AppBarConfig alwaysShowTitle`.
+
+### 12.5 Terug en verlaten
+
+- **`<BackButton href label />`** (`@/components/ui/back-button`) blijft werken,
+  maar is binnen de app alleen op md+ zichtbaar; mobiel meldt hij zich bij de
+  app-balk aan. `href`/`label` zijn alleen de fallback zonder geschiedenis — het
+  zichtbare label komt van het echte vorige scherm. Nieuwe pagina's laten de
+  BackButton weg en gebruiken `PageHeader` (eventueel `back={…}`).
+- **Nooit een push naar een ouder** om "terug" te doen (`router.push("/profiel")`
+  na opslaan zet een extra stap op de stapel). Gebruik:
+
+```ts
+import { goBackOr, replaceTo, hasHistory } from "@/lib/navigation/nav-store"
+import { leaveFlow } from "@/lib/client/navigation-depth"
+
+goBackOr(router, "/training")   // terug met geschiedenis, anders replace naar de fallback
+leaveFlow(router, "/training")  // zelfde (bestaande API, blijft)
+replaceTo(router, "/vandaag")   // flow afronden zonder dat terug weer in de flow belandt
+hasHistory()                    // is er een vorig scherm binnen de app?
+```
+
+`hasNavigatedInApp()` bestaat nog en betekent nu "er is een vorig scherm in
+de app"; `markNavigation()` is een no-op.
+
+### 12.6 Paginaovergang, scroll en ankers
+
+- Push naar een niet-tab-scherm: alleen opacity .92 → 1 in 160ms
+  (`animate-page-push`, geen blijvende fill; uit bij reduced motion).
+  Terug, vooruit en tabwissel: geen animatie.
+- Na een push begint de pagina bovenaan; bij terug herstelt de browser de
+  scrollpositie. Na een push gaat de focus naar de h1 (alleen als de focus nog
+  niet in `main` zit).
+- **Ankers (besluit 11):** een doel krijgt alleen `scroll-mt-4`. De hoogte van
+  de app-balk zit in `html { scroll-padding-top: var(--mobile-header-h) }` —
+  dat is de enige offset. Geen `scroll-mt-24` of eigen pixels.
+- Pull-to-refresh en `overscroll-behavior-y: contain` blijven staan; een
+  element dat zelf scrolt of sleept, zet `data-no-pull-refresh`.
+
+### 12.7 Toasts
+
+```ts
+import { toast } from "@/components/ui/toast"
+
+toast.show({ title: "Bewaard bij je favorieten", action: { label: "Bekijk", href: "/favorieten" } })
+toast.show({ title: "Notitie verwijderd", action: { label: "Ongedaan maken", onClick: undo } })
+toast.show({ title: "Opgeslagen" })               // 4s
+toast.dismiss()
+```
+
+- Eén tegelijk (de nieuwste vervangt), `title` (of `message`), optioneel één
+  `action` (`href` of `onClick`), `duration` (standaard 4000ms; met actie
+  minstens 6000ms). Pauzeert bij hover, focus en een verborgen tabblad.
+- Positie: 12px boven de tabbalk én boven een `StickyActionBar`, nooit onder
+  de safe area; op md+ 24px boven de onderrand, gecentreerd boven de
+  inhoudskolom (niet over de sidebar). `role="status"`,
+  `aria-live="polite"`.
+- De host staat in de root-layout, in `#toast-layer` naast `#app-root`: een
+  open sheet of dialog maakt de app inert, maar toasts blijven zichtbaar en
+  bedienbaar, boven de scrim (`z-60`).
+- Een eigen zwevende melding (autosave-pill, herinneringen) portal je met
+  `<ToastLayer>…</ToastLayer>` in dezelfde laag, met `[data-toast-region]` voor
+  dezelfde positie. `ActionToast` blijft voor een korte bevestiging op dezelfde
+  plek in de pagina.
+
+### 12.8 Immersief scherm en `StickyActionBar`
+
+```tsx
+"use client"
+useImmersive()                          // tabbalk + sidebar opzij, app-balk blijft ("✕ Stoppen" erin)
+useImmersive(isRunning, { appBar: "hide" })  // ook de app-balk weg (alleen safe-area-strook)
+
+<Page>
+  …stap…
+  <StickyActionBar>
+    <Button className="w-full" onClick={next}>Klaar, volgende</Button>
+  </StickyActionBar>
+</Page>
+```
+
+- `useImmersive(active = true, { appBar: "keep" | "hide" })` is ref-counted en
+  ruimt zichzelf op bij unmount; zet `html[data-immersive]`. Voor een
+  trainingssessie, de medicatie-wizard en andere flows met een duidelijk einde.
+  Lezen kan met `useImmersiveActive()`.
+- `StickyActionBar` houdt de hoofdactie in de duimzone: plakt direct boven de
+  tabbalk, of boven de safe area als die (immersief, toetsenbord) weg is.
+  Ondoorzichtig cream met hairline, loopt tot de paginarand (`bleed={false}`
+  binnen een kaart). Publiceert `--sticky-action-h`, zodat toasts erboven komen.
+- **Plaats hem als direct kind van `<Page>`** (of een even hoge container):
+  `sticky` werkt alleen binnen de ouder; in een korte wrapper scrolt hij mee weg.
+
+### 12.9 Lagen en wortels
+
+| Laag | z-index |
+|---|---|
+| StickyActionBar | 20 |
+| Tabbalk (mobiel) | 30 |
+| App-balk (mobiel) | 40 |
+| Overlays (BottomSheet, Dialog) + scrim | 50 |
+| Toasts (`#toast-layer`) | 60 |
+
+- `#app-root` is de wortel van de app-inhoud (`(app)/layout.tsx`); overlays
+  maken hem `inert`. Overlays en toasts staan daarbuiten, direct in `body`.
+- De sidebar (md+) is sticky en blijft altijd zichtbaar; kolommen op xl zijn
+  níét sticky (besluit 28). Uitloggen staat alleen in Profiel.
+- Tabbalk en sidebar verdwijnen in immersieve modus; de tabbalk ook zolang het
+  toetsenbord open is (`--bottom-nav-h` wordt dan 0).
+
+### 12.10 Checklist voor pagina-stromen
+
+- [ ] `export const metadata = { title }` (of `generateMetadata`) met de naam uit `FEATURES`.
+- [ ] `<Page>` + `<PageHeader>`; geen eigen container, h1-classes of `mb-*` rond de kop.
+- [ ] Geen `<BackButton>` meer nodig; hooguit `back={…}` als de logische ouder afwijkt.
+- [ ] Kopactie via `action`, blijvende actie naast de titel via `inlineAction`.
+- [ ] Geen `router.push` naar een ouder; gebruik `goBackOr`, `replaceTo` of `leaveFlow`.
+- [ ] Ankers alleen `scroll-mt-4`.
+- [ ] Meldingen via `toast.show`; eigen zwevende UI in `<ToastLayer>`.
+- [ ] Flow met een einde: `useImmersive()` + `StickyActionBar` als direct kind van `<Page>`.
+- [ ] Scherm zonder zichtbare h1: `<AppBarConfig title alwaysShowTitle />`.
