@@ -123,18 +123,22 @@ export function ListRow({
   const body = (
     <>
       {icon && renderTile(icon)}
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+      {/* No min-w-0: the title keeps at least its longest word, so on a
+          narrow phone the value gives way (truncates) instead of running
+          into the title ("Weergave" · "Automatisch" at 320px). The
+          description may break anywhere, so it never widens the row. */}
+      <span className="flex flex-1 flex-col gap-0.5">
         <span id={titleId} className={cn("text-base font-medium", muted ? "text-ink-soft" : "text-ink")}>
           {title}
         </span>
         {description && (
-          <span id={descriptionId} className="text-sm text-ink-soft line-clamp-2">
+          <span id={descriptionId} className="text-sm text-ink-soft line-clamp-2 wrap-anywhere">
             {description}
           </span>
         )}
       </span>
       {value !== undefined && value !== null && (
-        <span className="shrink-0 text-sm text-ink-soft text-right">{value}</span>
+        <span className="min-w-0 truncate text-sm text-ink-soft text-right">{value}</span>
       )}
       {badge && <span className="shrink-0">{badge}</span>}
       {toggle && (

@@ -79,7 +79,7 @@ export function BottomSheet({
       >
         <FrozenContent key={contentKey} frozen={exiting}>
           <div className="mx-auto mt-2.5 h-1.5 w-10 shrink-0 rounded-full bg-line sm:hidden" aria-hidden="true" />
-          <div className="flex shrink-0 items-center justify-between gap-3 pl-5 pr-3 pt-2 pb-1">
+          <div className="flex shrink-0 items-center justify-between gap-3 pl-5 pr-3 pt-2">
             {title && (
               <h2 id={titleId} ref={titleRef} tabIndex={-1} data-focus-target="" className="type-card-title text-ink">
                 {title}
@@ -87,7 +87,9 @@ export function BottomSheet({
             )}
             <IconButton label="Sluiten" icon={X} onClick={onClose} className="ml-auto" />
           </div>
-          <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-2">{children}</div>
+          {/* pt-1/px-5 keep room for the focus outline of the first field or
+              button: this scroller would clip it otherwise. */}
+          <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pt-1 pb-2">{children}</div>
           {footer && <div className="shrink-0 px-5 pt-3">{footer}</div>}
         </FrozenContent>
       </div>
