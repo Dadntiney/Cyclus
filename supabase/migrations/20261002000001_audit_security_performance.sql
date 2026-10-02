@@ -1,6 +1,9 @@
 -- Security + performance hardening, prepared during the 2026-10-02 audit.
 --
--- NOT YET APPLIED to the live project. Apply only after explicit approval.
+-- Applied to the live project on 2026-10-02 (with the owner's approval) as
+-- audit_security_part1 + audit_rls_initplan_part1..3. Part 4 (avatars) has
+-- to be run from the Supabase SQL editor: the MCP connection times out on
+-- storage.objects.
 -- Every statement is non-destructive: no table, column or row is removed or
 -- changed, and every policy keeps exactly the same meaning ("only your own
 -- rows"). Safe to run more than once.
