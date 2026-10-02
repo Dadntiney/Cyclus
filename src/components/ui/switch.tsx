@@ -32,7 +32,7 @@ export function Switch({ checked, onChange, disabled, "aria-label": ariaLabel }:
     >
       <span
         className={cn(
-          "absolute top-0.5 left-0.5 h-7 w-7 rounded-full bg-surface shadow-sm transition-transform duration-200 motion-reduce:transition-none",
+          "absolute top-0.5 left-0.5 h-7 w-7 rounded-full bg-white shadow-sm transition-transform duration-200 motion-reduce:transition-none",
           checked && "translate-x-5",
         )}
       />

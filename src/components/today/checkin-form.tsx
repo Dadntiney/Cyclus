@@ -433,19 +433,19 @@ export function CheckinForm({
     return (
       <section
         aria-labelledby="checkin-heading"
-        className="rounded-3xl bg-sage-soft/55 px-4 py-4"
+        className="rounded-[1.25rem] bg-surface border border-line px-4 py-4"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <h2 id="checkin-heading" className="font-display text-base text-ink leading-tight">
+              <h2 id="checkin-heading" className="font-display text-lg text-ink leading-tight">
                 Hoe voel je je?
               </h2>
               <CheckinStatusHint status={status} errorMsg={errorMsg} />
             </div>
             <div className="flex flex-wrap gap-1.5">
               {visible.map((chip) => (
-                <span key={chip} className="text-xs text-ink bg-surface/70 rounded-full px-2.5 py-1">
+                <span key={chip} className="text-xs text-ink bg-cream-soft rounded-full px-2.5 py-1">
                   {chip}
                 </span>
               ))}
@@ -475,11 +475,11 @@ export function CheckinForm({
   return (
     <section
       aria-labelledby="checkin-heading"
-      className="rounded-3xl bg-sage-soft/55 px-4 py-4"
+      className="rounded-[1.25rem] bg-surface border border-line px-4 py-4"
     >
       <div className="flex items-start justify-between gap-3 mb-1">
         <div className="flex items-center gap-2 flex-wrap min-w-0">
-          <h2 id="checkin-heading" className="font-display text-lg text-ink">
+          <h2 id="checkin-heading" className="font-display text-xl text-ink">
             Hoe voel je je?
           </h2>
           <CheckinStatusHint status={status} errorMsg={errorMsg} />
@@ -603,7 +603,7 @@ export function CheckinForm({
               <button
                 type="button"
                 onClick={finishEditing}
-                className="w-full inline-flex items-center justify-center gap-1.5 min-h-11 rounded-xl bg-surface text-sm font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                className="w-full inline-flex items-center justify-center gap-1.5 min-h-11 rounded-full bg-sage-soft text-sm font-semibold text-sage-darker touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
               >
                 Klaar
                 <ChevronUp className="h-4 w-4" strokeWidth={2} />

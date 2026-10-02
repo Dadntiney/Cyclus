@@ -142,7 +142,7 @@ export function PeriScoreForm({
 
       {history.length > 0 && (
         <Card>
-          <h3 className="font-display text-lg text-ink mb-1">Eerdere metingen</h3>
+          <h3 className="font-display text-xl text-ink mb-1">Eerdere metingen</h3>
           <p className="text-xs text-ink-soft mb-3">Lager is lichter — scores van 0 tot 100.</p>
           {history.length >= 2 && (
             <div className="mb-4">

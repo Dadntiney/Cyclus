@@ -34,7 +34,7 @@ export function SleepCard({
 
   return (
     <>
-      <div className="rounded-3xl bg-sage-soft/55 overflow-hidden">
+      <div className="rounded-[1.25rem] bg-surface border border-line overflow-hidden">
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -42,7 +42,7 @@ export function SleepCard({
         >
           <div className="flex items-center gap-3">
             <span
-              className="shrink-0 h-10 w-10 rounded-full bg-surface/70 flex items-center justify-center"
+              className="shrink-0 h-10 w-10 rounded-full bg-sage-soft flex items-center justify-center"
               aria-hidden
             >
               <Moon className="h-4.5 w-4.5 text-sage-dark" strokeWidth={1.75} />

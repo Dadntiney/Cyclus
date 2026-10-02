@@ -151,7 +151,7 @@ export function Calendar({
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <p className="font-display text-base text-ink capitalize">
+        <p className="font-display text-lg text-ink capitalize">
           {format(month, "MMMM yyyy", { locale: nl })}
         </p>
         <button
@@ -193,7 +193,7 @@ export function Calendar({
                 "relative h-11 rounded-full text-sm mx-auto w-11 flex items-center justify-center transition-colors touch-manipulation",
                 isSameMonth(day, month) ? "text-ink" : "text-ink-soft/40",
                 isMenstruation && "bg-phase-menstruatie text-phase-menstruatie-text font-medium",
-                !isMenstruation && isAmsterdamToday && "border border-sage text-sage-dark font-medium",
+                !isMenstruation && isAmsterdamToday && "border-2 border-sage-dark text-sage-dark font-semibold",
                 !isMenstruation && !isAmsterdamToday && "hover:bg-cream-soft",
                 future && "opacity-30 cursor-not-allowed",
                 isPending && pendingDate === iso && "opacity-60",
@@ -261,7 +261,7 @@ export function Calendar({
                   "rounded-full border px-3.5 py-2.5 min-h-11 text-sm font-medium touch-manipulation transition-colors",
                   flowByDate.get(flowPickerDate) === opt.value
                     ? "bg-sage-fill text-white border-sage-dark"
-                    : "bg-sage-soft/50 text-ink border-transparent hover:bg-sage-soft",
+                    : "bg-surface text-ink border-line hover:border-ink/30",
                 )}
               >
                 <span className="mr-1 inline-flex items-center" aria-hidden>

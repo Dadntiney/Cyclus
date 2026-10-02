@@ -155,9 +155,9 @@ export default async function VandaagPage() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <header className="mb-5">
+        <header className="mb-8">
           <div className="flex items-start justify-between gap-3">
-            <h1 className="font-display text-2xl lg:text-3xl text-ink tracking-tight min-w-0">
+            <h1 className="font-display text-3xl lg:text-4xl text-ink min-w-0 pt-1">
               {greeting()}
               {profile?.name ? `, ${profile.name}` : ""}
             </h1>
@@ -171,7 +171,7 @@ export default async function VandaagPage() {
           </div>
 
           {cycleEstimate && tone ? (
-            <div className="mt-3">
+            <div className="mt-5">
               <PhaseContextCard
                 phase={cycleEstimate.phase}
                 phaseLabel={cycleEstimate.phaseLabel}
@@ -182,6 +182,8 @@ export default async function VandaagPage() {
                 menstruationDay={menstruationDay}
                 predictedMenstruation={predictedMenstruation}
                 menstruationSoftHint={menstruationSoftHint}
+                cycleLength={cycleProfile?.average_cycle_length ?? null}
+                periodLength={cycleProfile?.average_period_length ?? null}
               />
             </div>
           ) : hasCycle && isMenstruationActive && menstruationDay ? (
@@ -208,12 +210,6 @@ export default async function VandaagPage() {
             </div>
           )}
         </header>
-
-        {buddyQuote && (
-          <div className="mb-6">
-            <BuddyQuoteCard quote={buddyQuote} />
-          </div>
-        )}
 
         <VandaagCheckinSlot
           hasMeaningfulCheckin={hasMeaningfulCheckin}
@@ -264,6 +260,8 @@ export default async function VandaagPage() {
                   {showMedicationCard && <MedicationTodayCard items={medicationItems} date={today} />}
                 </section>
               )}
+
+              {buddyQuote && <BuddyQuoteCard quote={buddyQuote} />}
 
               <DayCloseCard
                 userId={user.id}

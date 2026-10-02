@@ -11,7 +11,7 @@ import { MenstruationQuickAction } from "@/components/cycle/menstruation-quick-a
  */
 export function CycleSetupCard() {
   return (
-    <div className="rounded-2xl bg-sage-soft/55 overflow-hidden">
+    <div className="rounded-[1.25rem] bg-surface border border-line overflow-hidden">
       <Link
         href="/profiel/cyclus"
         className="flex items-center gap-3 px-3.5 py-2.5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"

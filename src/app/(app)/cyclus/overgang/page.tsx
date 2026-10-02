@@ -43,46 +43,44 @@ export default async function OvergangPage() {
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
       <BackButton href="/cyclus" label="Cyclus" />
 
-      <header className="rounded-3xl px-4 py-4 mb-6 bg-info-soft">
-        <p className="text-xs font-medium tracking-wide text-info">Cyclus & ouder worden</p>
-        <h1 className="font-display text-2xl text-ink mt-1">De overgang, uitgelegd</h1>
-        <p className="text-sm text-ink-soft mt-2 leading-relaxed">{LIFE_STAGE_KNOWLEDGE.intro}</p>
+      <header className="rounded-[1.75rem] px-6 py-6 mb-8 bg-info-soft">
+        <p className="text-sm font-semibold text-info">Cyclus & ouder worden</p>
+        <h1 className="font-display text-3xl lg:text-4xl text-ink mt-1.5">De overgang, uitgelegd</h1>
+        <p className="text-base text-ink-soft mt-3 leading-relaxed max-w-[65ch]">{LIFE_STAGE_KNOWLEDGE.intro}</p>
       </header>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-9">
         <section>
-          <h2 className="font-display text-lg text-ink mb-2">Hoe je cyclus kan veranderen</h2>
-          <Card>
-            <div className="flex flex-col gap-4">
-              {LIFE_STAGE_KNOWLEDGE.ageChanges.map((section) => (
-                <div key={section.heading}>
-                  <p className="text-sm font-medium text-ink mb-1">{section.heading}</p>
-                  <p className="text-sm text-ink-soft leading-relaxed">{section.text}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
+          <h2 className="font-display text-xl text-ink mb-3">Hoe je cyclus kan veranderen</h2>
+          <div className="flex flex-col gap-5 max-w-[65ch]">
+            {LIFE_STAGE_KNOWLEDGE.ageChanges.map((section) => (
+              <div key={section.heading}>
+                <p className="text-base font-semibold text-ink mb-1">{section.heading}</p>
+                <p className="text-base text-ink-soft leading-relaxed">{section.text}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section>
-          <h2 className="font-display text-lg text-ink mb-2">Wat is perimenopauze?</h2>
-          <Card>
-            <p className="text-sm text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.whatIsPerimenopause}</p>
-          </Card>
+          <h2 className="font-display text-xl text-ink mb-3">Wat is perimenopauze?</h2>
+          <p className="text-base text-ink-soft leading-relaxed max-w-[65ch]">
+            {LIFE_STAGE_KNOWLEDGE.whatIsPerimenopause}
+          </p>
         </section>
 
         <section>
-          <h2 className="font-display text-lg text-ink mb-2">Signalen die je kunt herkennen</h2>
-          <Card>
+          <h2 className="font-display text-xl text-ink mb-3">Signalen die je kunt herkennen</h2>
+          <div className="max-w-[65ch]">
             <BodyChangeList items={highlightSignals} />
-          </Card>
+          </div>
         </section>
 
-        <Card>
+        <div className="rounded-[1.25rem] bg-info-soft px-5 py-4">
           <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-sage-dark mb-1">Wist je dat…?</p>
-              <p className="text-sm text-ink leading-relaxed">{funFact}</p>
+              <p className="text-sm font-semibold text-info mb-1">Wist je dat…?</p>
+              <p className="font-display text-lg text-ink leading-snug">{funFact}</p>
             </div>
             <MomentFavoriteButton
               kind="fun_fact"
@@ -92,24 +90,24 @@ export default async function OvergangPage() {
               size="sm"
             />
           </div>
-        </Card>
+        </div>
 
         <Expandable label="Meer weten over de overgang">
-          <div className="flex flex-col gap-3">
-            <Card>
-              <p className="text-sm font-medium text-ink mb-3">Meer signalen</p>
+          <div className="flex flex-col gap-6 max-w-[65ch]">
+            <div>
+              <p className="text-base font-semibold text-ink mb-3">Meer signalen</p>
               <BodyChangeList items={moreSignals} />
-            </Card>
+            </div>
+            <div>
+              <p className="text-base font-semibold text-ink mb-1.5">Wat kan normaal zijn?</p>
+              <p className="text-base text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.normalNote}</p>
+            </div>
             <Card>
-              <p className="text-sm font-medium text-ink mb-1.5">Wat kan normaal zijn?</p>
-              <p className="text-sm text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.normalNote}</p>
-            </Card>
-            <Card className="bg-cream-soft">
-              <div className="flex gap-2.5">
-                <Stethoscope className="h-4 w-4 text-ink-soft shrink-0 mt-0.5" strokeWidth={1.75} />
+              <div className="flex gap-3">
+                <Stethoscope className="h-5 w-5 text-sage-dark shrink-0 mt-0.5" strokeWidth={1.75} />
                 <div>
-                  <p className="text-sm font-medium text-ink mb-1.5">Wanneer een zorgverlener inschakelen?</p>
-                  <p className="text-sm text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.whenToTalkToDoctor}</p>
+                  <p className="text-base font-semibold text-ink mb-1.5">Wanneer een zorgverlener inschakelen?</p>
+                  <p className="text-base text-ink-soft leading-relaxed">{LIFE_STAGE_KNOWLEDGE.whenToTalkToDoctor}</p>
                 </div>
               </div>
             </Card>
@@ -118,14 +116,14 @@ export default async function OvergangPage() {
 
         {cycleProfile?.perimenopause_information && (
           <section>
-            <h2 className="font-display text-lg text-ink mb-2">Wat jij hierover met ons deelde</h2>
+            <h2 className="font-display text-xl text-ink mb-3">Wat jij hierover met ons deelde</h2>
             <Card>
               <p className="text-sm text-ink-soft leading-relaxed whitespace-pre-wrap">
                 {cycleProfile.perimenopause_information}
               </p>
               <Link
                 href="/profiel/cyclus"
-                className="inline-block text-xs font-medium text-sage-dark mt-3 touch-manipulation"
+                className="inline-flex items-center min-h-11 text-sm font-semibold text-sage-dark mt-1 touch-manipulation underline-offset-4 hover:underline"
               >
                 Aanpassen in je profiel
               </Link>

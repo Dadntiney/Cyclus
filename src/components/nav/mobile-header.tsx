@@ -2,6 +2,7 @@
 
 import { useRef } from "react"
 import Link from "next/link"
+import { DropletMark } from "@/components/brand/droplet-mark"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
 import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
 
@@ -35,9 +36,10 @@ export function MobileHeader() {
     >
       <Link
         href="/vandaag"
-        className="font-display text-lg font-medium text-ink rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
+        className="inline-flex items-center gap-2 font-display text-xl text-ink rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
         style={{ color: "var(--color-ink)", opacity: 1 }}
       >
+        <DropletMark className="h-[19px] w-[15px] -mt-0.5" />
         {APP_DISPLAY_NAME}
       </Link>
     </header>

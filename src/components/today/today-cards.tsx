@@ -54,7 +54,7 @@ export function TodayCards({
 
   return (
     <section aria-labelledby="voor-vandaag-heading">
-      <h2 id="voor-vandaag-heading" className="font-display text-lg text-ink">
+      <h2 id="voor-vandaag-heading" className="font-display text-xl text-ink">
         Voor jou vandaag
       </h2>
       {focusLine ? (
@@ -63,7 +63,7 @@ export function TodayCards({
         <div className="mb-3" aria-hidden />
       )}
 
-      <div className="rounded-3xl bg-sage-soft/55 overflow-hidden">
+      <div className="rounded-[1.25rem] bg-surface border border-line overflow-hidden">
         {movementEnabled ? (
           <TodayMovementCard
             userId={userId}
@@ -85,7 +85,7 @@ export function TodayCards({
         )}
 
         {hasSecondary && (
-          <div className="border-t border-sage/15 divide-y divide-sage/15">
+          <div className="border-t border-line divide-y divide-line">
             {showMeals && (
               <TodayMealsRows
                 userId={userId}
@@ -121,7 +121,7 @@ export function TodayCards({
                   href="/deze-week/boodschappen?modus=dag"
                   className="text-xs font-medium text-sage-dark touch-manipulation min-h-11 inline-flex items-center shrink-0"
                 >
-                  Voor vandaag →
+                  Voor vandaag
                 </Link>
               </div>
             )}
@@ -129,9 +129,9 @@ export function TodayCards({
             {showMental && mentalSuggestion && (
               <Link
                 href={`/mentale-rust/${mentalSuggestion.exercise.id}`}
-                className="block px-4 py-3 touch-manipulation motion-safe:active:bg-sage-soft/80 transition-colors"
+                className="block px-4 py-3 touch-manipulation motion-safe:active:bg-cream-soft transition-colors"
               >
-                <p className="text-[11px] font-medium text-info mb-0.5">Voor je hoofd</p>
+                <p className="text-xs font-medium text-info mb-0.5">Voor je hoofd</p>
                 <p className="text-sm text-ink leading-snug">{mentalSuggestion.text}</p>
                 <p className="text-xs font-medium text-info mt-1 inline-flex items-center gap-0.5">
                   {mentalSuggestion.exercise.title} · {mentalSuggestion.exercise.durationMinutes} min
@@ -144,10 +144,10 @@ export function TodayCards({
               (recovery.href ? (
                 <Link
                   href={recovery.href}
-                  className="flex items-center justify-between gap-3 px-4 py-3 touch-manipulation motion-safe:active:bg-sage-soft/80 transition-colors"
+                  className="flex items-center justify-between gap-3 px-4 py-3 touch-manipulation motion-safe:active:bg-cream-soft transition-colors"
                 >
                   <div className="min-w-0">
-                    <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
+                    <p className="text-xs font-medium text-sage-dark">Even voor jezelf</p>
                     <p className="text-sm font-medium text-ink truncate">
                       {recovery.title}
                       <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
@@ -157,7 +157,7 @@ export function TodayCards({
                 </Link>
               ) : (
                 <div className="px-4 py-3">
-                  <p className="text-[11px] font-medium text-sage-dark">Even voor jezelf</p>
+                  <p className="text-xs font-medium text-sage-dark">Even voor jezelf</p>
                   <p className="text-sm font-medium text-ink">
                     {recovery.title}
                     <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>

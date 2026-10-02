@@ -3,21 +3,21 @@ import type { YourStory } from "@/lib/cycle/your-story"
 import { Card } from "@/components/ui/card"
 
 /**
- * Calm Cyclus hub block: wat werkt → wat past deze week
+ * Calm Cyclus hub block: wat werkt, en wat past deze week
  * (and optional “in beeld” only when it adds something Nu doesn’t already say).
  */
 export function YourStoryCard({ story }: { story: YourStory }) {
   const showInView = Boolean(story.cycleInView.trim())
   const subtitle = showInView
-    ? "Wat speelt → wat werkt → wat past deze week."
-    : "Wat werkt bij jou → wat past deze week."
+    ? "Wat er speelt, wat bij jou werkt en wat deze week past."
+    : "Wat bij jou werkt en wat deze week past."
 
   return (
     <Card>
-      <div className="flex flex-col gap-3.5">
+      <div className="flex flex-col gap-4">
         <div>
-          <p className="text-sm font-medium text-sage-dark mb-0.5">Jouw verhaal</p>
-          <p className="text-xs text-ink-soft leading-relaxed">{subtitle}</p>
+          <p className="font-display text-xl text-ink mb-1">Jouw verhaal</p>
+          <p className="text-sm text-ink-soft leading-relaxed">{subtitle}</p>
         </div>
 
         {showInView && (

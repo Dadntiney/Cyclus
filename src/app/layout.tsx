@@ -20,8 +20,9 @@ const bodyFont = Plus_Jakarta_Sans({
 const displayFont = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
-  // One weight keeps first paint light; 500 covers headings well enough.
-  weight: ["500"],
+  // Variable weight + the soft axis (see .font-display in globals.css);
+  // opsz lets large numbers and headings pick their display cut.
+  axes: ["SOFT", "opsz"],
   display: "swap",
 })
 

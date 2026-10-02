@@ -59,8 +59,8 @@ export function TodayMovementCard({
   const shell = embedded
     ? "px-4 pt-4 pb-3"
     : emphasis === "primary"
-      ? "rounded-3xl bg-sage-soft/70 p-4"
-      : "rounded-3xl bg-sage-soft/50 p-3.5"
+      ? "rounded-[1.25rem] bg-surface border border-line p-4"
+      : "rounded-[1.25rem] bg-surface border border-line p-3.5"
 
   const [override, setOverride] = useState<DayOverride | null>(null)
   const [swapping, setSwapping] = useState(false)
@@ -105,11 +105,11 @@ export function TodayMovementCard({
     return (
       <div className={shell}>
         <div className="flex items-start gap-3">
-          <span className="h-10 w-10 rounded-full bg-surface/70 flex items-center justify-center shrink-0">
+          <span className="h-10 w-10 rounded-full bg-sage-soft flex items-center justify-center shrink-0">
             <Check className="h-5 w-5 text-sage-dark" strokeWidth={2} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
+            <p className="text-xs font-medium text-sage-dark mb-0.5">Beweging</p>
             <p className="text-sm font-medium text-ink">Voor jezelf gedaan: {completed.title}</p>
             <p className="text-xs text-ink-soft mt-0.5">{completed.duration} minuten</p>
             {canUndoCompleted && (
@@ -149,11 +149,11 @@ export function TodayMovementCard({
     return (
       <div className={shell}>
         <div className="flex items-center gap-3">
-          <span className="h-14 w-14 rounded-xl bg-surface/70 flex items-center justify-center shrink-0">
+          <span className="h-14 w-14 rounded-xl bg-sage-soft flex items-center justify-center shrink-0">
             <Moon className="h-5 w-5 text-ink-soft" strokeWidth={1.75} />
           </span>
           <div className="min-w-0">
-            <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
+            <p className="text-xs font-medium text-sage-dark mb-0.5">Beweging</p>
             <p className="font-display text-lg text-ink leading-snug">Rustdag</p>
             <p className="text-sm text-ink-soft mt-0.5">Geen beweging gepland</p>
           </div>
@@ -166,7 +166,7 @@ export function TodayMovementCard({
     <div className={shell}>
       {skipped ? (
         <div>
-          <p className="text-[11px] font-medium text-sage-dark mb-1">Beweging</p>
+          <p className="text-xs font-medium text-sage-dark mb-1">Beweging</p>
           <p className="text-sm text-ink-soft italic">Vandaag geen beweging — ook goed</p>
           <button
             type="button"
@@ -188,7 +188,7 @@ export function TodayMovementCard({
               priority
             />
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-sage-dark mb-0.5">Beweging</p>
+              <p className="text-xs font-medium text-sage-dark mb-0.5">Beweging</p>
               <p className="font-display text-lg text-ink leading-snug">{effective.title}</p>
               <p className="text-sm text-ink-soft mt-0.5">
                 {workoutTypeLabel(effective.type)} · {effective.duration} minuten
@@ -269,7 +269,7 @@ export function TodayMovementCard({
 
           {swapping && (
             <div className="mt-2 flex flex-col gap-2">
-              <p className="text-[11px] text-ink-soft">Kies een soort beweging:</p>
+              <p className="text-xs text-ink-soft">Kies een soort beweging:</p>
               <div className="flex w-full gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {typeOptions.map((type) => (
                   <Chip
@@ -282,7 +282,7 @@ export function TodayMovementCard({
                   </Chip>
                 ))}
               </div>
-              <p className="text-[11px] text-ink-soft mb-0.5">
+              <p className="text-xs text-ink-soft mb-0.5">
                 {swapType ? `${workoutTypeLabel(swapType)} — wat ga je doen?` : "Wat ga je doen?"}
               </p>
               {filteredAlternatives.length ? (
@@ -298,7 +298,7 @@ export function TodayMovementCard({
                         duration: alt.duration,
                       })
                     }
-                    className="text-left text-sm text-ink rounded-xl px-3 py-2.5 min-h-11 bg-surface/70 hover:bg-surface transition-colors touch-manipulation flex items-center justify-between gap-2"
+                    className="text-left text-sm text-ink rounded-xl px-3 py-2.5 min-h-11 bg-cream-soft hover:bg-sage-soft transition-colors touch-manipulation flex items-center justify-between gap-2"
                   >
                     <span className="truncate">{alt.title}</span>
                     <span className="text-xs text-ink-soft shrink-0">{alt.duration} min</span>
@@ -313,7 +313,7 @@ export function TodayMovementCard({
                   setSwapping(false)
                   setSwapType(null)
                 }}
-                className="text-[11px] font-medium text-ink-soft self-start touch-manipulation min-h-11"
+                className="text-xs font-medium text-ink-soft self-start touch-manipulation min-h-11"
               >
                 Annuleren
               </button>

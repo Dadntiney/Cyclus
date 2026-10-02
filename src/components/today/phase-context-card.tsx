@@ -11,6 +11,7 @@ import {
   type MenstruationSoftHint,
 } from "@/lib/cycle/presented-estimate"
 import { cn } from "@/lib/utils"
+import { RhythmBand } from "@/components/cycle/rhythm-band"
 
 const PHASE_TONE: Record<CyclePhase, { bg: string; text: string }> = {
   menstruatie: {
@@ -48,6 +49,8 @@ export function PhaseContextCard({
   menstruationDay,
   predictedMenstruation = false,
   menstruationSoftHint = null,
+  cycleLength = null,
+  periodLength = null,
 }: {
   phase: CyclePhase
   phaseLabel: string
@@ -58,6 +61,9 @@ export function PhaseContextCard({
   menstruationDay: number | null
   predictedMenstruation?: boolean
   menstruationSoftHint?: MenstruationSoftHint
+  /** Her average cycle length — draws the Ritmeband when known. */
+  cycleLength?: number | null
+  periodLength?: number | null
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -98,36 +104,51 @@ export function PhaseContextCard({
     })
   }
 
+  const shownDay = isMenstruationActive && menstruationDay ? menstruationDay : cycleDay
+
   return (
-    <div className={cn("rounded-2xl overflow-hidden", tone.bg)}>
+    <div className={cn("rounded-[1.75rem] overflow-hidden", tone.bg)}>
       <Link
         href="/cyclus/vandaag"
-        className="flex items-center gap-3 px-3.5 py-2.5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
+        className="block px-5 pt-5 pb-4 touch-manipulation motion-safe:active:scale-[0.99] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sage/50 rounded-t-[1.75rem]"
       >
-        {!softMode && (
-          <span
-            className={cn(
-              "font-display text-xl leading-none tabular-nums shrink-0",
-              tone.text,
+        <span className="flex items-start gap-4">
+          {!softMode && (
+            <span
+              className={cn(
+                "font-display text-[2.75rem] leading-[0.9] tabular-nums shrink-0",
+                tone.text,
+              )}
+            >
+              {shownDay}
+            </span>
+          )}
+          <span className="min-w-0 flex-1 pt-0.5">
+            <span className={cn("block text-base font-semibold", tone.text)}>{title}</span>
+            {line && (
+              <span className="block text-sm text-ink-soft mt-1 leading-relaxed">{line}</span>
             )}
-          >
-            {isMenstruationActive && menstruationDay ? menstruationDay : cycleDay}
           </span>
-        )}
-        <span className="min-w-0 flex-1">
-          <span className={cn("block text-sm font-medium", tone.text)}>{title}</span>
-          <span className="block text-xs text-ink-soft mt-0.5 leading-relaxed">{line}</span>
+          <ChevronRight
+            className={cn("h-5 w-5 shrink-0 mt-0.5 opacity-70", tone.text)}
+            strokeWidth={2}
+            aria-hidden
+          />
         </span>
-        <ChevronRight
-          className={cn("h-4 w-4 shrink-0 opacity-70", tone.text)}
-          strokeWidth={2}
-          aria-hidden
-        />
+        {cycleLength ? (
+          <RhythmBand
+            className="mt-4"
+            cycleLength={cycleLength}
+            periodLength={periodLength}
+            cycleDay={softMode ? null : shownDay}
+            phase={phase}
+          />
+        ) : null}
         <span className="sr-only">Open uitleg over deze fase</span>
       </Link>
 
       {hasCycle && (
-        <div className="border-t border-black/5 px-3.5 py-1 flex items-center justify-between gap-3 overflow-visible">
+        <div className="border-t border-ink/10 px-5 py-1 flex items-center justify-between gap-3 overflow-visible">
           <span
             className={cn(
               "text-xs inline-flex items-center gap-2 min-h-11 overflow-visible",
@@ -153,7 +174,7 @@ export function PhaseContextCard({
             type="button"
             onClick={handleMenstruation}
             disabled={isPending}
-            className="text-sm font-medium text-sage-dark min-h-11 px-1 touch-manipulation shrink-0"
+            className="text-sm font-semibold text-sage-dark min-h-11 px-1 touch-manipulation shrink-0 underline-offset-4 hover:underline"
           >
             {isPending
               ? "Bezig…"
@@ -163,7 +184,7 @@ export function PhaseContextCard({
           </button>
         </div>
       )}
-      {error && <p className="text-xs text-danger px-3.5 pb-2">{error}</p>}
+      {error && <p className="text-xs text-danger px-5 pb-3">{error}</p>}
     </div>
   )
 }

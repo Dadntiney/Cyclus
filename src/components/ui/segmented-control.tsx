@@ -26,7 +26,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="radiogroup"
       aria-label={ariaLabel}
-      className="inline-flex items-center gap-0.5 rounded-xl bg-cream-soft p-1"
+      className="inline-flex items-center gap-0.5 rounded-full bg-cream-soft border border-line p-1"
     >
       {options.map((opt) => (
         <button
@@ -36,10 +36,10 @@ export function SegmentedControl<T extends string>({
           aria-checked={value === opt.value}
           onClick={() => onChange(opt.value)}
           className={cn(
-            "min-h-11 min-w-[64px] rounded-lg px-3 text-sm font-medium touch-manipulation transition-[background-color,color,box-shadow] duration-150",
+            "min-h-10 min-w-[64px] rounded-full px-4 text-sm font-medium touch-manipulation transition-[background-color,color,box-shadow] duration-150",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
             value === opt.value
-              ? "bg-surface text-ink shadow-sm"
+              ? "bg-surface-elevated text-ink font-semibold ring-1 ring-line shadow-[0_1px_3px_rgba(46,37,41,0.12)]"
               : "text-ink-soft active:bg-surface/50",
           )}
         >

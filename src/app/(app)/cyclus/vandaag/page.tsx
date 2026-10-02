@@ -28,7 +28,10 @@ import { getSavedMomentTexts } from "@/lib/data/moments"
 import { cn } from "@/lib/utils"
 import { getDailyPhaseSnackTip } from "@/lib/cycle/phase-content"
 
-/** Soft panel — same calm surface language as Vandaag (no white bordered cards). */
+/**
+ * Ritme reading page: explanations sit on the page ground in a reading
+ * column; only asides (Wist je dat, Buddy) get a soft phase tint.
+ */
 function SoftPanel({
   children,
   className,
@@ -36,9 +39,11 @@ function SoftPanel({
   children: ReactNode
   className?: string
 }) {
-  return (
-    <div className={cn("rounded-3xl bg-sage-soft/50 px-4 py-4", className)}>{children}</div>
-  )
+  return <div className={cn("max-w-[65ch]", className)}>{children}</div>
+}
+
+function TintPanel({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cn("rounded-[1.25rem] px-5 py-4", className)}>{children}</div>
 }
 
 export default async function CyclusdagPage() {
@@ -161,50 +166,50 @@ export default async function CyclusdagPage() {
     <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
       {backLink}
 
-      <header className={cn("rounded-3xl px-4 py-4 mb-6", view.colors.bg)}>
-        <p className={cn("text-xs font-medium tracking-wide", view.colors.text)}>
+      <header className={cn("rounded-[1.75rem] px-6 py-6 mb-8", view.colors.bg)}>
+        <p className={cn("text-sm font-semibold", view.colors.text)}>
           {softMenstruationMode
             ? presented.menstruationSoftHint === "predicted"
               ? "Menstruatie kan komen"
               : "Menstruatie gestopt"
             : `Cyclusdag ${view.cycleDay}`}
         </p>
-        <h1 className="font-display text-2xl text-ink mt-1">{view.phaseLabel}</h1>
+        <h1 className="font-display text-3xl lg:text-4xl text-ink mt-1.5">{view.phaseLabel}</h1>
       </header>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-9">
         <section>
-          <h2 className="font-display text-lg text-ink mb-2">Wat gebeurt er in je lichaam?</h2>
+          <h2 className="font-display text-xl text-ink mb-3">Wat gebeurt er in je lichaam?</h2>
           <SoftPanel>
-            <p className="text-sm text-ink leading-relaxed">{view.knowledge.bodySummary}</p>
-            <p className="text-sm text-ink-soft leading-relaxed mt-3">
+            <p className="text-base text-ink leading-relaxed">{view.knowledge.bodySummary}</p>
+            <p className="text-base text-ink-soft leading-relaxed mt-3">
               {view.knowledge.hormonalSummary}
             </p>
           </SoftPanel>
         </section>
 
         <section>
-          <h2 className="font-display text-lg text-ink mb-2">Hoe kun je je voelen?</h2>
+          <h2 className="font-display text-xl text-ink mb-3">Hoe kun je je voelen?</h2>
           <SoftPanel>
             <BodyChangeList items={view.highlightChanges} />
             {view.symptomNote && (
-              <p className="text-xs text-ink-soft bg-surface/65 rounded-2xl px-3 py-2.5 mt-4 leading-relaxed">
+              <p className={cn("text-sm text-ink rounded-2xl px-4 py-3 mt-4 leading-relaxed", view.colors.bg)}>
                 {view.symptomNote}
               </p>
             )}
-            <div className="mt-4 pt-4 border-t border-sage/20">
-              <p className="text-sm font-medium text-ink mb-1.5">Waarom?</p>
-              <p className="text-sm text-ink-soft leading-relaxed">{view.knowledge.whyExplainer}</p>
+            <div className="mt-5 pt-5 border-t border-line">
+              <p className="text-base font-semibold text-ink mb-1.5">Waarom?</p>
+              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.whyExplainer}</p>
             </div>
           </SoftPanel>
         </section>
 
         {showAmbientBuddyContent && (
-          <SoftPanel>
+          <TintPanel className={view.colors.bg}>
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
-                <p className={cn("text-xs font-medium mb-1", view.colors.text)}>Wist je dat…?</p>
-                <p className="text-sm text-ink leading-relaxed">{view.funFact}</p>
+                <p className={cn("text-sm font-semibold mb-1", view.colors.text)}>Wist je dat…?</p>
+                <p className="font-display text-lg text-ink leading-snug">{view.funFact}</p>
               </div>
               <MomentFavoriteButton
                 kind="fun_fact"
@@ -214,11 +219,11 @@ export default async function CyclusdagPage() {
                 size="sm"
               />
             </div>
-          </SoftPanel>
+          </TintPanel>
         )}
 
         <section>
-          <h2 className="font-display text-lg text-ink mb-2.5">Voeding in deze fase</h2>
+          <h2 className="font-display text-xl text-ink mb-3">Voeding in deze fase</h2>
           <PhaseNutritionBasics nutrition={view.nutrition} />
           <div className="mt-3">
             <PhaseSnackTipCard tip={getDailyPhaseSnackTip(view.phase, `${user.id}-${today}`)} />
@@ -226,31 +231,31 @@ export default async function CyclusdagPage() {
         </section>
 
         <Expandable label="Meer weten over deze fase">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-6">
             <SoftPanel>
-              <p className="text-sm font-medium text-ink mb-3">Meer signalen</p>
+              <p className="text-base font-semibold text-ink mb-3">Meer signalen</p>
               <BodyChangeList items={view.moreChanges} />
             </SoftPanel>
             <SoftPanel>
-              <p className="text-sm font-medium text-ink mb-1.5">Wat kan normaal zijn?</p>
-              <p className="text-sm text-ink-soft leading-relaxed">{view.knowledge.normalNote}</p>
+              <p className="text-base font-semibold text-ink mb-1.5">Wat kan normaal zijn?</p>
+              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.normalNote}</p>
             </SoftPanel>
             <SoftPanel>
-              <p className="text-sm font-medium text-ink mb-1.5">Waar kun je aandacht aan besteden?</p>
-              <p className="text-sm text-ink-soft leading-relaxed">{view.knowledge.attentionNote}</p>
+              <p className="text-base font-semibold text-ink mb-1.5">Waar kun je aandacht aan besteden?</p>
+              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.attentionNote}</p>
             </SoftPanel>
           </div>
         </Expandable>
 
         {showAmbientBuddyContent && (
-          <SoftPanel>
+          <TintPanel className="bg-sage-soft">
             <div className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
-                <p className={cn("text-xs font-medium mb-1 inline-flex items-center gap-1.5", view.colors.text)}>
+                <p className="text-sm font-semibold mb-1 inline-flex items-center gap-1.5 text-sage-dark">
                   <BuddyMark size="sm" decorative />
                   {view.buddyMoment.title}
                 </p>
-                <p className="text-sm text-ink leading-relaxed">{view.buddyMoment.text}</p>
+                <p className="text-base text-ink leading-relaxed">{view.buddyMoment.text}</p>
               </div>
               <MomentFavoriteButton
                 kind={view.buddyMoment.kind === "tip" ? "tip" : "quote"}
@@ -260,7 +265,7 @@ export default async function CyclusdagPage() {
                 size="sm"
               />
             </div>
-          </SoftPanel>
+          </TintPanel>
         )}
 
         <p className="text-xs text-ink-soft leading-relaxed">

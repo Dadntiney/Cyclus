@@ -71,7 +71,7 @@ export default async function SamenvattingPage() {
     <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
       <div className="print:hidden">
         <BackButton href="/cyclus" label="Cyclus" />
-        <h1 className="font-display text-2xl lg:text-3xl text-ink mt-3">Voor je arts</h1>
+        <h1 className="font-display text-3xl lg:text-4xl text-ink mt-3">Voor je arts</h1>
         <p className="text-sm text-ink-soft mt-1">
           Een overzicht van wat je hebt bijgehouden — om sterker het gesprek in te gaan.
         </p>

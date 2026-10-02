@@ -8,7 +8,7 @@ export function SkeletonCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "rounded-3xl bg-sage-soft/50 border border-transparent p-5 flex flex-col gap-3",
+        "rounded-[1.25rem] bg-surface border border-line p-5 flex flex-col gap-3",
         className,
       )}
     >

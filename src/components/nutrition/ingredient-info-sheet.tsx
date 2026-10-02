@@ -62,7 +62,7 @@ export function IngredientList({
               {open.info.nutrients.map((n) => (
                 <span
                   key={n}
-                  className="text-[11px] font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1"
+                  className="text-xs font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1"
                 >
                   {n}
                 </span>
