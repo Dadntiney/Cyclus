@@ -35,7 +35,7 @@ export function MenstruationDateSheet({
   /** Start of the running period — the earliest day she can pick when stopping. */
   periodStart?: string | null
 }) {
-  const title = mode === "start" ? "Menstruatie starten" : "Menstruatie gestopt"
+  const title = mode === "start" ? "Menstruatie noteren" : "Menstruatie gestopt"
   return (
     <BottomSheet open={open} onClose={onClose} title={title}>
       {/* Mounted only while open, so every opening starts fresh on "Vandaag". */}

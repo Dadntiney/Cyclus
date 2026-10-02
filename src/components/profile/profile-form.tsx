@@ -445,7 +445,7 @@ export function ProfileForm({
       )}
 
       {is("account") && (
-      <Card>
+      <Card id="aandachtspunten" className="scroll-mt-24">
         <h2 className="font-display text-xl text-ink mb-3">Aandachtspunten</h2>
         <p className="text-xs text-ink-soft mb-3">
           Optioneel. Geen diagnoses — puur om je advies passender te maken.

@@ -44,25 +44,29 @@ export function DiaryClient({ entries }: { entries: Entry[] }) {
           className="mt-1"
           placeholder="Wat speelt er? Wat wil je onthouden?"
         />
-        <Button
-          type="button"
-          className="mt-3"
-          disabled={isPending || !body.trim()}
-          onClick={() => {
-            setError(null)
-            startTransition(async () => {
-              const result = await runAction(() => createDiaryEntry({ body }))
-              if (result?.error) setError(result.error)
-              else {
-                setBody("")
-                toast.show("Opgeslagen")
-                router.refresh()
-              }
-            })
-          }}
-        >
-          Opslaan
-        </Button>
+        <div className="mt-3 flex items-center gap-3">
+          <Button
+            type="button"
+            disabled={isPending || !body.trim()}
+            onClick={() => {
+              setError(null)
+              startTransition(async () => {
+                const result = await runAction(() => createDiaryEntry({ body }))
+                if (result?.error) setError(result.error)
+                else {
+                  setBody("")
+                  toast.show("Opgeslagen")
+                  router.refresh()
+                }
+              })
+            }}
+          >
+            Opslaan
+          </Button>
+          {!body.trim() && !isPending && (
+            <p className="text-xs text-ink-soft">Schrijf eerst iets op.</p>
+          )}
+        </div>
         {error && <p className="text-sm text-danger mt-2">{error}</p>}
       </Card>
 

@@ -12,7 +12,15 @@ interface WorkoutImageProps {
   priority?: boolean
 }
 
-/** Workout photo when available, otherwise the illustrated placeholder. */
+/**
+ * Off until there is a curated photo set that fits the audience (women 30+,
+ * calm, at home or outdoors). The current stock mix included gym photos of
+ * men and alternated with illustrations, which the usertest flagged; the
+ * illustration system alone reads as one consistent series.
+ */
+export const SHOW_WORKOUT_PHOTOS = false
+
+/** Workout photo when enabled and available, otherwise the illustration. */
 export function WorkoutImage({
   type,
   title,
@@ -22,7 +30,7 @@ export function WorkoutImage({
   sizes,
   priority,
 }: WorkoutImageProps) {
-  if (!imageUrl) {
+  if (!SHOW_WORKOUT_PHOTOS || !imageUrl) {
     return <WorkoutMedia type={type} className={className} iconClassName={iconClassName} />
   }
 

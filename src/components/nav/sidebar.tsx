@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation"
 import { useLinkStatus } from "next/link"
 import { LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { NAV_ITEMS } from "./nav-items"
+import { NAV_ITEMS, isNavActive } from "./nav-items"
 import { logout } from "@/lib/actions/auth"
 import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
 import { DropletMark } from "@/components/brand/droplet-mark"
@@ -55,8 +55,9 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
 
       <nav className="flex-1" aria-label="Hoofdnavigatie">
         <ul className="flex flex-col gap-1">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-            const active = displayPath === href || displayPath.startsWith(`${href}/`)
+          {NAV_ITEMS.map((item) => {
+            const { href, label, icon: Icon } = item
+            const active = isNavActive(displayPath, item)
             const isProfile = href === "/profiel"
             return (
               <li key={href}>

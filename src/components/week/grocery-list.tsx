@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { format, parseISO } from "date-fns"
 import { nl } from "date-fns/locale"
-import { Check } from "lucide-react"
+import { Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { groceryItemSubtitle, type GroceryCategory } from "@/lib/nutrition/grocery-list"
 import { buildDayGroceryList, buildWeekGroceryList } from "@/lib/nutrition/week-grocery"
@@ -215,53 +215,70 @@ export function GroceryList({
             : "Nog geen boodschappen — zodra je weekplanning maaltijden bevat, verschijnen ze hier automatisch."}
         </p>
       ) : (
-        categories.map((cat) => (
-          <div key={cat.category}>
-            <h2 className="font-display text-lg text-ink mb-2.5">{cat.category}</h2>
-            <div className="rounded-[1.25rem] bg-surface border border-line divide-y divide-line overflow-hidden">
-              {cat.items.map((item) => {
-                const isChecked = checked.has(item.id)
-                const subtitle = groceryItemSubtitle(item, mode)
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    role="checkbox"
-                    aria-checked={isChecked}
-                    onClick={() => toggle(item.id)}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 min-h-13 text-left touch-manipulation transition-colors active:bg-cream-soft"
-                  >
-                    {/* Small checkbox (not a thumbnail-sized tile); row stays ≥44px for touch. */}
-                    <span
-                      aria-hidden
-                      className={cn(
-                        "shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors",
-                        isChecked
-                          ? "bg-sage-fill border-sage-dark text-white"
-                          : "border-sage-dark/45 bg-surface",
-                      )}
+        categories.map((cat) => {
+          // Still-to-buy first; what she already has sinks to the bottom.
+          const items = [...cat.items].sort(
+            (a, b) => Number(checked.has(a.id)) - Number(checked.has(b.id)),
+          )
+          const done = cat.items.filter((i) => checked.has(i.id)).length
+          const allDone = done === cat.items.length
+          return (
+            <details key={`${cat.category}-${allDone}`} open={!allDone} className="group">
+              <summary className="flex items-center justify-between gap-3 mb-2.5 cursor-pointer list-none min-h-11 touch-manipulation [&::-webkit-details-marker]:hidden">
+                <h2 className="font-display text-lg text-ink">
+                  {cat.category}
+                  <span className="font-sans text-sm text-ink-soft font-normal"> · {cat.items.length}</span>
+                </h2>
+                <span className="inline-flex items-center gap-1.5 text-xs text-ink-soft">
+                  {done > 0 && (allDone ? "Alles in huis" : `${done} afgevinkt`)}
+                  <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" strokeWidth={1.75} aria-hidden />
+                </span>
+              </summary>
+              <div className="rounded-[1.25rem] bg-surface border border-line divide-y divide-line overflow-hidden">
+                {items.map((item) => {
+                  const isChecked = checked.has(item.id)
+                  const subtitle = groceryItemSubtitle(item, mode)
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      role="checkbox"
+                      aria-checked={isChecked}
+                      onClick={() => toggle(item.id)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 min-h-12 text-left touch-manipulation transition-colors active:bg-cream-soft"
                     >
-                      {isChecked && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
-                    </span>
-                    <span className="min-w-0 flex-1">
+                      {/* Small checkbox (not a thumbnail-sized tile); row stays ≥44px for touch. */}
                       <span
+                        aria-hidden
                         className={cn(
-                          "block text-sm font-medium",
-                          isChecked ? "text-ink-soft/60 line-through" : "text-ink",
+                          "shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors",
+                          isChecked
+                            ? "bg-sage-fill border-sage-dark text-white"
+                            : "border-sage-dark/45 bg-surface",
                         )}
                       >
-                        {item.name}
+                        {isChecked && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
                       </span>
-                      {subtitle && (
-                        <span className="block text-xs text-ink-soft mt-0.5">{subtitle}</span>
-                      )}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        ))
+                      <span className="min-w-0 flex-1">
+                        <span
+                          className={cn(
+                            "block text-sm font-medium",
+                            isChecked ? "text-ink-soft/60 line-through" : "text-ink",
+                          )}
+                        >
+                          {item.name}
+                        </span>
+                        {subtitle && (
+                          <span className="block text-xs text-ink-soft mt-0.5">{subtitle}</span>
+                        )}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </details>
+          )
+        })
       )}
     </div>
   )

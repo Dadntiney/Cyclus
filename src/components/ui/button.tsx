@@ -11,8 +11,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
+  // Disabled primary turns into a calm outlined pill instead of a washed-out
+  // green one, which read as "broken" in the usertest.
   primary:
-    "bg-primary-fill text-white hover:bg-primary-fill-hover active:bg-primary-fill-hover",
+    "bg-primary-fill text-white hover:bg-primary-fill-hover active:bg-primary-fill-hover " +
+    "disabled:bg-bg-subtle disabled:text-ink-soft disabled:shadow-[inset_0_0_0_1px_var(--color-line)] disabled:opacity-100",
   secondary:
     "bg-surface text-ink border border-ink/15 hover:border-ink/30 hover:bg-bg-subtle active:bg-bg-subtle",
   ghost: "bg-transparent text-ink hover:bg-bg-subtle active:bg-bg-subtle",

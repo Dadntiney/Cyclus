@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { addDays, format, parseISO } from "date-fns"
+import { nl } from "date-fns/locale"
 import { ChevronRight, Droplet } from "lucide-react"
 import { MenstruationDateSheet } from "@/components/cycle/menstruation-date-sheet"
 import { todayISO } from "@/lib/dates/amsterdam"
@@ -52,6 +53,7 @@ export function PhaseContextCard({
   menstruationSoftHint = null,
   cycleLength = null,
   periodLength = null,
+  nextPeriodStart = null,
 }: {
   phase: CyclePhase
   phaseLabel: string
@@ -65,6 +67,8 @@ export function PhaseContextCard({
   /** Her average cycle length — draws the Ritmeband when known. */
   cycleLength?: number | null
   periodLength?: number | null
+  /** Estimated next period start (ISO), shown instead of a bare status. */
+  nextPeriodStart?: string | null
 }) {
   const [sheetOpen, setSheetOpen] = useState(false)
   const tone = PHASE_TONE[phase]
@@ -87,7 +91,11 @@ export function PhaseContextCard({
     ? "Bezig"
     : softHint === "ended"
       ? "Gestopt"
-      : "Nog niet gestart"
+      : softHint === "predicted"
+        ? "Nog niet gestart"
+        : nextPeriodStart
+          ? `Volgende ~${format(parseISO(nextPeriodStart), "d MMM", { locale: nl })}`
+          : "Nu niet ongesteld"
 
   // A period that runs well past her usual length most likely ended and
   // "Stoppen" was simply forgotten — ask gently instead of counting on.
@@ -170,7 +178,7 @@ export function PhaseContextCard({
             onClick={() => setSheetOpen(true)}
             className="text-sm font-semibold text-sage-dark min-h-11 px-1 touch-manipulation shrink-0 underline-offset-4 hover:underline"
           >
-            {isMenstruationActive ? "Stoppen" : "Menstruatie starten"}
+            {isMenstruationActive ? "Stoppen" : "Ongesteld? Noteer het"}
           </button>
         </div>
       )}

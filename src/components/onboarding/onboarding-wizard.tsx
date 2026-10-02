@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState, useTransition } from "react"
-import { Footprints, Salad, Brain } from "lucide-react"
+import { Footprints, Salad, Brain, Moon } from "lucide-react"
 import { BuddyMark } from "@/components/buddy/buddy-mark"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -14,12 +14,9 @@ import {
   TRAINING_OPTIONS,
   NUTRITION_OPTIONS,
   NUTRITION_STYLE_OPTIONS,
-  HEALTH_CONDITION_OPTIONS,
-  MOVEMENT_LIMITATION_OPTIONS,
   TRAINING_FREQUENCY_OPTIONS,
   STYLE_OPTIONS,
   REGULARITY_OPTIONS,
-  HORMONAL_MEDICATION_STATUS_OPTIONS,
   BUDDY_STYLE_OPTIONS,
   BUDDY_FREQUENCY_OPTIONS,
   MENTAL_WELLBEING_CATEGORY_OPTIONS,
@@ -56,6 +53,7 @@ interface FormData {
   // from "unanswered" — see the completeOnboarding mapping in handleFinish.
   mentalWellbeingChoice: "ja" | "misschien_later" | "nee" | null
   mentalWellbeingCategories: string[]
+  sleepEnabled: boolean | null
   hormonalMedicationStatus: string
   wellnessPreference: string
   buddyStyles: string[]
@@ -64,14 +62,14 @@ interface FormData {
 
 // The step sequence is dynamic: only modules she switches on get their
 // follow-up questions. Kept deliberately short — related questions share a
-// screen, and details like height/weight live in Profiel instead, so she
-// reaches her first Vandaag quickly (8–12 screens instead of up to 19).
+// screen, and details like height/weight, health notes and medication live in
+// Profiel instead (Vandaag invites her to fill them in later), so she reaches
+// her first Vandaag quickly.
 type StepId =
   | "welcome"
   | "about"
   | "cycle"
   | "goals"
-  | "health"
   | "modules"
   | "movement-details"
   | "nutrition-details"
@@ -81,7 +79,7 @@ type StepId =
   | "buddy"
 
 function buildStepSequence(data: FormData): StepId[] {
-  const steps: StepId[] = ["welcome", "about", "cycle", "goals", "health", "modules"]
+  const steps: StepId[] = ["welcome", "about", "cycle", "goals", "modules"]
   if (data.movementEnabled) steps.push("movement-details")
   if (data.nutritionEnabled) steps.push("nutrition-details")
   if (data.mentalWellbeingChoice === "ja") steps.push("wellbeing-preferences")
@@ -91,6 +89,18 @@ function buildStepSequence(data: FormData): StepId[] {
 
 function toggle(list: string[], value: string) {
   return list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
+}
+
+const SLEEP_GOAL = "Beter slapen"
+const NO_NUTRITION_PREFERENCE = "Geen voorkeur"
+
+/** "Geen voorkeur" and a real preference can't both be on. */
+function toggleNutritionPreference(list: string[], value: string) {
+  const next = toggle(list, value)
+  if (!next.includes(value)) return next
+  return value === NO_NUTRITION_PREFERENCE
+    ? [NO_NUTRITION_PREFERENCE]
+    : next.filter((v) => v !== NO_NUTRITION_PREFERENCE)
 }
 
 export function OnboardingWizard({ initialName }: { initialName: string }) {
@@ -123,6 +133,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
     foodAllergies: [],
     mentalWellbeingChoice: null,
     mentalWellbeingCategories: [],
+    sleepEnabled: null,
     hormonalMedicationStatus: "",
     wellnessPreference: "",
     buddyStyles: [],
@@ -160,11 +171,6 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
         return null
       case "goals":
         return data.goals.length > 0 ? null : "Kies minstens één doel."
-      case "modules":
-        if (data.movementEnabled === null) return "Laat ons weten of beweging relevant voor je is."
-        if (data.nutritionEnabled === null) return "Laat ons weten of voeding relevant voor je is."
-        if (data.mentalWellbeingChoice === null) return "Laat ons weten of je ondersteuning voor mentale rust wilt."
-        return null
       case "movement-details":
         return data.trainingFrequency ? null : "Kies hoe vaak je wilt bewegen."
       case "wellness":
@@ -235,6 +241,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             data.mentalWellbeingChoice === "ja" ? true : data.mentalWellbeingChoice === "nee" ? false : null,
           mentalWellbeingCategories:
             data.mentalWellbeingChoice === "ja" ? data.mentalWellbeingCategories : [],
+          sleepTrackingEnabled: data.sleepEnabled === true,
           healthConditions: data.healthConditions,
           movementLimitations: data.movementLimitations,
           wellnessPreference: data.wellnessPreference as
@@ -276,11 +283,16 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto px-6 py-8">
       {step > 0 && (
-        <div className="w-full h-1.5 rounded-full bg-cream-soft mb-8 overflow-hidden">
-          <div
-            className="h-full bg-sage-fill rounded-full transition-all duration-300"
-            style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
-          />
+        <div className="mb-8">
+          <p className="text-xs font-medium text-ink-soft mb-2" aria-live="polite">
+            Stap {step} van {totalSteps - 1}
+          </p>
+          <div className="w-full h-1.5 rounded-full bg-cream-soft overflow-hidden">
+            <div
+              className="h-full bg-sage-fill rounded-full transition-all duration-300"
+              style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
+            />
+          </div>
         </div>
       )}
 
@@ -303,17 +315,19 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
             subtitle="Kies wat op dit moment bij je past. Je kunt er meerdere kiezen."
             options={GOAL_OPTIONS}
             selected={data.goals}
-            onToggle={(v) => setData((d) => ({ ...d, goals: toggle(d.goals, v) }))}
+            onToggle={(v) =>
+              setData((d) => {
+                const goals = toggle(d.goals, v)
+                // "Beter slapen" as a goal switches sleep on, unless she
+                // already answered the sleep question herself.
+                const sleepEnabled =
+                  v === SLEEP_GOAL && d.sleepEnabled === null && goals.includes(SLEEP_GOAL)
+                    ? true
+                    : d.sleepEnabled
+                return { ...d, goals, sleepEnabled }
+              })
+            }
           />
-        )}
-        {stepId === "health" && (
-          <div className="flex flex-col gap-10">
-            <HealthStep data={data} setData={setData} />
-            <MedicationStatusStep
-              value={data.hormonalMedicationStatus}
-              onChange={(hormonalMedicationStatus) => setData((d) => ({ ...d, hormonalMedicationStatus }))}
-            />
-          </div>
         )}
         {stepId === "modules" && <ModulesStep data={data} setData={setData} />}
         {stepId === "movement-details" && (
@@ -346,7 +360,7 @@ export function OnboardingWizard({ initialName }: { initialName: string }) {
                 options={NUTRITION_OPTIONS}
                 selected={data.nutritionPreferences}
                 onToggle={(v) =>
-                  setData((d) => ({ ...d, nutritionPreferences: toggle(d.nutritionPreferences, v) }))
+                  setData((d) => ({ ...d, nutritionPreferences: toggleNutritionPreference(d.nutritionPreferences, v) }))
                 }
               />
               {data.nutritionPreferences.includes("Allergieën") && (
@@ -644,60 +658,6 @@ function MultiSelectStep({
   )
 }
 
-function HealthStep({
-  data,
-  setData,
-}: {
-  data: FormData
-  setData: React.Dispatch<React.SetStateAction<FormData>>
-}) {
-  const hasAnySelection = data.healthConditions.length > 0 || data.movementLimitations.length > 0
-  return (
-    <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Aandachtspunten</h2>
-      <p className="text-ink-soft text-base leading-relaxed mb-7">
-        Optioneel. Dit helpt ons om trainingen en voeding beter op jou af te stemmen. GoFiev
-        stelt geen diagnoses — dit is puur om je advies passender te maken.
-      </p>
-
-      <p className="text-sm font-medium text-ink mb-2">Aandoeningen of aandachtspunten</p>
-      <div className="flex flex-wrap gap-2 mb-5">
-        {HEALTH_CONDITION_OPTIONS.map((opt) => (
-          <Chip
-            key={opt}
-            selected={data.healthConditions.includes(opt)}
-            onClick={() => setData((d) => ({ ...d, healthConditions: toggle(d.healthConditions, opt) }))}
-          >
-            {opt}
-          </Chip>
-        ))}
-      </div>
-
-      <p className="text-sm font-medium text-ink mb-2">Beperkingen bij bewegen</p>
-      <div className="flex flex-wrap gap-2">
-        {MOVEMENT_LIMITATION_OPTIONS.map((opt) => (
-          <Chip
-            key={opt}
-            selected={data.movementLimitations.includes(opt)}
-            onClick={() =>
-              setData((d) => ({ ...d, movementLimitations: toggle(d.movementLimitations, opt) }))
-            }
-          >
-            {opt}
-          </Chip>
-        ))}
-      </div>
-
-      {hasAnySelection && (
-        <p className="text-sm text-ink-soft mt-5 bg-cream-soft rounded-2xl p-3">
-          Bij twijfel over wat wel of niet passend is voor jouw situatie is overleg met een
-          arts, fysiotherapeut of diëtist altijd verstandig.
-        </p>
-      )}
-    </div>
-  )
-}
-
 function ModulesStep({
   data,
   setData,
@@ -709,8 +669,8 @@ function ModulesStep({
     <div>
       <h2 className="font-display text-3xl text-ink mb-3">Waar wil je ondersteuning bij?</h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">
-        Alles is optioneel. Kies alleen wat je nu fijn lijkt, je kunt dit later altijd aanpassen in
-        je profiel.
+        Kies wat je nu fijn lijkt. Sla je iets over, dan staat het uit — je zet het later
+        altijd aan in je profiel.
       </p>
       <div className="flex flex-col gap-3">
         <ModuleRow
@@ -756,6 +716,15 @@ function ModulesStep({
               selected: data.mentalWellbeingChoice === "nee",
               onSelect: () => setData((d) => ({ ...d, mentalWellbeingChoice: "nee", mentalWellbeingCategories: [] })),
             },
+          ]}
+        />
+        <ModuleRow
+          icon={Moon}
+          title="Slaap"
+          description="Je slaap bijhouden en zien wat helpt om beter uit te rusten."
+          options={[
+            { label: "Ja, graag", selected: data.sleepEnabled === true, onSelect: () => setData((d) => ({ ...d, sleepEnabled: true })) },
+            { label: "Nee", selected: data.sleepEnabled === false, onSelect: () => setData((d) => ({ ...d, sleepEnabled: false })) },
           ]}
         />
       </div>
@@ -845,7 +814,7 @@ function NutritionStyleStep({
               "flex flex-col gap-1 rounded-3xl px-4 py-3.5 text-left transition-colors",
               value === opt.value
                 ? "bg-sage-soft ring-1 ring-sage/40"
-                : "bg-sage-soft/40 hover:bg-sage-soft/70",
+                : "bg-surface border border-line hover:bg-sage-soft/40",
             )}
           >
             <span className="font-medium text-ink">{opt.label}</span>
@@ -874,44 +843,27 @@ function FrequencyStep({
       <p className="text-ink-soft text-base leading-relaxed mb-7">
         Per week, van 1 tot 7 dagen. We stellen hier een passend weekprogramma op.
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex justify-between gap-1.5" role="radiogroup" aria-label="Keer per week">
         {TRAINING_FREQUENCY_OPTIONS.map((n) => (
-          <Chip key={n} selected={value === n} onClick={() => onChange(n)}>
-            {n}x per week
-          </Chip>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function MedicationStatusStep({
-  value,
-  onChange,
-}: {
-  value: string
-  onChange: (v: string) => void
-}) {
-  return (
-    <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Hormonale medicatie</h2>
-      <p className="text-ink-soft text-base leading-relaxed mb-7">
-        Gebruik je hormonale medicatie of medicatie die invloed kan hebben op je cyclus of
-        hormonen? Dit is puur informatief — als je hier iets anders dan &ldquo;Nee&rdquo; kiest,
-        kun je daarna zelf je eigen schema bijhouden. Je past dit later altijd aan in je profiel.
-      </p>
-      <div className="flex flex-col gap-2">
-        {HORMONAL_MEDICATION_STATUS_OPTIONS.map((opt) => (
-          <Chip
-            key={opt.value}
-            selected={value === opt.value}
-            onClick={() => onChange(opt.value)}
-            className="w-full justify-start"
+          <button
+            key={n}
+            type="button"
+            role="radio"
+            aria-checked={value === n}
+            aria-label={`${n} keer per week`}
+            onClick={() => onChange(n)}
+            className={cn(
+              "h-11 w-11 shrink-0 rounded-full border text-base font-medium transition-colors",
+              value === n
+                ? "bg-sage-fill border-sage-fill text-white"
+                : "bg-surface border-line text-ink hover:bg-sage-soft/50",
+            )}
           >
-            {opt.label}
-          </Chip>
+            {n}
+          </button>
         ))}
       </div>
+      <p className="text-xs text-ink-soft mt-2 text-center">keer per week</p>
     </div>
   )
 }
@@ -993,8 +945,27 @@ function BuddyStyleStep({
   )
 }
 
+// Attributive forms for "in een … toon" — the plain labels ("Liefdevol",
+// "Humor") don't inflect correctly in that sentence.
+const BUDDY_TONE_ADJECTIVE: Record<string, string> = {
+  liefdevol: "liefdevolle",
+  humor: "humoristische",
+  spiritueel: "spirituele",
+  motiverend: "motiverende",
+  informatief: "informatieve",
+  rustig: "rustige",
+  direct: "directe",
+  luchtig: "luchtige",
+}
+
+function joinDutch(words: string[]) {
+  if (words.length <= 1) return words.join("")
+  return `${words.slice(0, -1).join(", ")} en ${words[words.length - 1]}`
+}
+
 function BuddyIntroStep({ name, styles }: { name: string; styles: string[] }) {
-  const styleLabel = BUDDY_STYLE_OPTIONS.find((opt) => opt.value === styles[0])?.label
+  const adjectives = styles.map((s) => BUDDY_TONE_ADJECTIVE[s]).filter(Boolean)
+  const styleLabel = adjectives.length > 0 ? joinDutch(adjectives) : null
   return (
     <div className="text-center">
       <div className="mx-auto mb-4 flex justify-center">
@@ -1005,7 +976,7 @@ function BuddyIntroStep({ name, styles }: { name: string; styles: string[] }) {
         {name ? `${name}, je` : "Je"} Buddy is er om mee te praten over hoe je je voelt, je
         cyclus en je dag. Geen diagnoses, wel een luisterend oor en praktische tips. Bij
         ernstige klachten verwijst je Buddy je altijd door naar een zorgprofessional.
-        {styleLabel ? ` Ze praat voortaan met je in een ${styleLabel.toLowerCase()} toon.` : ""}
+        {styleLabel ? ` Ze praat voortaan met je in een ${styleLabel} toon.` : ""}
       </p>
     </div>
   )

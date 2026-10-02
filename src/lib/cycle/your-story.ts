@@ -108,10 +108,9 @@ export function composeYourStory(input: ComposeYourStoryInput): YourStory | null
     const movement = content.movement.preferGentler
       ? "Zachtere beweging past vaak beter in deze fase."
       : `Beweging op ${content.movement.intensityLabel.toLowerCase()} past vaak bij deze fase.`
-    const nutritionSentence = content.nutrition.focusText.split(".")[0]?.trim()
-    whatFitsThisWeek = nutritionSentence
-      ? `${movement} ${nutritionSentence}.`
-      : movement
+    // Movement only: the phase nutrition line already shows on Vandaag and
+    // the Cyclusdag page, so repeating it here read as filler.
+    whatFitsThisWeek = movement
   }
 
   // Need at least one meaningful block beyond empty placeholders.

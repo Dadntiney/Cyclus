@@ -12,8 +12,10 @@ import { DayCloseCard } from "@/components/today/day-close-card"
 import { BuddyQuoteCard } from "@/components/today/buddy-quote-card"
 import { MedicationTodayCard } from "@/components/today/medication-today-card"
 import { SleepCard } from "@/components/sleep/sleep-card"
+import { ProfileCompleteCard } from "@/components/today/profile-complete-card"
 import type { CyclePhase } from "@/lib/cycle/estimate"
 import { greeting } from "@/lib/greeting"
+import { estimateNextPeriod } from "@/lib/cycle/next-period"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 
@@ -92,6 +94,17 @@ export default async function VandaagPage() {
   const sleepEnabled = profile?.sleep_tracking_enabled === true
   const hasCycle = Boolean(cycleProfile?.has_cycle)
   const tone = cycleEstimate ? PHASE_TONE[cycleEstimate.phase] : null
+  const profileIncomplete =
+    !profile?.hormonal_medication_status &&
+    (profile?.health_conditions?.length ?? 0) === 0 &&
+    (profile?.movement_limitations?.length ?? 0) === 0
+  const nextPeriod = estimateNextPeriod({
+    lastPeriodStart: cycleProfile?.last_period_start ?? null,
+    averageCycleLength: cycleProfile?.average_cycle_length ?? null,
+    hasCycle,
+    regularity: cycleProfile?.regularity ?? null,
+    lifeStage: cycleProfile?.life_stage ?? null,
+  })
 
   const hasMeaningfulCheckin = Boolean(
     checkin &&
@@ -154,8 +167,11 @@ export default async function VandaagPage() {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <header className="mb-8">
+    // On wide screens: phase + greeting stay in view on the left, the day's
+    // plan scrolls on the right (usertest: one narrow column left half the
+    // laptop screen empty).
+    <div className="w-full max-w-2xl xl:max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 xl:grid xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] xl:gap-12 xl:items-start">
+        <header className="mb-8 xl:sticky xl:top-10">
           <div className="flex items-start justify-between gap-3">
             <h1 className="font-display text-3xl lg:text-4xl text-ink min-w-0 pt-1">
               {greeting()}
@@ -184,6 +200,7 @@ export default async function VandaagPage() {
                 menstruationSoftHint={menstruationSoftHint}
                 cycleLength={cycleProfile?.average_cycle_length ?? null}
                 periodLength={cycleProfile?.average_period_length ?? null}
+                nextPeriodStart={nextPeriod && nextPeriod.daysUntil >= 0 ? nextPeriod.estimatedStart : null}
               />
             </div>
           ) : hasCycle && isMenstruationActive && menstruationDay ? (
@@ -262,6 +279,8 @@ export default async function VandaagPage() {
               )}
 
               {buddyQuote && <BuddyQuoteCard quote={buddyQuote} />}
+
+              {profileIncomplete && <ProfileCompleteCard />}
 
               <DayCloseCard
                 userId={user.id}

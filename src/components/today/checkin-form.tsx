@@ -96,6 +96,61 @@ function stateFromCheckin(initial: Checkin | null): FormState {
   }
 }
 
+const QUICK_SYMPTOMS = [
+  "Vermoeidheid",
+  "Hoofdpijn",
+  "Opvliegers",
+  "Slecht slapen",
+  "Krampen",
+  "Stemmingswisselingen",
+]
+
+const SYMPTOM_GROUPS: { label: string; items: string[] }[] = [
+  {
+    label: "Overgang",
+    items: [
+      "Opvliegers",
+      "Nachtelijk zweten",
+      "Vaginale droogte",
+      "Libido lager",
+      "Gewrichtspijn",
+      "Urinewegklachten",
+    ],
+  },
+  {
+    label: "Lichaam",
+    items: [
+      "Vermoeidheid",
+      "Slecht slapen",
+      "Hoofdpijn",
+      "Nekpijn",
+      "Rugpijn",
+      "Buikpijn",
+      "Krampen",
+      "Gevoelige borsten",
+      "Misselijkheid",
+      "Bloating",
+      "Cravings",
+      "Eetlust anders",
+    ],
+  },
+  {
+    label: "Hoofd en gevoel",
+    items: [
+      "Stemmingswisselingen",
+      "Emotioneel",
+      "Onrustig gevoel",
+      "Brain fog",
+      "Gespannen",
+      "Angstig",
+      "Prikkelbaar",
+      "Somber",
+      "Eenzaam",
+      "Piekerig",
+    ],
+  },
+]
+
 /**
  * Light daily check-in for Vandaag.
  *
@@ -135,6 +190,32 @@ export function CheckinForm({
   }, [mentalWellbeingEnabled, allCustoms])
 
   const [state, setState] = useState<FormState>(() => stateFromCheckin(initial))
+  const [showAllSymptoms, setShowAllSymptoms] = useState(false)
+
+  // 30 chips at once was too much for a daily check-in: show a short set
+  // (common ones + whatever she already picked), the rest grouped behind
+  // "Alle klachten".
+  const quickSymptoms = useMemo(() => {
+    const picked = state.symptoms.filter((s) => symptomOptions.includes(s))
+    const quick = [...picked, ...QUICK_SYMPTOMS.filter((s) => symptomOptions.includes(s))]
+    return [...Array.from(new Set(quick)), "Anders", "Geen klachten"].filter(
+      (s, i, all) => all.indexOf(s) === i,
+    )
+  }, [state.symptoms, symptomOptions])
+
+  const groupedSymptoms = useMemo(() => {
+    const rest = symptomOptions.filter((s) => s !== "Anders" && s !== "Geen klachten")
+    const groups = SYMPTOM_GROUPS.map((g) => ({
+      label: g.label,
+      items: rest.filter((s) => g.items.includes(s)),
+    }))
+    const grouped = new Set(groups.flatMap((g) => g.items))
+    const own = rest.filter((s) => !grouped.has(s))
+    return [
+      ...groups,
+      { label: "Eigen en overig", items: [...own, "Anders", "Geen klachten"] },
+    ].filter((g) => g.items.length > 0)
+  }, [symptomOptions])
   const stateRef = useRef(state)
 
   // Filled → compact summary. Empty → light editor (energy), details closed.
@@ -534,18 +615,49 @@ export function CheckinForm({
             />
 
             <div>
-              <p className="text-sm font-medium text-ink mb-2">Klachten</p>
-              <div className="flex flex-wrap gap-2">
-                {symptomOptions.map((symptom) => (
-                  <Chip
-                    key={symptom}
-                    selected={state.symptoms.includes(symptom)}
-                    onClick={() => toggleSymptom(symptom)}
-                  >
-                    {symptomLabel(symptom)}
-                  </Chip>
-                ))}
+              <div className="flex items-baseline justify-between gap-3 mb-2">
+                <p className="text-sm font-medium text-ink">Klachten</p>
+                <button
+                  type="button"
+                  onClick={() => setShowAllSymptoms((v) => !v)}
+                  aria-expanded={showAllSymptoms}
+                  className="text-xs font-medium text-sage-dark min-h-11 px-1 -my-3 touch-manipulation"
+                >
+                  {showAllSymptoms ? "Minder tonen" : `Alle klachten (${symptomOptions.length - 2})`}
+                </button>
               </div>
+              {showAllSymptoms ? (
+                <div className="flex flex-col gap-3">
+                  {groupedSymptoms.map((group) => (
+                    <div key={group.label}>
+                      <p className="text-xs text-ink-soft mb-1.5">{group.label}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {group.items.map((symptom) => (
+                          <Chip
+                            key={symptom}
+                            selected={state.symptoms.includes(symptom)}
+                            onClick={() => toggleSymptom(symptom)}
+                          >
+                            {symptomLabel(symptom)}
+                          </Chip>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {quickSymptoms.map((symptom) => (
+                    <Chip
+                      key={symptom}
+                      selected={state.symptoms.includes(symptom)}
+                      onClick={() => toggleSymptom(symptom)}
+                    >
+                      {symptomLabel(symptom)}
+                    </Chip>
+                  ))}
+                </div>
+              )}
 
               {state.symptoms.includes("Anders") && (
                 <div className="mt-3 flex gap-2">

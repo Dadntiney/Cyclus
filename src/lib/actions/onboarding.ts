@@ -44,6 +44,8 @@ export async function completeOnboarding(input: OnboardingInput): Promise<{ erro
       food_allergies: data.nutritionEnabled ? data.foodAllergies : [],
       mental_wellbeing_enabled: data.mentalWellbeingEnabled ?? null,
       mental_wellbeing_categories: data.mentalWellbeingEnabled ? data.mentalWellbeingCategories : [],
+      // Only set when she switched it on; otherwise leave the column default.
+      ...(data.sleepTrackingEnabled ? { sleep_tracking_enabled: true } : {}),
       wellness_preference: data.wellnessPreference,
       height_cm: data.heightCm ?? null,
       weight_kg: data.weightKg ?? null,

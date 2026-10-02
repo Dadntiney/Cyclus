@@ -8,7 +8,7 @@ import { useLinkStatus } from "next/link"
 import { cn } from "@/lib/utils"
 import { useMeasuredHeightVar } from "@/lib/hooks/use-measured-height-var"
 import { useVisualViewportFrame } from "@/lib/hooks/use-visual-viewport-frame"
-import { NAV_ITEMS } from "./nav-items"
+import { NAV_ITEMS, isNavActive } from "./nav-items"
 
 function NavPendingHint() {
   const { pending } = useLinkStatus()
@@ -55,8 +55,9 @@ export function BottomNav({ avatarUrl }: { avatarUrl: string | null }) {
       )}
     >
       <ul className="flex items-stretch justify-between px-2">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = displayPath === href || displayPath.startsWith(`${href}/`)
+        {NAV_ITEMS.map((item) => {
+          const { href, label, icon: Icon } = item
+          const active = isNavActive(displayPath, item)
           const isProfile = href === "/profiel"
           return (
             <li key={href} className="flex-1">
