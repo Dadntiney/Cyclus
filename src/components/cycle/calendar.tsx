@@ -2,7 +2,9 @@
 
 import { useMemo, useState, useTransition } from "react"
 import {
+  addDays,
   addMonths,
+  parseISO,
   eachDayOfInterval,
   endOfMonth,
   format,
@@ -25,6 +27,9 @@ interface CalendarProps {
   flowByDate?: Map<string, string | null>
   /** Opt-in per profile.track_flow_intensity — see ProfileForm. */
   trackFlowEnabled?: boolean
+  /** Estimated next period start (ISO) — drawn as soft, dashed days. */
+  predictedStart?: string | null
+  predictedLength?: number
 }
 
 const WEEKDAY_LABELS = ["ma", "di", "wo", "do", "vr", "za", "zo"]
@@ -33,7 +38,18 @@ export function Calendar({
   menstruationDates: initialDates,
   flowByDate: initialFlowByDate,
   trackFlowEnabled = false,
+  predictedStart = null,
+  predictedLength = 5,
 }: CalendarProps) {
+  const predictedDates = useMemo(() => {
+    if (!predictedStart) return new Set<string>()
+    const start = parseISO(predictedStart)
+    return new Set(
+      Array.from({ length: Math.max(1, Math.min(10, predictedLength)) }, (_, i) =>
+        format(addDays(start, i), "yyyy-MM-dd"),
+      ),
+    )
+  }, [predictedStart, predictedLength])
   const [month, setMonth] = useState(() => startOfMonth(todayDate()))
   const [dates, setDates] = useState(initialDates)
   const [flowByDate, setFlowByDate] = useState<Map<string, string | null>>(
@@ -180,6 +196,7 @@ export function Calendar({
           const flow = flowByDate.get(iso)
           const future = iso > todayISO
           const isAmsterdamToday = iso === todayISO
+          const isPredicted = future && predictedDates.has(iso)
           return (
             <button
               key={iso}
@@ -188,7 +205,7 @@ export function Calendar({
               onClick={() => handleDayClick(day)}
               aria-label={`${format(day, "d MMMM yyyy", { locale: nl })}${
                 isMenstruation ? ", menstruatie — tik om uit te zetten" : ", tik om menstruatie te markeren"
-              }${isAmsterdamToday ? ", vandaag" : ""}${future ? ", toekomst" : ""}`}
+              }${isAmsterdamToday ? ", vandaag" : ""}${isPredicted ? ", menstruatie verwacht (schatting)" : future ? ", toekomst" : ""}`}
               aria-pressed={isMenstruation}
               className={cn(
                 "relative h-11 rounded-full text-sm mx-auto w-11 flex items-center justify-center transition-colors touch-manipulation",
@@ -196,7 +213,9 @@ export function Calendar({
                 isMenstruation && "bg-phase-menstruatie text-phase-menstruatie-text font-medium",
                 !isMenstruation && isAmsterdamToday && "border-2 border-sage-dark text-sage-dark font-semibold",
                 !isMenstruation && !isAmsterdamToday && "hover:bg-cream-soft",
-                future && "opacity-30 cursor-not-allowed",
+                isPredicted &&
+                  "border-2 border-dashed border-phase-menstruatie bg-phase-menstruatie-soft text-phase-menstruatie-text cursor-default",
+                future && !isPredicted && "opacity-30 cursor-not-allowed",
                 isPending && pendingDate === iso && "opacity-60",
               )}
             >
@@ -222,6 +241,12 @@ export function Calendar({
           <span className="h-3 w-3 rounded-full border border-sage inline-block" />
           Vandaag
         </div>
+        {predictedDates.size > 0 && (
+          <div className="flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-full border border-dashed border-phase-menstruatie bg-phase-menstruatie-soft inline-block" />
+            Verwacht (schatting)
+          </div>
+        )}
       </div>
       <p className="text-xs text-ink-soft mt-3">
         {trackFlowEnabled

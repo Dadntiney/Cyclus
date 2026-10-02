@@ -522,6 +522,8 @@ export default async function CyclusPage() {
           <h2 className="font-display text-xl text-ink mb-3">Kalender</h2>
           <Card>
             <Calendar
+              predictedStart={nextPeriod && nextPeriod.daysUntil >= 0 ? nextPeriod.estimatedStart : null}
+              predictedLength={cycleProfile?.average_period_length ?? 5}
               menstruationDates={menstruationDates}
               flowByDate={flowByDate}
               trackFlowEnabled={trackFlowEnabled}
