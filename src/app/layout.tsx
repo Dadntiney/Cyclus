@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next"
+import Script from "next/script"
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google"
 import { ClientBootstrap } from "@/components/bootstrap/client-bootstrap"
 import {
@@ -73,6 +74,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-full flex flex-col bg-cream text-ink font-sans">
         {children}
         <ClientBootstrap />
+        {/* Vercel Speed Insights: real load times from real phones, visible in
+            the Vercel dashboard once Speed Insights is enabled there. Loaded
+            after everything else so it never slows the page it measures. */}
+        {process.env.VERCEL && (
+          <Script src="/_vercel/speed-insights/script.js" strategy="lazyOnload" />
+        )}
       </body>
     </html>
   )
