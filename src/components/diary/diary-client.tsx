@@ -1,17 +1,21 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { format, parseISO } from "date-fns"
 import { nl } from "date-fns/locale"
-import { NotebookPen } from "lucide-react"
+import { MoreHorizontal, NotebookPen, Trash2 } from "lucide-react"
+import { BottomSheet } from "@/components/ui/bottom-sheet"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Button, textActionClass } from "@/components/ui/button"
+import { IconButton } from "@/components/ui/icon-button"
 import { Textarea, Label } from "@/components/ui/input"
 import { EmptyState } from "@/components/ui/empty-state"
-import { ActionToast, useActionToast } from "@/components/ui/action-toast"
+import { SectionHeader } from "@/components/ui/section-header"
+import { toast } from "@/components/ui/toast"
 import { createDiaryEntry, deleteDiaryEntry, updateDiaryEntry } from "@/lib/actions/diary"
 import { runAction } from "@/lib/client/run-action"
+import { ICON } from "@/lib/ui/icon"
 
 type Entry = {
   id: string
@@ -20,86 +24,100 @@ type Entry = {
   created_at: string
 }
 
+/**
+ * The writing surface is the card itself: no field-in-a-card, no label
+ * above it. Opslaan only appears once there is something to save.
+ */
 export function DiaryClient({ entries }: { entries: Entry[] }) {
   const router = useRouter()
   const [body, setBody] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-  const toast = useActionToast(2000)
+  const hasText = body.trim().length > 0
+
+  function save() {
+    setError(null)
+    startTransition(async () => {
+      const result = await runAction(() => createDiaryEntry({ body }))
+      if (result?.error) setError(result.error)
+      else {
+        setBody("")
+        toast.show({ title: "Opgeslagen" })
+        router.refresh()
+      }
+    })
+  }
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <div className="flex items-baseline justify-between gap-3 mb-1">
-          <h2 className="font-display text-xl text-ink">Nieuw</h2>
-          <ActionToast message={toast.message} />
-        </div>
-        <p className="text-sm text-ink-soft mb-3">Schrijf van je af. Alleen jij ziet dit.</p>
-        <Label htmlFor="diary-body">Vandaag</Label>
-        <Textarea
-          id="diary-body"
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          rows={5}
-          className="mt-1"
-          placeholder="Wat speelt er? Wat wil je onthouden?"
-        />
-        <div className="mt-3 flex items-center gap-3">
-          <Button
-            type="button"
-            disabled={isPending || !body.trim()}
-            onClick={() => {
-              setError(null)
-              startTransition(async () => {
-                const result = await runAction(() => createDiaryEntry({ body }))
-                if (result?.error) setError(result.error)
-                else {
-                  setBody("")
-                  toast.show("Opgeslagen")
-                  router.refresh()
-                }
-              })
-            }}
-          >
-            Opslaan
-          </Button>
-          {!body.trim() && !isPending && (
-            <p className="text-xs text-ink-soft">Schrijf eerst iets op.</p>
+    <>
+      <section aria-label="Nieuwe notitie" className="flex flex-col gap-2">
+        <Card padding="none">
+          <Textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={5}
+            aria-label="Nieuwe notitie"
+            aria-describedby={error ? "diary-error" : undefined}
+            placeholder="Wat speelt er vandaag? Wat wil je onthouden?"
+            className="rounded-card border-0 bg-transparent p-5"
+          />
+          {(hasText || isPending) && (
+            <div className="flex justify-end px-4 pb-4 motion-safe:animate-fade-in">
+              <Button type="button" size="sm" disabled={isPending || !hasText} onClick={save}>
+                {isPending ? "Bezig…" : "Opslaan"}
+              </Button>
+            </div>
           )}
-        </div>
-        {error && <p className="text-sm text-danger mt-2">{error}</p>}
-      </Card>
+        </Card>
+        {error && (
+          <p id="diary-error" role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+        )}
+      </section>
 
-      <div>
-        <h2 className="font-display text-xl text-ink mb-3">Eerdere notities</h2>
+      <section aria-labelledby="eerdere-notities">
+        <SectionHeader id="eerdere-notities" title="Eerdere notities" />
         {entries.length === 0 ? (
           <EmptyState
-            icon={<NotebookPen className="h-6 w-6" strokeWidth={1.5} />}
+            icon={NotebookPen}
+            titleAs="h3"
             title="Nog geen notities"
-            description="Schrijf hierboven iets op — het blijft privé en alleen voor jou."
+            description="Wat je hierboven opschrijft, komt hier te staan. Het blijft privé en alleen voor jou."
+            className="py-6"
           />
         ) : (
-          <div className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-3">
             {entries.map((entry) => (
               <DiaryEntryCard key={entry.id} entry={entry} />
             ))}
-          </div>
+          </ul>
         )}
-      </div>
-    </div>
+      </section>
+    </>
   )
 }
 
 /**
- * One saved note: read, edit in place, or delete — deleting asks once more,
- * because a removed note can't be brought back.
+ * One saved note: read it, edit it in place, or remove it via ⋯ — which
+ * asks once more, because a removed note can't be brought back.
  */
 function DiaryEntryCard({ entry }: { entry: Entry }) {
   const router = useRouter()
-  const [mode, setMode] = useState<"read" | "edit" | "confirm-delete">("read")
+  const [editing, setEditing] = useState(false)
+  const [sheet, setSheet] = useState<"menu" | "confirm" | null>(null)
   const [draft, setDraft] = useState(entry.body)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const dateLabel = format(parseISO(entry.date), "d MMMM yyyy", { locale: nl })
+  const editId = `diary-edit-${entry.id}`
+  const keepRef = useRef<HTMLButtonElement>(null)
+
+  // The menu row she tapped is gone once the sheet asks to confirm: move
+  // focus to the safe choice, never to Verwijderen.
+  useEffect(() => {
+    if (sheet === "confirm") keepRef.current?.focus()
+  }, [sheet])
 
   function save() {
     setError(null)
@@ -109,7 +127,7 @@ function DiaryEntryCard({ entry }: { entry: Entry }) {
         setError(result.error)
         return
       }
-      setMode("read")
+      setEditing(false)
       router.refresh()
     })
   }
@@ -118,59 +136,58 @@ function DiaryEntryCard({ entry }: { entry: Entry }) {
     setError(null)
     startTransition(async () => {
       const result = await runAction(() => deleteDiaryEntry(entry.id))
+      setSheet(null)
       if (result?.error) {
         setError(result.error)
-        setMode("read")
         return
       }
       router.refresh()
     })
   }
 
-  const linkClass = "text-sm text-sage-dark font-medium min-h-11 px-1 touch-manipulation disabled:opacity-50"
-
   return (
-    <Card>
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs text-ink-soft">{format(parseISO(entry.date), "d MMMM yyyy", { locale: nl })}</p>
-        {mode === "read" && (
-          <div className="flex items-center gap-2">
-            <button type="button" className={linkClass} onClick={() => setMode("edit")}>
-              Bewerk
-            </button>
+    <Card as="li">
+      <div className="-mt-2 -mr-2 flex items-center justify-between gap-3">
+        <time dateTime={entry.date} className="type-caption text-ink-soft">
+          {dateLabel}
+        </time>
+        {!editing && (
+          <div className="flex items-center">
             <button
               type="button"
-              className="text-sm text-ink-soft min-h-11 px-1 touch-manipulation"
-              onClick={() => setMode("confirm-delete")}
+              className={textActionClass("px-2")}
+              onClick={() => {
+                setError(null)
+                setEditing(true)
+              }}
             >
-              Verwijder
+              Bewerken
             </button>
+            <IconButton
+              label={`Meer voor notitie van ${dateLabel}`}
+              icon={MoreHorizontal}
+              onClick={() => setSheet("menu")}
+            />
           </div>
         )}
       </div>
 
-      {mode === "edit" ? (
+      {editing ? (
         <>
-          <Label htmlFor={`diary-edit-${entry.id}`} className="sr-only">
+          <Label htmlFor={editId} className="sr-only">
             Notitie bewerken
           </Label>
-          <Textarea
-            id={`diary-edit-${entry.id}`}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            rows={5}
-            className="mt-2"
-          />
-          <div className="flex items-center gap-3 mt-3">
+          <Textarea id={editId} value={draft} onChange={(e) => setDraft(e.target.value)} rows={5} className="mt-1" />
+          <div className="mt-3 flex items-center gap-3">
             <Button type="button" size="sm" disabled={isPending || !draft.trim()} onClick={save}>
               {isPending ? "Bezig…" : "Opslaan"}
             </Button>
             <button
               type="button"
-              className="text-sm text-ink-soft min-h-11 px-1 touch-manipulation"
+              className={textActionClass("text-ink-soft")}
               onClick={() => {
                 setDraft(entry.body)
-                setMode("read")
+                setEditing(false)
               }}
             >
               Annuleren
@@ -178,28 +195,51 @@ function DiaryEntryCard({ entry }: { entry: Entry }) {
           </div>
         </>
       ) : (
-        <p className="text-sm text-ink mt-2 whitespace-pre-wrap">{entry.body}</p>
+        <p className="mt-1 type-body whitespace-pre-wrap text-ink">{entry.body}</p>
       )}
 
-      {mode === "confirm-delete" && (
-        <div className="mt-3 rounded-2xl bg-cream-soft px-4 py-3">
-          <p className="text-sm text-ink">Deze notitie verwijderen? Dit kun je niet ongedaan maken.</p>
-          <div className="flex items-center gap-3 mt-2">
-            <Button type="button" size="sm" variant="danger" disabled={isPending} onClick={remove}>
-              {isPending ? "Bezig…" : "Verwijderen"}
-            </Button>
-            <button
-              type="button"
-              className="text-sm text-ink-soft min-h-11 px-1 touch-manipulation"
-              onClick={() => setMode("read")}
-            >
-              Bewaren
-            </button>
-          </div>
-        </div>
+      {error && (
+        <p role="alert" className="mt-2 text-sm text-danger">
+          {error}
+        </p>
       )}
 
-      {error && <p className="text-sm text-danger mt-2">{error}</p>}
+      <BottomSheet
+        open={sheet !== null}
+        onClose={() => setSheet(null)}
+        title={sheet === "confirm" ? "Notitie verwijderen?" : `Notitie van ${dateLabel}`}
+        footer={
+          sheet === "confirm" ? (
+            <div className="flex flex-col gap-2">
+              <Button type="button" variant="danger" disabled={isPending} onClick={remove}>
+                {isPending ? "Bezig…" : "Verwijderen"}
+              </Button>
+              <Button
+                ref={keepRef}
+                type="button"
+                variant="secondary"
+                disabled={isPending}
+                onClick={() => setSheet(null)}
+              >
+                Bewaren
+              </Button>
+            </div>
+          ) : undefined
+        }
+      >
+        {sheet === "confirm" ? (
+          <p className="type-body text-ink-soft">Dit kun je niet ongedaan maken.</p>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setSheet("confirm")}
+            className="flex min-h-14 w-full items-center gap-3.5 rounded-inset px-1 text-left text-base font-medium text-danger touch-manipulation transition-colors duration-fast ease-standard hover:bg-cream-soft active:bg-cream-soft"
+          >
+            <Trash2 {...ICON.md} aria-hidden />
+            Notitie verwijderen
+          </button>
+        )}
+      </BottomSheet>
     </Card>
   )
 }
