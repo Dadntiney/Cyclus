@@ -72,8 +72,11 @@ function PeriodRow({
   showFlow: boolean
 }) {
   const flowOption = showFlow ? FLOW_OPTIONS.find((f) => f.value === period.dominantFlow) : undefined
+  // Without a cycle length this is her newest period: the cycle it started
+  // is still running. Say so, so the row never reads as a finished cycle
+  // next to "Afgeronde cycli 0 van 2" (CYC-4).
   const details = [
-    period.cycleLength ? `Cyclus van ${period.cycleLength} dagen` : null,
+    period.cycleLength ? `Cyclus van ${period.cycleLength} dagen` : "Huidige cyclus",
     `${period.days} ${period.days === 1 ? "dag" : "dagen"} menstruatie`,
     flowOption ? flowOption.label.toLowerCase() : null,
   ].filter(Boolean)
