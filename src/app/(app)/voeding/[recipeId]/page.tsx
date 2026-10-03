@@ -1,40 +1,43 @@
+import type { Metadata } from "next"
+import { cache } from "react"
 import { notFound } from "next/navigation"
 import { after } from "next/server"
-import { Users, ChefHat, Snowflake, PackageOpen } from "lucide-react"
+import { Clock, Gauge, PackageOpen, Snowflake, WheatOff, type LucideIcon } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getRecipeDetail, getFavoriteRecipeIds } from "@/lib/data/nutrition"
 import { ensureRecipeImage } from "@/lib/images/ensure-recipe-image"
 import { FavoriteButton } from "@/components/nutrition/favorite-button"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
-import { RecipeIngredientsWithServings } from "@/components/nutrition/recipe-ingredients-with-servings"
-import { Card } from "@/components/ui/card"
-import { BackButton } from "@/components/ui/back-button"
+import {
+  RecipeIngredientsWithServings,
+  RecipeServingsMeta,
+} from "@/components/nutrition/recipe-ingredients-with-servings"
+import { DIFFICULTY_LABELS, formatPrepTime, nutritionStats } from "@/components/nutrition/recipe-format"
+import { Page } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
+import { SectionHeader } from "@/components/ui/section-header"
+import { ICON, iconProps } from "@/lib/ui/icon"
 
-const DIFFICULTY_LABELS: Record<string, string> = {
-  makkelijk: "Makkelijk",
-  gemiddeld: "Gemiddeld",
-  pittig: "Uitdagend",
+// One query per request, shared by the document title and the page.
+const loadRecipe = cache((recipeId: string) => getRecipeDetail(recipeId))
+
+export async function generateMetadata({ params }: { params: Promise<{ recipeId: string }> }): Promise<Metadata> {
+  const { recipeId } = await params
+  const recipe = await loadRecipe(recipeId)
+  return { title: recipe?.title ?? "Recept" }
 }
 
 function parseStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((i): i is string => typeof i === "string") : []
 }
 
-/** Stored keys are plain ASCII ("calorieen"); show proper Dutch with units. */
-const NUTRITION_LABELS: Record<string, { label: string; unit?: string }> = {
-  calorieen: { label: "Energie", unit: "kcal" },
-  eiwit: { label: "Eiwit" },
-  koolhydraten: { label: "Koolhydraten" },
-  vet: { label: "Vet" },
-}
-
-const NUTRITION_ORDER = ["calorieen", "eiwit", "koolhydraten", "vet"]
-
-function nutritionOrder(key: string) {
-  const i = NUTRITION_ORDER.indexOf(key)
-  return i === -1 ? NUTRITION_ORDER.length : i
-}
-
+/**
+ * One recipe (ontwerpvisie §7.4): hero, title with the save-heart next to
+ * it on every screen size (besluit 12), one meta line (time, porties as
+ * she chose them, difficulty), the nutrition values as a small summary,
+ * then Ingrediënten (the one card: porties and the list), Bereiding and
+ * Variëren & bewaren flat on the page. On desktop: 2/3 + 1/3.
+ */
 export default async function RecipeDetailPage({
   params,
 }: {
@@ -44,10 +47,7 @@ export default async function RecipeDetailPage({
   const user = await getAuthedUser()
   if (!user) return null
 
-  const [recipe, favoriteIds] = await Promise.all([
-    getRecipeDetail(recipeId),
-    getFavoriteRecipeIds(user.id),
-  ])
+  const [recipe, favoriteIds] = await Promise.all([loadRecipe(recipeId), getFavoriteRecipeIds(user.id)])
 
   if (!recipe) notFound()
 
@@ -66,153 +66,130 @@ export default async function RecipeDetailPage({
   const ingredients = parseStringArray(recipe.ingredients)
   const optionalIngredients = parseStringArray(recipe.optional_ingredients)
   const steps = parseStringArray(recipe.steps)
-  const nutrition =
-    recipe.nutrition_information && typeof recipe.nutrition_information === "object"
-      ? (recipe.nutrition_information as Record<string, string | number>)
-      : {}
+  const stats = nutritionStats(recipe.nutrition_information)
+  const difficulty = recipe.difficulty ? (DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty) : null
+
+  const tips: { icon: LucideIcon; title: string; text: string }[] = []
+  if (recipe.low_carb_variant) tips.push({ icon: WheatOff, title: "Koolhydraatarme variant", text: recipe.low_carb_variant })
+  if (recipe.storage_tip) tips.push({ icon: Snowflake, title: "Bewaartip", text: recipe.storage_tip })
+  if (recipe.meal_prep_tip) tips.push({ icon: PackageOpen, title: "Meal-prep tip", text: recipe.meal_prep_tip })
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <BackButton href="/voeding" label="Voeding" />
-
-      <RecipeImage
+    <Page width="wide">
+      <PageHeader
+        media={
+          <RecipeImage
+            title={recipe.title}
+            imageUrl={imageUrl}
+            alt=""
+            className="aspect-[4/3] max-h-105 w-full rounded-card lg:aspect-[21/9]"
+            iconClassName="h-20 w-20"
+            sizes="(min-width: 1152px) 1088px, 100vw"
+            priority
+          />
+        }
         title={recipe.title}
-        imageUrl={imageUrl}
-        className="aspect-[16/9] lg:aspect-[21/9] w-full rounded-3xl mb-5"
-        iconClassName="h-20 w-20"
-        sizes="(min-width: 1024px) 1024px, 100vw"
-        priority
+        inlineAction={<FavoriteButton recipeId={recipe.id} initialFavorited={favoriteIds.has(recipe.id)} />}
+        subtitle={
+          <>
+            {recipe.description && <span className="mb-3 block max-w-2xl">{recipe.description}</span>}
+            <span className="flex flex-wrap gap-x-4 gap-y-1">
+              {recipe.preparation_time ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock {...ICON.sm} aria-hidden />
+                  {formatPrepTime(recipe.preparation_time)}
+                </span>
+              ) : null}
+              <RecipeServingsMeta userId={user.id} recipeId={recipe.id} recipeServings={recipe.servings} />
+              {difficulty && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Gauge {...ICON.sm} aria-hidden />
+                  {difficulty}
+                </span>
+              )}
+            </span>
+          </>
+        }
       />
 
-      <div className="flex items-start justify-between gap-4 mb-1">
-        <h1 className="font-display text-3xl lg:text-4xl text-ink">{recipe.title}</h1>
-        <FavoriteButton recipeId={recipe.id} initialFavorited={favoriteIds.has(recipe.id)} />
-      </div>
-      {recipe.description && (
-        <p className="text-sm lg:text-base text-ink-soft mb-4 max-w-2xl">{recipe.description}</p>
-      )}
-
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-ink-soft mb-4">
-        {recipe.preparation_time && (
-          <span className="inline-flex items-center gap-1">
-            <ChefHat className="h-3.5 w-3.5" strokeWidth={1.75} />
-            {recipe.preparation_time} min
-          </span>
+      {/* Mobile: values, Ingrediënten, Bereiding, Variëren & bewaren. Desktop:
+          the recipe on the left (2/3), values and tips on the right (1/3);
+          the second row is 1fr so the tips sit right under the values. */}
+      <div className="grid gap-8 lg:grid-cols-3 lg:grid-rows-[auto_1fr] lg:items-start">
+        {stats.length > 0 && (
+          <section aria-labelledby="voedingswaarden" className="lg:col-start-3 lg:row-start-1">
+            <p id="voedingswaarden" className="mb-2 text-sm text-ink-soft">
+              Voedingswaarden per portie, bij benadering
+            </p>
+            <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2">
+              {stats.map((stat) => (
+                <div key={stat.key} className="flex flex-col-reverse rounded-inset bg-cream-soft px-3 py-3 text-center">
+                  <dt className="text-xs text-ink-soft">{stat.label}</dt>
+                  <dd className="text-base font-semibold text-ink tabular-nums">{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         )}
-        {recipe.servings && (
-          <span className="inline-flex items-center gap-1">
-            <Users className="h-3.5 w-3.5" strokeWidth={1.75} />
-            Recept voor {recipe.servings} {recipe.servings === 1 ? "portie" : "porties"}
-          </span>
-        )}
-        {recipe.difficulty && <span>{DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}</span>}
-      </div>
 
-      <div className="flex flex-wrap gap-1.5 mb-6">
-        {recipe.is_budget && (
-          <span className="text-xs font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1">
-            Budgetvriendelijk
-          </span>
-        )}
-        {recipe.category.map((c) => (
-          <span
-            key={c}
-            className="text-xs font-medium text-ink-soft bg-cream-soft rounded-full px-2.5 py-1"
-          >
-            {c}
-          </span>
-        ))}
-      </div>
-
-      <div className="lg:grid lg:grid-cols-3 lg:gap-8 lg:items-start">
-        <div className="flex flex-col gap-4 lg:col-span-2">
+        <div className="flex flex-col gap-8 lg:col-span-2 lg:col-start-1 lg:row-span-2 lg:row-start-1">
           {ingredients.length > 0 && (
-            <RecipeIngredientsWithServings
-              userId={user.id}
-              recipeId={recipe.id}
-              recipeServings={recipe.servings}
-              ingredients={ingredients}
-              optionalIngredients={optionalIngredients}
-              isBudget={Boolean(recipe.is_budget)}
-            />
+            <section aria-labelledby="ingredienten">
+              <SectionHeader id="ingredienten" title="Ingrediënten" />
+              <RecipeIngredientsWithServings
+                userId={user.id}
+                recipeId={recipe.id}
+                recipeServings={recipe.servings}
+                ingredients={ingredients}
+                optionalIngredients={optionalIngredients}
+              />
+            </section>
           )}
 
           {(steps.length > 0 || recipe.instructions) && (
-            <Card>
-              <p className="text-sm font-medium text-ink mb-3">Bereidingswijze</p>
+            <section aria-labelledby="bereiding">
+              <SectionHeader id="bereiding" title="Bereiding" />
               {steps.length > 0 ? (
-                <ol className="flex flex-col gap-2.5">
+                <ol className="flex flex-col gap-4">
                   {steps.map((step, i) => (
-                    <li key={i} className="flex gap-3 text-[15px] text-ink-soft leading-relaxed">
-                      <span className="shrink-0 h-6 w-6 rounded-full bg-sage-soft text-sage-dark text-xs font-semibold flex items-center justify-center">
+                    <li key={i} className="flex gap-3 text-base text-ink">
+                      <span
+                        aria-hidden
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sage-soft text-sm font-semibold text-sage-darker tabular-nums"
+                      >
                         {i + 1}
                       </span>
-                      {step}
+                      <span className="min-w-0 pt-0.5">{step}</span>
                     </li>
                   ))}
                 </ol>
               ) : (
-                <p className="text-[15px] text-ink-soft leading-relaxed">{recipe.instructions}</p>
+                <p className="text-base text-ink">{recipe.instructions}</p>
               )}
-            </Card>
+            </section>
           )}
         </div>
 
-        <div className="flex flex-col gap-4 mt-4 lg:mt-0">
-          {Object.keys(nutrition).length > 0 && (
-            <Card>
-              <p className="text-sm font-medium text-ink mb-3">Voedingswaarden (per portie)</p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                {Object.entries(nutrition)
-                  .sort(([a], [b]) => nutritionOrder(a) - nutritionOrder(b))
-                  .map(([key, value]) => (
-                    <div key={key} className="flex justify-between">
-                      <span className="text-ink-soft">{NUTRITION_LABELS[key]?.label ?? key}</span>
-                      <span className="text-ink font-medium tabular-nums">
-                        {String(value)}
-                        {NUTRITION_LABELS[key]?.unit && /^\d+([.,]\d+)?$/.test(String(value).trim())
-                          ? ` ${NUTRITION_LABELS[key].unit}`
-                          : ""}
-                      </span>
-                    </div>
-                  ))}
-              </div>
-            </Card>
-          )}
-
-          {recipe.low_carb_variant && (
-            <Card>
-              <p className="text-sm font-medium text-ink mb-2">Koolhydraatarme variant</p>
-              <p className="text-sm text-ink-soft leading-relaxed">{recipe.low_carb_variant}</p>
-            </Card>
-          )}
-
-          {(recipe.storage_tip || recipe.meal_prep_tip) && (
-            <Card>
-              <div className="flex flex-col gap-4">
-                {recipe.storage_tip && (
-                  <div className="flex gap-2.5">
-                    <Snowflake className="h-4 w-4 text-sage-dark shrink-0 mt-0.5" strokeWidth={1.75} />
-                    <div>
-                      <p className="text-xs font-medium text-ink mb-0.5">Bewaartip</p>
-                      <p className="text-xs text-ink-soft">{recipe.storage_tip}</p>
-                    </div>
+        {tips.length > 0 && (
+          <section
+            aria-labelledby="varieren"
+            className={stats.length > 0 ? "lg:col-start-3 lg:row-start-2" : "lg:col-start-3 lg:row-start-1"}
+          >
+            <SectionHeader id="varieren" title="Variëren & bewaren" />
+            <ul className="flex flex-col gap-5">
+              {tips.map(({ icon: Icon, title, text }) => (
+                <li key={title} className="flex gap-3">
+                  <Icon {...iconProps("sm", "mt-1 text-sage-dark")} aria-hidden />
+                  <div className="min-w-0">
+                    <h3 className="text-base font-medium text-ink">{title}</h3>
+                    <p className="mt-0.5 text-sm text-ink-soft">{text}</p>
                   </div>
-                )}
-                {recipe.meal_prep_tip && (
-                  <div className="flex gap-2.5">
-                    <PackageOpen className="h-4 w-4 text-sage-dark shrink-0 mt-0.5" strokeWidth={1.75} />
-                    <div>
-                      <p className="text-xs font-medium text-ink mb-0.5">Meal-prep tip</p>
-                      <p className="text-xs text-ink-soft">{recipe.meal_prep_tip}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Card>
-          )}
-        </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
-    </div>
+    </Page>
   )
 }

@@ -1,21 +1,21 @@
 "use client"
 
-import { ACCOUNT_STATE_APPLIED_EVENT } from "@/lib/client/account-sync"
-import { useEffect, useState } from "react"
-import { IngredientList } from "@/components/nutrition/ingredient-info-sheet"
+import { Users } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { hasIngredientInfo, IngredientList } from "@/components/nutrition/ingredient-info-sheet"
 import { ServingsStepper } from "@/components/nutrition/servings-stepper"
-import {
-  loadServingsPrefs,
-  resolveRecipeServings,
-  setRecipeServings,
-  SERVINGS_CHANGED_EVENT,
-  type ServingsPrefs,
-} from "@/lib/client/servings-storage"
-import { scaleIngredientList } from "@/lib/nutrition/scale-ingredient"
+import { useRecipeServings } from "@/components/nutrition/use-recipe-servings"
+import { scaleIngredientListForCooking } from "@/lib/nutrition/scale-ingredient"
+import { ICON } from "@/lib/ui/icon"
+
+function portiesLabel(n: number) {
+  return `${n} ${n === 1 ? "portie" : "porties"}`
+}
 
 /**
  * Recipe ingredients with a live porties stepper. Changing porties scales
- * amounts and remembers a per-recipe override (falls back to household default).
+ * amounts (rounded the way you'd measure them) and remembers a per-recipe
+ * choice, falling back to her household default (shared with Boodschappen).
  */
 export function RecipeIngredientsWithServings({
   userId,
@@ -23,73 +23,64 @@ export function RecipeIngredientsWithServings({
   recipeServings,
   ingredients,
   optionalIngredients = [],
-  isBudget = false,
 }: {
   userId: string
   recipeId: string
   recipeServings: number | null
   ingredients: string[]
   optionalIngredients?: string[]
-  isBudget?: boolean
 }) {
-  const [prefs, setPrefs] = useState<ServingsPrefs | null>(null)
+  const { base, chosen, factor, setChosen } = useRecipeServings(userId, recipeId, recipeServings)
 
-  useEffect(() => {
-    function refresh() {
-      setPrefs(loadServingsPrefs(userId))
-    }
-    refresh()
-    window.addEventListener(SERVINGS_CHANGED_EVENT, refresh)
-    window.addEventListener(ACCOUNT_STATE_APPLIED_EVENT, refresh)
-    return () => {
-      window.removeEventListener(SERVINGS_CHANGED_EVENT, refresh)
-      window.removeEventListener(ACCOUNT_STATE_APPLIED_EVENT, refresh)
-    }
-  }, [userId])
-
-  const resolved = prefs
-    ? resolveRecipeServings(recipeId, recipeServings, prefs)
-    : { base: recipeServings && recipeServings > 0 ? recipeServings : 2, chosen: recipeServings && recipeServings > 0 ? recipeServings : 2, factor: 1 }
-
-  const scaled = scaleIngredientList(ingredients, resolved.factor)
-  const scaledOptional = scaleIngredientList(optionalIngredients, resolved.factor)
-  const isCustom = Boolean(prefs?.byRecipeId[recipeId])
-
-  function onChange(next: number) {
-    // Setting equal to household default clears the per-recipe override.
-    if (prefs && next === prefs.defaultServings) {
-      setPrefs(setRecipeServings(userId, recipeId, null))
-    } else {
-      setPrefs(setRecipeServings(userId, recipeId, next))
-    }
-  }
+  const scaled = scaleIngredientListForCooking(ingredients, factor)
+  const scaledOptional = scaleIngredientListForCooking(optionalIngredients, factor)
+  const showHint = hasIngredientInfo(ingredients) || hasIngredientInfo(optionalIngredients)
 
   return (
-    <div className="rounded-[1.25rem] bg-surface border border-line p-4 lg:p-5">
-      <div className="flex items-center justify-between gap-3 mb-3">
+    <Card>
+      <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-ink">
-            {isBudget ? "Basis" : "Ingrediënten"}
+          <p className="text-base font-medium text-ink">
+            Porties
           </p>
-          <p className="text-xs text-ink-soft mt-0.5">
-            {resolved.chosen} {resolved.chosen === 1 ? "portie" : "porties"}
-            {resolved.base !== resolved.chosen
-              ? ` · recept is voor ${resolved.base}`
-              : isCustom
-                ? " · eigen keuze"
-                : " · jouw basis"}
+          <p className="text-sm text-ink-soft">
+            {chosen === base ? "Zoals in het recept" : `Aangepast van ${base}`}
           </p>
         </div>
-        <ServingsStepper value={resolved.chosen} onChange={onChange} size="sm" />
+        <ServingsStepper value={chosen} onChange={setChosen} size="sm" />
       </div>
 
-      <IngredientList ingredients={scaled} />
+      {showHint && (
+        <p className="mt-4 text-sm text-ink-soft">Tik op een onderstreept ingrediënt om te lezen waarom het past.</p>
+      )}
+
+      <IngredientList ingredients={scaled} className={showHint ? "mt-2" : "mt-3"} />
+
       {scaledOptional.length > 0 && (
         <>
-          <p className="text-sm font-medium text-ink mt-4 mb-3">Optioneel toevoegen</p>
-          <IngredientList ingredients={scaledOptional} bulletClassName="text-peach" />
+          <h3 className="mt-4 text-base font-medium text-ink">Optioneel toevoegen</h3>
+          <IngredientList ingredients={scaledOptional} bulletClassName="text-peach" className="mt-1" />
         </>
       )}
-    </div>
+    </Card>
+  )
+}
+
+/** "{n} porties" in the recipe's meta line: the same number as the stepper. */
+export function RecipeServingsMeta({
+  userId,
+  recipeId,
+  recipeServings,
+}: {
+  userId: string
+  recipeId: string
+  recipeServings: number | null
+}) {
+  const { chosen } = useRecipeServings(userId, recipeId, recipeServings)
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <Users {...ICON.sm} aria-hidden />
+      {portiesLabel(chosen)}
+    </span>
   )
 }
