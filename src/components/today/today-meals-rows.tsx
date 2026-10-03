@@ -3,7 +3,7 @@
 import { ACCOUNT_STATE_APPLIED_EVENT } from "@/lib/client/account-sync"
 import { useEffect, useId, useRef, useState } from "react"
 import Link from "next/link"
-import { ChevronLeft, PencilLine, Repeat, RotateCcw, SlidersHorizontal, X } from "lucide-react"
+import { ChevronLeft, Pencil, PencilLine, Repeat, RotateCcw, X } from "lucide-react"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { BottomSheet } from "@/components/ui/bottom-sheet"
 import { Button, textActionClass } from "@/components/ui/button"
@@ -45,8 +45,8 @@ const rowLinkClass =
 
 /**
  * Today's meals (ontbijt → lunch → diner) as rows of the plan card.
- * "Aanpassen" works the same everywhere: a sliders IconButton opens a
- * sheet with the options (Andere maaltijd · Eigen maaltijd · Vandaag niet ·
+ * "Aanpassen" works the same everywhere: a pencil IconButton (besluit 22)
+ * opens a sheet with the options (Andere maaltijd · Eigen maaltijd · Vandaag niet ·
  * Herstel advies). A skipped meal keeps its inline "Herstel".
  */
 export function TodayMealsRows({
@@ -100,7 +100,11 @@ export function TodayMealsRows({
     }
     if (!sheetWasOpenRef.current) return
     sheetWasOpenRef.current = false
-    if (document.activeElement && document.activeElement !== document.body) return
+    // Focus already went back to the opener: leave it. While the sheet slides
+    // out, focus may still sit on the tapped option inside it (inert, about
+    // to unmount) — that counts as lost.
+    const active = document.activeElement
+    if (active && active !== document.body && !active.closest("[data-overlay]")) return
     const row = adjustSlot ? document.querySelector(`[data-meal-row="${rowPrefix}${adjustSlot}"]`) : null
     const target =
       row?.querySelector<HTMLElement>('[aria-haspopup="dialog"]') ?? row?.querySelector<HTMLElement>("button, a[href]")
@@ -161,7 +165,7 @@ export function TodayMealsRows({
         const adjustButton = (
           <IconButton
             label={`${meal.label} aanpassen`}
-            icon={SlidersHorizontal}
+            icon={Pencil}
             aria-haspopup="dialog"
             onClick={() => openAdjust(meal.slot)}
           />

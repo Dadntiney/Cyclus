@@ -4,7 +4,7 @@ import { ACCOUNT_STATE_APPLIED_EVENT } from "@/lib/client/account-sync"
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Check, ChevronLeft, Moon, Repeat, RotateCcw, SlidersHorizontal, X } from "lucide-react"
+import { Check, ChevronLeft, Moon, Pencil, Repeat, RotateCcw, X } from "lucide-react"
 import { WorkoutImage } from "@/components/training/workout-image"
 import { BottomSheet } from "@/components/ui/bottom-sheet"
 import { buttonVariants, textActionClass } from "@/components/ui/button"
@@ -44,8 +44,9 @@ type SheetMode = "menu" | "swap"
 /**
  * Today's (or a week day's) movement, the first row of the plan card:
  * image · "Beweging" · title · type and duration · "Start training".
- * "Aanpassen" is the sliders IconButton: a sheet with Andere beweging ·
- * Vandaag niet · Herstel advies, like the meals.
+ * "Aanpassen" is the pencil IconButton (besluit 22: one icon for adjusting
+ * a plan item): a sheet with Andere beweging · Vandaag niet · Herstel
+ * advies, like the meals.
  */
 export function TodayMovementCard({
   userId,
@@ -126,7 +127,11 @@ export function TodayMovementCard({
     }
     if (!sheetWasOpenRef.current) return
     sheetWasOpenRef.current = false
-    if (document.activeElement && document.activeElement !== document.body) return
+    // Focus already went back to the opener: leave it. While the sheet slides
+    // out, focus may still sit on the tapped option inside it (inert, about
+    // to unmount) — that counts as lost.
+    const active = document.activeElement
+    if (active && active !== document.body && !active.closest("[data-overlay]")) return
     shellRef.current?.querySelector<HTMLElement>("button, a[href]")?.focus({ preventScroll: true })
   }, [sheetOpen])
 
@@ -278,7 +283,7 @@ export function TodayMovementCard({
             </div>
             <IconButton
               label="Beweging aanpassen"
-              icon={SlidersHorizontal}
+              icon={Pencil}
               aria-haspopup="dialog"
               onClick={openSheet}
               className="-mr-2 -mt-2"
