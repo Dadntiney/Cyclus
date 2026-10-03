@@ -1,16 +1,16 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { Pause, Play, Square, Volume2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { IconButton } from "@/components/ui/icon-button"
+import { StickyActionBar } from "@/components/ui/sticky-action-bar"
+import { BreathingRing, StepProgress } from "@/components/mental-wellbeing/guided-parts"
+import { useImmersive } from "@/lib/hooks/use-immersive"
+import { ICON, iconProps } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 import type { MindfulExercise } from "@/lib/data/mindful-exercises"
-
-function formatElapsed(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${m}:${s.toString().padStart(2, "0")}`
-}
 
 /** Pause between spoken segments — long enough to actually breathe before
  * the next line starts, short enough that it doesn't feel like it stalled. */
@@ -46,19 +46,17 @@ function pickDutchVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | 
   return dutchVoices[0]
 }
 
-interface Segment {
-  label: string
-  text: string
-}
+type Segment = { kind: "intro"; text: string } | { kind: "step"; step: number; text: string } | { kind: "closing"; text: string }
 
 function buildSegments(exercise: MindfulExercise): Segment[] {
-  const total = exercise.steps.length
   return [
-    { label: "Introductie", text: exercise.intro },
-    ...exercise.steps.map((text, i) => ({ label: `Stap ${i + 1} van ${total}`, text })),
-    { label: "Afronding", text: exercise.closing },
+    { kind: "intro", text: exercise.intro },
+    ...exercise.steps.map((text, step) => ({ kind: "step" as const, step, text })),
+    { kind: "closing", text: exercise.closing },
   ]
 }
+
+const noSubscribe = () => () => {}
 
 /**
  * The "Luisteren" experience: audio-only, meant to be started and then left
@@ -67,31 +65,41 @@ function buildSegments(exercise: MindfulExercise): Segment[] {
  * every future one only needs that field set to get this for free), and
  * otherwise falls back to the browser's built-in text-to-speech reading the
  * same intro/steps/closing this exercise already has. Either way the
- * play/pause/stop chrome below is identical, so which engine is behind it
- * is invisible to her.
+ * play/pause/stop controls are identical, so which engine is behind it is
+ * invisible to her.
+ *
+ * Immersive: the tab bar steps aside and play/pause sits in the thumb zone.
+ * The intro is already on the page (header), so it is only spoken here.
+ * "Stoppen" ends the playback and starts over; `onStop` lets the parent
+ * remount this component fresh.
  */
 export function ListenMode({
   exercise,
-  onBack,
+  onStop,
   onFinish,
+  onRead,
 }: {
   exercise: MindfulExercise
-  onBack: () => void
-  onFinish: (elapsedSeconds: number) => void
+  onStop: () => void
+  onFinish: () => void
+  /** Switch to Lezen (when this device cannot read aloud). */
+  onRead: () => void
 }) {
   const hasAudioFile = Boolean(exercise.audioUrl)
-  // Only ever evaluated after a user tap (ListenMode never renders during
-  // SSR/hydration), so reading `window` in the initializer is safe here.
-  const [speechSupported] = useState(
-    () => hasAudioFile || (typeof window !== "undefined" && "speechSynthesis" in window),
+  // Server: assume support, so no "not supported" flash before hydration.
+  const speechSupported = useSyncExternalStore(
+    noSubscribe,
+    () => hasAudioFile || "speechSynthesis" in window,
+    () => true,
   )
+  // The tab bar steps aside while she listens; the app bar (back) stays.
+  useImmersive(speechSupported)
   const [started, setStarted] = useState(false)
   const [playing, setPlaying] = useState(false)
-  const [elapsed, setElapsed] = useState(0)
   const [segmentIndex, setSegmentIndex] = useState(0)
   const [progress, setProgress] = useState(0) // 0-1, only meaningful for the real-audio path
 
-  const segments = useRef(buildSegments(exercise)).current
+  const [segments] = useState(() => buildSegments(exercise))
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
@@ -107,13 +115,7 @@ export function ListenMode({
     return () => window.speechSynthesis.removeEventListener("voiceschanged", loadVoices)
   }, [hasAudioFile, speechSupported])
 
-  useEffect(() => {
-    if (!playing) return
-    const interval = setInterval(() => setElapsed((s) => s + 1), 1000)
-    return () => clearInterval(interval)
-  }, [playing])
-
-  // Stop speaking immediately if she navigates away mid-exercise.
+  // Stop speaking immediately if she navigates away or switches to Lezen.
   useEffect(() => {
     return () => {
       if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
@@ -126,7 +128,7 @@ export function ListenMode({
   function finish() {
     if (finishedRef.current) return
     finishedRef.current = true
-    onFinish(elapsed)
+    onFinish()
   }
 
   function speakFrom(index: number) {
@@ -165,7 +167,7 @@ export function ListenMode({
   function handleStopSpeech() {
     if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
     window.speechSynthesis.cancel()
-    onBack()
+    onStop()
   }
 
   function handlePlayPauseAudio() {
@@ -185,106 +187,108 @@ export function ListenMode({
       audio.pause()
       audio.currentTime = 0
     }
-    onBack()
+    onStop()
   }
 
   if (!hasAudioFile && !speechSupported) {
     return (
-      <Card className="text-center py-8">
-        <p className="text-sm text-ink-soft mb-5 max-w-sm mx-auto">
-          Luisteren wordt op dit apparaat niet ondersteund. Kies hierboven voor Lezen.
+      <Card className="flex flex-col items-center gap-4 text-center">
+        <p className="text-sm text-ink-soft">
+          Voorlezen werkt niet op dit apparaat. Je kunt de oefening wel stap voor stap meelezen.
         </p>
-        <button
-          type="button"
-          onClick={onBack}
-          className="text-sm font-medium text-sage-dark touch-manipulation"
-        >
-          Terug
-        </button>
+        <Button variant="tonal" size="sm" onClick={onRead}>
+          Lees mee
+        </Button>
       </Card>
     )
   }
 
-  const currentLabel = hasAudioFile ? exercise.title : segments[segmentIndex]?.label
-  const currentText = hasAudioFile ? null : segments[segmentIndex]?.text
-
+  const segment = segments[segmentIndex]
+  const stepCount = exercise.steps.length
   const handlePlayPause = hasAudioFile ? handlePlayPauseAudio : handlePlayPauseSpeech
   const handleStop = hasAudioFile ? handleStopAudio : handleStopSpeech
 
   return (
-    <Card className="text-center py-10">
-      {hasAudioFile && exercise.audioUrl && (
-        <audio
-          ref={audioRef}
-          src={exercise.audioUrl}
-          preload="metadata"
-          onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
-          onTimeUpdate={(e) => {
-            const audio = e.currentTarget
-            if (audio.duration) setProgress(audio.currentTime / audio.duration)
-          }}
-          onEnded={finish}
-        />
-      )}
-
-      <p className="text-xs font-medium text-sage-dark mb-1">{currentLabel}</p>
-      <p className="text-xs text-ink-soft mb-6">{formatElapsed(elapsed)}</p>
-
-      <div className="relative mx-auto mb-6 h-24 w-24">
-        <div
-          className={cn(
-            "absolute inset-0 rounded-full bg-sage-soft",
-            playing && "motion-safe:animate-pulse",
-          )}
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Volume2 className={cn("h-8 w-8 text-sage-dark", !playing && "opacity-40")} strokeWidth={1.5} />
-        </div>
-      </div>
-
-      {hasAudioFile && (
-        <div className="mx-auto mb-6 h-1.5 w-full max-w-[220px] rounded-full bg-cream-soft overflow-hidden">
-          <div
-            className="h-full rounded-full bg-sage-fill transition-all duration-300"
-            style={{ width: `${Math.round(progress * 100)}%` }}
+    <>
+      <Card className="flex flex-col items-center gap-5 py-8 text-center">
+        {hasAudioFile && exercise.audioUrl && (
+          <audio
+            ref={audioRef}
+            src={exercise.audioUrl}
+            preload="metadata"
+            onPlay={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
+            onTimeUpdate={(e) => {
+              const audio = e.currentTarget
+              if (audio.duration) setProgress(audio.currentTime / audio.duration)
+            }}
+            onEnded={finish}
           />
-        </div>
-      )}
+        )}
 
-      {currentText && (
-        <p className="text-sm text-ink-soft leading-relaxed px-4 mb-2 max-w-sm mx-auto" aria-live="polite">
-          {currentText}
-        </p>
-      )}
+        {!hasAudioFile && started && segment?.kind === "step" ? (
+          <StepProgress current={segment.step} total={stepCount} />
+        ) : (
+          <p className="type-eyebrow text-sage-dark">
+            {!started
+              ? "Klaar om te luisteren"
+              : hasAudioFile
+                ? playing
+                  ? "Aan het luisteren"
+                  : "Gepauzeerd"
+                : segment?.kind === "closing"
+                  ? "Afronding"
+                  : "Rustig beginnen"}
+          </p>
+        )}
 
-      <p className="text-xs text-ink-soft mb-8 mt-2">
-        {started ? "Leg gerust je telefoon neer en sluit je ogen." : "Zet je telefoon op stil en maak het jezelf gemakkelijk."}
-      </p>
+        <BreathingRing breathing={playing}>
+          <Volume2 {...iconProps("xl", cn("text-sage-dark", !playing && "opacity-40"))} aria-hidden />
+        </BreathingRing>
 
-      <div className="flex items-center justify-center gap-4">
-        <button
-          type="button"
-          onClick={handleStop}
-          aria-label="Stoppen"
-          className="h-12 w-12 rounded-full flex items-center justify-center text-ink-soft bg-cream-soft/80 touch-manipulation motion-safe:active:scale-[0.94] transition-transform"
-        >
-          <Square className="h-4.5 w-4.5" strokeWidth={1.75} />
-        </button>
-        <button
-          type="button"
-          onClick={handlePlayPause}
-          aria-label={playing ? "Pauzeren" : "Afspelen"}
-          className="h-16 w-16 rounded-full flex items-center justify-center bg-sage-fill text-white touch-manipulation motion-safe:active:scale-[0.94] transition-transform"
-        >
-          {playing ? (
-            <Pause className="h-6 w-6" strokeWidth={2} />
-          ) : (
-            <Play className="h-6 w-6 ml-0.5" strokeWidth={2} />
+        {hasAudioFile && (
+          <div className="h-1.5 w-full max-w-56 overflow-hidden rounded-full bg-cream-soft" aria-hidden>
+            <div
+              className="h-full rounded-full bg-sage-fill transition-[width] duration-base ease-standard"
+              style={{ width: `${Math.round(progress * 100)}%` }}
+            />
+          </div>
+        )}
+
+        {/* The intro is in the header already; steps and the closing are shown as they are spoken. */}
+        <div aria-live="polite" className="min-h-12 max-w-sm">
+          {!hasAudioFile && started && segment && segment.kind !== "intro" && (
+            <p key={segmentIndex} className="type-body-lg text-ink animate-fade-in">
+              {segment.text}
+            </p>
           )}
-        </button>
-        <div className="h-12 w-12" aria-hidden />
-      </div>
-    </Card>
+        </div>
+
+        <p className="text-sm text-ink-soft">
+          {started
+            ? "Leg gerust je telefoon neer en sluit je ogen."
+            : "Zet je telefoon op stil en maak het jezelf gemakkelijk."}
+        </p>
+      </Card>
+
+      <StickyActionBar className="mt-6">
+        <div className="flex items-center justify-center gap-6">
+          <IconButton label="Stoppen" icon={Square} tone="soft" onClick={handleStop} disabled={!started} />
+          <button
+            type="button"
+            onClick={handlePlayPause}
+            aria-label={playing ? "Pauzeren" : started ? "Verder luisteren" : "Afspelen"}
+            className={cn(
+              "inline-flex h-14 w-14 items-center justify-center rounded-full bg-sage-fill text-white touch-manipulation",
+              "transition-[background-color,transform] duration-fast ease-standard hover:bg-sage-fill-darker motion-safe:active:scale-[0.97]",
+            )}
+          >
+            {playing ? <Pause {...ICON.lg} aria-hidden /> : <Play {...iconProps("lg", "ml-0.5")} aria-hidden />}
+          </button>
+          {/* Balances the stop button, so play/pause sits in the middle. */}
+          <span aria-hidden className="h-11 w-11" />
+        </div>
+      </StickyActionBar>
+    </>
   )
 }
