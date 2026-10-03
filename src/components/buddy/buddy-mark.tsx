@@ -1,4 +1,5 @@
 import { MessageCircleHeart } from "lucide-react"
+import { ICON } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
 type BuddyMarkSize = "sm" | "md" | "lg" | "xl"
@@ -18,7 +19,7 @@ const SIZE: Record<BuddyMarkSize, { box: string; icon: string }> = {
  */
 export function BuddyGlyph({
   className,
-  strokeWidth = 1.75,
+  strokeWidth = ICON.md.strokeWidth,
   variant = "solid",
 }: {
   className?: string
@@ -69,7 +70,7 @@ export function BuddyMark({
       <BuddyGlyph
         variant="outline"
         className={cn(s.icon, glyphClassName)}
-        strokeWidth={1.75}
+        strokeWidth={ICON.md.strokeWidth}
       />
     </span>
   )
