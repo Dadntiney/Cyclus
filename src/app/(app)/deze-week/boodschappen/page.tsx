@@ -40,7 +40,7 @@ export default async function BoodschappenPage({
           description="Er is geen boodschappenlijst omdat voeding niet aanstaat in je profiel."
           action={
             <Link href={`${FEATURES.gebruik.href}#voeding`} className={buttonVariants({ variant: "tonal" })}>
-              Zet aan in {FEATURES.gebruik.label}
+              {FEATURES.gebruik.label}
             </Link>
           }
         />
@@ -57,10 +57,8 @@ export default async function BoodschappenPage({
 
   return (
     <Page>
-      <PageHeader
-        title={FEATURES.boodschappen.label}
-        subtitle="Op basis van je weekplanning en jouw porties, per week of per dag."
-      />
+      {/* One helper line, under the Week/Dag switch (TODAY-19): no subtitle. */}
+      <PageHeader title={FEATURES.boodschappen.label} />
 
       <GroceryList
         userId={user.id}

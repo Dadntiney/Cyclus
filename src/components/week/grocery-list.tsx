@@ -223,6 +223,8 @@ export function GroceryList({
         weekdayShort: d.weekdayShort,
         isToday: d.isToday,
         isPast: d.isPast,
+        // The same strip as Deze week, phase line included.
+        phase: d.cycleEstimate?.phase ?? null,
       })),
     [days],
   )

@@ -291,7 +291,12 @@ export function WeekView({
                 {FEATURES.boodschappen.label}
                 <span className="sr-only"> voor de hele week</span>
               </span>
-              {groceryItemCount > 0 && <span className="text-sm text-ink-soft">{groceryItemCount}</span>}
+              {groceryItemCount > 0 && (
+                <span className="text-sm text-ink-soft">
+                  {groceryItemCount}
+                  <span className="sr-only"> producten</span>
+                </span>
+              )}
               <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
             </Link>
           )}
