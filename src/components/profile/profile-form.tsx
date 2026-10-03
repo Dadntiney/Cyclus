@@ -815,7 +815,7 @@ export function ProfileForm({
               {hasMedications && (
                 <SwitchRow
                   title="Tonen op Vandaag"
-                  description="Een kort overzicht van je medicatie van vandaag op Vandaag."
+                  description="Een kort overzicht van wat je vandaag gebruikt, op je Vandaag-pagina."
                   checked={state.showMedicationOnDashboard}
                   onChange={(showMedicationOnDashboard) =>
                     applyUpdate((s) => ({ ...s, showMedicationOnDashboard }), "immediate")
