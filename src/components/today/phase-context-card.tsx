@@ -39,12 +39,15 @@ const PHASE_TEXT: Record<CyclePhase, string> = {
  *
  * Soft states (predicted / just stopped) show no day numeral: that number
  * only means something while her period is running or the cycle is known.
- * No tagline: what the day asks for is said once, under "Voor jou vandaag".
+ * Vandaag passes no tagline: what the day asks for is said once, under
+ * "Voor jou vandaag". One optional quiet line (`note`, or the older
+ * `subtitle`) can sit under the band.
  */
 export function PhaseContextCard({
   phase,
   phaseLabel,
   cycleDay,
+  subtitle,
   hasCycle,
   isMenstruationActive,
   menstruationDay,
@@ -60,8 +63,9 @@ export function PhaseContextCard({
   phaseLabel: string
   cycleDay: number
   /**
-   * @deprecated No longer shown: the compact status has no tagline (one
-   * voice per day). Still accepted so existing callers keep compiling.
+   * Older name for the quiet line under the band (Cyclus still passes it).
+   * Prefer `note`; Vandaag passes neither, so it shows no tagline. Hidden
+   * in the soft states, whose caption already says what is going on.
    */
   subtitle?: string
   hasCycle: boolean
@@ -87,6 +91,7 @@ export function PhaseContextCard({
   const softMode = Boolean(softHint) && !isMenstruationActive
   const activeDay = isMenstruationActive && menstruationDay ? menstruationDay : null
   const shownDay = activeDay ?? cycleDay
+  const line = note ?? (softMode ? null : subtitle || null)
 
   const caption = softMode
     ? (softMenstruationNote(softHint) ?? "")
@@ -143,7 +148,7 @@ export function PhaseContextCard({
         />
       ) : null}
 
-      {note && <p className="mt-3 text-sm text-ink-soft">{note}</p>}
+      {line && <p className="mt-3 text-sm text-ink-soft">{line}</p>}
 
       {hasCycle && (
         <div className="mt-4 flex flex-wrap items-center gap-x-3 border-t border-ink/10 pt-2">
