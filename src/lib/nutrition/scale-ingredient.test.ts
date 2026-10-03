@@ -110,6 +110,20 @@ describe("scaleIngredientLineForCooking", () => {
     expect(scaleIngredientLineForCooking("een beetje olie", 2)).toBe("een beetje olie")
   })
 
+  it("leaves per-person amounts alone: they are right for any number of porties", () => {
+    expect(scaleIngredientLineForCooking("1 ei per persoon", 2)).toBe("1 ei per persoon")
+    expect(scaleIngredientLineForCooking("Half ei per persoon", 0.5)).toBe("Half ei per persoon")
+    expect(scaleIngredientLineForCooking("2 sneetjes brood p.p.", 1.5)).toBe("2 sneetjes brood p.p.")
+  })
+
+  it("knows the other plurals and adjectives the recipes use", () => {
+    expect(scaleIngredientLineForCooking("2 aardappelen", 0.5)).toBe("1 aardappel")
+    expect(scaleIngredientLineForCooking("4 kipdijfilets", 0.25)).toBe("1 kipdijfilet")
+    expect(scaleIngredientLineForCooking("1 bevroren banaan", 2)).toBe("2 bevroren bananen")
+    expect(scaleIngredientLineForCooking("2 rijpe avocados", 0.5)).toBe("1 rijpe avocado")
+    expect(scaleIngredientLineForCooking("2 stengels bleekselderij", 2 / 3)).toBe("1½ stengel bleekselderij")
+  })
+
   it("returns the line exactly as written at the recipe's own porties", () => {
     expect(scaleIngredientLineForCooking("1,5 el olie", 1)).toBe("1,5 el olie")
     expect(scaleIngredientLineForCooking("⅔ ei", 1)).toBe("⅔ ei")

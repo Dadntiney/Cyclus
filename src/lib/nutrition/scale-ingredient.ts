@@ -230,11 +230,33 @@ const COOK_PLURALS: Record<string, string> = {
   wrap: "wraps",
   kipfilet: "kipfilets",
   zalmfilet: "zalmfilets",
+  kipdijfilet: "kipdijfilets",
+  kipdrumstick: "kipdrumsticks",
+  zeebaarsfilet: "zeebaarsfilets",
+  sardine: "sardines",
+  stengel: "stengels",
+  blaadje: "blaadjes",
+  kaneelstokje: "kaneelstokjes",
+  chilipeper: "chilipepers",
+  perzik: "perziken",
+  mango: "mango's",
+  rookworst: "rookworsten",
+  rijstpapiervel: "rijstpapiervellen",
 }
 
-const COOK_SINGULARS: Record<string, string> = Object.fromEntries(
-  Object.entries(COOK_PLURALS).map(([singular, plural]) => [plural, singular]),
-)
+/** Other plurals the recipes use ("aardappelen", "tortillas"): read, never written. */
+const COOK_EXTRA_SINGULARS: Record<string, string> = {
+  aardappelen: "aardappel",
+  tortillas: "tortilla",
+  avocados: "avocado",
+  paprikas: "paprika",
+  mangos: "mango",
+}
+
+const COOK_SINGULARS: Record<string, string> = {
+  ...Object.fromEntries(Object.entries(COOK_PLURALS).map(([singular, plural]) => [plural, singular])),
+  ...COOK_EXTRA_SINGULARS,
+}
 
 /** Adjectives that may sit between the amount and the noun ("2 grote uien"). */
 const COOK_ADJECTIVES = new Set([
@@ -249,6 +271,8 @@ const COOK_ADJECTIVES = new Set([
   "groene",
   "witte",
   "zoete",
+  "bevroren",
+  "volkoren",
 ])
 
 const UNICODE_AMOUNTS: Record<string, number> = { "½": 0.5, "¼": 0.25, "¾": 0.75, "⅓": 1 / 3, "⅔": 2 / 3 }
@@ -341,6 +365,9 @@ function parseLooseNumber(token: string): number {
 /** Lines that start with these stay as written ("snufje zout", "handvol spinazie"). */
 const WORD_AMOUNT = /^(een\s+|één\s+)?(handvol|handje|scheutje|scheut|snufje|beetje|paar|mespunt|klontje)(?![A-Za-zÀ-ÿ])/i
 
+/** "1 ei per persoon" is right for any number of porties, so it stays as written. */
+const PER_PERSON = /\bper\s+(persoon|portie)\b|\bp\.\s?p\./i
+
 /**
  * Scale one free-text ingredient line for the recipe page. Returns the line
  * unchanged when the factor is 1 or there is no amount to scale.
@@ -349,7 +376,7 @@ export function scaleIngredientLineForCooking(raw: string, factor: number): stri
   if (!Number.isFinite(factor) || factor <= 0 || Math.abs(factor - 1) < 0.001) return raw
   const lead = raw.match(/^\s*/)?.[0] ?? ""
   const body = raw.slice(lead.length)
-  if (!body || WORD_AMOUNT.test(body)) return raw
+  if (!body || WORD_AMOUNT.test(body) || PER_PERSON.test(body)) return raw
 
   // "Sap van 1 citroen": keep the words, scale the amount after them.
   const prefix = body.match(/^(?:sap|rasp|schil)\s+van\s+/i)?.[0] ?? ""
