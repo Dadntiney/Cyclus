@@ -1,12 +1,18 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
+import { Page } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
-import { Switch } from "@/components/ui/switch"
+import { ChipRadioGroup } from "@/components/ui/chip-radio-group"
+import { OptionList } from "@/components/ui/option-list"
 import { SegmentedControl } from "@/components/ui/segmented-control"
+import { StickyActionBar } from "@/components/ui/sticky-action-bar"
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input"
+import { SwitchRow } from "@/components/profile/setting-rows"
 import {
   MEDICATION_CATEGORY_OPTIONS,
   HT_NAME_SUGGESTIONS,
@@ -18,9 +24,11 @@ import {
 import { createMedication, updateMedication } from "@/lib/actions/medications"
 import { describeSchedule } from "@/lib/medication/schedule"
 import type { MedicationInput } from "@/lib/validations/medication"
-import { cn } from "@/lib/utils"
 import { runAction } from "@/lib/client/run-action"
 import { leaveFlow } from "@/lib/client/navigation-depth"
+import { useImmersive } from "@/lib/hooks/use-immersive"
+import { FEATURES } from "@/lib/navigation/features"
+import { iconProps } from "@/lib/ui/icon"
 
 type Category = MedicationInput["category"]
 type ScheduleType = MedicationInput["scheduleType"]
@@ -80,30 +88,78 @@ function buildSteps(data: WizardData): StepId[] {
   return steps
 }
 
+/** Each step is one question: it is the page's h1. */
+const STEP_COPY: Record<StepId, { title: string; subtitle?: string }> = {
+  category: {
+    title: "Wat wil je toevoegen?",
+    subtitle: "Kies wat het beste past. Je kunt hierna altijd meer toevoegen.",
+  },
+  name: {
+    title: "Wat gebruik je?",
+    subtitle: "Vul in wat je van je arts, apotheker of bijsluiter hebt gekregen.",
+  },
+  form: { title: "Hoe gebruik je het?", subtitle: "Optioneel, maar handig voor je eigen overzicht." },
+  schedule: {
+    title: "Wat is je voorgeschreven schema?",
+    subtitle: "Precies zoals jij het gebruikt. De app bepaalt hier niets, ze onthoudt alleen wat jij invult.",
+  },
+  reminder: { title: "Wil je hier een herinnering voor?" },
+  notes: {
+    title: "Nog iets voor jezelf?",
+    subtitle: "Optioneel. Bijvoorbeeld een opmerking van je arts of iets wat je wilt onthouden.",
+  },
+  review: {
+    title: "Klopt dit?",
+    subtitle: `Je kunt dit altijd later aanpassen of verwijderen bij ${FEATURES.medicatie.label}.`,
+  },
+}
+
+/**
+ * Adding or changing a medication, one question per screen (immersive: the
+ * tab bar steps aside, Terug/Volgende sit in the thumb zone). The steps are
+ * fixed when the wizard opens, so choosing a category no longer skips ahead
+ * and Terug can always return to it (WB-10).
+ */
 export function MedicationWizard({
   mode,
   medicationId,
   initial,
+  context,
 }: {
   mode: "create" | "edit"
   medicationId?: string
   initial?: Partial<WizardData>
+  /** Shown under the question on every step (e.g. the current wel/niet phase). */
+  context?: ReactNode
 }) {
   const router = useRouter()
   const [data, setData] = useState<WizardData>({ ...emptyData(initial?.category ?? null), ...initial })
   const [step, setStep] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const titleId = useId()
+  useImmersive()
 
   // In edit mode the category was already chosen when the item was created,
   // so we never show that step again.
   const lockedCategory = mode === "edit"
-  const stepSequence = useMemo(
-    () => (lockedCategory ? buildSteps(data).filter((s) => s !== "category") : buildSteps(data)),
-    [data, lockedCategory],
-  )
+  const [stepSequence] = useState<StepId[]>(() => {
+    const steps = buildSteps({ ...emptyData(initial?.category ?? null), ...initial })
+    return lockedCategory ? steps.filter((s) => s !== "category") : steps
+  })
   const stepId = stepSequence[step]
   const totalSteps = stepSequence.length
+  const isLast = step === totalSteps - 1
+
+  // A new step is a new question: start at the top and let a screen reader
+  // hear it. Not on the first render — the page transition handles that.
+  const shownStep = useRef(step)
+  useEffect(() => {
+    if (shownStep.current === step) return
+    shownStep.current = step
+    window.scrollTo({ top: 0 })
+    document.getElementById(titleId)?.focus({ preventScroll: true })
+  }, [step, titleId])
 
   function validateStep(): string | null {
     switch (stepId) {
@@ -199,120 +255,105 @@ export function MedicationWizard({
     })
   }
 
-  return (
-    <div className="w-full max-w-md mx-auto px-5 py-6">
-      {totalSteps > 1 && (
-        <div className="w-full h-1.5 rounded-full bg-cream-soft mb-7 overflow-hidden">
-          <div
-            className="h-full bg-sage-fill rounded-full transition-all duration-300"
-            style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
-          />
-        </div>
-      )}
+  const copy = STEP_COPY[stepId]
+  const subtitle =
+    stepId === "reminder"
+      ? `We laten dan een rustige melding zien, bijvoorbeeld “Herinnering: je hebt vandaag ${
+          data.name.trim() || "dit"
+        } ingepland.”`
+      : copy.subtitle
 
-      {stepId === "category" && (
-        <CategoryStep
-          value={data.category}
-          onChange={(category) => setData((d) => ({ ...d, category }))}
-        />
-      )}
-      {stepId === "name" && <NameStep data={data} setData={setData} />}
-      {stepId === "form" && <FormStep data={data} setData={setData} />}
-      {stepId === "schedule" && <ScheduleStep data={data} setData={setData} />}
-      {stepId === "reminder" && <ReminderStep data={data} setData={setData} />}
-      {stepId === "notes" && (
-        <div>
-          <h1 className="font-display text-2xl text-ink mb-2">Nog iets voor jezelf?</h1>
-          <p className="text-ink-soft text-sm mb-6">
-            Optioneel. Bijvoorbeeld een opmerking van je arts of iets wat je wilt onthouden.
-          </p>
+  return (
+    <Page>
+      <PageHeader
+        title={copy.title}
+        compactTitle={mode === "edit" ? "Medicatie bewerken" : "Medicatie toevoegen"}
+        eyebrow={totalSteps > 1 ? `Stap ${step + 1} van ${totalSteps}` : undefined}
+        subtitle={subtitle}
+        titleId={titleId}
+        media={
+          totalSteps > 1 ? (
+            <div aria-hidden className="h-1.5 w-full overflow-hidden rounded-full bg-cream-soft">
+              <div
+                className="h-full rounded-full bg-sage-fill transition-[width] duration-slow ease-standard"
+                style={{ width: `${((step + 1) / totalSteps) * 100}%` }}
+              />
+            </div>
+          ) : undefined
+        }
+      />
+
+      {context && <div className="mb-6">{context}</div>}
+
+      <div className="pb-6">
+        {stepId === "category" && (
+          <OptionList
+            aria-labelledby={titleId}
+            value={data.category}
+            onChange={(category) => setData((d) => ({ ...d, category }))}
+            options={MEDICATION_CATEGORY_OPTIONS.map((opt) => ({
+              value: opt.value,
+              label: (
+                <span className="inline-flex items-center gap-2.5">
+                  <opt.icon {...iconProps("md", "text-sage-dark")} aria-hidden />
+                  {opt.label}
+                </span>
+              ),
+            }))}
+          />
+        )}
+        {stepId === "name" && <NameStep data={data} setData={setData} />}
+        {stepId === "form" && <FormStep data={data} setData={setData} />}
+        {stepId === "schedule" && <ScheduleStep data={data} setData={setData} />}
+        {stepId === "reminder" && <ReminderStep data={data} setData={setData} />}
+        {stepId === "notes" && (
           <Textarea
             rows={3}
+            aria-labelledby={titleId}
             placeholder="Optionele opmerking"
             value={data.notes}
             onChange={(e) => setData((d) => ({ ...d, notes: e.target.value }))}
           />
+        )}
+        {stepId === "review" && <ReviewStep data={data} />}
+      </div>
+
+      <StickyActionBar>
+        <FieldError>{error}</FieldError>
+        <div className="flex items-center gap-3">
+          {step > 0 && (
+            <Button variant="secondary" onClick={goBack} disabled={isPending}>
+              Terug
+            </Button>
+          )}
+          {isLast ? (
+            <Button onClick={handleSave} disabled={isPending} className="flex-1">
+              {isPending ? "Bezig…" : "Opslaan"}
+            </Button>
+          ) : (
+            <Button onClick={goNext} className="flex-1">
+              Volgende
+            </Button>
+          )}
         </div>
-      )}
-      {stepId === "review" && <ReviewStep data={data} />}
-
-      <FieldError>{error}</FieldError>
-
-      <div className="flex items-center gap-3 mt-8">
-        {step > 0 && (
-          <Button variant="secondary" onClick={goBack} disabled={isPending}>
-            Terug
-          </Button>
-        )}
-        {step < totalSteps - 1 ? (
-          <Button onClick={goNext} className="flex-1">
-            Volgende
-          </Button>
-        ) : (
-          <Button onClick={handleSave} disabled={isPending} className="flex-1">
-            {isPending ? "Bezig..." : "Opslaan"}
-          </Button>
-        )}
-      </div>
-    </div>
+      </StickyActionBar>
+    </Page>
   )
 }
 
-function CategoryStep({
-  value,
-  onChange,
-}: {
-  value: Category | null
-  onChange: (v: Category) => void
-}) {
-  return (
-    <div>
-      <h1 className="font-display text-2xl text-ink mb-2">Wat wil je toevoegen?</h1>
-      <p className="text-ink-soft text-sm mb-6">
-        Kies wat het beste past. Je kunt hierna altijd meer items toevoegen.
-      </p>
-      <div className="flex flex-col gap-2">
-        {MEDICATION_CATEGORY_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => onChange(opt.value)}
-            className={cn(
-              "flex items-center gap-3 rounded-3xl px-4 py-3.5 text-left touch-manipulation transition-[background-color,transform] duration-150 motion-safe:active:scale-[0.98]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
-              value === opt.value ? "bg-sage-soft ring-1 ring-sage/50" : "bg-sage-soft/40 hover:bg-sage-soft/70",
-            )}
-          >
-            <opt.icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-            <span className="font-medium text-ink">{opt.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function NameStep({
-  data,
-  setData,
-}: {
+type StepProps = {
   data: WizardData
   setData: React.Dispatch<React.SetStateAction<WizardData>>
-}) {
+}
+
+function NameStep({ data, setData }: StepProps) {
   const suggestions: readonly string[] =
     data.category === "ht" ? HT_NAME_SUGGESTIONS : data.category === "anticonceptie" ? CONTRACEPTION_METHOD_OPTIONS : []
 
   return (
-    <div>
-      <h1 className="font-display text-2xl text-ink mb-2">Wat gebruik je?</h1>
-      <p className="text-ink-soft text-sm mb-6">
-        Voer hier alleen in wat je van je arts, apotheker of bijsluiter hebt gekregen. De app
-        geeft geen persoonlijk medisch advies en bepaalt niet welke dosering of behandeling voor
-        jou geschikt is.
-      </p>
-
+    <div className="flex flex-col gap-4">
       {suggestions.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div role="group" aria-label="Snel kiezen" className="flex flex-wrap gap-2">
           {suggestions.map((s) => (
             <Chip key={s} selected={data.name === s} onClick={() => setData((d) => ({ ...d, name: s }))}>
               {s}
@@ -321,17 +362,18 @@ function NameStep({
         </div>
       )}
 
-      <Label htmlFor="med-name">Naam</Label>
-      <Input
-        id="med-name"
-        value={data.name}
-        onChange={(e) => setData((d) => ({ ...d, name: e.target.value }))}
-        placeholder="Bijvoorbeeld Oestrogeenspray, of de merknaam van je pil"
-        autoFocus
-      />
+      <div>
+        <Label htmlFor="med-name">Naam</Label>
+        <Input
+          id="med-name"
+          value={data.name}
+          onChange={(e) => setData((d) => ({ ...d, name: e.target.value }))}
+          placeholder="Bijvoorbeeld Oestrogeenspray, of de merknaam van je pil"
+        />
+      </div>
 
       {data.category === "andere_hormonaal" && (
-        <div className="mt-4">
+        <div>
           <Label htmlFor="med-hormone-type">Hormoon of werkzame stof (optioneel)</Label>
           <Input
             id="med-hormone-type"
@@ -345,45 +387,35 @@ function NameStep({
   )
 }
 
-function FormStep({
-  data,
-  setData,
-}: {
-  data: WizardData
-  setData: React.Dispatch<React.SetStateAction<WizardData>>
-}) {
+function FormStep({ data, setData }: StepProps) {
   return (
-    <div>
-      <h1 className="font-display text-2xl text-ink mb-2">Hoe gebruik je het?</h1>
-      <p className="text-ink-soft text-sm mb-6">Optioneel, maar handig voor je eigen overzicht.</p>
-
-      <p className="text-sm font-medium text-ink mb-2">Vorm</p>
-      <div className="flex flex-wrap gap-2 mb-5">
-        {MEDICATION_FORM_OPTIONS.map((opt) => (
-          <Chip key={opt} selected={data.form === opt} onClick={() => setData((d) => ({ ...d, form: opt }))}>
-            {opt}
-          </Chip>
-        ))}
+    <div className="flex flex-col gap-5">
+      <div>
+        <p id="med-form-label" className="mb-2 text-sm font-medium text-ink">
+          Vorm
+        </p>
+        <ChipRadioGroup
+          aria-labelledby="med-form-label"
+          value={data.form}
+          onChange={(form) => setData((d) => ({ ...d, form }))}
+          options={MEDICATION_FORM_OPTIONS.map((opt) => ({ value: opt, label: opt }))}
+        />
       </div>
 
-      <Label htmlFor="med-dosage">Dosering (optioneel)</Label>
-      <Input
-        id="med-dosage"
-        value={data.dosage}
-        onChange={(e) => setData((d) => ({ ...d, dosage: e.target.value }))}
-        placeholder="Bijvoorbeeld 2 sprays, of 1 tablet"
-      />
+      <div>
+        <Label htmlFor="med-dosage">Dosering (optioneel)</Label>
+        <Input
+          id="med-dosage"
+          value={data.dosage}
+          onChange={(e) => setData((d) => ({ ...d, dosage: e.target.value }))}
+          placeholder="Bijvoorbeeld 2 sprays, of 1 tablet"
+        />
+      </div>
     </div>
   )
 }
 
-function ScheduleStep({
-  data,
-  setData,
-}: {
-  data: WizardData
-  setData: React.Dispatch<React.SetStateAction<WizardData>>
-}) {
+function ScheduleStep({ data, setData }: StepProps) {
   function toggleDay(day: number) {
     setData((d) => ({
       ...d,
@@ -394,38 +426,29 @@ function ScheduleStep({
   }
 
   return (
-    <div>
-      <h1 className="font-display text-2xl text-ink mb-2">Wat is jouw voorgeschreven schema?</h1>
-      <p className="text-ink-soft text-sm mb-6">
-        Precies zoals jij het gebruikt — de app bepaalt hier niets voor je, het onthoudt alleen
-        wat jij invult.
-      </p>
-
-      <div className="flex flex-wrap gap-2 mb-5">
-        {MEDICATION_SCHEDULE_TYPE_OPTIONS.map((opt) => (
-          <Chip
-            key={opt.value}
-            selected={data.scheduleType === opt.value}
-            onClick={() =>
-              setData((d) => ({
-                ...d,
-                scheduleType: opt.value,
-                // Wel/niet almost always wants a pause nudge at the end of
-                // each wel-periode — she can turn it off. Other types keep
-                // stop tied to an absolute end date only.
-                remindOnStop: opt.value === "cyclisch" ? true : d.endDate ? d.remindOnStop : false,
-              }))
-            }
-          >
-            {opt.label}
-          </Chip>
-        ))}
-      </div>
+    <div className="flex flex-col gap-5">
+      <OptionList
+        aria-label="Schema"
+        value={data.scheduleType}
+        onChange={(scheduleType) =>
+          setData((d) => ({
+            ...d,
+            scheduleType,
+            // Wel/niet almost always wants a pause nudge at the end of
+            // each wel-periode — she can turn it off. Other types keep
+            // stop tied to an absolute end date only.
+            remindOnStop: scheduleType === "cyclisch" ? true : d.endDate ? d.remindOnStop : false,
+          }))
+        }
+        options={MEDICATION_SCHEDULE_TYPE_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))}
+      />
 
       {data.scheduleType === "wekelijkse_dagen" && (
-        <div className="mb-5">
-          <p className="text-sm font-medium text-ink mb-2">Op welke dagen?</p>
-          <div className="flex flex-wrap gap-2">
+        <div>
+          <p id="med-days-label" className="mb-2 text-sm font-medium text-ink">
+            Op welke dagen?
+          </p>
+          <div role="group" aria-labelledby="med-days-label" className="flex flex-wrap gap-2">
             {REMINDER_DAY_OPTIONS.map((opt) => (
               <Chip key={opt.value} selected={data.scheduleDays.includes(opt.value)} onClick={() => toggleDay(opt.value)}>
                 {opt.label}
@@ -436,20 +459,18 @@ function ScheduleStep({
       )}
 
       {data.scheduleType === "cyclisch" && (
-        <div className="mb-5">
-          <div className="mb-3">
-            <SegmentedControl
-              aria-label="Eenheid"
-              value={data.cyclUnit}
-              onChange={(cyclUnit) => setData((d) => ({ ...d, cyclUnit }))}
-              options={[
-                { value: "dagen", label: "Dagen" },
-                { value: "weken", label: "Weken" },
-              ]}
-            />
-          </div>
-          <div className="flex gap-3 mb-3">
-            <div className="flex-1">
+        <div className="flex flex-col gap-4">
+          <SegmentedControl
+            aria-label="Eenheid"
+            value={data.cyclUnit}
+            onChange={(cyclUnit) => setData((d) => ({ ...d, cyclUnit }))}
+            options={[
+              { value: "dagen", label: "Dagen" },
+              { value: "weken", label: "Weken" },
+            ]}
+          />
+          <div className="flex gap-3">
+            <div className="min-w-0 flex-1">
               <Label htmlFor="days-on">Hoeveel {data.cyclUnit} wel</Label>
               <Input
                 id="days-on"
@@ -460,7 +481,7 @@ function ScheduleStep({
                 onChange={(e) => setData((d) => ({ ...d, scheduleDaysOnValue: e.target.value }))}
               />
             </div>
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <Label htmlFor="days-off">Hoeveel {data.cyclUnit} niet</Label>
               <Input
                 id="days-off"
@@ -472,96 +493,89 @@ function ScheduleStep({
               />
             </div>
           </div>
-          <Label htmlFor="cycl-start">Wanneer begint jouw eerste &lsquo;wel&rsquo;-periode?</Label>
-          <Input
-            id="cycl-start"
-            type="date"
-            value={data.startDate}
-            onChange={(e) => setData((d) => ({ ...d, startDate: e.target.value }))}
-            className="mb-4"
-          />
-
-          <div className="rounded-[1.25rem] bg-surface border border-line p-4 mb-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-ink">Pauze-herinnering</p>
-                <p className="text-xs text-ink-soft mt-0.5 leading-snug">
-                  Op de laatste innamedag van elke wel-periode een seintje dat je pauze
-                  begint. Daarna loopt je schema gewoon door — medicatie stopt niet.
-                </p>
-              </div>
-              <Switch
-                checked={data.remindOnStop}
-                onChange={(remindOnStop) =>
-                  setData((d) => ({
-                    ...d,
-                    remindOnStop,
-                    // Pausemelding heeft een herinnering nodig; zet die mee aan.
-                    reminderEnabled: remindOnStop ? true : d.reminderEnabled,
-                  }))
-                }
-                aria-label="Pauze-herinnering aan- of uitzetten"
-              />
-            </div>
+          <div>
+            <Label htmlFor="cycl-start">Wanneer begint jouw eerste &lsquo;wel&rsquo;-periode?</Label>
+            <Input
+              id="cycl-start"
+              type="date"
+              value={data.startDate}
+              onChange={(e) => setData((d) => ({ ...d, startDate: e.target.value }))}
+            />
           </div>
 
-          <Label htmlFor="cycl-end">Kuureinde (optioneel)</Label>
-          <Input
-            id="cycl-end"
-            type="date"
-            value={data.endDate}
-            onChange={(e) => setData((d) => ({ ...d, endDate: e.target.value }))}
-          />
-          <p className="text-xs text-ink-soft mt-1.5 leading-relaxed">
-            Alleen als deze medicatie ergens <span className="font-medium text-ink-soft">helemaal</span>{" "}
-            stopt. Niet invullen voor de terugkerende pauze — die zit al in je wel/niet-schema
-            hierboven.
-          </p>
+          <Card padding="none" className="px-4">
+            <SwitchRow
+              title="Pauze-herinnering"
+              description="Op de laatste innamedag van elke wel-periode een seintje dat je pauze begint. Daarna loopt je schema gewoon door; je medicatie stopt niet."
+              checked={data.remindOnStop}
+              onChange={(remindOnStop) =>
+                setData((d) => ({
+                  ...d,
+                  remindOnStop,
+                  // Pausemelding heeft een herinnering nodig; zet die mee aan.
+                  reminderEnabled: remindOnStop ? true : d.reminderEnabled,
+                }))
+              }
+            />
+          </Card>
+
+          <div>
+            <Label htmlFor="cycl-end">Kuureinde (optioneel)</Label>
+            <Input
+              id="cycl-end"
+              type="date"
+              value={data.endDate}
+              aria-describedby="cycl-end-hint"
+              onChange={(e) => setData((d) => ({ ...d, endDate: e.target.value }))}
+            />
+            <p id="cycl-end-hint" className="mt-1.5 text-sm text-ink-soft">
+              Alleen als deze medicatie ergens <span className="font-medium">helemaal</span> stopt. Niet
+              invullen voor de terugkerende pauze: die zit al in je wel/niet-schema hierboven.
+            </p>
+          </div>
         </div>
       )}
 
       {data.scheduleType === "om_de_dag" && (
-        <div className="mb-5">
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <Label htmlFor="omdedag-start">Vanaf welke datum geldt dit?</Label>
-              <Input
-                id="omdedag-start"
-                type="date"
-                value={data.startDate}
-                onChange={(e) => setData((d) => ({ ...d, startDate: e.target.value }))}
-              />
-            </div>
-            <div className="flex-1">
-              <Label htmlFor="omdedag-end">Tot en met (optioneel)</Label>
-              <Input
-                id="omdedag-end"
-                type="date"
-                value={data.endDate}
-                onChange={(e) => {
-                  const endDate = e.target.value
-                  setData((d) => ({
-                    ...d,
-                    endDate,
-                    remindOnStop: endDate ? true : false,
-                  }))
-                }}
-              />
-            </div>
+        <div className="flex gap-3">
+          <div className="min-w-0 flex-1">
+            <Label htmlFor="omdedag-start">Vanaf welke datum geldt dit?</Label>
+            <Input
+              id="omdedag-start"
+              type="date"
+              value={data.startDate}
+              onChange={(e) => setData((d) => ({ ...d, startDate: e.target.value }))}
+            />
+          </div>
+          <div className="min-w-0 flex-1">
+            <Label htmlFor="omdedag-end">Tot en met (optioneel)</Label>
+            <Input
+              id="omdedag-end"
+              type="date"
+              value={data.endDate}
+              onChange={(e) => {
+                const endDate = e.target.value
+                setData((d) => ({
+                  ...d,
+                  endDate,
+                  remindOnStop: endDate ? true : false,
+                }))
+              }}
+            />
           </div>
         </div>
       )}
 
       {data.scheduleType === "eigen_schema" && (
-        <p className="text-sm text-ink-soft bg-cream-soft rounded-2xl p-3 mb-5">
-          Omschrijf je eigen schema bij &ldquo;opmerkingen&rdquo; in de volgende stap — we tonen
-          dit dan als vaste informatie, zonder dat de app zelf een wel/niet-dag berekent.
+        <p className="type-body text-ink-soft">
+          Omschrijf je eigen schema bij &ldquo;Nog iets voor jezelf?&rdquo; verderop. We tonen het dan als
+          vaste informatie, zonder dat de app zelf een wel/niet-dag berekent.
         </p>
       )}
 
       {data.scheduleType && data.scheduleType !== "cyclisch" && data.scheduleType !== "om_de_dag" && (
         <div className="flex gap-3">
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <Label htmlFor="start-date">Vanaf (optioneel)</Label>
             <Input
               id="start-date"
@@ -570,7 +584,7 @@ function ScheduleStep({
               onChange={(e) => setData((d) => ({ ...d, startDate: e.target.value }))}
             />
           </div>
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <Label htmlFor="end-date">Tot en met (optioneel)</Label>
             <Input
               id="end-date"
@@ -592,13 +606,7 @@ function ScheduleStep({
   )
 }
 
-function ReminderStep({
-  data,
-  setData,
-}: {
-  data: WizardData
-  setData: React.Dispatch<React.SetStateAction<WizardData>>
-}) {
+function ReminderStep({ data, setData }: StepProps) {
   const hasEndDate = Boolean(data.endDate)
   const isCyclisch = data.scheduleType === "cyclisch"
   const canRemindStop = isCyclisch || hasEndDate
@@ -606,115 +614,93 @@ function ReminderStep({
   const hasPausePhase = isCyclisch && Number.isFinite(offValue) && offValue > 0
 
   return (
-    <div>
-      <h1 className="font-display text-2xl text-ink mb-2">Wil je hier een herinnering voor?</h1>
-      <p className="text-ink-soft text-sm mb-6">
-        We laten dan een rustige melding zien, bijvoorbeeld &ldquo;Herinnering: je hebt vandaag{" "}
-        {data.name.trim() || "dit"} ingepland.&rdquo; Dit stel je hier in bij deze medicatie — niet
-        apart in je profiel.
-      </p>
-      <div className="flex gap-2 mb-5">
-        <Chip selected={data.reminderEnabled} onClick={() => setData((d) => ({ ...d, reminderEnabled: true }))}>
-          Ja
-        </Chip>
-        <Chip selected={!data.reminderEnabled} onClick={() => setData((d) => ({ ...d, reminderEnabled: false }))}>
-          Nee
-        </Chip>
-      </div>
+    <div className="flex flex-col gap-4">
+      <Card padding="none" className="px-4">
+        <SwitchRow
+          title="Herinnering"
+          description="Dit stel je hier in, bij deze medicatie. Niet apart in je profiel."
+          checked={data.reminderEnabled}
+          onChange={(reminderEnabled) => setData((d) => ({ ...d, reminderEnabled }))}
+        />
+      </Card>
+
       {data.reminderEnabled && (
-        <div>
-          <Label htmlFor="med-time">Op welk tijdstip?</Label>
-          <Input
-            id="med-time"
-            type="time"
-            value={data.timeOfDay}
-            onChange={(e) => setData((d) => ({ ...d, timeOfDay: e.target.value }))}
-            className="max-w-[160px]"
-          />
+        <div className="flex flex-col gap-4">
+          <div>
+            <Label htmlFor="med-time">Op welk tijdstip?</Label>
+            <Input
+              id="med-time"
+              type="time"
+              value={data.timeOfDay}
+              onChange={(e) => setData((d) => ({ ...d, timeOfDay: e.target.value }))}
+              className="w-40"
+            />
+          </div>
+
           {(isCyclisch || hasEndDate) && (
-            <div className="mt-4 rounded-[1.25rem] bg-surface border border-line p-4">
+            <>
               {isCyclisch && (
-                <p className="text-sm text-ink-soft leading-relaxed mb-4">
-                  Bij een wel/niet-schema herhalen start- en dagelijkse herinneringen zich
-                  vanzelf. De pauze-herinnering komt op de laatste innamedag van elke
-                  wel-periode — daarna begint je &lsquo;niet&rsquo;-fase en loopt het schema door.
+                <p className="type-body text-ink-soft">
+                  Bij een wel/niet-schema herhalen start- en dagelijkse herinneringen zich vanzelf. De
+                  pauze-herinnering komt op de laatste innamedag van elke wel-periode; daarna begint je
+                  &lsquo;niet&rsquo;-fase en loopt het schema door.
                 </p>
               )}
-              <div className="flex flex-col gap-3">
+              <Card padding="none" className="divide-y divide-line px-4">
                 {isCyclisch && (
                   <>
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-ink">Startmelding</p>
-                        <p className="text-xs text-ink-soft mt-0.5">
-                          Op de eerste dag dat je wel-periode weer begint.
-                        </p>
-                      </div>
-                      <Switch
-                        checked={data.remindOnStart}
-                        onChange={(remindOnStart) => setData((d) => ({ ...d, remindOnStart }))}
-                        aria-label="Startmelding aan- of uitzetten"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-ink">Dagelijkse herinnering</p>
-                        <p className="text-xs text-ink-soft mt-0.5">Alleen tijdens de periode dat je het gebruikt.</p>
-                      </div>
-                      <Switch
-                        checked={data.remindDaily}
-                        onChange={(remindDaily) => setData((d) => ({ ...d, remindDaily }))}
-                        aria-label="Dagelijkse herinnering aan- of uitzetten"
-                      />
-                    </div>
+                    <SwitchRow
+                      title="Startmelding"
+                      description="Op de eerste dag dat je wel-periode weer begint."
+                      checked={data.remindOnStart}
+                      onChange={(remindOnStart) => setData((d) => ({ ...d, remindOnStart }))}
+                    />
+                    <SwitchRow
+                      title="Dagelijkse herinnering"
+                      description="Alleen tijdens de periode dat je het gebruikt."
+                      checked={data.remindDaily}
+                      onChange={(remindDaily) => setData((d) => ({ ...d, remindDaily }))}
+                    />
                   </>
                 )}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-ink">
-                      {isCyclisch && hasPausePhase
-                        ? "Pauze-herinnering"
-                        : isCyclisch
-                          ? "Einde wel-periode"
-                          : "Stopmelding"}
-                    </p>
-                    <p className="text-xs text-ink-soft mt-0.5">
-                      {isCyclisch && hasPausePhase
-                        ? "Laatste innamedag van elke wel-periode — schema blijft doorlopen."
-                        : isCyclisch
-                          ? "Alleen zinvol als je ook een ‘niet’-periode hebt ingesteld."
-                          : hasEndDate
-                            ? "Op het kuureinde dat je bij je schema hebt ingevuld."
-                            : "Vul eerst een optioneel kuureinde in bij je schema."}
-                    </p>
-                  </div>
-                  <Switch
-                    checked={canRemindStop && data.remindOnStop}
-                    onChange={(remindOnStop) => {
-                      if (!canRemindStop) return
-                      setData((d) => ({ ...d, remindOnStop }))
-                    }}
-                    disabled={!canRemindStop || (isCyclisch && !hasPausePhase)}
-                    aria-label={
-                      isCyclisch ? "Pauze-herinnering aan- of uitzetten" : "Stopmelding aan- of uitzetten"
-                    }
-                  />
-                </div>
-                {hasEndDate && isCyclisch && (
-                  <p className="text-xs text-ink-soft leading-relaxed pt-1">
-                    Je hebt ook een kuureinde gezet: op die dag krijg je (met deze melding aan)
-                    een aparte seintje dat de hele kuur stopt.
-                  </p>
-                )}
-              </div>
-              {isCyclisch && (
-                <p className="text-xs text-ink-soft leading-relaxed mt-4 pt-4 border-t border-line">
-                  GoFiev volgt uitsluitend het schema dat jij zelf hebt ingesteld. De app bepaalt
-                  niet wanneer je moet starten of stoppen, en geeft geen persoonlijk medisch
-                  advies.
+                <SwitchRow
+                  title={
+                    isCyclisch && hasPausePhase
+                      ? "Pauze-herinnering"
+                      : isCyclisch
+                        ? "Einde wel-periode"
+                        : "Stopmelding"
+                  }
+                  description={
+                    isCyclisch && hasPausePhase
+                      ? "Laatste innamedag van elke wel-periode; je schema blijft doorlopen."
+                      : isCyclisch
+                        ? "Alleen zinvol als je ook een ‘niet’-periode hebt ingesteld."
+                        : hasEndDate
+                          ? "Op het kuureinde dat je bij je schema hebt ingevuld."
+                          : "Vul eerst een optioneel kuureinde in bij je schema."
+                  }
+                  checked={canRemindStop && data.remindOnStop}
+                  onChange={(remindOnStop) => {
+                    if (!canRemindStop) return
+                    setData((d) => ({ ...d, remindOnStop }))
+                  }}
+                  disabled={!canRemindStop || (isCyclisch && !hasPausePhase)}
+                />
+              </Card>
+              {hasEndDate && isCyclisch && (
+                <p className="text-sm text-ink-soft">
+                  Je hebt ook een kuureinde gezet: op die dag krijg je (met deze melding aan) een apart
+                  seintje dat de hele kuur stopt.
                 </p>
               )}
-            </div>
+              {isCyclisch && (
+                <p className="text-sm text-ink-soft">
+                  GoFiev volgt uitsluitend het schema dat jij zelf hebt ingesteld. De app bepaalt niet
+                  wanneer je moet starten of stoppen, en geeft geen persoonlijk medisch advies.
+                </p>
+              )}
+            </>
           )}
         </div>
       )}
@@ -729,53 +715,47 @@ function ReviewStep({ data }: { data: WizardData }) {
     data.remindOnStop && (isCyclisch || Boolean(data.endDate))
   const stopLabel = isCyclisch ? "pauze-herinnering" : "stopmelding"
   return (
-    <div>
-      <h1 className="font-display text-2xl text-ink mb-2">Klopt dit?</h1>
-      <p className="text-ink-soft text-sm mb-6">
-        Je kunt dit altijd later aanpassen of verwijderen bij &ldquo;Mijn medicatie&rdquo;.
+    <Card className="flex flex-col gap-2">
+      <p className="inline-flex items-center gap-2 text-base font-medium text-ink">
+        {category && <category.icon {...iconProps("sm", "text-sage-dark")} aria-hidden />}
+        {data.name || "—"}
       </p>
-      <div className="rounded-[1.25rem] bg-surface border border-line p-4 flex flex-col gap-2">
-        <p className="text-sm font-medium text-ink inline-flex items-center gap-1.5">
-          {category && <category.icon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />}
-          {data.name || "—"}
-        </p>
-        {(data.form || data.dosage) && (
-          <p className="text-sm text-ink-soft">{[data.form, data.dosage].filter(Boolean).join(" · ")}</p>
-        )}
-        {data.scheduleType && (
-          <p className="text-sm text-ink-soft">
-            {describeSchedule({
-              scheduleType: data.scheduleType,
-              scheduleDays: data.scheduleType === "wekelijkse_dagen" ? data.scheduleDays : null,
-              scheduleDaysOn:
-                data.scheduleType === "cyclisch" && data.scheduleDaysOnValue
-                  ? Number(data.scheduleDaysOnValue) * (data.cyclUnit === "weken" ? 7 : 1)
-                  : null,
-              scheduleDaysOff:
-                data.scheduleType === "cyclisch" && data.scheduleDaysOffValue
-                  ? Number(data.scheduleDaysOffValue) * (data.cyclUnit === "weken" ? 7 : 1)
-                  : null,
-              startDate: data.startDate || null,
-              endDate: data.endDate || null,
-            })}
-          </p>
-        )}
+      {(data.form || data.dosage) && (
+        <p className="text-sm text-ink-soft">{[data.form, data.dosage].filter(Boolean).join(" · ")}</p>
+      )}
+      {data.scheduleType && (
         <p className="text-sm text-ink-soft">
-          {data.reminderEnabled ? `Herinnering om ${data.timeOfDay}` : "Geen herinnering"}
+          {describeSchedule({
+            scheduleType: data.scheduleType,
+            scheduleDays: data.scheduleType === "wekelijkse_dagen" ? data.scheduleDays : null,
+            scheduleDaysOn:
+              data.scheduleType === "cyclisch" && data.scheduleDaysOnValue
+                ? Number(data.scheduleDaysOnValue) * (data.cyclUnit === "weken" ? 7 : 1)
+                : null,
+            scheduleDaysOff:
+              data.scheduleType === "cyclisch" && data.scheduleDaysOffValue
+                ? Number(data.scheduleDaysOffValue) * (data.cyclUnit === "weken" ? 7 : 1)
+                : null,
+            startDate: data.startDate || null,
+            endDate: data.endDate || null,
+          })}
         </p>
-        {data.reminderEnabled && (isCyclisch || data.endDate) && (
-          <p className="text-sm text-ink-soft">
-            {[
-              isCyclisch && data.remindOnStart && "startmelding",
-              isCyclisch && data.remindDaily && "dagelijkse herinnering",
-              showStop && stopLabel,
-            ]
-              .filter(Boolean)
-              .join(", ") || "geen extra momenten aan"}
-          </p>
-        )}
-        {data.notes && <p className="text-sm text-ink-soft whitespace-pre-wrap">{data.notes}</p>}
-      </div>
-    </div>
+      )}
+      <p className="text-sm text-ink-soft">
+        {data.reminderEnabled ? `Herinnering om ${data.timeOfDay}` : "Geen herinnering"}
+      </p>
+      {data.reminderEnabled && (isCyclisch || data.endDate) && (
+        <p className="text-sm text-ink-soft">
+          {[
+            isCyclisch && data.remindOnStart && "startmelding",
+            isCyclisch && data.remindDaily && "dagelijkse herinnering",
+            showStop && stopLabel,
+          ]
+            .filter(Boolean)
+            .join(", ") || "geen extra momenten aan"}
+        </p>
+      )}
+      {data.notes && <p className="whitespace-pre-wrap text-sm text-ink-soft">{data.notes}</p>}
+    </Card>
   )
 }
