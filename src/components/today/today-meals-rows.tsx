@@ -1,7 +1,7 @@
 "use client"
 
 import { ACCOUNT_STATE_APPLIED_EVENT } from "@/lib/client/account-sync"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import Link from "next/link"
 import { ChevronLeft, PencilLine, Repeat, RotateCcw, SlidersHorizontal, X } from "lucide-react"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
@@ -89,6 +89,24 @@ export function TodayMealsRows({
     setMode(next)
   }
 
+  // After a choice the row may look different (skipped, own meal) and the
+  // button that opened the sheet is gone: focus that row's own control.
+  const rowPrefix = useId()
+  const sheetWasOpenRef = useRef(false)
+  useEffect(() => {
+    if (sheetOpen) {
+      sheetWasOpenRef.current = true
+      return
+    }
+    if (!sheetWasOpenRef.current) return
+    sheetWasOpenRef.current = false
+    if (document.activeElement && document.activeElement !== document.body) return
+    const row = adjustSlot ? document.querySelector(`[data-meal-row="${rowPrefix}${adjustSlot}"]`) : null
+    const target =
+      row?.querySelector<HTMLElement>('[aria-haspopup="dialog"]') ?? row?.querySelector<HTMLElement>("button, a[href]")
+    target?.focus({ preventScroll: true })
+  }, [sheetOpen, adjustSlot, rowPrefix])
+
   useEffect(() => {
     function refresh() {
       setOverrides(loadWeekOverrides(userId, weekStartISO))
@@ -151,7 +169,7 @@ export function TodayMealsRows({
 
         if (skipped) {
           return (
-            <div key={meal.slot} className="flex min-h-14 items-center gap-3 py-2 pl-4 pr-3">
+            <div key={meal.slot} data-meal-row={`${rowPrefix}${meal.slot}`} className="flex min-h-14 items-center gap-3 py-2 pl-4 pr-3">
               <div className="min-w-0 flex-1">
                 <p className="type-eyebrow text-sage-dark">{meal.label}</p>
                 <p className="text-sm text-ink-soft">Vandaag overgeslagen, ook goed</p>
@@ -169,7 +187,7 @@ export function TodayMealsRows({
 
         if (custom) {
           return (
-            <div key={meal.slot} className="flex min-h-14 items-center gap-1 py-2 pl-4 pr-2">
+            <div key={meal.slot} data-meal-row={`${rowPrefix}${meal.slot}`} className="flex min-h-14 items-center gap-1 py-2 pl-4 pr-2">
               <div className="min-w-0 flex-1">
                 <p className="type-eyebrow text-sage-dark">{meal.label}</p>
                 <p className="text-base font-medium text-ink wrap-anywhere">{custom.text}</p>
@@ -184,7 +202,7 @@ export function TodayMealsRows({
         const recipeId = swapped?.recipeId ?? meal.recipe?.id
         if (!title || !recipeId) {
           return (
-            <div key={meal.slot} className="flex min-h-14 items-center gap-1 py-2 pl-4 pr-2">
+            <div key={meal.slot} data-meal-row={`${rowPrefix}${meal.slot}`} className="flex min-h-14 items-center gap-1 py-2 pl-4 pr-2">
               <div className="min-w-0 flex-1">
                 <p className="type-eyebrow text-sage-dark">{meal.label}</p>
                 <p className="text-sm text-ink-soft">Nog geen voorstel</p>
@@ -201,7 +219,7 @@ export function TodayMealsRows({
           : (meal.recipe?.image_url ?? recipeImageById[recipeId] ?? null)
 
         return (
-          <div key={meal.slot} className="flex items-center gap-1 pr-2">
+          <div key={meal.slot} data-meal-row={`${rowPrefix}${meal.slot}`} className="flex items-center gap-1 pr-2">
             <Link href={`/voeding/${recipeId}`} className={rowLinkClass}>
               <RecipeImage
                 title={title}

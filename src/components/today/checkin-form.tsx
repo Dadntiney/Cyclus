@@ -256,6 +256,18 @@ export function CheckinForm({
   /** Resolves when the current save chain (including dirty retries) finishes. */
   const saveChainRef = useRef<Promise<void>>(Promise.resolve())
   const performSaveRef = useRef<() => Promise<void>>(async () => {})
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const adjustRef = useRef<HTMLButtonElement>(null)
+  /** The control she used disappears when the card switches mode: move focus along. */
+  const pendingFocusRef = useRef<"heading" | "adjust" | null>(null)
+
+  useEffect(() => {
+    const target = pendingFocusRef.current
+    if (!target) return
+    pendingFocusRef.current = null
+    const el = target === "adjust" ? adjustRef.current : headingRef.current
+    el?.focus({ preventScroll: true })
+  })
 
   useEffect(() => {
     editingRef.current = editing
@@ -325,7 +337,6 @@ export function CheckinForm({
       state.notes.trim() ||
       state.needs.length,
   )
-
 
   const summaryMode = hasAnyInput && !editing
 
@@ -540,6 +551,7 @@ export function CheckinForm({
   }
 
   function startEditing() {
+    pendingFocusRef.current = "heading"
     if (thanksTimerRef.current) clearTimeout(thanksTimerRef.current)
     setShowThanks(false)
     setShowDetails(true)
@@ -563,6 +575,12 @@ export function CheckinForm({
       // save failed, so nothing she entered looks saved when it isn't.
       if (lastSaveFailedRef.current) return
       if (announceTimerRef.current) clearTimeout(announceTimerRef.current)
+      // Klaar is about to disappear: if it (or nothing) has focus, hand
+      // focus to "Aanpassen" — but never pull it away from where she went.
+      const active = document.activeElement
+      if (!active || active === document.body || active.closest("[data-sticky-action-bar]")) {
+        pendingFocusRef.current = "adjust"
+      }
       setEditingAndNotify(false)
       setShowDetails(false)
       setShowThanks(true)
@@ -588,12 +606,19 @@ export function CheckinForm({
   return (
     <Card as="section" id="checkin" aria-labelledby="checkin-heading" className="scroll-mt-4">
       <div className="-my-2 flex min-h-11 items-center justify-between gap-3">
-        <h2 id="checkin-heading" className="type-card-title text-ink">
+        <h2
+          ref={headingRef}
+          id="checkin-heading"
+          tabIndex={-1}
+          data-focus-target=""
+          className="type-card-title text-ink"
+        >
           Hoe voel je je?
         </h2>
         {summaryMode ? (
           <button
             type="button"
+            ref={adjustRef}
             onClick={startEditing}
             aria-expanded={false}
             aria-controls="checkin-editor"

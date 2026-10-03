@@ -92,6 +92,7 @@ export function TodayMovementCard({
   const menuRef = useRef<HTMLDivElement>(null)
   const backRef = useRef<HTMLButtonElement>(null)
   const modeChangedRef = useRef(false)
+  const shellRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function refresh() {
@@ -114,6 +115,20 @@ export function TodayMovementCard({
     if (mode === "swap") backRef.current?.focus()
     else menuRef.current?.focus()
   }, [mode])
+
+  // After a choice the button that opened the sheet may be gone (e.g. the
+  // row now says "Vandaag geen beweging"): focus the row's own control.
+  const sheetWasOpenRef = useRef(false)
+  useEffect(() => {
+    if (sheetOpen) {
+      sheetWasOpenRef.current = true
+      return
+    }
+    if (!sheetWasOpenRef.current) return
+    sheetWasOpenRef.current = false
+    if (document.activeElement && document.activeElement !== document.body) return
+    shellRef.current?.querySelector<HTMLElement>("button, a[href]")?.focus({ preventScroll: true })
+  }, [sheetOpen])
 
   function applyOverride(next: DayOverride | null) {
     setDayOverride(userId, weekStartISO, date, "workout", next)
@@ -227,7 +242,7 @@ export function TodayMovementCard({
   }
 
   return (
-    <div className={shell}>
+    <div ref={shellRef} className={shell}>
       {skipped ? (
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
@@ -276,81 +291,83 @@ export function TodayMovementCard({
             Start training
           </Link>
 
-          <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Beweging aanpassen">
-            {mode === "menu" ? (
-              <div ref={menuRef} tabIndex={-1} data-focus-target="" className="pb-2">
-                <ListGroup>
-                  {alternatives.length > 0 && (
-                    <ListRow icon={Repeat} title="Andere beweging" onClick={openSwap} />
-                  )}
-                  <ListRow
-                    icon={X}
-                    title="Vandaag niet"
-                    trailing="none"
-                    onClick={() => applyOverride({ type: "skip-workout" })}
-                  />
-                  {swapped && (
-                    <ListRow
-                      icon={RotateCcw}
-                      title="Herstel advies"
-                      description={suggested ? titleWithoutDuration(suggested.title) : undefined}
-                      trailing="none"
-                      onClick={() => applyOverride(null)}
-                    />
-                  )}
-                </ListGroup>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-4 pb-2">
-                <button
-                  ref={backRef}
-                  type="button"
-                  onClick={backToMenu}
-                  className={textActionClass("-ml-1 self-start px-1")}
-                >
-                  <ChevronLeft {...ICON.sm} aria-hidden />
-                  Terug
-                </button>
-                <div className="flex flex-col gap-2">
-                  <p id={typeLabelId} className="text-sm font-medium text-ink">
-                    Soort beweging
-                  </p>
-                  <ChipRadioGroup
-                    aria-labelledby={typeLabelId}
-                    value={swapType}
-                    onChange={setSwapType}
-                    options={typeOptions.map((type) => ({ value: type, label: workoutTypeLabel(type) }))}
-                  />
-                </div>
-                {filteredAlternatives.length ? (
-                  <ListGroup label="Wat ga je doen?" labelAs="h3">
-                    {filteredAlternatives.map((alt) => (
-                      <ListRow
-                        key={alt.id}
-                        title={titleWithoutDuration(alt.title)}
-                        value={`${alt.duration} min`}
-                        trailing="none"
-                        onClick={() =>
-                          applyOverride({
-                            type: "swap-workout",
-                            workoutId: alt.id,
-                            title: alt.title,
-                            duration: alt.duration,
-                          })
-                        }
-                      />
-                    ))}
-                  </ListGroup>
-                ) : (
-                  <p className="text-sm text-ink-soft">Geen opties in deze categorie.</p>
-                )}
-              </div>
-            )}
-          </BottomSheet>
         </>
       ) : (
         <p className="text-sm text-ink-soft">{reason || "Geen training voorgesteld vandaag."}</p>
       )}
+
+      {/* Outside the branches above, so it can slide out after "Vandaag niet". */}
+      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Beweging aanpassen">
+        {mode === "menu" ? (
+          <div ref={menuRef} tabIndex={-1} data-focus-target="" className="pb-2">
+            <ListGroup>
+              {alternatives.length > 0 && (
+                <ListRow icon={Repeat} title="Andere beweging" onClick={openSwap} />
+              )}
+              <ListRow
+                icon={X}
+                title="Vandaag niet"
+                trailing="none"
+                onClick={() => applyOverride({ type: "skip-workout" })}
+              />
+              {swapped && (
+                <ListRow
+                  icon={RotateCcw}
+                  title="Herstel advies"
+                  description={suggested ? titleWithoutDuration(suggested.title) : undefined}
+                  trailing="none"
+                  onClick={() => applyOverride(null)}
+                />
+              )}
+            </ListGroup>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4 pb-2">
+            <button
+              ref={backRef}
+              type="button"
+              onClick={backToMenu}
+              className={textActionClass("-ml-1 self-start px-1")}
+            >
+              <ChevronLeft {...ICON.sm} aria-hidden />
+              Terug
+            </button>
+            <div className="flex flex-col gap-2">
+              <p id={typeLabelId} className="text-sm font-medium text-ink">
+                Soort beweging
+              </p>
+              <ChipRadioGroup
+                aria-labelledby={typeLabelId}
+                value={swapType}
+                onChange={setSwapType}
+                options={typeOptions.map((type) => ({ value: type, label: workoutTypeLabel(type) }))}
+              />
+            </div>
+            {filteredAlternatives.length ? (
+              <ListGroup label="Wat ga je doen?" labelAs="h3">
+                {filteredAlternatives.map((alt) => (
+                  <ListRow
+                    key={alt.id}
+                    title={titleWithoutDuration(alt.title)}
+                    value={`${alt.duration} min`}
+                    trailing="none"
+                    onClick={() =>
+                      applyOverride({
+                        type: "swap-workout",
+                        workoutId: alt.id,
+                        title: alt.title,
+                        duration: alt.duration,
+                      })
+                    }
+                  />
+                ))}
+              </ListGroup>
+            ) : (
+              <p className="text-sm text-ink-soft">Geen opties in deze categorie.</p>
+            )}
+          </div>
+        )}
+      </BottomSheet>
     </div>
   )
 }

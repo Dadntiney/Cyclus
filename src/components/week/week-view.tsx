@@ -168,7 +168,13 @@ export function WeekView({
   let phaseBadge: string | null = null
   if (day.cycleEstimate) {
     if (softHint) {
-      phaseBadge = formatPresentedCycleHeadline(day.cycleEstimate, day.date, activePeriodStart, day.predictedMenstruation, day.menstruationSoftHint)
+      phaseBadge = formatPresentedCycleHeadline(
+        day.cycleEstimate,
+        day.date,
+        activePeriodStart,
+        day.predictedMenstruation,
+        day.menstruationSoftHint,
+      )
     } else if (day.cycleEstimate.phase === "menstruatie" && activePeriodStart && day.date >= activePeriodStart) {
       phaseBadge = formatPresentedCycleHeadline(day.cycleEstimate, day.date, activePeriodStart)
     } else {
