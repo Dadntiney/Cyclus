@@ -1,20 +1,23 @@
+import type { Metadata } from "next"
 import Link from "next/link"
+import { PageHeader } from "@/components/layout/page-header"
+import { textActionClass } from "@/components/ui/button"
+import { APP_TAGLINE } from "@/lib/theme/brand"
 import { RegisterForm } from "./register-form"
+
+export const metadata: Metadata = { title: "Account aanmaken" }
 
 export default function RegisterPage() {
   return (
-    <div>
-      <h1 className="font-display text-2xl text-ink mb-1.5">Maak je account aan</h1>
-      <p className="text-sm text-ink-soft mb-6">
-        Jouw lichaam. Jouw ritme. Jouw dag.
-      </p>
+    <>
+      <PageHeader title="Account aanmaken" subtitle={APP_TAGLINE} back={false} />
       <RegisterForm />
-      <p className="mt-6 text-center text-sm text-ink-soft">
-        Al een account?{" "}
-        <Link href="/login" className="text-sage-dark font-medium hover:underline">
+      <p className="mt-6 flex flex-wrap items-center gap-x-1 text-sm text-ink-soft">
+        Al een account?
+        <Link href="/login" className={textActionClass()}>
           Inloggen
         </Link>
       </p>
-    </div>
+    </>
   )
 }
