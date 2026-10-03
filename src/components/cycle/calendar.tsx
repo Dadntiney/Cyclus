@@ -1,20 +1,19 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useId, useMemo, useState, useTransition } from "react"
 import {
   addDays,
   addMonths,
-  parseISO,
   eachDayOfInterval,
   endOfMonth,
   format,
   getDay,
-  isSameMonth,
+  parseISO,
   startOfMonth,
   subMonths,
 } from "date-fns"
 import { nl } from "date-fns/locale"
-import { ChevronLeft, ChevronRight, Droplet, Circle } from "lucide-react"
+import { ChevronLeft, ChevronRight, Droplet } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { todayISO as amsterdamTodayISO, todayDate } from "@/lib/dates/amsterdam"
 import { toggleMenstruationDay, setCycleLogFlow } from "@/lib/actions/cycle"
@@ -22,6 +21,13 @@ import { FLOW_OPTIONS } from "@/lib/constants"
 import { runAction } from "@/lib/client/run-action"
 import { BottomSheet } from "@/components/ui/bottom-sheet"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { ChipRadioGroup } from "@/components/ui/chip-radio-group"
+import { IconButton } from "@/components/ui/icon-button"
+import { SectionHeader } from "@/components/ui/section-header"
+import { ICON } from "@/lib/ui/icon"
+
+type FlowValue = (typeof FLOW_OPTIONS)[number]["value"]
 
 interface CalendarProps {
   menstruationDates: Set<string>
@@ -32,16 +38,36 @@ interface CalendarProps {
   /** Estimated next period start (ISO) — drawn as soft, dashed days. */
   predictedStart?: string | null
   predictedLength?: number
+  /** ± days of the estimate's window, shown in the legend ("Verwacht (± 6 dagen)"). */
+  predictedWindowDays?: number | null
 }
 
 const WEEKDAY_LABELS = ["ma", "di", "wo", "do", "vr", "za", "zo"]
 
+const FLOW_CHOICES = FLOW_OPTIONS.map((o) => ({ value: o.value, label: o.label }))
+
+const FLOW_DOTS: Record<string, number> = { licht: 1, gemiddeld: 2, hevig: 3 }
+
+function capitalize(text: string) {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+/**
+ * The Cyclus calendar: its section heading, the month grid and the day
+ * sheet. A tap only opens the day; nothing is saved until she confirms.
+ *
+ * Cell language (besluit 20): a period day is filled rozenhout with a dark
+ * day number; a predicted day is a dashed outline without fill; today is a
+ * dot under the number plus semibold ink — never a ring, because a ring
+ * means focus or "this day is open in the sheet".
+ */
 export function Calendar({
   menstruationDates: initialDates,
   flowByDate: initialFlowByDate,
   trackFlowEnabled = false,
   predictedStart = null,
   predictedLength = 5,
+  predictedWindowDays = null,
 }: CalendarProps) {
   const predictedDates = useMemo(() => {
     if (!predictedStart) return new Set<string>()
@@ -53,14 +79,33 @@ export function Calendar({
     )
   }, [predictedStart, predictedLength])
   const [month, setMonth] = useState(() => startOfMonth(todayDate()))
+
+  // Local, optimistic copies of the server data. When the page refreshes
+  // (a save here, or "Noteer menstruatie" in the phase status above), the
+  // new server props win again.
   const [dates, setDates] = useState(initialDates)
   const [flowByDate, setFlowByDate] = useState<Map<string, string | null>>(
-    initialFlowByDate ?? new Map(),
+    () => initialFlowByDate ?? new Map(),
   )
+  const [syncedDates, setSyncedDates] = useState(initialDates)
+  const [syncedFlow, setSyncedFlow] = useState(initialFlowByDate)
+  if (syncedDates !== initialDates) {
+    setSyncedDates(initialDates)
+    setDates(initialDates)
+  }
+  if (syncedFlow !== initialFlowByDate) {
+    setSyncedFlow(initialFlowByDate)
+    setFlowByDate(initialFlowByDate ?? new Map())
+  }
+
   const [isPending, startTransition] = useTransition()
   const [pendingDate, setPendingDate] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [flowChoice, setFlowChoice] = useState<FlowValue | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const monthLabelId = useId()
+  const flowLabelId = useId()
 
   const days = useMemo(() => {
     const start = startOfMonth(month)
@@ -70,6 +115,16 @@ export function Calendar({
 
   const leadingBlanks = (getDay(startOfMonth(month)) + 6) % 7
   const todayISO = amsterdamTodayISO()
+  const monthKey = format(month, "yyyy-MM")
+  const isCurrentMonth = todayISO.startsWith(monthKey)
+  const inMonth = (iso: string) => iso.startsWith(monthKey)
+
+  // Legend: only what this month actually shows.
+  const legendMenstruation = Array.from(dates).some(inMonth)
+  const legendToday = isCurrentMonth
+  const legendPredicted = Array.from(predictedDates).some(
+    (iso) => inMonth(iso) && iso > todayISO && !dates.has(iso),
+  )
 
   function handleDayClick(day: Date) {
     const iso = format(day, "yyyy-MM-dd")
@@ -79,6 +134,8 @@ export function Calendar({
     setError(null)
     // A bare tap never changes data: it opens the day so she confirms what
     // she means (usertest/audit: a tap while scrolling marked a period).
+    const current = flowByDate.get(iso) ?? null
+    setFlowChoice(FLOW_CHOICES.some((o) => o.value === current) ? (current as FlowValue) : null)
     setSelectedDate(iso)
   }
 
@@ -115,7 +172,7 @@ export function Calendar({
     })
   }
 
-  function handleSetFlow(iso: string, flow: (typeof FLOW_OPTIONS)[number]["value"]) {
+  function handleSetFlow(iso: string, flow: FlowValue) {
     setError(null)
     const wasMarked = dates.has(iso)
     const previousFlow = flowByDate.get(iso) ?? null
@@ -135,165 +192,214 @@ export function Calendar({
     })
   }
 
+  const selectedMarked = selectedDate ? dates.has(selectedDate) : false
+
+  const sheetFooter = selectedDate ? (
+    <div className="flex flex-col gap-2">
+      {trackFlowEnabled && (
+        <Button
+          className="w-full"
+          disabled={!flowChoice || isPending}
+          onClick={() => flowChoice && handleSetFlow(selectedDate, flowChoice)}
+        >
+          Opslaan
+        </Button>
+      )}
+      {selectedMarked ? (
+        <Button variant="secondary" onClick={() => handleToggle(selectedDate)} className="w-full">
+          Geen menstruatie op deze dag
+        </Button>
+      ) : (
+        !trackFlowEnabled && (
+          <Button onClick={() => handleToggle(selectedDate)} className="w-full">
+            <Droplet {...ICON.sm} aria-hidden />
+            Markeer als menstruatiedag
+          </Button>
+        )
+      )}
+    </div>
+  ) : null
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <button
-          type="button"
-          onClick={() => setMonth((m) => subMonths(m, 1))}
-          className="h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-          aria-label="Vorige maand"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <p className="font-display text-lg text-ink capitalize">
-          {format(month, "MMMM yyyy", { locale: nl })}
-        </p>
-        <button
-          type="button"
-          onClick={() => setMonth((m) => addMonths(m, 1))}
-          className="h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-          aria-label="Volgende maand"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-7 gap-y-1.5 text-center">
-        {WEEKDAY_LABELS.map((label) => (
-          <div key={label} className="text-xs text-ink-soft font-medium py-1">
-            {label}
-          </div>
-        ))}
-        {Array.from({ length: leadingBlanks }).map((_, i) => (
-          <div key={`blank-${i}`} />
-        ))}
-        {days.map((day) => {
-          const iso = format(day, "yyyy-MM-dd")
-          const isMenstruation = dates.has(iso)
-          const flow = flowByDate.get(iso)
-          const future = iso > todayISO
-          const isAmsterdamToday = iso === todayISO
-          const isPredicted = future && predictedDates.has(iso)
-          return (
-            <button
-              key={iso}
-              type="button"
-              disabled={future || pendingDate === iso}
-              onClick={() => handleDayClick(day)}
-              aria-label={`${format(day, "d MMMM yyyy", { locale: nl })}${
-                isMenstruation ? ", menstruatie" : ""
-              }${isAmsterdamToday ? ", vandaag" : ""}${isPredicted ? ", menstruatie verwacht (schatting)" : future ? ", toekomst" : ""}`}
-              aria-haspopup="dialog"
-              className={cn(
-                "relative h-11 rounded-full text-sm mx-auto w-11 flex items-center justify-center transition-colors touch-manipulation",
-                isSameMonth(day, month) ? "text-ink" : "text-ink-soft/40",
-                isMenstruation && "bg-phase-menstruatie text-phase-menstruatie-text font-medium",
-                !isMenstruation && isAmsterdamToday && "border-2 border-sage-dark text-sage-dark font-semibold",
-                !isMenstruation && !isAmsterdamToday && "hover:bg-cream-soft",
-                isPredicted &&
-                  "border-2 border-dashed border-phase-menstruatie bg-phase-menstruatie-soft text-phase-menstruatie-text cursor-default",
-                future && !isPredicted && "opacity-30 cursor-not-allowed",
-                isPending && pendingDate === iso && "opacity-60",
-              )}
-            >
-              {format(day, "d")}
-              {isMenstruation && trackFlowEnabled && flow && flow !== "geen" && (
-                <span className="absolute bottom-1 flex items-center gap-0.5" aria-hidden>
-                  {Array.from({ length: flow === "licht" ? 1 : flow === "gemiddeld" ? 2 : 3 }).map((_, i) => (
-                    <span key={i} className="h-1 w-1 rounded-full bg-danger" />
-                  ))}
-                </span>
-              )}
-            </button>
+    <section aria-labelledby="kalender">
+      <SectionHeader
+        id="kalender"
+        title="Kalender"
+        description={
+          trackFlowEnabled
+            ? "Tik op een dag om menstruatie en bloedverlies bij te werken."
+            : "Tik op een dag om je menstruatie bij te werken."
+        }
+        action={
+          isCurrentMonth ? undefined : (
+            <Button variant="tonal" size="sm" onClick={() => setMonth(startOfMonth(todayDate()))}>
+              Vandaag
+            </Button>
           )
-        })}
-      </div>
+        }
+      />
+      <Card>
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <IconButton
+            label="Vorige maand"
+            icon={ChevronLeft}
+            onClick={() => setMonth((m) => subMonths(m, 1))}
+          />
+          <p id={monthLabelId} aria-live="polite" className="type-card-title text-ink capitalize">
+            {format(month, "MMMM yyyy", { locale: nl })}
+          </p>
+          <IconButton
+            label="Volgende maand"
+            icon={ChevronRight}
+            onClick={() => setMonth((m) => addMonths(m, 1))}
+          />
+        </div>
 
-      <div className="flex items-center gap-4 mt-4 text-xs text-ink-soft flex-wrap">
-        <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full bg-phase-menstruatie inline-block" />
-          Menstruatie
+        <div aria-hidden className="grid grid-cols-7 text-center mb-1">
+          {WEEKDAY_LABELS.map((label) => (
+            <div key={label} className="text-xs text-ink-soft font-medium py-1">
+              {label}
+            </div>
+          ))}
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full border border-sage inline-block" />
-          Vandaag
+
+        {/* Keyed per month: a calm crossfade on month change (none under reduced motion). */}
+        <div
+          key={monthKey}
+          role="group"
+          aria-labelledby={monthLabelId}
+          className="grid grid-cols-7 gap-y-1.5 motion-safe:animate-fade-in"
+        >
+          {Array.from({ length: leadingBlanks }).map((_, i) => (
+            <div key={`blank-${i}`} />
+          ))}
+          {days.map((day) => {
+            const iso = format(day, "yyyy-MM-dd")
+            const isMenstruation = dates.has(iso)
+            const flow = flowByDate.get(iso)
+            const future = iso > todayISO
+            const isToday = iso === todayISO
+            const isPredicted = future && predictedDates.has(iso) && !isMenstruation
+            const isSelected = selectedDate === iso
+            const flowDots = trackFlowEnabled && isMenstruation && flow ? (FLOW_DOTS[flow] ?? 0) : 0
+            const flowLabel =
+              trackFlowEnabled && isMenstruation && flow
+                ? FLOW_OPTIONS.find((o) => o.value === flow)?.label.toLowerCase()
+                : undefined
+            return (
+              <button
+                key={iso}
+                type="button"
+                disabled={future || pendingDate === iso}
+                onClick={() => handleDayClick(day)}
+                aria-label={`${format(day, "EEEE d MMMM yyyy", { locale: nl })}${
+                  isMenstruation ? ", menstruatie" : ""
+                }${flowLabel ? `, bloedverlies ${flowLabel}` : ""}${isToday ? ", vandaag" : ""}${
+                  isPredicted ? ", menstruatie verwacht (schatting)" : future ? ", toekomst" : ""
+                }`}
+                aria-haspopup="dialog"
+                className={cn(
+                  "relative mx-auto flex aspect-square w-full max-w-11 items-center justify-center rounded-full text-sm tabular-nums touch-manipulation",
+                  "transition-[background-color,opacity] duration-fast ease-standard",
+                  isMenstruation
+                    ? "bg-phase-menstruatie text-phase-menstruatie-on font-medium"
+                    : isPredicted
+                      ? "border-2 border-dashed border-phase-menstruatie-strong text-ink cursor-default"
+                      : future
+                        ? "text-ink-soft opacity-40 cursor-not-allowed"
+                        : "text-ink hover:bg-cream-soft",
+                  isToday && "font-semibold",
+                  isSelected && "ring-2 ring-sage-dark ring-offset-2 ring-offset-surface",
+                  isPending && pendingDate === iso && "opacity-60",
+                )}
+              >
+                {flowDots > 0 && (
+                  <span aria-hidden className="absolute top-1 left-1/2 flex -translate-x-1/2 gap-0.5">
+                    {Array.from({ length: flowDots }).map((_, i) => (
+                      <span key={i} className="h-1 w-1 rounded-full bg-phase-menstruatie-on" />
+                    ))}
+                  </span>
+                )}
+                {format(day, "d")}
+                {isToday && (
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full",
+                      isMenstruation ? "bg-phase-menstruatie-on" : "bg-ink",
+                    )}
+                  />
+                )}
+              </button>
+            )
+          })}
         </div>
-        {predictedDates.size > 0 && (
-          <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full border border-dashed border-phase-menstruatie bg-phase-menstruatie-soft inline-block" />
-            Verwacht (schatting)
-          </div>
+
+        {(legendMenstruation || legendToday || legendPredicted) && (
+          <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-ink-soft">
+            {legendMenstruation && (
+              <li className="flex items-center gap-1.5">
+                <span aria-hidden className="h-3 w-3 rounded-full bg-phase-menstruatie" />
+                Menstruatie
+              </li>
+            )}
+            {legendToday && (
+              <li className="flex items-center gap-1.5">
+                <span aria-hidden className="flex h-3 w-3 items-center justify-center">
+                  <span className="h-1.5 w-1.5 rounded-full bg-ink" />
+                </span>
+                Vandaag
+              </li>
+            )}
+            {legendPredicted && (
+              <li className="flex items-center gap-1.5">
+                <span
+                  aria-hidden
+                  className="h-3.5 w-3.5 rounded-full border-2 border-dashed border-phase-menstruatie-strong"
+                />
+                {predictedWindowDays ? `Verwacht (± ${predictedWindowDays} dagen)` : "Verwacht (schatting)"}
+              </li>
+            )}
+          </ul>
         )}
-      </div>
-      <p className="text-xs text-ink-soft mt-3">
-        {trackFlowEnabled
-          ? "Tik op een dag om menstruatie en bloedverlies bij te houden."
-          : "Tik op een dag om menstruatie te noteren of te wijzigen."}
-      </p>
-      {error && <p className="text-xs text-danger mt-2">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-danger mt-3">
+            {error}
+          </p>
+        )}
+      </Card>
 
       <BottomSheet
         open={selectedDate !== null}
         onClose={() => setSelectedDate(null)}
-        title={selectedDate ? format(parseISO(selectedDate), "EEEE d MMMM", { locale: nl }) : undefined}
+        title={selectedDate ? capitalize(format(parseISO(selectedDate), "EEEE d MMMM", { locale: nl })) : undefined}
+        footer={sheetFooter}
       >
         {selectedDate && (
-          <div className="flex flex-col gap-4 pt-1 pb-2">
+          <div className="flex flex-col gap-4 pb-2">
             <p className="text-sm text-ink-soft">
-              {dates.has(selectedDate)
+              {selectedMarked
                 ? "Deze dag staat genoteerd als menstruatiedag."
                 : "Was je deze dag ongesteld?"}
             </p>
 
             {trackFlowEnabled && (
               <div>
-                <p className="text-sm font-medium text-ink mb-2">Bloedverlies</p>
-                <div className="flex flex-wrap gap-2">
-                  {FLOW_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => handleSetFlow(selectedDate, opt.value)}
-                      aria-pressed={flowByDate.get(selectedDate) === opt.value}
-                      className={cn(
-                        "rounded-full border px-3.5 py-2.5 min-h-11 text-sm font-medium touch-manipulation transition-colors",
-                        flowByDate.get(selectedDate) === opt.value
-                          ? "bg-sage-fill text-white border-sage-dark"
-                          : "bg-surface text-ink border-line hover:border-ink/30",
-                      )}
-                    >
-                      <span className="mr-1 inline-flex items-center" aria-hidden>
-                        {opt.intensity === 0 ? (
-                          <Circle className="h-3 w-3" strokeWidth={1.75} />
-                        ) : (
-                          Array.from({ length: opt.intensity }).map((_, i) => (
-                            <Droplet key={i} className="h-3 w-3" strokeWidth={1.75} fill="currentColor" />
-                          ))
-                        )}
-                      </span>
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
+                <p id={flowLabelId} className="text-sm font-medium text-ink mb-2">
+                  Bloedverlies
+                </p>
+                <ChipRadioGroup
+                  aria-labelledby={flowLabelId}
+                  columns={4}
+                  options={FLOW_CHOICES}
+                  value={flowChoice}
+                  onChange={setFlowChoice}
+                />
               </div>
-            )}
-
-            {dates.has(selectedDate) ? (
-              <Button variant="secondary" onClick={() => handleToggle(selectedDate)} className="w-full">
-                Geen menstruatie op deze dag
-              </Button>
-            ) : (
-              !trackFlowEnabled && (
-                <Button onClick={() => handleToggle(selectedDate)} className="w-full">
-                  <Droplet className="h-4 w-4" strokeWidth={1.75} aria-hidden />
-                  Markeer als menstruatiedag
-                </Button>
-              )
             )}
           </div>
         )}
       </BottomSheet>
-    </div>
+    </section>
   )
 }
