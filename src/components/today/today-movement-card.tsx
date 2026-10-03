@@ -290,7 +290,6 @@ export function TodayMovementCard({
           <Link href={`/training/${effective.id}`} className={buttonVariants({ className: "mt-4" })}>
             Start training
           </Link>
-
         </>
       ) : (
         <p className="text-sm text-ink-soft">{reason || "Geen training voorgesteld vandaag."}</p>
