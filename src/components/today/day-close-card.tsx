@@ -3,7 +3,7 @@
 import { ACCOUNT_STATE_APPLIED_EVENT, syncToAccount } from "@/lib/client/account-sync"
 import { useEffect, useId, useRef, useState, useTransition } from "react"
 import Link from "next/link"
-import { CheckCircle2, ChevronDown, Circle, Heart, Moon, NotebookPen } from "lucide-react"
+import { CheckCircle2, ChevronDown, Circle, NotebookPen } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getEveningAffirmation } from "@/lib/data/day-close-notes"
 import { createDiaryEntry } from "@/lib/actions/diary"
@@ -26,8 +26,9 @@ const DANKBAARHEID_HREF = "/mentale-rust/dankbaarheidsmoment"
 /**
  * "Even afronden" — the evening wrap-up, folded by default (it never opens
  * by itself). Open: what is still open as anchor links, one prompt "Wat
- * neem je mee van vandaag?", a row of text links and "Dag laten rusten".
- * The affirmation (with a heart) appears once the day rests.
+ * neem je mee van vandaag?", a row of plain text links and "Dag laten
+ * rusten". The affirmation (with a heart to save it) appears once the day
+ * rests. Icon: NotebookPen (besluit 22); a heart only ever means "bewaren".
  */
 export function DayCloseCard({
   userId,
@@ -206,7 +207,7 @@ export function DayCloseCard({
             aria-hidden
             className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-sage-dark"
           >
-            <Moon {...ICON.sm} />
+            <NotebookPen {...ICON.sm} />
           </span>
           <span className="min-w-0 flex-1">
             <span id={`${contentId}-titel`} className="block text-base font-medium text-ink">
@@ -250,7 +251,6 @@ export function DayCloseCard({
             <div className="flex flex-wrap items-center gap-x-5">
               {mentalWellbeingEnabled && (
                 <Link href={AVONDMEDITATIE_HREF} className={textActionClass()}>
-                  <Moon {...ICON.sm} aria-hidden />
                   Avondmeditatie
                 </Link>
               )}
@@ -316,17 +316,14 @@ export function DayCloseCard({
 
             <div className="flex flex-wrap items-center gap-x-5">
               <Link href={FEATURES.dagboek.href} className={textActionClass()}>
-                <NotebookPen {...ICON.sm} aria-hidden />
                 {FEATURES.dagboek.label}
               </Link>
               {mentalWellbeingEnabled && (
                 <>
                   <Link href={DANKBAARHEID_HREF} className={textActionClass()}>
-                    <Heart {...ICON.sm} aria-hidden />
                     Dankbaarheid · 2 min
                   </Link>
                   <Link href={AVONDMEDITATIE_HREF} className={textActionClass()}>
-                    <Moon {...ICON.sm} aria-hidden />
                     Avondmeditatie
                   </Link>
                 </>
