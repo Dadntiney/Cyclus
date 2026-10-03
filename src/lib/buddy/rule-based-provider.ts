@@ -179,7 +179,7 @@ export const GENERIC_REPLY_BY_STYLE: Record<string, Variants> = {
   ],
   luchtig: [
     "Thanks dat je het deelt. Wat zou nu het fijnst voelen?",
-    "Leuk dat je even langskomt! Vertel, wat houdt je bezig?",
+    "Leuk dat je het vertelt! Wat houdt je nog meer bezig?",
     "Dank je! Zin om er nog iets meer over te vertellen?",
   ],
 }
