@@ -1,36 +1,39 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import Link from "next/link"
+import { useId, useMemo, useState } from "react"
 import { Sparkles } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
+import { Disclosure } from "@/components/ui/disclosure"
 import { EmptyState } from "@/components/ui/empty-state"
+import { SectionHeader } from "@/components/ui/section-header"
+import { MindfulExerciseCard } from "@/components/mental-wellbeing/mindful-exercise-card"
+import {
+  FIRST_EXERCISES,
+  TIME_LIMITS,
+  filterExercises,
+  type TimeLimit,
+} from "@/components/mental-wellbeing/library-filter"
 import { MENTAL_WELLBEING_CATEGORY_OPTIONS, type MentalWellbeingCategory } from "@/lib/constants"
-import { MindfulExerciseCard } from "./mindful-exercise-card"
 import type { MindfulExercise } from "@/lib/data/mindful-exercises"
 
-const TIME_FILTERS = [
-  { value: "alle", label: "Alles", min: 0, max: Infinity },
-  { value: "kort", label: "1–3 min", min: 0, max: 3 },
-  { value: "middel", label: "5 min", min: 4, max: 7 },
-  { value: "lang", label: "10+ min", min: 8, max: Infinity },
-] as const
-
-/** One suggestion "voor nu": evening leans to avondrust, otherwise her own topics, shortest first. */
-function pickForNow(
-  exercises: MindfulExercise[],
-  preferred: MentalWellbeingCategory[],
-  hour: number,
-): MindfulExercise | null {
-  const evening = hour >= 20 || hour < 5
-  const wanted: MentalWellbeingCategory[] = evening ? ["slaap", ...preferred] : preferred
-  const pool = exercises.filter((e) => e.categories.some((c) => wanted.includes(c)))
-  const sorted = [...(pool.length ? pool : exercises)].sort(
-    (a, b) => a.durationMinutes - b.durationMinutes,
+function ExerciseGrid({ exercises }: { exercises: MindfulExercise[] }) {
+  return (
+    <ul className="grid gap-3 sm:grid-cols-2">
+      {exercises.map((exercise) => (
+        <li key={exercise.id}>
+          <MindfulExerciseCard exercise={exercise} />
+        </li>
+      ))}
+    </ul>
   )
-  return sorted[0] ?? null
 }
 
+/**
+ * The library (ontwerpvisie §7.6): one chip row (time, then her topics),
+ * the first six exercises and the rest behind "Alle n oefeningen".
+ * Time and topic combine (AND); several topics widen the choice (OR).
+ */
 export function ExerciseLibrary({
   exercises,
   preferredCategories,
@@ -38,88 +41,85 @@ export function ExerciseLibrary({
   exercises: MindfulExercise[]
   preferredCategories: MentalWellbeingCategory[]
 }) {
-  const [timeFilter, setTimeFilter] = useState<(typeof TIME_FILTERS)[number]["value"]>("alle")
-  const [hour, setHour] = useState<number | null>(null)
-  useEffect(() => {
-    // Client clock only — keeps the server render stable.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setHour(new Date().getHours())
-  }, [])
-  const forNow = useMemo(
-    () => (hour == null ? null : pickForNow(exercises, preferredCategories, hour)),
-    [exercises, preferredCategories, hour],
-  )
-  const [categoryFilter, setCategoryFilter] = useState<MentalWellbeingCategory | null>(null)
+  const titleId = useId()
+  const [maxMinutes, setMaxMinutes] = useState<TimeLimit | null>(null)
+  const [topics, setTopics] = useState<MentalWellbeingCategory[]>([])
 
-  const categoryOptions = preferredCategories.length
+  const topicOptions = preferredCategories.length
     ? MENTAL_WELLBEING_CATEGORY_OPTIONS.filter((opt) => preferredCategories.includes(opt.value))
     : MENTAL_WELLBEING_CATEGORY_OPTIONS
 
-  const filtered = useMemo(() => {
-    let result = exercises
-    const time = TIME_FILTERS.find((t) => t.value === timeFilter)
-    if (time && time.value !== "alle") {
-      result = result.filter((e) => e.durationMinutes >= time.min && e.durationMinutes <= time.max)
-    }
-    if (categoryFilter) result = result.filter((e) => e.categories.includes(categoryFilter))
-    return result
-  }, [exercises, timeFilter, categoryFilter])
+  const filtered = useMemo(
+    () => filterExercises(exercises, { maxMinutes, topics }),
+    [exercises, maxMinutes, topics],
+  )
+  const first = filtered.slice(0, FIRST_EXERCISES)
+  const rest = filtered.slice(FIRST_EXERCISES)
+  const filtering = maxMinutes != null || topics.length > 0
+
+  function toggleTopic(topic: MentalWellbeingCategory) {
+    setTopics((prev) => (prev.includes(topic) ? prev.filter((t) => t !== topic) : [...prev, topic]))
+  }
+
+  function clearFilters() {
+    setMaxMinutes(null)
+    setTopics([])
+  }
 
   return (
-    <div>
-      {forNow && (
-        <Link
-          href={`/mentale-rust/${forNow.id}`}
-          className="mb-5 flex items-center gap-4 rounded-[1.25rem] bg-sage-soft px-4 py-4 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
-        >
-          <span className="min-w-0 flex-1">
-            <span className="block text-xs font-medium text-sage-dark">Voor nu</span>
-            <span className="block font-display text-lg text-ink mt-0.5">{forNow.title}</span>
-            <span className="block text-xs text-ink-soft mt-0.5">{forNow.durationMinutes} min</span>
-          </span>
-          <span className="shrink-0 rounded-full bg-sage-fill text-white text-sm font-semibold px-4 py-2">
-            Start
-          </span>
-        </Link>
-      )}
-      <p className="text-sm font-medium text-ink mb-2">Hoeveel tijd heb je?</p>
-      <div className="flex w-full gap-2 mb-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {TIME_FILTERS.map((opt) => (
-          <Chip key={opt.value} className="shrink-0" selected={timeFilter === opt.value} onClick={() => setTimeFilter(opt.value)}>
-            {opt.label}
+    <section aria-labelledby={titleId}>
+      <SectionHeader id={titleId} title="Meditaties & mindfulness" />
+
+      <div role="group" aria-label="Filter op tijd en onderwerp" className="scroller-bleed mb-4 flex items-center gap-2">
+        {TIME_LIMITS.map((limit) => (
+          <Chip
+            key={limit.value}
+            className="shrink-0 whitespace-nowrap"
+            selected={maxMinutes === limit.value}
+            onClick={() => setMaxMinutes((current) => (current === limit.value ? null : limit.value))}
+          >
+            {limit.label}
           </Chip>
         ))}
-      </div>
-      <div className="flex w-full gap-2 mb-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <Chip className="shrink-0" selected={categoryFilter === null} onClick={() => setCategoryFilter(null)}>
-          Alle onderwerpen
-        </Chip>
-        {categoryOptions.map((opt) => (
+        <span aria-hidden className="mx-1 h-6 w-px shrink-0 bg-line" />
+        {topicOptions.map((opt) => (
           <Chip
             key={opt.value}
-            className="shrink-0"
-            selected={categoryFilter === opt.value}
-            onClick={() => setCategoryFilter(opt.value)}
+            className="shrink-0 whitespace-nowrap"
+            selected={topics.includes(opt.value)}
+            onClick={() => toggleTopic(opt.value)}
           >
-            <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
             {opt.label}
           </Chip>
         ))}
       </div>
 
+      <p className="sr-only" aria-live="polite">
+        {filtering ? `${filtered.length} ${filtered.length === 1 ? "oefening" : "oefeningen"}` : ""}
+      </p>
+
       {filtered.length ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((exercise) => (
-            <MindfulExerciseCard key={exercise.id} exercise={exercise} />
-          ))}
+        <div className="flex flex-col gap-3">
+          <ExerciseGrid exercises={first} />
+          {rest.length > 0 && (
+            <Disclosure label={`Alle ${filtered.length} oefeningen`} openLabel="Minder tonen" contentClassName="pt-1">
+              <ExerciseGrid exercises={rest} />
+            </Disclosure>
+          )}
         </div>
       ) : (
         <EmptyState
-          icon={<Sparkles className="h-6 w-6" />}
-          title="Geen oefeningen bij deze filters."
-          description="Probeer een ander onderwerp of kies 'Alles'."
+          icon={Sparkles}
+          titleAs="h3"
+          title="Geen oefening bij deze keuze"
+          description="Probeer een ander onderwerp of wat meer tijd."
+          action={
+            <Button variant="tonal" size="sm" onClick={clearFilters}>
+              Wis filters
+            </Button>
+          }
         />
       )}
-    </div>
+    </section>
   )
 }
