@@ -1,16 +1,20 @@
 "use client"
 
-import { useEffect, useEffectEvent, useRef, useState } from "react"
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react"
 import { Volume2, VolumeX } from "lucide-react"
 import { CyclusFigure } from "@/components/training/cyclus-figure"
+import { figureFrame, peakPose } from "@/components/training/figure-geometry"
+import { usePrefersReducedMotion } from "@/components/training/use-reduced-motion"
+import { Button } from "@/components/ui/button"
 import type { ExerciseInstruction } from "@/lib/training/exercise-instructions"
 import { easeInOut, lerpPose, type FigurePose } from "@/lib/training/figure-pose"
+import { ICON } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
 interface ExerciseInstructionPlayerProps {
   instruction: ExerciseInstruction
   className?: string
-  /** Compact mode for list previews. */
+  /** Compact mode for list previews (inside a card). */
   compact?: boolean
 }
 
@@ -38,19 +42,26 @@ function canSpeak() {
 
 /**
  * First-party instruction “video”: one Cyclus female figure, looping the
- * movement, with optional Dutch spoken guidance. Same visual language for
- * every exercise — no external YouTube hosts or changing instructors.
+ * movement on a fixed, fitted frame (always on the floor, never clipped),
+ * with optional Dutch spoken guidance. Same visual language for every
+ * exercise — no external YouTube hosts or changing instructors.
+ *
+ * With reduced motion there is no loop: the start and end pose stand
+ * still side by side, with the cues as a short list.
  */
 export function ExerciseInstructionPlayer({
   instruction,
   className,
   compact = false,
 }: ExerciseInstructionPlayerProps) {
+  const reduceMotion = usePrefersReducedMotion()
   const [pose, setPose] = useState<FigurePose>(instruction.poses[0])
   const [cue, setCue] = useState(instruction.cues[0]?.text ?? "")
   const [speaking, setSpeaking] = useState(false)
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
   const speechSupported = canSpeak()
+  const frame = useMemo(() => figureFrame(instruction.poses), [instruction.poses])
+  const endPose = useMemo(() => peakPose(instruction.poses), [instruction.poses])
 
   const tick = useEffectEvent((now: number, start: number) => {
     const frames = instruction.poses
@@ -84,6 +95,7 @@ export function ExerciseInstructionPlayer({
   }
 
   useEffect(() => {
+    if (reduceMotion) return
     let raf = 0
     const start = performance.now()
     const loop = (now: number) => {
@@ -91,11 +103,15 @@ export function ExerciseInstructionPlayer({
       raf = requestAnimationFrame(loop)
     }
     raf = requestAnimationFrame(loop)
+    return () => cancelAnimationFrame(raf)
+  }, [instruction.id, instruction.loopMs, instruction.poses, reduceMotion])
+
+  // Stop speaking when the exercise changes or she leaves.
+  useEffect(() => {
     return () => {
-      cancelAnimationFrame(raf)
       if (canSpeak()) window.speechSynthesis.cancel()
     }
-  }, [instruction.id, instruction.loopMs, instruction.poses])
+  }, [instruction.id])
 
   function toggleSpeech() {
     if (!speechSupported) return
@@ -117,51 +133,66 @@ export function ExerciseInstructionPlayer({
     window.speechSynthesis.speak(utter)
   }
 
+  const figureHeight = compact ? "h-36" : "h-52 sm:h-60"
+
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-line/60 bg-[linear-gradient(160deg,var(--color-peach-soft)_0%,var(--color-cream)_55%,var(--color-sage-soft)_100%)]",
+        "overflow-hidden border border-line bg-[linear-gradient(160deg,var(--color-peach-soft)_0%,var(--color-cream)_55%,var(--color-sage-soft)_100%)]",
+        compact ? "rounded-inset" : "rounded-card",
         className,
       )}
     >
-      <div className={cn("relative flex items-center justify-center", compact ? "h-40" : "h-56 sm:h-64")}>
-        <CyclusFigure pose={pose} className={cn("w-auto", compact ? "h-36" : "h-52 sm:h-60")} />
-      </div>
+      {reduceMotion && endPose && endPose !== instruction.poses[0] ? (
+        <div className="grid grid-cols-2 gap-2 px-3 pt-3">
+          {[
+            { label: "Start", pose: instruction.poses[0] },
+            { label: "Eind", pose: endPose },
+          ].map((still) => (
+            <figure key={still.label} className="flex flex-col items-center gap-1">
+              <div className={cn("w-full", figureHeight)}>
+                <CyclusFigure pose={still.pose} frame={frame} className="h-full w-full" />
+              </div>
+              <figcaption className="text-xs font-medium text-ink-soft">{still.label}</figcaption>
+            </figure>
+          ))}
+        </div>
+      ) : (
+        <div className={cn("px-3 pt-3", figureHeight)}>
+          <CyclusFigure pose={reduceMotion ? instruction.poses[0] : pose} frame={frame} className="h-full w-full" />
+        </div>
+      )}
 
-      <div className="bg-surface/80 backdrop-blur-sm px-3.5 py-3 flex flex-col gap-2.5">
-        <p className="text-sm font-medium text-ink leading-snug min-h-[1.25rem]">{cue}</p>
-        <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col gap-3 bg-surface/80 px-4 py-3">
+        {reduceMotion ? (
+          <ol className="flex list-decimal flex-col gap-1 pl-5 text-sm font-medium text-ink">
+            {instruction.cues.map((c) => (
+              <li key={c.at}>{c.text}</li>
+            ))}
+          </ol>
+        ) : (
+          <p className="min-h-5 text-sm font-medium text-ink" aria-live="off">
+            {cue}
+          </p>
+        )}
+        <div className="flex items-center justify-between gap-3">
           <p className="text-xs text-ink-soft">
             {speechSupported ? "Liever luisteren? Laat de uitleg voorlezen." : "Volg de uitleg stap voor stap."}
           </p>
-          {speechSupported ? (
-            <button
-              type="button"
+          {speechSupported && (
+            <Button
+              variant={speaking ? "primary" : "tonal"}
+              size="sm"
+              className="shrink-0 px-3"
               onClick={toggleSpeech}
-              className={cn(
-                "inline-flex items-center gap-1.5 min-h-11 px-3 rounded-xl text-xs font-medium touch-manipulation transition-colors",
-                speaking
-                  ? "bg-sage-fill text-white"
-                  : "bg-sage-soft text-sage-dark hover:bg-sage-soft/80",
-              )}
               aria-pressed={speaking}
             >
-              {speaking ? (
-                <VolumeX className="h-3.5 w-3.5" strokeWidth={1.75} />
-              ) : (
-                <Volume2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-              )}
+              {speaking ? <VolumeX {...ICON.sm} aria-hidden /> : <Volume2 {...ICON.sm} aria-hidden />}
               {speaking ? "Stop" : "Beluister"}
-            </button>
-          ) : (
-            <p className="text-xs text-ink-soft shrink-0">Lees de tekst hierboven</p>
+            </Button>
           )}
         </div>
-        {speaking && (
-          <p className="text-xs text-ink-soft leading-relaxed border-t border-line/50 pt-2">
-            {instruction.narration}
-          </p>
-        )}
+        {speaking && <p className="border-t border-line pt-2 text-sm text-ink-soft">{instruction.narration}</p>}
       </div>
     </div>
   )
