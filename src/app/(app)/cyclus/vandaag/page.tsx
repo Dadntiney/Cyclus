@@ -1,10 +1,11 @@
+import type { Metadata } from "next"
 import Link from "next/link"
-import type { ReactNode } from "react"
 import { format, subDays } from "date-fns"
-import { Droplet, CalendarDays } from "lucide-react"
+import { CalendarDays, ChevronRight, Droplet } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { todayDate, todayISO } from "@/lib/dates/amsterdam"
+import { phaseLabel, type CyclePhase } from "@/lib/cycle/estimate"
 import { resolvePresentedForDate } from "@/lib/cycle/presented-estimate"
 import {
   computeCycleHistory,
@@ -14,36 +15,59 @@ import {
 } from "@/lib/cycle/history"
 import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { buildCyclusdagView } from "@/lib/cycle/cyclusdag"
+import { getPhaseContent } from "@/lib/cycle/phase-content"
+import { FEATURES } from "@/lib/navigation/features"
+import { Page, PageSections } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
-import { Expandable } from "@/components/ui/expandable"
-import { BackButton } from "@/components/ui/back-button"
-import { buttonVariants } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Disclosure } from "@/components/ui/disclosure"
+import { SectionHeader } from "@/components/ui/section-header"
+import { buttonVariants, textActionClass } from "@/components/ui/button"
 import { BodyChangeList } from "@/components/cycle/body-change-list"
 import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
 import { PhaseNutritionBasics } from "@/components/cycle/phase-nutrition-basics"
 import { BuddyMark } from "@/components/buddy/buddy-mark"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 import { getSavedMomentTexts } from "@/lib/data/moments"
+import { ICON } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
+export const metadata: Metadata = { title: FEATURES.fase.label }
+
+const PHASE_ORDER: CyclePhase[] = ["menstruatie", "folliculair", "ovulatie", "luteaal"]
+
 /**
- * Ritme reading page: explanations sit on the page ground in a reading
- * column; only asides (Wist je dat, Buddy) get a soft phase tint.
+ * The four phases in one quiet line under the title, the current one in
+ * ink — so "Luteale fase" has a place in the whole cycle. Inline spans:
+ * it lives inside the header's subtitle paragraph.
  */
-function SoftPanel({
-  children,
-  className,
-}: {
-  children: ReactNode
-  className?: string
-}) {
-  return <div className={cn("max-w-[65ch]", className)}>{children}</div>
+function PhaseLegend({ current }: { current: CyclePhase }) {
+  return (
+    <span className="flex flex-wrap gap-x-3 gap-y-1">
+      {PHASE_ORDER.map((phase) => {
+        const isCurrent = phase === current
+        return (
+          <span
+            key={phase}
+            className={cn("inline-flex items-center gap-1.5", isCurrent && "font-medium text-ink")}
+          >
+            <span aria-hidden className={cn("h-2 w-2 rounded-full", getPhaseContent(phase).colors.dot)} />
+            {phaseLabel(phase)}
+            {isCurrent && <span className="sr-only"> (nu)</span>}
+          </span>
+        )
+      })}
+    </span>
+  )
 }
 
-function TintPanel({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("rounded-[1.25rem] px-5 py-4", className)}>{children}</div>
-}
-
+/**
+ * Jouw fase (ontwerpvisie §7.8): a reading page. The explanation sits on
+ * the page ground in a reading column; the eyebrow carries the phase tint
+ * and says plainly that the day is an estimate. It ends with one soft next
+ * step, never a list of to-dos.
+ */
 export default async function CyclusdagPage() {
   const supabase = await createClient()
   const user = await getAuthedUser()
@@ -67,25 +91,21 @@ export default async function CyclusdagPage() {
       .order("date", { ascending: true }),
   ])
 
-  const backLink = <BackButton href="/cyclus" label="Cyclus" />
-
   if (!cycleProfile?.has_cycle) {
     return (
-      <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        {backLink}
-        <SoftPanel>
-          <EmptyState
-            icon={<Droplet className="h-6 w-6" strokeWidth={1.5} />}
-            title="Geen cyclusdag"
-            description="Je gaf aan momenteel geen menstruatiecyclus te hebben. Klachten en patronen vind je nog wel onder Cyclus."
-            action={
-              <Link href="/cyclus" className={buttonVariants({ variant: "secondary" })}>
-                Naar overzicht
-              </Link>
-            }
-          />
-        </SoftPanel>
-      </div>
+      <Page>
+        <PageHeader title={FEATURES.fase.label} />
+        <EmptyState
+          icon={Droplet}
+          title="Geen cyclusdag"
+          description="Je gaf aan momenteel geen menstruatiecyclus te hebben. Klachten en patronen vind je nog wel onder Cyclus."
+          action={
+            <Link href={FEATURES.cyclus.href} className={buttonVariants({ variant: "secondary" })}>
+              Naar Cyclus
+            </Link>
+          }
+        />
+      </Page>
     )
   }
 
@@ -116,25 +136,22 @@ export default async function CyclusdagPage() {
     menstruationDates,
   )
   const cycleEstimate = presented.estimate
-  const softMenstruationMode = Boolean(presented.menstruationSoftHint)
 
   if (!cycleEstimate) {
     return (
-      <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        {backLink}
-        <SoftPanel>
-          <EmptyState
-            icon={<CalendarDays className="h-6 w-6" strokeWidth={1.5} />}
-            title="Nog te weinig gegevens"
-            description="Markeer je menstruatiedagen in de kalender. Daarna verschijnt hier jouw persoonlijke uitleg."
-            action={
-              <Link href="/cyclus" className={buttonVariants({ variant: "secondary" })}>
-                Open kalender
-              </Link>
-            }
-          />
-        </SoftPanel>
-      </div>
+      <Page>
+        <PageHeader title={FEATURES.fase.label} />
+        <EmptyState
+          icon={CalendarDays}
+          title="Nog te weinig gegevens"
+          description="Markeer je menstruatiedagen in de kalender. Daarna verschijnt hier jouw persoonlijke uitleg."
+          action={
+            <Link href={`${FEATURES.cyclus.href}#kalender`} className={buttonVariants({ variant: "secondary" })}>
+              Open kalender
+            </Link>
+          }
+        />
+      </Page>
     )
   }
 
@@ -160,115 +177,127 @@ export default async function CyclusdagPage() {
   )
   const savedTexts = await getSavedMomentTexts(user.id)
 
+  // Eyebrow: soft states name what may be happening; otherwise the day,
+  // marked as an estimate unless her period is running (then it's her day).
+  const softHint = presented.menstruationSoftHint
+  const periodRunning = cycleProfile.active_period_start != null
+  const eyebrow =
+    softHint === "predicted"
+      ? "Menstruatie kan komen"
+      : softHint === "ended"
+        ? "Menstruatie gestopt"
+        : periodRunning
+          ? `Cyclusdag ${view.cycleDay}`
+          : `Cyclusdag ${view.cycleDay} · schatting`
+
   return (
-    <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      {backLink}
+    <Page>
+      <PageHeader
+        compactTitle={FEATURES.fase.label}
+        eyebrow={<span className={view.colors.text}>{eyebrow}</span>}
+        title={view.phaseLabel}
+        subtitle={<PhaseLegend current={view.phase} />}
+      />
 
-      <header className={cn("rounded-[1.75rem] px-6 py-6 mb-8", view.colors.bg)}>
-        <p className={cn("text-sm font-semibold", view.colors.text)}>
-          {softMenstruationMode
-            ? presented.menstruationSoftHint === "predicted"
-              ? "Menstruatie kan komen"
-              : "Menstruatie gestopt"
-            : `Cyclusdag ${view.cycleDay}`}
-        </p>
-        <h1 className="font-display text-3xl lg:text-4xl text-ink mt-1.5">{view.phaseLabel}</h1>
-      </header>
-
-      <div className="flex flex-col gap-9">
-        <section>
-          <h2 className="font-display text-xl text-ink mb-3">Wat gebeurt er in je lichaam?</h2>
-          <SoftPanel>
-            <p className="text-base text-ink leading-relaxed">{view.knowledge.bodySummary}</p>
-            <p className="text-base text-ink-soft leading-relaxed mt-3">
-              {view.knowledge.hormonalSummary}
-            </p>
-          </SoftPanel>
+      <PageSections>
+        <section aria-labelledby="lichaam" className="max-w-prose">
+          <SectionHeader id="lichaam" title="Wat gebeurt er in je lichaam?" />
+          <p className="text-base text-ink">{view.knowledge.bodySummary}</p>
+          <p className="text-base text-ink-soft mt-3">{view.knowledge.hormonalSummary}</p>
         </section>
 
-        <section>
-          <h2 className="font-display text-xl text-ink mb-3">Hoe kun je je voelen?</h2>
-          <SoftPanel>
-            <BodyChangeList items={view.highlightChanges} />
-            {view.symptomNote && (
-              <p className={cn("text-sm text-ink rounded-2xl px-4 py-3 mt-4 leading-relaxed", view.colors.bg)}>
-                {view.symptomNote}
-              </p>
-            )}
-            <div className="mt-5 pt-5 border-t border-line">
-              <p className="text-base font-semibold text-ink mb-1.5">Waarom?</p>
-              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.whyExplainer}</p>
+        <section aria-labelledby="voelen" className="max-w-prose">
+          <SectionHeader id="voelen" title="Hoe kun je je voelen?" />
+          <BodyChangeList items={view.highlightChanges} />
+          {view.symptomNote && (
+            <Card tone="subtle" padding="sm" className="mt-4">
+              <p className="text-sm text-ink">{view.symptomNote}</p>
+            </Card>
+          )}
+          <Disclosure
+            label="Meer signalen en wat normaal is"
+            openLabel="Minder tonen"
+            className="mt-3"
+          >
+            <div className="flex flex-col gap-6">
+              <div>
+                <h3 className="text-base font-semibold text-ink mb-3">Meer signalen</h3>
+                <BodyChangeList items={view.moreChanges} />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-ink mb-1.5">Wat kan normaal zijn?</h3>
+                <p className="text-base text-ink-soft">{view.knowledge.normalNote}</p>
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-ink mb-1.5">Waar kun je aandacht aan besteden?</h3>
+                <p className="text-base text-ink-soft">{view.knowledge.attentionNote}</p>
+              </div>
             </div>
-          </SoftPanel>
+          </Disclosure>
+          <div className="mt-5 pt-5 border-t border-line">
+            <h3 className="text-base font-semibold text-ink mb-1.5">Waarom?</h3>
+            <p className="text-base text-ink-soft">{view.knowledge.whyExplainer}</p>
+          </div>
         </section>
 
         {showAmbientBuddyContent && (
-          <TintPanel className={view.colors.bg}>
-            <div className="flex items-start gap-2">
-              <div className="min-w-0 flex-1">
-                <p className={cn("text-sm font-semibold mb-1", view.colors.text)}>Wist je dat…?</p>
-                <p className="font-display text-lg text-ink leading-snug">{view.funFact}</p>
-              </div>
-              <MomentFavoriteButton
-                kind="fun_fact"
-                text={view.funFact}
-                source="cyclusdag-fun-fact"
-                initialFavorited={savedTexts.has(view.funFact)}
-                size="sm"
-              />
+          <aside aria-label="Even weten" className="max-w-prose flex items-start gap-2">
+            <div className="min-w-0 flex-1">
+              <p className={cn("type-eyebrow mb-1", view.colors.text)}>Even weten</p>
+              <p className="font-display text-lg text-ink">{view.funFact}</p>
             </div>
-          </TintPanel>
+            <MomentFavoriteButton
+              kind="fun_fact"
+              text={view.funFact}
+              source="cyclusdag-fun-fact"
+              initialFavorited={savedTexts.has(view.funFact)}
+              size="sm"
+            />
+          </aside>
         )}
 
-        <section>
-          <h2 className="font-display text-xl text-ink mb-3">Voeding in deze fase</h2>
+        <section aria-labelledby="voeding">
+          <SectionHeader id="voeding" title="Voeding in deze fase" />
           <PhaseNutritionBasics nutrition={view.nutrition} />
         </section>
 
-        <Expandable label="Meer weten over deze fase">
-          <div className="flex flex-col gap-6">
-            <SoftPanel>
-              <p className="text-base font-semibold text-ink mb-3">Meer signalen</p>
-              <BodyChangeList items={view.moreChanges} />
-            </SoftPanel>
-            <SoftPanel>
-              <p className="text-base font-semibold text-ink mb-1.5">Wat kan normaal zijn?</p>
-              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.normalNote}</p>
-            </SoftPanel>
-            <SoftPanel>
-              <p className="text-base font-semibold text-ink mb-1.5">Waar kun je aandacht aan besteden?</p>
-              <p className="text-base text-ink-soft leading-relaxed">{view.knowledge.attentionNote}</p>
-            </SoftPanel>
-          </div>
-        </Expandable>
-
         {showAmbientBuddyContent && (
-          <TintPanel className="bg-sage-soft">
-            <div className="flex items-start gap-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold mb-1 inline-flex items-center gap-1.5 text-sage-dark">
-                  <BuddyMark size="sm" decorative />
-                  {view.buddyMoment.title}
-                </p>
-                <p className="text-base text-ink leading-relaxed">{view.buddyMoment.text}</p>
-              </div>
-              <MomentFavoriteButton
-                kind={view.buddyMoment.kind === "tip" ? "tip" : "quote"}
-                text={view.buddyMoment.text}
-                source="cyclusdag-buddy-moment"
-                initialFavorited={savedTexts.has(view.buddyMoment.text)}
-                size="sm"
-              />
+          <aside aria-label={view.buddyMoment.title} className="max-w-prose flex items-start gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="type-eyebrow mb-1 inline-flex items-center gap-1.5 text-sage-dark">
+                <BuddyMark size="sm" decorative />
+                {view.buddyMoment.title}
+              </p>
+              <p className="text-base text-ink">{view.buddyMoment.text}</p>
             </div>
-          </TintPanel>
+            <MomentFavoriteButton
+              kind={view.buddyMoment.kind === "tip" ? "tip" : "quote"}
+              text={view.buddyMoment.text}
+              source="cyclusdag-buddy-moment"
+              initialFavorited={savedTexts.has(view.buddyMoment.text)}
+              size="sm"
+            />
+          </aside>
         )}
 
-        <p className="text-xs text-ink-soft leading-relaxed">
+        <section aria-labelledby="vervolg" className="max-w-prose">
+          <SectionHeader
+            id="vervolg"
+            title="Wat past vandaag?"
+            description="Je plan op Vandaag houdt rekening met je fase. Kies wat bij je past, niets hoeft."
+          />
+          <Link href={FEATURES.vandaag.href} className={textActionClass()}>
+            Naar Vandaag
+            <ChevronRight {...ICON.sm} aria-hidden />
+          </Link>
+        </section>
+
+        <p className="text-xs text-ink-soft max-w-prose">
           Deze uitleg is algemene informatie — geen medisch advies en geen diagnose.
           Iedere vrouw ervaart haar cyclus anders. Bij aanhoudende of ernstige klachten:
           overleg met een arts of andere zorgverlener.
         </p>
-      </div>
-    </div>
+      </PageSections>
+    </Page>
   )
 }
