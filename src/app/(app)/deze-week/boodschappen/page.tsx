@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { Salad } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
@@ -5,10 +6,13 @@ import { loadWeekPlanContext } from "@/lib/data/week-plan-context"
 import { buildGroceryList } from "@/lib/nutrition/grocery-list"
 import type { WeekPlanRecipe } from "@/lib/recommendations/week-plan"
 import { GroceryList, type GroceryMode } from "@/components/week/grocery-list"
-import { Card } from "@/components/ui/card"
+import { Page } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
 import { EmptyState } from "@/components/ui/empty-state"
 import { buttonVariants } from "@/components/ui/button"
-import { BackButton } from "@/components/ui/back-button"
+import { FEATURES } from "@/lib/navigation/features"
+
+export const metadata: Metadata = { title: FEATURES.boodschappen.label }
 
 export default async function BoodschappenPage({
   searchParams,
@@ -28,21 +32,19 @@ export default async function BoodschappenPage({
 
   if (!ctx.profile.nutrition_enabled) {
     return (
-      <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <BackButton href="/deze-week" label="Deze week" />
-        <Card>
-          <EmptyState
-            icon={<Salad className="h-8 w-8" strokeWidth={1.5} />}
-            title="Voeding staat nu uit"
-            description="Er is geen boodschappenlijst omdat voeding niet aanstaat in je profiel."
-            action={
-              <Link href="/profiel/gebruik#voeding" className={buttonVariants({ variant: "secondary" })}>
-                Zet aan in mijn profiel
-              </Link>
-            }
-          />
-        </Card>
-      </div>
+      <Page>
+        <PageHeader title={FEATURES.boodschappen.label} />
+        <EmptyState
+          icon={Salad}
+          title="Voeding staat nu uit"
+          description="Er is geen boodschappenlijst omdat voeding niet aanstaat in je profiel."
+          action={
+            <Link href={`${FEATURES.gebruik.href}#voeding`} className={buttonVariants({ variant: "tonal" })}>
+              Zet aan in {FEATURES.gebruik.label}
+            </Link>
+          }
+        />
+      </Page>
     )
   }
 
@@ -54,14 +56,11 @@ export default async function BoodschappenPage({
   )
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <BackButton href="/deze-week" label="Deze week" />
-      <div className="mb-5">
-        <h1 className="font-display text-3xl lg:text-4xl text-ink">Boodschappen</h1>
-        <p className="text-sm text-ink-soft mt-1">
-          Op basis van je weekplanning en jouw porties — per week of per dag.
-        </p>
-      </div>
+    <Page>
+      <PageHeader
+        title={FEATURES.boodschappen.label}
+        subtitle="Op basis van je weekplanning en jouw porties, per week of per dag."
+      />
 
       <GroceryList
         userId={user.id}
@@ -72,6 +71,6 @@ export default async function BoodschappenPage({
         initialMode={initialMode}
         initialDate={initialDate}
       />
-    </div>
+    </Page>
   )
 }
