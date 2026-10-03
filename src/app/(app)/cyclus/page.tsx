@@ -1,17 +1,18 @@
+import type { Metadata } from "next"
+import type { ReactNode } from "react"
 import Link from "next/link"
+import { differenceInCalendarDays, format, parseISO, subDays } from "date-fns"
+import { Activity, Droplet, Lightbulb, Sparkles } from "lucide-react"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { estimateCycle, phaseLabel } from "@/lib/cycle/estimate"
-import {
-  resolvePresentedForDate,
-  formatPresentedCycleHeadline,
-  softMenstruationNote,
-} from "@/lib/cycle/presented-estimate"
+import { resolvePresentedForDate } from "@/lib/cycle/presented-estimate"
 import {
   computeCycleHistory,
   computeSymptomFrequency,
   getEffectiveLastPeriodStart,
   withActivePeriod,
+  type CycleHistoryEntry,
 } from "@/lib/cycle/history"
 import {
   computePhaseSymptomInsights,
@@ -24,40 +25,77 @@ import { computePersonalInsights } from "@/lib/cycle/insights"
 import { computeSymptomCoOccurrences } from "@/lib/cycle/co-occurrence"
 import { computeWhatHelpedInsights } from "@/lib/cycle/what-helped"
 import { composeYourStory } from "@/lib/cycle/your-story"
-import { mostlyLowRecently, usesChangingCycleLens } from "@/lib/cycle/day-lens"
+import { isLowDay, mostlyLowRecently, phaseTagline, usesChangingCycleLens } from "@/lib/cycle/day-lens"
 import { composeCycleRecap, composeInsightProgress } from "@/lib/cycle/cycle-recap"
-import { InsightProgressCard } from "@/components/cycle/insight-progress-card"
-import { CycleRecapCard } from "@/components/cycle/cycle-recap-card"
-import { YourStoryCard } from "@/components/cycle/your-story-card"
-import { RhythmBand } from "@/components/cycle/rhythm-band"
-import { estimateNextPeriod, formatNextPeriodEstimate } from "@/lib/cycle/next-period"
+import { estimateNextPeriod } from "@/lib/cycle/next-period"
 import { computeCycleDeviationAlerts } from "@/lib/cycle/deviation"
 import { computeMonthChangeInsights } from "@/lib/cycle/month-change"
+import { FEATURES } from "@/lib/navigation/features"
+import { InsightProgressBlock } from "@/components/cycle/insight-progress-card"
+import { CycleRecapBlock } from "@/components/cycle/cycle-recap-card"
+import { YourStoryBlock } from "@/components/cycle/your-story-card"
 import { Calendar } from "@/components/cycle/calendar"
+import { LifeStageBanner } from "@/components/cycle/life-stage-banner"
 import { CycleLengthSparkline, SimpleBars } from "@/components/cycle/simple-bars"
-import { Card } from "@/components/ui/card"
+import { formatPeriodRange } from "@/components/cycle/date-format"
+import { PhaseContextCard } from "@/components/today/phase-context-card"
+import { CycleSetupCard } from "@/components/today/cycle-setup-card"
+import { Page } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
+import { Badge } from "@/components/ui/badge"
+import { textActionClass } from "@/components/ui/button"
+import { Card, CardTitle } from "@/components/ui/card"
+import { Disclosure } from "@/components/ui/disclosure"
 import { EmptyState } from "@/components/ui/empty-state"
-import { format, parseISO, subDays } from "date-fns"
-import { nl } from "date-fns/locale"
+import { IconButton } from "@/components/ui/icon-button"
+import { ListGroup, ListRow } from "@/components/ui/list-group"
+import { SectionHeader } from "@/components/ui/section-header"
 import { todayDate, todayISO } from "@/lib/dates/amsterdam"
-import {
-  Droplet,
-  Sparkles,
-  ChevronRight,
-  Sunset,
-  Activity,
-  ClipboardList,
-  Stethoscope,
-  Lightbulb,
-} from "lucide-react"
 import { FLOW_OPTIONS, LIFE_STAGE_OPTIONS, symptomLabel } from "@/lib/constants"
-import { getPhaseContent } from "@/lib/cycle/phase-content"
-import { cn } from "@/lib/utils"
+import { iconProps } from "@/lib/ui/icon"
+
+export const metadata: Metadata = { title: FEATURES.cyclus.label }
+
+/** "Meest genoteerde klachten" only once there is something to compare. */
+const MIN_CHECKINS_FOR_BARS = 5
+const MIN_COUNT_FOR_BARS = 2
+/** Eerdere cycli: the newest few in view, the rest behind "Alle … tonen". */
+const VISIBLE_CYCLES = 3
+
+function PeriodRow({
+  period,
+  currentYear,
+  showFlow,
+}: {
+  period: CycleHistoryEntry
+  currentYear: number
+  showFlow: boolean
+}) {
+  const flowOption = showFlow ? FLOW_OPTIONS.find((f) => f.value === period.dominantFlow) : undefined
+  // Without a cycle length this is her newest period: the cycle it started
+  // is still running. Say so, so the row never reads as a finished cycle
+  // next to "Afgeronde cycli 0 van 2" (CYC-4).
+  const details = [
+    period.cycleLength ? `Cyclus van ${period.cycleLength} dagen` : "Huidige cyclus",
+    `${period.days} ${period.days === 1 ? "dag" : "dagen"} menstruatie`,
+    flowOption ? flowOption.label.toLowerCase() : null,
+  ].filter(Boolean)
+
+  return (
+    <li className="px-4 py-3.5">
+      <p className="text-base font-medium text-ink">
+        {formatPeriodRange(period.start, period.end, currentYear)}
+      </p>
+      <p className="text-sm text-ink-soft mt-0.5">{details.join(" · ")}</p>
+    </li>
+  )
+}
 
 /**
- * Cyclus hub IA:
- * 1) Now  2) Your story / insights  3) Calendar  4) History  5) Changes  6) More
- * Buddy value (patterns) sits near the top; calendar stays the primary logging action.
+ * Cyclus (ontwerpvisie §7.8): the phase status on top (the same surface as
+ * Vandaag), the calendar as the one logging action, then her patterns in
+ * one calm card, the tools, earlier cycles and — only when relevant —
+ * changes. On xl the status + calendar stay left, the reading goes right.
  */
 export default async function CyclusPage() {
   const supabase = await createClient()
@@ -107,12 +145,12 @@ export default async function CyclusPage() {
   }
 
   const trackFlowEnabled = profile?.track_flow_intensity ?? false
+  const sleepEnabled = profile?.sleep_tracking_enabled === true
   const today = todayISO()
+  const currentYear = todayDate().getFullYear()
   const lifeStage = cycleProfile?.life_stage ?? null
   const lifeStageLabel = LIFE_STAGE_OPTIONS.find((o) => o.value === lifeStage)?.label
   const postCycleMode = lifeStage === "menopauze" || cycleProfile?.has_cycle === false
-  const overgangMode =
-    lifeStage === "perimenopauze" || lifeStage === "veranderend" || lifeStage === "menopauze"
 
   const insightCheckins = (checkins ?? []).map((c) => ({
     date: c.date,
@@ -184,7 +222,6 @@ export default async function CyclusPage() {
   // Prefer presented; fall back only if soft gate had nothing (shouldn't happen).
   const cycleEstimate = presentedToday.estimate ?? rawCycleEstimate
   const menstruationSoftHint = presentedToday.menstruationSoftHint
-  const softMenstruationMode = Boolean(menstruationSoftHint)
 
   const nextPeriod =
     cycleProfile && !postCycleMode
@@ -197,16 +234,7 @@ export default async function CyclusPage() {
           history,
         })
       : null
-
-  const lastPeriod = history.length ? history[history.length - 1] : null
-  const lastPeriodIsActive = Boolean(
-    lastPeriod && cycleProfile?.active_period_start != null,
-  )
-  // “Eerdere cycli” = finished periods only — the open one already lives under Nu.
-  const recentHistory = [...history]
-    .reverse()
-    .filter((p) => !(lastPeriodIsActive && lastPeriod && p.start === lastPeriod.start))
-    .slice(0, 6)
+  const upcomingPeriod = nextPeriod && nextPeriod.daysUntil >= 0 ? nextPeriod : null
 
   const checkinsForPatterns = (checkins ?? []).map((c) => ({
     date: c.date,
@@ -242,7 +270,7 @@ export default async function CyclusPage() {
     coOccurrence: coOccurrences[0] ?? null,
     whatHelped: whatHelpedInsights.slice(0, 2),
     includeWeekGuide: Boolean(cycleEstimate) && !postCycleMode,
-    // Nu card already states day + phase — don’t repeat it in Jouw verhaal.
+    // The phase status already states day + phase — don’t repeat it in Jouw verhaal.
     omitDaySummary: Boolean(cycleEstimate) && !postCycleMode,
     // Checkins are newest first: her last week decides the week line.
     recentlyLow: mostlyLowRecently(
@@ -308,403 +336,289 @@ export default async function CyclusPage() {
     .filter((item, index, arr) => arr.findIndex((x) => x.title === item.title) === index)
     .slice(0, 3)
 
-  const hasCycle = cycleProfile?.has_cycle ?? true
-  const isIrregular =
-    cycleProfile?.regularity === "onregelmatig" || cycleProfile?.regularity === "onbekend"
-  const phaseTone = cycleEstimate ? getPhaseContent(cycleEstimate.phase).colors : null
-  const nuHeadline =
-    cycleEstimate && cycleProfile
-      ? formatPresentedCycleHeadline(
-          cycleEstimate,
-          today,
-          cycleProfile.active_period_start ?? null,
-          presentedToday.predictedMenstruation,
-          menstruationSoftHint,
-        )
-      : null
-  const nuSoftNote = softMenstruationNote(menstruationSoftHint)
+  // ── Phase status: the same props Vandaag derives ──────────────────────
+  const activePeriodStart = cycleProfile?.active_period_start ?? null
+  const isMenstruationActive = activePeriodStart !== null
+  const menstruationDay = activePeriodStart
+    ? differenceInCalendarDays(parseISO(today), parseISO(activePeriodStart)) + 1
+    : null
+  const todayCheckin = (checkins ?? []).find((c) => c.date === today) ?? null
+  const lowDay = isLowDay(todayCheckin)
+  const phaseSubtitle =
+    cycleEstimate && !(presentedToday.predictedMenstruation && !isMenstruationActive)
+      ? phaseTagline(cycleEstimate.phase, { lowDay, changingCycle })
+      : ""
 
-  const insightsBlock = (
-      <section>
-        <h2 className="font-display text-xl text-ink mb-1">Jouw inzichten</h2>
-        <p className="text-sm text-ink-soft mb-3">
-          Gebaseerd op je check-ins — ter herkenning, geen diagnose.
-        </p>
+  // ── Jouw patronen: one card, only the blocks with something to say ────
+  const barItems = patterns
+    .filter((p) => p.count >= MIN_COUNT_FOR_BARS)
+    .slice(0, 5)
+    .map((p) => ({ label: symptomLabel(p.symptom), value: p.count }))
+  const showBars = (checkins ?? []).length >= MIN_CHECKINS_FOR_BARS && barItems.length > 0
 
-        {cycleRecap && (
-          <div className="mb-3">
-            <CycleRecapCard recap={cycleRecap} />
-          </div>
-        )}
-
-        {insightProgress && (
-          <div className="mb-3">
-            <InsightProgressCard progress={insightProgress} />
-          </div>
-        )}
-
-        {yourStory && (
-          <div className="mb-3">
-            <YourStoryCard story={yourStory} />
-          </div>
-        )}
-
-        {insightLines.length > 0 ? (
-          <Card className="p-0 divide-y divide-line mb-3">
+  const patternBlocks: { key: string; node: ReactNode }[] = []
+  if (insightProgress) {
+    patternBlocks.push({ key: "progress", node: <InsightProgressBlock progress={insightProgress} /> })
+  }
+  if (yourStory) {
+    patternBlocks.push({ key: "story", node: <YourStoryBlock story={yourStory} /> })
+  }
+  if (cycleRecap) {
+    patternBlocks.push({ key: "recap", node: <CycleRecapBlock recap={cycleRecap} /> })
+  }
+  if (insightLines.length > 0) {
+    patternBlocks.push({
+      key: "insights",
+      node: (
+        <div>
+          <h3 className="type-card-title text-ink">Wat opvalt</h3>
+          <ul className="flex flex-col gap-3 mt-3">
             {insightLines.map((text) => (
-              <div key={text} className="flex gap-3 px-4 py-3.5">
-                <Lightbulb className="h-4 w-4 shrink-0 text-sage-dark mt-0.5" strokeWidth={1.75} />
-                <p className="text-sm text-ink leading-relaxed">{text}</p>
-              </div>
+              <li key={text} className="flex gap-3">
+                <Lightbulb {...iconProps("sm", "mt-0.5 text-sage-dark")} aria-hidden />
+                <p className="text-sm text-ink">{text}</p>
+              </li>
             ))}
-          </Card>
-        ) : !yourStory && !insightProgress ? (
-          <Card className="mb-3">
-            <EmptyState
-              icon={<Sparkles className="h-6 w-6" />}
-              title="Nog weinig inzichten"
-              description="Vul een paar check-ins in op Vandaag. Dan verschijnen hier verbanden."
-            />
-          </Card>
-        ) : null}
+          </ul>
+        </div>
+      ),
+    })
+  }
+  if (showBars) {
+    patternBlocks.push({
+      key: "bars",
+      node: (
+        <div>
+          <h3 className="type-card-title text-ink mb-3">Meest genoteerde klachten</h3>
+          <SimpleBars items={barItems} />
+        </div>
+      ),
+    })
+  }
 
-        {patterns.length > 0 && (
-          <Card>
-            <p className="text-sm font-medium text-ink mb-3">Meest genoteerde klachten</p>
-            <SimpleBars
-              items={patterns.slice(0, 5).map((p) => ({
-                label: symptomLabel(p.symptom),
-                value: p.count,
-              }))}
-            />
-          </Card>
-        )}
-      </section>
-  )
+  // ── Eerdere cycli: finished periods, newest first ─────────────────────
+  const lastPeriod = history.length ? history[history.length - 1] : null
+  const pastPeriods = [...history]
+    .reverse()
+    .filter((p) => !(isMenstruationActive && lastPeriod && p.start === lastPeriod.start))
+  const visiblePeriods = pastPeriods.slice(0, VISIBLE_CYCLES)
+  const morePeriods = pastPeriods.slice(VISIBLE_CYCLES)
+
+  const settings = FEATURES.cyclusinstellingen
+  const checkinHref = "/vandaag#checkin"
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-8 lg:gap-10">
-      {/* 1. Title */}
-      <div>
-        <h1 className="font-display text-3xl lg:text-4xl text-ink">
-          {postCycleMode ? "Mijn lichaam & klachten" : "Mijn cyclus"}
-        </h1>
-        <p className="text-base text-ink-soft mt-2">
-          {postCycleMode
-            ? "Houd bij wat speelt — zonder menstruatiekalender."
-            : "Houd je menstruatie bij en zie wat er bij jou verandert."}
-        </p>
-        {lifeStageLabel && (
-          <Link
-            href="/profiel/cyclus"
-            className="inline-block text-xs text-ink-soft mt-2 touch-manipulation"
-          >
-            Levensfase: {lifeStageLabel}
-          </Link>
-        )}
-      </div>
+    <Page className="xl:max-w-6xl">
+      <PageHeader
+        title={FEATURES.cyclus.label}
+        subtitle={
+          postCycleMode
+            ? "Je lichaam en klachten in beeld."
+            : "Houd je menstruatie bij en zie wat er verandert."
+        }
+        action={<IconButton label={settings.label} icon={settings.icon} href={settings.href} />}
+      />
 
-      {!lifeStage && (
-        <Card className="bg-cream-soft">
-          <p className="text-sm font-medium text-ink mb-1">Welke fase past bij jou?</p>
-          <p className="text-sm text-ink-soft mb-3">
-            {changingCycle
-              ? "Wat je noteert, past bij een cyclus die aan het veranderen is. Kies wat bij je past, dan sluit de uitleg beter aan. Geen diagnose."
-              : "Regelmatig, veranderend, overgang of daarna: dan past de uitleg beter. Geen diagnose."}
-          </p>
-          <Link href="/profiel/cyclus" className="text-sm font-medium text-sage-dark underline">
-            Levensfase kiezen
-          </Link>
-        </Card>
-      )}
-
-      {/* 2. Now */}
-      {postCycleMode ? (
-        <Card>
-          <p className="text-sm text-sage-dark font-medium mb-1">Zonder menstruatiekalender</p>
-          <p className="font-display text-xl text-ink mb-2">Jouw klachten staan centraal</p>
-          <p className="text-sm text-ink-soft leading-relaxed">
-            Check-ins, slaap, medicatie/HT en de klachtenlast-score blijven beschikbaar.
-          </p>
-          {periLatest?.score != null && (
-            <p className="text-sm text-ink mt-3">
-              Laatste klachtenlast: <span className="font-medium">{periLatest.score}/100</span>
-            </p>
-          )}
-        </Card>
-      ) : hasCycle ? (
-        <Card className={cn("rounded-[1.75rem] border-transparent p-6", phaseTone?.bg)}>
-          {cycleEstimate ? (
-            <>
-              <p className={cn("text-sm font-medium mb-1", phaseTone?.text ?? "text-sage-dark")}>Nu</p>
-              {softMenstruationMode ? (
-                <>
-                  <p className="font-display text-2xl text-ink">{nuHeadline}</p>
-                  {nuSoftNote && (
-                    <p className="text-sm text-ink-soft mt-1 leading-relaxed">{nuSoftNote}</p>
-                  )}
-                </>
-              ) : (
-                <>
-                  {cycleEstimate.phase === "menstruatie" && cycleProfile?.active_period_start ? (
-                    <p className="font-display text-2xl text-ink">{nuHeadline}</p>
-                  ) : (
-                    <p className="flex items-baseline gap-3 text-ink">
-                      <span
-                        className={cn(
-                          "font-display text-[3.25rem] leading-none tabular-nums",
-                          phaseTone?.text,
-                        )}
-                      >
-                        {cycleEstimate.cycleDay}
-                      </span>
-                      <span className="font-display text-xl">Cyclusdag</span>
-                    </p>
-                  )}
-                  <p className="text-sm text-ink-soft mt-2">
-                    {cycleEstimate.phase === "menstruatie" && cycleProfile?.active_period_start
-                      ? "Bezig · op jouw start"
-                      : `${cycleEstimate.phaseLabel} · schatting`}
-                  </p>
-                </>
-              )}
-            </>
-          ) : (
-            <p className="text-sm text-ink-soft">
-              Markeer je menstruatiedagen in de kalender hieronder. Dan kunnen we je cyclusdag schatten.
-            </p>
-          )}
-
-          {cycleEstimate && cycleProfile?.average_cycle_length ? (
-            <RhythmBand
-              className="mt-5"
-              cycleLength={cycleProfile.average_cycle_length}
-              periodLength={cycleProfile.average_period_length}
-              cycleDay={softMenstruationMode ? null : cycleEstimate.cycleDay}
-              phase={cycleEstimate.phase}
-            />
-          ) : null}
-
-          {lastPeriod && (
-            <div className="mt-5 rounded-2xl bg-surface/80 px-4 py-3.5 space-y-2.5">
-              <div>
-                <p className="text-sm font-medium text-ink">Laatste menstruatie</p>
-                <p className="text-sm text-ink-soft mt-1 leading-relaxed">
-                  {format(parseISO(lastPeriod.start), "d MMMM yyyy", { locale: nl })}
-                  {" · "}
-                  {lastPeriodIsActive
-                    ? `nog bezig (${lastPeriod.days} ${lastPeriod.days === 1 ? "dag" : "dagen"} tot nu)`
-                    : `tot ${format(parseISO(lastPeriod.end), "d MMMM yyyy", { locale: nl })} (${lastPeriod.days} ${lastPeriod.days === 1 ? "dag" : "dagen"})`}
-                </p>
-              </div>
-              {nextPeriod && (
-                <div className="pt-2 border-t border-ink/5">
-                  <p className="text-sm font-medium text-ink">Volgende menstruatie</p>
-                  <p className="text-sm text-ink-soft mt-1 leading-relaxed">
-                    {formatNextPeriodEstimate(nextPeriod)}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {!lastPeriod && nextPeriod && (
-            <div className="mt-5 rounded-2xl bg-surface/80 px-4 py-3.5">
-              <p className="text-sm font-medium text-ink">Volgende menstruatie</p>
-              <p className="text-sm text-ink-soft mt-1 leading-relaxed">
-                {formatNextPeriodEstimate(nextPeriod)}
+      <div className="flex flex-col gap-8 xl:grid xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] xl:items-start xl:gap-12">
+        <div className="flex flex-col gap-8">
+          {postCycleMode ? (
+            <Card>
+              <p className="type-eyebrow text-sage-dark">Zonder menstruatiekalender</p>
+              <CardTitle as="h2" className="text-ink mt-1">
+                Jouw klachten staan centraal
+              </CardTitle>
+              <p className="text-sm text-ink-soft mt-2">
+                Check-ins, slaap, medicatie/HT en de klachtenlast-score blijven beschikbaar.
               </p>
-            </div>
-          )}
-
-          {(isIrregular || nextPeriod?.isIrregularFriendly) && (
-            <p className="text-xs text-ink-soft mt-3">
-              Schattingen zijn een richting — geen exacte voorspelling.
-            </p>
-          )}
-
-          {cycleEstimate && (
-            <Link
-              href="/cyclus/vandaag"
-              className={cn(
-                "mt-4 pt-4 border-t flex items-center justify-between touch-manipulation",
-                phaseTone ? "border-ink/10" : "border-line",
+              {periLatest?.score != null && (
+                <p className="text-sm text-ink mt-3">
+                  Laatste klachtenlast: <span className="font-medium">{periLatest.score}/100</span>
+                </p>
               )}
-            >
-              <span className={cn("text-sm font-medium", phaseTone?.text ?? "text-sage-dark")}>
-                Wat betekent deze fase voor jou?
-              </span>
-              <ChevronRight
-                className={cn("h-4 w-4", phaseTone?.text ?? "text-sage-dark")}
-                strokeWidth={1.75}
-              />
-            </Link>
+            </Card>
+          ) : cycleEstimate ? (
+            <PhaseContextCard
+              phase={cycleEstimate.phase}
+              phaseLabel={cycleEstimate.phaseLabel}
+              roughEstimate={changingCycle}
+              cycleDay={cycleEstimate.cycleDay}
+              subtitle={phaseSubtitle}
+              hasCycle={Boolean(cycleProfile?.has_cycle)}
+              isMenstruationActive={isMenstruationActive}
+              menstruationDay={menstruationDay}
+              predictedMenstruation={presentedToday.predictedMenstruation}
+              menstruationSoftHint={menstruationSoftHint}
+              cycleLength={cycleProfile?.average_cycle_length ?? null}
+              periodLength={cycleProfile?.average_period_length ?? null}
+              nextPeriodStart={upcomingPeriod?.estimatedStart ?? null}
+            />
+          ) : isMenstruationActive && menstruationDay ? (
+            <PhaseContextCard
+              phase="menstruatie"
+              phaseLabel="Menstruatie"
+              cycleDay={menstruationDay}
+              subtitle="Je hebt menstruatie gestart. Vul je cyclusgegevens aan voor een volledige fase-inschatting."
+              hasCycle
+              isMenstruationActive
+              menstruationDay={menstruationDay}
+            />
+          ) : (
+            <CycleSetupCard />
           )}
-        </Card>
-      ) : (
-        <Card>
-          <p className="text-sm text-ink-soft">
-            Je hebt aangegeven geen menstruatiecyclus te hebben. Hieronder zie je wel
-            klachtenpatronen.
-          </p>
-        </Card>
-      )}
 
-      {/* 3. Insights — buddy value right under Nu */}
-      {insightsBlock}
-
-      {/* 4. Calendar — primary logging action */}
-      {!postCycleMode && (
-        <section>
-          <h2 className="font-display text-xl text-ink mb-3">Kalender</h2>
-          <Card>
+          {!postCycleMode && (
             <Calendar
-              predictedStart={nextPeriod && nextPeriod.daysUntil >= 0 ? nextPeriod.estimatedStart : null}
+              predictedStart={upcomingPeriod?.estimatedStart ?? null}
               predictedLength={cycleProfile?.average_period_length ?? 5}
+              predictedWindowDays={upcomingPeriod?.windowDays ?? null}
               menstruationDates={menstruationDates}
               flowByDate={flowByDate}
               trackFlowEnabled={trackFlowEnabled}
             />
-          </Card>
-        </section>
-      )}
-
-      {/* 5. History */}
-      {!postCycleMode && (
-        <section>
-          <h2 className="font-display text-xl text-ink mb-3">Eerdere cycli</h2>
-          {recentHistory.length ? (
-            <Card className="p-0 divide-y divide-line">
-              {completedLengths.length >= 2 && (
-                <div className="px-4 py-3.5">
-                  <p className="text-xs text-ink-soft mb-2">Cyclusduur (recent)</p>
-                  <CycleLengthSparkline lengths={completedLengths} />
-                </div>
-              )}
-              {recentHistory.map((period) => {
-                const flowOption = FLOW_OPTIONS.find((f) => f.value === period.dominantFlow)
-                return (
-                  <div key={period.start} className="flex items-center justify-between px-4 py-3.5">
-                    <div>
-                      <p className="text-sm font-medium text-ink">
-                        {format(parseISO(period.start), "d MMM", { locale: nl })} –{" "}
-                        {format(parseISO(period.end), "d MMM yyyy", { locale: nl })}
-                      </p>
-                      <p className="text-xs text-ink-soft mt-0.5">
-                        {period.days} {period.days === 1 ? "dag" : "dagen"} menstruatie
-                        {trackFlowEnabled && flowOption && ` · ${flowOption.label.toLowerCase()}`}
-                      </p>
-                    </div>
-                    {period.cycleLength && (
-                      <p className="text-xs text-ink-soft">{period.cycleLength} d cyclus</p>
-                    )}
-                  </div>
-                )
-              })}
-            </Card>
-          ) : (
-            <Card>
-              <EmptyState
-                icon={<Droplet className="h-6 w-6" />}
-                title="Nog geen afgeronde cycli"
-                description="Markeer menstruatiedagen in de kalender. Afgeronde periodes verschijnen hier."
-              />
-            </Card>
           )}
-        </section>
-      )}
 
-      {/* 6. Changes — only when relevant */}
-      {uniqueChanges.length > 0 && (
-        <section>
-          <h2 className="font-display text-xl text-ink mb-3">Veranderingen</h2>
-          <div className="flex flex-col gap-3">
-            {uniqueChanges.map((item) => (
-              <Card key={item.title}>
-                <div className="flex gap-2.5">
-                  <Activity className="h-4 w-4 text-ink-soft shrink-0 mt-0.5" strokeWidth={1.75} />
-                  <div>
-                    <p className="text-sm font-medium text-ink">{item.title}</p>
-                    <p className="text-sm text-ink-soft mt-1 leading-relaxed">{item.body}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 7. More — secondary tools & education */}
-      <section>
-        <h2 className="font-display text-xl text-ink mb-3">Meer</h2>
-        <div className="rounded-[1.25rem] bg-surface border border-line divide-y divide-line overflow-hidden">
-          <Link
-            href="/cyclus/samenvatting"
-            className="flex items-center justify-between gap-3 px-4 py-4 min-h-14 touch-manipulation transition-colors active:bg-cream-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sage/50"
-          >
-            <span className="min-w-0">
-              <span className="text-base font-medium text-ink inline-flex items-center gap-2">
-                <Stethoscope className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-                Voor je arts
-              </span>
-              <span className="block text-sm text-ink-soft mt-0.5">
-                Samenvatting om mee te nemen naar een afspraak.
-              </span>
-            </span>
-            <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
-          </Link>
-
-          <Link
-            href="/cyclus/klachtenlast"
-            className="flex items-center justify-between gap-3 px-4 py-4 min-h-14 touch-manipulation transition-colors active:bg-cream-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sage/50"
-          >
-            <span className="min-w-0">
-              <span className="text-base font-medium text-ink inline-flex items-center gap-2">
-                <ClipboardList className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-                Klachtenlast
-              </span>
-              <span className="block text-sm text-ink-soft mt-0.5">
-                {periLatest?.score != null
-                  ? `Laatste score: ${periLatest.score}/100`
-                  : "Maandelijkse check voor jezelf of je arts."}
-              </span>
-            </span>
-            <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
-          </Link>
-
-          <Link
-            href="/kennis"
-            className="flex items-center justify-between gap-3 px-4 py-4 min-h-14 touch-manipulation transition-colors active:bg-cream-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sage/50"
-          >
-            <span className="min-w-0">
-              <span className="text-base font-medium text-ink inline-flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-                Kennis
-              </span>
-              <span className="block text-sm text-ink-soft mt-0.5">
-                Uitleg over hormonen, overgang en leefstijl.
-              </span>
-            </span>
-            <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
-          </Link>
-
-          <Link
-            href="/cyclus/overgang"
-            className="flex items-center justify-between gap-3 px-4 py-4 min-h-14 touch-manipulation transition-colors active:bg-cream-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sage/50"
-          >
-            <span className="min-w-0">
-              <span className="text-base font-medium text-ink inline-flex items-center gap-2">
-                <Sunset className="h-4 w-4 text-info" strokeWidth={1.75} />
-                {overgangMode ? "Overgang & verandering" : "Cyclus & ouder worden"}
-              </span>
-              <span className="block text-sm text-ink-soft mt-0.5">
-                Wat er kan veranderen naarmate je ouder wordt.
-              </span>
-            </span>
-            <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
-          </Link>
+          {!lifeStage && <LifeStageBanner changingCycle={changingCycle} />}
         </div>
-      </section>
-    </div>
+
+        <div className="flex flex-col gap-8">
+          <section aria-labelledby="jouw-verhaal">
+            <SectionHeader
+              id="jouw-verhaal"
+              title="Jouw patronen"
+              description="Uit wat je bijhoudt: ter herkenning, geen diagnose."
+            />
+            {patternBlocks.length > 0 ? (
+              <Card className="divide-y divide-line">
+                {patternBlocks.map((block) => (
+                  <div key={block.key} className="py-5 first:pt-0 last:pb-0">
+                    {block.node}
+                  </div>
+                ))}
+              </Card>
+            ) : (
+              <EmptyState
+                icon={Sparkles}
+                titleAs="h3"
+                title="Nog weinig patronen"
+                description="Vul een paar check-ins in op Vandaag. Dan verschijnen hier verbanden."
+                action={
+                  <Link href={checkinHref} className={textActionClass()}>
+                    Naar de check-in
+                  </Link>
+                }
+              />
+            )}
+          </section>
+
+          <ListGroup label="Hulpmiddelen">
+            <ListRow
+              href={FEATURES.voorJeArts.href}
+              icon={FEATURES.voorJeArts.icon}
+              title={FEATURES.voorJeArts.label}
+              description="Samenvatting om mee te nemen naar je afspraak"
+            />
+            <ListRow
+              href={FEATURES.klachtenlast.href}
+              icon={FEATURES.klachtenlast.icon}
+              title={FEATURES.klachtenlast.label}
+              description={
+                periLatest?.score != null
+                  ? `Laatste score: ${periLatest.score}/100`
+                  : "Maandelijkse check voor jezelf of je arts"
+              }
+            />
+            <ListRow
+              href={FEATURES.slaap.href}
+              icon={FEATURES.slaap.icon}
+              title={FEATURES.slaap.label}
+              description="Je nachten en wat kan helpen"
+              badge={sleepEnabled ? undefined : <Badge>staat uit</Badge>}
+              muted={!sleepEnabled}
+            />
+            <ListRow
+              href={FEATURES.overgang.href}
+              icon={FEATURES.overgang.icon}
+              title={FEATURES.overgang.label}
+              description="Hoe je cyclus kan veranderen"
+            />
+          </ListGroup>
+
+          {!postCycleMode && (
+            <section aria-labelledby="eerdere-cycli">
+              <SectionHeader id="eerdere-cycli" title="Eerdere cycli" />
+              {pastPeriods.length > 0 ? (
+                <Card padding="none">
+                  {completedLengths.length >= 2 && (
+                    <div className="px-4 py-3.5 border-b border-line">
+                      <p className="text-xs text-ink-soft mb-2">Cyclusduur in dagen (recent)</p>
+                      <CycleLengthSparkline lengths={completedLengths} />
+                    </div>
+                  )}
+                  <ul role="list" className="divide-y divide-line">
+                    {visiblePeriods.map((period) => (
+                      <PeriodRow
+                        key={period.start}
+                        period={period}
+                        currentYear={currentYear}
+                        showFlow={trackFlowEnabled}
+                      />
+                    ))}
+                  </ul>
+                  {morePeriods.length > 0 && (
+                    <Disclosure
+                      label={`Alle ${pastPeriods.length} cycli tonen`}
+                      openLabel="Minder tonen"
+                      className="border-t border-line"
+                      triggerClassName="px-4"
+                      contentClassName="pt-0"
+                    >
+                      <ul role="list" className="divide-y divide-line border-t border-line">
+                        {morePeriods.map((period) => (
+                          <PeriodRow
+                            key={period.start}
+                            period={period}
+                            currentYear={currentYear}
+                            showFlow={trackFlowEnabled}
+                          />
+                        ))}
+                      </ul>
+                    </Disclosure>
+                  )}
+                </Card>
+              ) : (
+                <EmptyState
+                  icon={Droplet}
+                  titleAs="h3"
+                  title="Nog geen afgeronde cycli"
+                  description="Markeer menstruatiedagen in de kalender. Afgeronde periodes verschijnen hier."
+                  action={
+                    <a href="#kalender" className={textActionClass()}>
+                      Naar de kalender
+                    </a>
+                  }
+                />
+              )}
+            </section>
+          )}
+
+          {uniqueChanges.length > 0 && (
+            <section aria-labelledby="veranderingen">
+              <SectionHeader id="veranderingen" title="Veranderingen" />
+              <ul className="flex flex-col gap-4">
+                {uniqueChanges.map((item) => (
+                  <li key={item.title} className="flex gap-3">
+                    <Activity {...iconProps("sm", "mt-1 text-ink-soft")} aria-hidden />
+                    <div className="min-w-0">
+                      <p className="text-base font-medium text-ink">{item.title}</p>
+                      <p className="text-sm text-ink-soft mt-0.5">{item.body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
+      </div>
+    </Page>
   )
 }
