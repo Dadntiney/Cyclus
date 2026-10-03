@@ -1,12 +1,17 @@
+import type { Metadata } from "next"
 import { format, subDays } from "date-fns"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { DoctorSummaryClient } from "@/components/cycle/doctor-summary-client"
 import { DoctorAppointmentsSection } from "@/components/cycle/doctor-appointments-section"
-import { BackButton } from "@/components/ui/back-button"
+import { Page } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
+import { FEATURES } from "@/lib/navigation/features"
 import { getDoctorAppointments } from "@/lib/data/doctor-appointments"
 import { computeCycleHistory, withActivePeriod } from "@/lib/cycle/history"
 import { todayDate, todayISO } from "@/lib/dates/amsterdam"
 import { parsePeriAnswers } from "@/lib/cycle/peri-score"
+
+export const metadata: Metadata = { title: FEATURES.voorJeArts.label }
 
 export default async function SamenvattingPage() {
   const user = await getAuthedUser()
@@ -68,16 +73,12 @@ export default async function SamenvattingPage() {
   const menstruationDates = effectiveLogs.filter((l) => l.menstruation).map((l) => l.date)
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
-      <div className="print:hidden">
-        <BackButton href="/cyclus" label="Cyclus" />
-        <h1 className="font-display text-3xl lg:text-4xl text-ink mt-3">Voor je arts</h1>
-        <p className="text-sm text-ink-soft mt-1">
-          Een overzicht van wat je hebt bijgehouden — om sterker het gesprek in te gaan.
-        </p>
-      </div>
-
-      <DoctorAppointmentsSection appointments={appointments} />
+    <Page>
+      <PageHeader
+        className="print:hidden"
+        title={FEATURES.voorJeArts.label}
+        subtitle="Een overzicht van wat je hebt bijgehouden — om sterker het gesprek in te gaan."
+      />
 
       <DoctorSummaryClient
         checkins={(checkins ?? []).map((c) => ({
@@ -115,7 +116,9 @@ export default async function SamenvattingPage() {
           date: c.date,
           symptoms: c.symptoms ?? [],
         }))}
-      />
-    </div>
+      >
+        <DoctorAppointmentsSection appointments={appointments} />
+      </DoctorSummaryClient>
+    </Page>
   )
 }
