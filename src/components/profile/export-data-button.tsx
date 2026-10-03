@@ -5,6 +5,7 @@ import { Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { exportUserData } from "@/lib/actions/export-data"
 import { runAction } from "@/lib/client/run-action"
+import { ICON } from "@/lib/ui/icon"
 
 export function ExportDataButton() {
   const [error, setError] = useState<string | null>(null)
@@ -31,16 +32,27 @@ export function ExportDataButton() {
   }
 
   return (
-    <div className="flex flex-col gap-2 mb-4">
-      <Button type="button" variant="secondary" onClick={handleExport} disabled={isPending}>
-        <Download className="h-4 w-4" strokeWidth={1.75} />
-        {isPending ? "Bezig met exporteren…" : "Download mijn gegevens (JSON)"}
+    <div className="flex flex-col gap-2">
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={handleExport}
+        disabled={isPending}
+        aria-describedby="export-data-hint"
+        className="self-start"
+      >
+        <Download {...ICON.md} aria-hidden />
+        {isPending ? "Bezig met exporteren…" : "Download mijn gegevens"}
       </Button>
-      <p className="text-xs text-ink-soft leading-relaxed">
-        Je krijgt een bestand met je profiel, check-ins, cycluslogs, slaap, medicatie, dagboek en
+      <p id="export-data-hint" className="text-sm text-ink-soft">
+        Een JSON-bestand met je profiel, check-ins, cycluslogs, slaap, medicatie, dagboek en
         klachtenlast-scores. Handig voor jezelf of als je wilt overstappen.
       </p>
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm text-danger">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
