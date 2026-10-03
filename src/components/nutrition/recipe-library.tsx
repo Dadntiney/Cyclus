@@ -201,6 +201,7 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
         ) : (
           <EmptyState
             icon={Salad}
+            titleAs="h3"
             title="Geen recepten bij deze filters"
             description="Probeer een andere combinatie, of bekijk alles."
             action={
@@ -238,7 +239,7 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
           {countLabel(filtered.length)}
         </p>
         <div className="flex flex-col gap-6 pb-2">
-          <FilterGroup title="Wensen" description="Een recept heeft alles wat je kiest.">
+          <FilterGroup title="Wensen" description="Recepten met alles wat je kiest.">
             {(labelId) => (
               <div role="group" aria-labelledby={labelId} className="flex flex-wrap gap-2">
                 {WISHES.map((wish) => (
