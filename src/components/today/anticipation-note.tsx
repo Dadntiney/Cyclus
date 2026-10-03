@@ -22,7 +22,7 @@ export function AnticipationNote({ anticipation }: { anticipation: Anticipation 
       <div className="min-w-0 flex-1">
         <p className="text-base font-medium text-ink">{anticipation.headline}</p>
         <p className="text-sm text-ink-soft">{anticipation.body}</p>
-        <Link href={FEATURES.week.href} className={textActionClass("-ml-1 px-1")}>
+        <Link href={`${FEATURES.week.href}?dag=${anticipation.startDate}`} className={textActionClass("-ml-1 px-1")}>
           Week daarop afstemmen
           <ChevronRight {...ICON.sm} aria-hidden />
         </Link>

@@ -2,10 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { format, parseISO } from "date-fns"
-import { nl } from "date-fns/locale"
-import { ShoppingCart, ChevronRight, Lightbulb } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { CalendarDays, ChevronRight, Lightbulb, ShoppingCart } from "lucide-react"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { phaseTagline } from "@/lib/cycle/day-lens"
 import {
@@ -19,8 +16,16 @@ import {
   TodayMealsRows,
   type TodayMealAlternative,
 } from "@/components/today/today-meals-rows"
+import { DayStrip } from "@/components/week/day-strip"
+import { Badge } from "@/components/ui/badge"
+import { buttonVariants } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { EmptyState } from "@/components/ui/empty-state"
+import { formatWeekdayDate } from "@/lib/dates/format"
 import type { MealSlotKey } from "@/lib/client/week-plan-storage"
 import type { CompletedWorkoutInfo } from "@/lib/data/week-plan-context"
+import { FEATURES } from "@/lib/navigation/features"
+import { ICON, iconProps } from "@/lib/ui/icon"
 
 interface WeekViewProps {
   userId: string
@@ -37,6 +42,17 @@ interface WeekViewProps {
   changingCycle?: boolean
   /** Today's check-in says tired / in need of rest. */
   todayLow?: boolean
+  /** `?dag=yyyy-MM-dd` — open on that day when it is in this week. */
+  initialDate?: string | null
+}
+
+/** `?dag=` → that day; otherwise tomorrow (today when it is the week's last day). */
+function initialIndex(days: WeekDayPlan[], initialDate: string | null) {
+  const requested = initialDate ? days.findIndex((d) => d.date === initialDate) : -1
+  if (requested >= 0) return requested
+  const today = days.findIndex((d) => d.isToday)
+  if (today < 0) return 0
+  return today + 1 < days.length ? today + 1 : today
 }
 
 export function WeekView({
@@ -52,12 +68,9 @@ export function WeekView({
   completedWorkoutsByDate = {},
   changingCycle = false,
   todayLow = false,
+  initialDate = null,
 }: WeekViewProps) {
-  const todayIndex = Math.max(
-    0,
-    days.findIndex((d) => d.isToday),
-  )
-  const [selectedIndex, setSelectedIndex] = useState(todayIndex)
+  const [selectedIndex, setSelectedIndex] = useState(() => initialIndex(days, initialDate))
 
   const day = days[selectedIndex]
   const phaseContent = day?.cycleEstimate ? getPhaseContent(day.cycleEstimate.phase) : null
@@ -111,211 +124,185 @@ export function WeekView({
     }))
   }, [workoutPool, day])
 
+  const stripDays = useMemo(
+    () =>
+      days.map((d) => ({
+        date: d.date,
+        weekdayShort: d.weekdayShort,
+        isToday: d.isToday,
+        isPast: d.isPast,
+        phase: d.cycleEstimate?.phase ?? null,
+        highlight: Boolean(d.anticipationNote) || d.predictedMenstruation,
+        note: d.predictedMenstruation
+          ? "menstruatie kan komen"
+          : d.anticipationNote
+            ? "bij jou vaak zwaarder"
+            : undefined,
+      })),
+    [days],
+  )
+
+  if (!movementEnabled && !nutritionEnabled) {
+    return (
+      <EmptyState
+        icon={CalendarDays}
+        title="Je weekplan is leeg"
+        description="Voeding en beweging staan uit. Zet ze aan als je je week wilt plannen."
+        action={
+          <Link href={FEATURES.gebruik.href} className={buttonVariants({ variant: "tonal" })}>
+            {FEATURES.gebruik.label}
+          </Link>
+        }
+      />
+    )
+  }
+
   if (!day) return null
 
   const completed = completedWorkoutsByDate[day.date] ?? null
   const showMeals = nutritionEnabled && day.meals.length > 0
-  const showMovement = movementEnabled
-  const showGrocery = nutritionEnabled
-  const hasPlan = showMovement || showMeals || showGrocery
+  const softHint = day.menstruationSoftHint ?? (day.predictedMenstruation ? "predicted" : null)
+
+  // "Zaterdag 3 okt · Ovulatie (schatting)": the phase as a badge, never a
+  // cycle-day claim for a period that has not started.
+  let phaseBadge: string | null = null
+  if (day.cycleEstimate) {
+    if (softHint) {
+      phaseBadge = formatPresentedCycleHeadline(day.cycleEstimate, day.date, activePeriodStart, day.predictedMenstruation, day.menstruationSoftHint)
+    } else if (day.cycleEstimate.phase === "menstruatie" && activePeriodStart && day.date >= activePeriodStart) {
+      phaseBadge = formatPresentedCycleHeadline(day.cycleEstimate, day.date, activePeriodStart)
+    } else {
+      phaseBadge = `${day.cycleEstimate.phaseLabel} (${changingCycle ? "ruwe schatting" : "schatting"})`
+    }
+  }
+
+  // One line under the day: her own anticipation, a soft period note, or —
+  // not for today, the page already says what today asks — the phase.
+  const anticipated = Boolean(day.anticipationNote) && !day.predictedMenstruation
+  const description = anticipated
+    ? "Bij jou vaak een zwaardere dag, het plan staat iets zachter."
+    : day.anticipationNote
+      ? day.anticipationNote
+      : softHint
+        ? (softMenstruationNote(softHint) ?? PREDICTED_MENSTRUATION_NOTE)
+        : day.isToday || !day.cycleEstimate || !phaseContent
+          ? null
+          : changingCycle
+            ? phaseTagline(day.cycleEstimate.phase, { changingCycle: true })
+            : phaseContent.shortDescription
+
+  // A phase "use your energy" tip never contradicts a tired check-in.
+  const focusTip =
+    day.focusTips[0] && !(day.isToday && todayLow) && day.focusTips[0] !== description ? day.focusTips[0] : null
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Thin phase context — Week is for planning, not re-explaining the phase */}
-      {phaseContent && day.cycleEstimate && (
-        <p className={cn("text-sm leading-relaxed px-0.5", phaseContent.colors.text)}>
-          <span className="font-medium">
-            {formatPresentedCycleHeadline(
-              day.cycleEstimate,
-              day.date,
-              activePeriodStart,
-              day.predictedMenstruation,
-              day.menstruationSoftHint,
-            )}
-          </span>
-          <span className="text-ink-soft">
-            {" — "}
-            {day.predictedMenstruation
-              ? (day.anticipationNote ??
-                  softMenstruationNote(day.menstruationSoftHint) ??
-                  PREDICTED_MENSTRUATION_NOTE)
-              : (day.anticipationNote ??
-                  (day.isToday && todayLow
-                    ? phaseTagline(day.cycleEstimate.phase, { lowDay: true })
-                    : changingCycle
-                      ? phaseTagline(day.cycleEstimate.phase, { changingCycle: true })
-                      : phaseContent.shortDescription))}
-          </span>
-        </p>
-      )}
+    <div className="flex flex-col gap-6">
+      <DayStrip days={stripDays} selectedIndex={selectedIndex} onSelect={setSelectedIndex} />
 
-      <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
-        {days.map((d, i) => {
-          const dPhase = d.cycleEstimate ? getPhaseContent(d.cycleEstimate.phase) : null
-          const selected = i === selectedIndex
-          const anticipated = Boolean(d.anticipationNote)
-          const predicted = d.predictedMenstruation
-          return (
-            <button
-              key={d.date}
-              type="button"
-              onClick={() => setSelectedIndex(i)}
-              aria-pressed={selected}
-              aria-label={`${d.weekday} ${format(parseISO(d.date), "d MMMM", { locale: nl })}${d.isToday ? ", vandaag" : ""}${predicted ? ", menstruatie kan komen" : ""}${anticipated ? ", bij jou vaak zwaarder" : ""}`}
-              className={cn(
-                "flex flex-col items-center gap-1.5 rounded-2xl border px-1 py-2.5 min-h-14 touch-manipulation transition-colors",
-                selected ? "bg-sage-fill border-sage-fill text-white" : "bg-surface border-line text-ink",
-                (anticipated || predicted) && !selected && "border-sage-dark/50",
-                d.isToday && !selected && "border-2 border-sage-dark",
-              )}
+      <section aria-labelledby="week-dag-heading">
+        <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <h2 id="week-dag-heading" className="type-card-title text-ink">
+            {formatWeekdayDate(day.date, { capitalize: true })}
+          </h2>
+          {phaseBadge && day.cycleEstimate && (
+            <Badge tone="phase" phase={day.cycleEstimate.phase}>
+              <span className="sr-only">, </span>
+              {phaseBadge}
+            </Badge>
+          )}
+        </div>
+        {description && <p className="text-sm text-ink-soft">{description}</p>}
+
+        <Card padding="none" className="mt-3 divide-y divide-line overflow-hidden">
+          {movementEnabled && (
+            <TodayMovementCard
+              userId={userId}
+              date={day.date}
+              weekStartISO={weekStartISO}
+              suggested={
+                day.workout.workout
+                  ? {
+                      id: day.workout.workout.id,
+                      title: day.workout.workout.title,
+                      type: day.workout.workout.type,
+                      duration: day.workout.workout.duration,
+                      image_url: day.workout.workout.image_url,
+                    }
+                  : null
+              }
+              reason={day.workout.reason}
+              alternatives={workoutAlternatives}
+              completed={
+                completed
+                  ? {
+                      workoutId: completed.workoutId,
+                      title: completed.title,
+                      duration: completed.duration,
+                    }
+                  : null
+              }
+              emphasis="primary"
+              embedded
+              canUndoCompleted={Boolean(day.isToday && completed)}
+              restDay={day.workout.focus === "rust"}
+            />
+          )}
+
+          {showMeals && (
+            <TodayMealsRows
+              userId={userId}
+              date={day.date}
+              weekStartISO={weekStartISO}
+              recipeImageById={recipeImageById}
+              alternativesBySlot={alternativesBySlot}
+              meals={day.meals.map((m) => ({
+                slot: m.slot,
+                label: m.label,
+                recipe: m.recipe
+                  ? {
+                      id: m.recipe.id,
+                      title: m.recipe.title,
+                      image_url: m.recipe.image_url,
+                      preparation_time: m.recipe.preparation_time,
+                    }
+                  : null,
+              }))}
+            />
+          )}
+
+          {nutritionEnabled && (
+            <Link
+              href={FEATURES.boodschappen.href}
+              className="flex min-h-14 items-center gap-3 px-4 py-3 touch-manipulation -outline-offset-2 transition-colors duration-fast ease-standard hover:bg-cream-soft/60 active:bg-cream-soft"
             >
-              <span className="text-xs font-medium opacity-80">{d.weekdayShort}</span>
-              <span className="text-base font-semibold tabular-nums">{format(parseISO(d.date), "d")}</span>
-              {/* A slice of the Ritmeband: the phase colour for this day. */}
               <span
                 aria-hidden
-                className={cn(
-                  "h-1 w-5 rounded-full",
-                  dPhase ? (selected ? "bg-white/80" : dPhase.colors.dot) : "bg-transparent",
-                )}
-              />
-            </button>
-          )
-        })}
-      </div>
-
-      <div>
-        <div className="flex items-baseline justify-between gap-3 mb-1">
-          <h2 className="font-display text-xl text-ink capitalize">{day.weekday}</h2>
-          <span className="text-xs text-ink-soft">
-            {format(parseISO(day.date), "d MMMM", { locale: nl })}
-          </span>
-        </div>
-        {day.anticipationNote ? (
-          <p className="text-xs text-ink-soft mb-2.5 leading-relaxed">
-            {day.predictedMenstruation
-              ? day.anticipationNote
-              : "Bij jou vaak een zwaardere dag — plan staat iets zachter."}
-          </p>
-        ) : (
-          <div className="mb-2.5" />
-        )}
-
-        {hasPlan ? (
-          <div className="rounded-[1.25rem] bg-surface border border-line overflow-hidden">
-            {showMovement && (
-              <TodayMovementCard
-                userId={userId}
-                date={day.date}
-                weekStartISO={weekStartISO}
-                suggested={
-                  day.workout.workout
-                    ? {
-                        id: day.workout.workout.id,
-                        title: day.workout.workout.title,
-                        type: day.workout.workout.type,
-                        duration: day.workout.workout.duration,
-                        image_url: day.workout.workout.image_url,
-                      }
-                    : null
-                }
-                reason={day.workout.reason}
-                alternatives={workoutAlternatives}
-                completed={
-                  completed
-                    ? {
-                        workoutId: completed.workoutId,
-                        title: completed.title,
-                        duration: completed.duration,
-                      }
-                    : null
-                }
-                emphasis="primary"
-                embedded
-                canUndoCompleted={Boolean(day.isToday && completed)}
-                restDay={day.workout.focus === "rust"}
-              />
-            )}
-
-            {(showMeals || showGrocery) && (
-              <div
-                className={cn(
-                  "divide-y divide-line",
-                  showMovement && "border-t border-line",
-                )}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-sage-dark"
               >
-                {showMeals && (
-                  <TodayMealsRows
-                    userId={userId}
-                    date={day.date}
-                    weekStartISO={weekStartISO}
-                    recipeImageById={recipeImageById}
-                    alternativesBySlot={alternativesBySlot}
-                    meals={day.meals.map((m) => ({
-                      slot: m.slot,
-                      label: m.label,
-                      recipe: m.recipe
-                        ? {
-                            id: m.recipe.id,
-                            title: m.recipe.title,
-                            image_url: m.recipe.image_url,
-                            preparation_time: m.recipe.preparation_time,
-                          }
-                        : null,
-                    }))}
-                  />
-                )}
+                <ShoppingCart {...ICON.sm} />
+              </span>
+              <span className="min-w-0 flex-1 text-base font-medium text-ink">
+                {FEATURES.boodschappen.label}
+                <span className="sr-only"> voor de hele week</span>
+              </span>
+              {groceryItemCount > 0 && <span className="text-sm text-ink-soft">{groceryItemCount}</span>}
+              <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
+            </Link>
+          )}
+        </Card>
 
-                {showGrocery && (
-                  <div className="flex items-center justify-between gap-3 px-4 py-2.5 min-h-11">
-                    <Link
-                      href="/deze-week/boodschappen"
-                      className="inline-flex items-center gap-2 text-sm font-medium text-ink touch-manipulation min-h-11"
-                    >
-                      <ShoppingCart className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} />
-                      Boodschappen
-                      {groceryItemCount > 0 && (
-                        <span className="text-xs text-ink-soft font-normal">({groceryItemCount})</span>
-                      )}
-                    </Link>
-                    {day.isToday ? (
-                      <Link
-                        href="/deze-week/boodschappen?modus=dag"
-                        className="text-xs font-medium text-sage-dark touch-manipulation min-h-11 inline-flex items-center shrink-0"
-                      >
-                        Voor vandaag
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/deze-week/boodschappen"
-                        aria-label="Open boodschappenlijst"
-                        className="min-h-11 inline-flex items-center shrink-0 touch-manipulation"
-                      >
-                        <ChevronRight className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
-                      </Link>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        ) : null}
-
-        {/* Snack/hydration tips live on Vandaag and phase nutrition on the
-            Cyclusdag page — Week stays the plan only (usertest: the same
-            tips showed up three times). */}
-        {/* A phase "use your energy" tip never contradicts a tired check-in. */}
-        {day.focusTips[0] && !(day.isToday && todayLow) && (
-          <p className="text-sm text-ink-soft leading-relaxed px-0.5 mt-4 inline-flex gap-2">
-            <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5 text-sage-dark" strokeWidth={1.75} aria-hidden />
-            <span>{day.focusTips[0]}</span>
+        {focusTip && (
+          <p className="mt-4 flex gap-2 text-sm text-ink-soft">
+            <Lightbulb {...iconProps("sm", "mt-0.5 text-sage-dark")} aria-hidden />
+            <span>{focusTip}</span>
           </p>
         )}
-      </div>
+      </section>
 
-      {phaseContent && (
-        <p className="text-xs text-ink-soft px-0.5 leading-relaxed">{phaseContent.whyText}</p>
-      )}
+      {/* Snack/hydration tips live on Vandaag and phase nutrition on Jouw
+          fase — Week stays the plan only (usertest: the same tips showed
+          up three times). */}
+      {phaseContent && <p className="text-xs text-ink-soft">{phaseContent.whyText}</p>}
     </div>
   )
 }
