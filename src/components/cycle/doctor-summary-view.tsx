@@ -145,7 +145,7 @@ export function DoctorSummaryView({ summary }: { summary: DoctorSummary }) {
 
       <p className="text-xs text-ink-soft mt-4 border-t border-line pt-3">
         Gegenereerd met GoFiev. Dit is geen medisch advies. Bespreek klachten altijd met een
-        zorgverlener. Tip: kies bij &ldquo;Printen of pdf&rdquo; voor &ldquo;Opslaan als PDF&rdquo; voor
+        zorgverlener. Tip: kies na &ldquo;Printen of pdf&rdquo; de optie &ldquo;Opslaan als PDF&rdquo; voor
         een deelbaar bestand.
       </p>
     </Card>
