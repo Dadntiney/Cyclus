@@ -544,7 +544,7 @@ export default async function CyclusPage() {
             <section aria-labelledby="eerdere-cycli">
               <SectionHeader id="eerdere-cycli" title="Eerdere cycli" />
               {pastPeriods.length > 0 ? (
-                <Card padding="none" className="overflow-hidden">
+                <Card padding="none">
                   {completedLengths.length >= 2 && (
                     <div className="px-4 py-3.5 border-b border-line">
                       <p className="text-xs text-ink-soft mb-2">Cyclusduur in dagen (recent)</p>
