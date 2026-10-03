@@ -4,6 +4,7 @@ import {
   Fragment,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -15,6 +16,7 @@ import { Send } from "lucide-react"
 import { sendBuddyMessage } from "@/lib/actions/buddy"
 import { cn } from "@/lib/utils"
 import { ICON } from "@/lib/ui/icon"
+import { prefersReducedMotion } from "@/lib/ui/focus"
 import { todayISO } from "@/lib/dates/amsterdam"
 import { Textarea } from "@/components/ui/input"
 import { Chip } from "@/components/ui/chip"
@@ -120,7 +122,9 @@ export function ChatWindow({
     el.style.overflowY = el.scrollHeight > COMPOSER_MAX_HEIGHT ? "auto" : "hidden"
   }, [input])
 
-  function scrollToBottom(behavior: ScrollBehavior = "smooth") {
+  function scrollToBottom(requested: ScrollBehavior = "smooth") {
+    // No glide to the newest message when she prefers less motion.
+    const behavior: ScrollBehavior = prefersReducedMotion() ? "instant" : requested
     const run = () => {
       const scroller = scrollRef.current
       const anchor = bottomRef.current
@@ -225,12 +229,21 @@ export function ChatWindow({
   /** Sends a bubble that failed while offline again — as is, the composer stays as it is. */
   function retry(failedMessage: Message) {
     if (isPending) return
+    // The button disappears with its bubble: keep keyboard focus in the
+    // conversation instead of dropping it to the top of the page. Not the
+    // composer — that would open the soft keyboard.
+    scrollRef.current?.focus({ preventScroll: true })
     markFailed(failedMessage.id, null)
     setMessages((prev) => prev.filter((m) => m.id !== failedMessage.id))
     send(failedMessage.message)
   }
 
-  const thread = buildThread(messages, currentDay, (m) => failed.has(m.id))
+  // Only when the conversation changes — not on every keystroke in the
+  // composer (each message's day goes through Intl).
+  const thread = useMemo(
+    () => buildThread(messages, currentDay, (m) => failed.has(m.id)),
+    [messages, currentDay, failed],
+  )
   const firstRun = messages.length === 0
 
   return (
