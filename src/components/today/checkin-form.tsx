@@ -64,7 +64,7 @@ function SaveStatusSlot({ status }: { status: SaveStatus }) {
     >
       {status === "saving" && (
         <>
-          <Loader2 className="h-3.5 w-3.5 shrink-0 motion-safe:animate-spin" strokeWidth={ICON.sm.strokeWidth} />
+          <Loader2 {...iconProps("sm", "motion-safe:animate-spin")} />
           Opslaan…
         </>
       )}
