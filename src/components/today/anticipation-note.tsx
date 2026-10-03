@@ -1,26 +1,32 @@
 import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import { CalendarClock, ChevronRight } from "lucide-react"
+import { textActionClass } from "@/components/ui/button"
 import type { Anticipation } from "@/lib/cycle/anticipation"
+import { FEATURES } from "@/lib/navigation/features"
+import { ICON } from "@/lib/ui/icon"
 
 /**
- * Calm forward-looking recognition on Vandaag — not a card stack item,
- * just one soft note between cycle context and today's plan.
+ * Calm forward-looking recognition, flat on the page (no card, no tint).
+ * On Vandaag it is the "Vooruitkijken" row inside "Wat je lichaam kan
+ * gebruiken"; this standalone form is for places without that section.
  */
 export function AnticipationNote({ anticipation }: { anticipation: Anticipation }) {
   return (
-    <section
-      aria-label="Vooruitkijken"
-      className="rounded-[1.25rem] bg-sage-soft px-3.5 py-3"
-    >
-      <p className="text-sm font-medium text-ink tracking-tight">{anticipation.headline}</p>
-      <p className="text-xs text-ink-soft mt-1 leading-relaxed">{anticipation.body}</p>
-      <Link
-        href="/deze-week"
-        className="mt-2.5 inline-flex items-center gap-1 min-h-11 text-xs font-medium text-sage-dark touch-manipulation"
+    <section aria-label="Vooruitkijken" className="flex gap-3">
+      <span
+        aria-hidden
+        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-sage-dark"
       >
-        Week daarop afstemmen
-        <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-      </Link>
+        <CalendarClock {...ICON.sm} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-base font-medium text-ink">{anticipation.headline}</p>
+        <p className="text-sm text-ink-soft">{anticipation.body}</p>
+        <Link href={FEATURES.week.href} className={textActionClass("-ml-1 px-1")}>
+          Week daarop afstemmen
+          <ChevronRight {...ICON.sm} aria-hidden />
+        </Link>
+      </div>
     </section>
   )
 }
