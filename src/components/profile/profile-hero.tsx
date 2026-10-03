@@ -1,8 +1,6 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { format } from "date-fns"
-import { nl } from "date-fns/locale"
 import { useAppBarTitle } from "@/components/nav/app-bar-context"
 import { AvatarUpload } from "@/components/profile/avatar-upload"
 
@@ -15,12 +13,13 @@ export function ProfileHero({
   userId,
   name,
   avatarUrl,
-  memberSince,
+  memberSinceLabel,
 }: {
   userId: string
   name: string | null
   avatarUrl: string | null
-  memberSince: string | null
+  /** "september 2025", formatted on the server so it can't differ after hydration. */
+  memberSinceLabel: string | null
 }) {
   const titleRef = useRef<HTMLHeadingElement>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -40,9 +39,7 @@ export function ProfileHero({
             {name?.trim() || "Jouw profiel"}
           </h1>
           <p className="mt-1 text-sm text-ink-soft">
-            {memberSince
-              ? `Bij GoFiev sinds ${format(new Date(memberSince), "MMMM yyyy", { locale: nl })}`
-              : "Tik op je foto om die te wijzigen."}
+            {memberSinceLabel ? `Bij GoFiev sinds ${memberSinceLabel}` : "Tik op je foto om die te wijzigen."}
           </p>
         </div>
       </div>

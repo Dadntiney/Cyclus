@@ -135,7 +135,7 @@ export function PushNotificationsCard() {
           description={
             isPending
               ? "Even bezig…"
-              : "Je herinneringen ook als GoFiev niet open staat. Jij bepaalt welke aan staan."
+              : "Je herinneringen, ook als GoFiev niet openstaat. Jij kiest welke er aanstaan."
           }
           checked={status === "subscribed"}
           onChange={(on) => (on ? handleEnable() : handleDisable())}

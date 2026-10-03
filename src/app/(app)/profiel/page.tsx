@@ -1,4 +1,6 @@
 import type { Metadata } from "next"
+import { format } from "date-fns"
+import { nl } from "date-fns/locale"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfileOverview } from "@/lib/data/profile"
 import { FEATURES } from "@/lib/navigation/features"
@@ -49,7 +51,9 @@ export default async function ProfielPage() {
         userId={user.id}
         name={profile.name}
         avatarUrl={profile.avatar_url}
-        memberSince={stats.memberSince}
+        memberSinceLabel={
+          stats.memberSince ? format(new Date(stats.memberSince), "MMMM yyyy", { locale: nl }) : null
+        }
       />
 
       <PageSections>

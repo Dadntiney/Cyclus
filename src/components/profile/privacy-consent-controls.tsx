@@ -74,8 +74,10 @@ export function PrivacyConsentControls({
             }
           >
             {!buddyAiConsentAt ? (
+              // Optional extra: never the louder button next to the health consent.
               <Button
                 type="button"
+                variant="tonal"
                 size="sm"
                 disabled={isPending}
                 onClick={() => {

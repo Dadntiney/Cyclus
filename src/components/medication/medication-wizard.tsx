@@ -275,7 +275,7 @@ export function MedicationWizard({
           totalSteps > 1 ? (
             <div aria-hidden className="h-1.5 w-full overflow-hidden rounded-full bg-cream-soft">
               <div
-                className="h-full rounded-full bg-sage-fill transition-[width] duration-slow ease-standard"
+                className="h-full rounded-full bg-sage-fill transition-[width] duration-slow ease-standard motion-reduce:transition-none"
                 style={{ width: `${((step + 1) / totalSteps) * 100}%` }}
               />
             </div>

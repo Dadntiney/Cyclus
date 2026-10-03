@@ -93,7 +93,7 @@ export function MedicationList({ medications }: { medications: Medication[] }) {
                     className="mt-2 mr-2 flex flex-wrap items-center gap-2 border-t border-line pt-3 motion-safe:animate-fade-in"
                   >
                     <p id={questionId} className="flex-1 text-sm text-ink">
-                      Dit item verwijderen?
+                      {m.name} verwijderen?
                     </p>
                     <Button variant="danger" size="sm" onClick={() => handleDelete(m.id)}>
                       Verwijderen

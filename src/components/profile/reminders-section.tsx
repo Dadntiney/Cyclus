@@ -301,7 +301,7 @@ export function RemindersSection({
       <SectionHeader
         id="herinneringen"
         title="Herinneringen"
-        description="Zie je zodra je de app open hebt op dat moment, en met jouw toestemming ook als melding."
+        description="Je ziet een herinnering als de app op dat moment open is, en met jouw toestemming ook als melding."
       />
 
       {!showForm && error && (
@@ -334,6 +334,8 @@ export function RemindersSection({
                   onClick={() => startEdit(reminder)}
                   disabled={isPending}
                   aria-label={`${title} wijzigen`}
+                  // The name is short; time and days are read right after it.
+                  aria-describedby={`${switchId}-meta`}
                   className="flex min-w-0 flex-1 items-center gap-3.5 py-3 pl-4 text-left touch-manipulation transition-colors duration-fast ease-standard -outline-offset-2 hover:bg-cream-soft/60 active:bg-cream-soft"
                 >
                   <span
@@ -346,7 +348,7 @@ export function RemindersSection({
                     <span id={`${switchId}-title`} className="truncate text-base font-medium text-ink">
                       {title}
                     </span>
-                    <span className="text-sm text-ink-soft">
+                    <span id={`${switchId}-meta`} className="text-sm text-ink-soft">
                       {formatTime(reminder.time)} · {daysLabel(reminder.days)}
                     </span>
                   </span>
@@ -357,6 +359,8 @@ export function RemindersSection({
                   onChange={() => handleToggle(reminder)}
                   disabled={isPending}
                   aria-labelledby={`${switchId}-title`}
+                  // Two reminders of the same kind differ only in time and days.
+                  aria-describedby={`${switchId}-meta`}
                   className="ml-2"
                 />
               </div>

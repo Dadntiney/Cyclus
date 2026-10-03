@@ -112,6 +112,18 @@ function DiaryEntryCard({ entry }: { entry: Entry }) {
   const dateLabel = format(parseISO(entry.date), "d MMMM yyyy", { locale: nl })
   const editId = `diary-edit-${entry.id}`
   const keepRef = useRef<HTMLButtonElement>(null)
+  const editFieldRef = useRef<HTMLTextAreaElement>(null)
+  const editButtonRef = useRef<HTMLButtonElement>(null)
+  const wasEditing = useRef(false)
+
+  // Bewerken swaps the text for a field (focus goes into it); Opslaan or
+  // Annuleren swaps it back, and focus returns to Bewerken instead of
+  // falling to the top of the page.
+  useEffect(() => {
+    if (editing) editFieldRef.current?.focus()
+    else if (wasEditing.current) editButtonRef.current?.focus()
+    wasEditing.current = editing
+  }, [editing])
 
   // The menu row she tapped is gone once the sheet asks to confirm: move
   // focus to the safe choice, never to Verwijderen.
@@ -148,14 +160,17 @@ function DiaryEntryCard({ entry }: { entry: Entry }) {
   return (
     <Card as="li">
       <div className="-mt-2 -mr-2 flex items-center justify-between gap-3">
-        <time dateTime={entry.date} className="type-caption text-ink-soft">
+        <time id={`${editId}-date`} dateTime={entry.date} className="type-caption text-ink-soft">
           {dateLabel}
         </time>
         {!editing && (
           <div className="flex items-center">
             <button
+              ref={editButtonRef}
               type="button"
               className={textActionClass("px-2")}
+              // Every note has a Bewerken: the date tells them apart.
+              aria-describedby={`${editId}-date`}
               onClick={() => {
                 setError(null)
                 setEditing(true)
@@ -177,7 +192,14 @@ function DiaryEntryCard({ entry }: { entry: Entry }) {
           <Label htmlFor={editId} className="sr-only">
             Notitie bewerken
           </Label>
-          <Textarea id={editId} value={draft} onChange={(e) => setDraft(e.target.value)} rows={5} className="mt-1" />
+          <Textarea
+            ref={editFieldRef}
+            id={editId}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            rows={5}
+            className="mt-1"
+          />
           <div className="mt-3 flex items-center gap-3">
             <Button type="button" size="sm" disabled={isPending || !draft.trim()} onClick={save}>
               {isPending ? "Bezig…" : "Opslaan"}
