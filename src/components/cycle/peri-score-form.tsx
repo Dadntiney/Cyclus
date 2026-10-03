@@ -116,7 +116,7 @@ export function PeriScoreForm({
           ref={savedHeadingRef}
           id={`${uid}-saved`}
           tabIndex={-1}
-          className="font-display text-3xl text-ink mt-1"
+          className="type-numeral text-ink mt-2"
         >
           {saved.score}/100
         </h2>
