@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Camera, Loader2, Leaf } from "lucide-react"
 import { updateAvatar } from "@/lib/actions/profile"
+import { ICON, iconProps } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
 const MAX_SIZE_BYTES = 5 * 1024 * 1024
@@ -22,17 +23,23 @@ export function AvatarUpload({
   userId,
   name,
   initialAvatarUrl,
+  onError,
 }: {
   userId: string
   name: string | null
   initialAvatarUrl: string | null
+  /** Called with a message to show (or null to clear) — the hero shows it full width. */
+  onError?: (message: string | null) => void
 }) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl)
   const [isUploading, setIsUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  function setError(message: string | null) {
+    onError?.(message)
+  }
 
   function handlePick() {
     inputRef.current?.click()
@@ -94,50 +101,48 @@ export function AvatarUpload({
   const busy = isUploading || isPending
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="relative">
-        <div className="h-24 w-24 lg:h-28 lg:w-28 rounded-full overflow-hidden bg-sage-soft border-4 border-white shadow-[var(--shadow-card)] flex items-center justify-center">
-          {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt=""
-              width={112}
-              height={112}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <span className="font-display text-2xl text-sage-dark">
-              {initials(name) ?? <Leaf className="h-6 w-6" strokeWidth={1.75} />}
-            </span>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={handlePick}
-          disabled={busy}
-          aria-label="Profielfoto wijzigen"
+    <div className="relative shrink-0">
+      {/* 64px photo; the ring is the page surface colour, so it reads as a
+          quiet edge in both Dag and Nacht (never a white ring in the dark). */}
+      <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border-2 border-surface bg-sage-soft">
+        {avatarUrl ? (
+          <Image src={avatarUrl} alt="" width={64} height={64} className="h-full w-full object-cover" />
+        ) : (
+          <span className="type-section-title text-sage-dark" aria-hidden>
+            {initials(name) ?? <Leaf {...ICON.md} />}
+          </span>
+        )}
+      </div>
+      {/* 32px camera disc with a 44px target around it. */}
+      <button
+        type="button"
+        onClick={handlePick}
+        disabled={busy}
+        aria-label="Profielfoto wijzigen"
+        className="group absolute -bottom-2.5 -right-2.5 inline-flex h-11 w-11 items-center justify-center rounded-full touch-manipulation disabled:opacity-60"
+      >
+        <span
           className={cn(
-            "absolute -bottom-1.5 -right-1.5 h-11 w-11 rounded-full bg-sage-fill text-white flex items-center justify-center border-2 border-cream",
-            "transition-[background-color,transform] duration-150 touch-manipulation motion-safe:active:scale-[0.94]",
-            "hover:bg-sage-fill-darker focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream",
-            "disabled:opacity-60",
+            "inline-flex h-8 w-8 items-center justify-center rounded-full border-2 border-cream bg-sage-fill text-white",
+            "transition-[background-color,transform] duration-fast ease-standard group-hover:bg-sage-fill-darker motion-safe:group-active:scale-[0.97]",
           )}
         >
           {busy ? (
-            <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
+            <Loader2 {...iconProps("sm", "motion-safe:animate-spin")} aria-hidden />
           ) : (
-            <Camera className="h-4 w-4" strokeWidth={1.75} />
+            <Camera {...ICON.sm} aria-hidden />
           )}
-        </button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="hidden"
-        />
-      </div>
-      {error && <p className="mt-2 text-xs text-danger text-center max-w-[200px]">{error}</p>}
+        </span>
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+        tabIndex={-1}
+        aria-hidden
+      />
     </div>
   )
 }

@@ -1,20 +1,10 @@
-"use client"
+import type { Metadata } from "next"
+import { FEATURES } from "@/lib/navigation/features"
+import { ModulesRedirect } from "@/components/profile/modules-redirect"
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+export const metadata: Metadata = { title: FEATURES.gebruik.label }
 
 /** Preserve #beweging / #voeding / #slaap / #medicatie / #mentale-rust anchors. */
 export default function ProfielModulesRedirect() {
-  const router = useRouter()
-
-  useEffect(() => {
-    const hash = window.location.hash
-    router.replace(`/profiel/gebruik${hash}`)
-  }, [router])
-
-  return (
-    <div className="w-full max-w-2xl mx-auto px-5 py-10">
-      <div className="rounded-[1.25rem] bg-surface border border-line p-5 min-h-32 skeleton" aria-hidden />
-    </div>
-  )
+  return <ModulesRedirect />
 }
