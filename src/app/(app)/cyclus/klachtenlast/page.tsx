@@ -1,6 +1,11 @@
+import type { Metadata } from "next"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { PeriScoreForm } from "@/components/cycle/peri-score-form"
-import { BackButton } from "@/components/ui/back-button"
+import { Page } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
+import { FEATURES } from "@/lib/navigation/features"
+
+export const metadata: Metadata = { title: FEATURES.klachtenlast.label }
 
 export default async function KlachtenlastPage() {
   const supabase = await createClient()
@@ -18,16 +23,12 @@ export default async function KlachtenlastPage() {
   const previousScore = rows[0]?.score ?? null
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-5">
-      <div>
-        <BackButton href="/cyclus" label="Cyclus" />
-        <h1 className="font-display text-3xl lg:text-4xl text-ink">Klachtenlast</h1>
-        <p className="text-sm text-ink-soft mt-1">
-          Maandelijkse check om te zien of klachten toe- of afnemen.
-        </p>
-      </div>
-
+    <Page>
+      <PageHeader
+        title={FEATURES.klachtenlast.label}
+        subtitle="Maandelijkse check om te zien of klachten toe- of afnemen."
+      />
       <PeriScoreForm previousScore={previousScore} history={rows} />
-    </div>
+    </Page>
   )
 }
