@@ -1,28 +1,40 @@
+import type { Metadata } from "next"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { loadWeekPlanContext } from "@/lib/data/week-plan-context"
 import { buildGroceryList } from "@/lib/nutrition/grocery-list"
+import { Page } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
 import { WeekView } from "@/components/week/week-view"
-import { BackButton } from "@/components/ui/back-button"
+import { FEATURES } from "@/lib/navigation/features"
 
-export default async function DezeWeekPage() {
+export const metadata: Metadata = { title: FEATURES.week.label }
+
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/
+
+export default async function DezeWeekPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ dag?: string | string[] }>
+}) {
   const user = await getAuthedUser()
   if (!user) return null
 
   const ctx = await loadWeekPlanContext(user.id)
   if (!ctx) return null
 
+  const { dag } = await searchParams
+  const requestedDay = typeof dag === "string" && ISO_DAY.test(dag) ? dag : null
+
   const weekIngredients = ctx.days.flatMap((d) => d.meals.map((m) => m.recipe?.ingredients).filter(Boolean))
   const groceryItemCount = buildGroceryList(weekIngredients).reduce((sum, cat) => sum + cat.items.length, 0)
+  const planEnabled = ctx.profile.movement_enabled || ctx.profile.nutrition_enabled
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <div className="mb-5">
-        <BackButton href="/ontdek" label="Ontdek" />
-        <h1 className="font-display text-3xl lg:text-4xl text-ink">Deze week</h1>
-        <p className="text-sm text-ink-soft mt-1">
-          Weekplan voor eten en bewegen — tik een dag om aan te passen.
-        </p>
-      </div>
+    <Page>
+      <PageHeader
+        title={FEATURES.week.label}
+        subtitle={planEnabled ? "Je plan voor eten en bewegen. Tik een dag om aan te passen." : undefined}
+      />
 
       <WeekView
         userId={user.id}
@@ -37,7 +49,8 @@ export default async function DezeWeekPage() {
         completedWorkoutsByDate={ctx.completedWorkoutsByDate}
         changingCycle={ctx.changingCycle}
         todayLow={ctx.todayLow}
+        initialDate={requestedDay}
       />
-    </div>
+    </Page>
   )
 }

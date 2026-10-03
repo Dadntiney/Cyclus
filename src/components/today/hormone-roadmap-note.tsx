@@ -1,8 +1,16 @@
 import Link from "next/link"
-import { ChevronRight, Footprints, Salad, Leaf, Lightbulb, Heart } from "lucide-react"
+import type { ReactNode } from "react"
+import { CalendarClock, ChevronRight, Cookie, Droplets, Footprints, Heart, Leaf, Lightbulb, Salad } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
+import type { Anticipation } from "@/lib/cycle/anticipation"
+import type { PhaseHydrationTip, PhaseSnackTip } from "@/lib/cycle/phase-content"
 import type { RoadmapSupportKind, TodayRoadmap } from "@/lib/cycle/today-roadmap"
 import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
+import { textActionClass } from "@/components/ui/button"
+import { Disclosure } from "@/components/ui/disclosure"
+import { SectionHeader } from "@/components/ui/section-header"
+import { FEATURES } from "@/lib/navigation/features"
+import { ICON } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
 const KIND_ICON: Record<RoadmapSupportKind, LucideIcon> = {
@@ -13,78 +21,123 @@ const KIND_ICON: Record<RoadmapSupportKind, LucideIcon> = {
   helped: Heart,
 }
 
+/** At most two supports on Vandaag (ontwerpvisie §7.1). */
+const MAX_SUPPORTS = 2
+
+export type SmallTip =
+  | { kind: "snack"; tip: PhaseSnackTip; showWhy: boolean }
+  | { kind: "hydration"; tip: PhaseHydrationTip }
+
+function Tile({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-sage-dark",
+        className,
+      )}
+    >
+      {children}
+    </span>
+  )
+}
+
 /**
- * Compact “hormoonwegwijzer” on Vandaag — one why-beat + max two supports.
+ * "Wat je lichaam kan gebruiken" — flat on the page, no tint (the phase
+ * status is the one tinted block). Rows: vooruitkijken (when a harder
+ * stretch is coming), max two supports, one "Kleine tip voor vandaag"
+ * (snack, or vocht when there is no snack). Then "Over jouw fase ›" (or
+ * "De overgang ›") and "Jouw verhaal ›".
+ *
+ * The "why now" line is normally said once, as the day voice under "Voor
+ * jou vandaag" (`hideWhy`).
  */
 export function HormoneRoadmapNote({
   roadmap,
-  phaseTone,
   savedTexts = [],
   changingCycle = false,
+  hideWhy = false,
+  excludeKinds = [],
+  tip = null,
+  anticipation = null,
 }: {
-  roadmap: TodayRoadmap
-  phaseTone?: { bg: string; text: string } | null
+  roadmap: TodayRoadmap | null
   savedTexts?: string[]
   /** Changing cycle: point to the overgang explainer instead of the phase page. */
   changingCycle?: boolean
+  /** The why-line is already the day voice elsewhere on the page. */
+  hideWhy?: boolean
+  /** Support kinds the plan already covers (e.g. beweging when the plan has a workout). */
+  excludeKinds?: RoadmapSupportKind[]
+  tip?: SmallTip | null
+  anticipation?: Anticipation | null
 }) {
   const saved = new Set(savedTexts)
+  const excluded = new Set(excludeKinds)
+  const supports = (roadmap?.supports ?? []).filter((s) => !excluded.has(s.kind)).slice(0, MAX_SUPPORTS)
+  const showWhy = Boolean(roadmap && !hideWhy && roadmap.whyNow)
+
+  if (!showWhy && supports.length === 0 && !tip && !anticipation) return null
+
+  const phaseLink = changingCycle ? FEATURES.overgang : FEATURES.fase
+  const phaseLinkLabel = changingCycle ? FEATURES.overgang.label : (FEATURES.fase.linkLabel ?? FEATURES.fase.label)
+  // "Over jouw fase" only when there is a phase today (the roadmap needs
+  // one); without it Jouw fase would only say "Geen cyclusdag".
+  const showPhaseLink = Boolean(roadmap) || changingCycle
 
   return (
-    <section
-      aria-labelledby="roadmap-heading"
-      className={cn(
-        "rounded-3xl px-4 py-3.5",
-        phaseTone?.bg ?? "bg-sage-soft/55",
-      )}
-    >
-      <div className="flex items-start gap-2">
-        <div className="min-w-0 flex-1">
-          <p
-            id="roadmap-heading"
-            className={cn("text-sm font-medium mb-1", phaseTone?.text ?? "text-sage-dark")}
-          >
-            Wat jouw lichaam vandaag kan gebruiken
-          </p>
-          <p className="text-sm text-ink leading-relaxed">{roadmap.whyNow}</p>
-        </div>
-        <MomentFavoriteButton
-          kind="roadmap"
-          text={roadmap.whyNow}
-          source="hormone-roadmap"
-          initialFavorited={saved.has(roadmap.whyNow)}
-          size="sm"
-        />
-      </div>
+    <section aria-labelledby="lichaam-heading">
+      <SectionHeader id="lichaam-heading" title="Wat je lichaam kan gebruiken" />
 
-      {roadmap.supports.length > 0 && (
-        <ul className="mt-3 flex flex-col gap-2">
-          {roadmap.supports.map((support) => {
-            const Icon = KIND_ICON[support.kind]
-            const momentText = `${support.title}: ${support.why}`
-            const heartable = support.kind === "tip" || support.kind === "helped"
-            return (
-              <li key={`${support.kind}-${support.title}`} className="flex gap-2.5">
-                <span className="mt-0.5 shrink-0 h-7 w-7 rounded-full bg-surface/70 flex items-center justify-center">
-                  <Icon
-                    className={cn(
-                      "h-3.5 w-3.5",
-                      support.kind === "helped"
-                        ? "text-peach"
-                        : (phaseTone?.text ?? "text-sage-dark"),
-                    )}
-                    strokeWidth={support.kind === "helped" ? 0 : 1.75}
-                    fill={support.kind === "helped" ? "currentColor" : "none"}
-                    aria-hidden
-                  />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium text-ink">{support.title}</span>
-                  <span className="block text-xs text-ink-soft mt-0.5 leading-relaxed">
-                    {support.why}
-                  </span>
-                </span>
-                {heartable && (
+      {showWhy && roadmap && (
+        <div className="-mt-1 mb-1 flex items-start gap-1">
+          <p className="min-w-0 flex-1 text-sm text-ink-soft">{roadmap.whyNow}</p>
+          <span className="-my-2.5 shrink-0">
+            <MomentFavoriteButton
+              kind="roadmap"
+              text={roadmap.whyNow}
+              source="hormone-roadmap"
+              initialFavorited={saved.has(roadmap.whyNow)}
+              size="sm"
+            />
+          </span>
+        </div>
+      )}
+
+      <ul className="divide-y divide-line">
+        {anticipation && (
+          <li className="flex gap-3 py-3">
+            <Tile>
+              <CalendarClock {...ICON.sm} />
+            </Tile>
+            <div className="min-w-0 flex-1">
+              <p className="type-eyebrow text-sage-dark">Vooruitkijken</p>
+              <p className="text-base font-medium text-ink">{anticipation.headline}</p>
+              <p className="text-sm text-ink-soft">{anticipation.body}</p>
+              <Link href={`${FEATURES.week.href}?dag=${anticipation.startDate}`} className={textActionClass("-ml-1 px-1")}>
+                Week daarop afstemmen
+                <ChevronRight {...ICON.sm} aria-hidden />
+              </Link>
+            </div>
+          </li>
+        )}
+
+        {supports.map((support) => {
+          const Icon = KIND_ICON[support.kind]
+          const momentText = `${support.title}: ${support.why}`
+          const heartable = support.kind === "tip" || support.kind === "helped"
+          const helped = support.kind === "helped"
+          return (
+            <li key={`${support.kind}-${support.title}`} className="flex gap-3 py-3">
+              <Tile className={helped ? "bg-peach-soft text-peach" : undefined}>
+                <Icon {...ICON.sm} fill={helped ? "currentColor" : "none"} />
+              </Tile>
+              <div className="min-w-0 flex-1">
+                <p className="text-base font-medium text-ink">{support.title}</p>
+                <p className="text-sm text-ink-soft">{support.why}</p>
+              </div>
+              {heartable && (
+                <span className="-my-1 shrink-0">
                   <MomentFavoriteButton
                     kind="tip"
                     text={momentText}
@@ -92,33 +145,39 @@ export function HormoneRoadmapNote({
                     initialFavorited={saved.has(momentText)}
                     size="sm"
                   />
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      )}
+                </span>
+              )}
+            </li>
+          )
+        })}
 
-      <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-        <Link
-          href={changingCycle ? "/cyclus/overgang" : "/cyclus/vandaag"}
-          className={cn(
-            "inline-flex items-center gap-1 min-h-11 text-xs font-medium touch-manipulation",
-            phaseTone?.text ?? "text-sage-dark",
-          )}
-        >
-          {changingCycle ? "Over je veranderende cyclus" : "Meer over deze fase"}
-          <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
-        </Link>
-        <Link
-          href="/cyclus"
-          className={cn(
-            "inline-flex items-center gap-1 min-h-11 text-xs font-medium touch-manipulation",
-            phaseTone?.text ?? "text-sage-dark",
-          )}
-        >
+        {tip && (
+          <li className="flex gap-3 py-3">
+            <Tile>{tip.kind === "snack" ? <Cookie {...ICON.sm} /> : <Droplets {...ICON.sm} />}</Tile>
+            <div className="min-w-0 flex-1">
+              <p className="type-eyebrow text-sage-dark">Kleine tip voor vandaag</p>
+              <p className="text-base font-medium text-ink">{tip.tip.title}</p>
+              <p className="text-sm text-ink-soft">{tip.kind === "snack" ? tip.tip.snack : tip.tip.text}</p>
+              {tip.kind === "snack" && tip.showWhy && (
+                <Disclosure label="Waarom" className="-mb-2" contentClassName="pt-1 pb-2">
+                  <p className="text-sm text-ink-soft">{tip.tip.why}</p>
+                </Disclosure>
+              )}
+            </div>
+          </li>
+        )}
+      </ul>
+
+      <div className="mt-1 flex flex-wrap items-center gap-x-5">
+        {showPhaseLink && (
+          <Link href={phaseLink.href} className={textActionClass()}>
+            {phaseLinkLabel}
+            <ChevronRight {...ICON.sm} aria-hidden />
+          </Link>
+        )}
+        <Link href={`${FEATURES.cyclus.href}#jouw-verhaal`} className={textActionClass()}>
           Jouw verhaal
-          <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+          <ChevronRight {...ICON.sm} aria-hidden />
         </Link>
       </div>
     </section>

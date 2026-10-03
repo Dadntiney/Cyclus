@@ -3,17 +3,22 @@
 import { useState } from "react"
 import { addDays, format, parseISO } from "date-fns"
 import { Droplet } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button, textActionClass } from "@/components/ui/button"
 import { MenstruationDateSheet } from "@/components/cycle/menstruation-date-sheet"
 import { todayISO } from "@/lib/dates/amsterdam"
+import { ICON, iconProps } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
 /**
- * Menstruatie shortcut for Vandaag.
+ * Menstruatie shortcut outside the phase status (that one has its own
+ * "Noteer menstruatie" / "Stoppen").
  *
- * - quiet: text action under phase context (idle) — discoverable, not loud
- * - inline: compact active-period row under phase (no big dashboard card)
+ * - quiet: text action, e.g. under "Cyclusinstellingen" when there is no
+ *   phase estimate yet — discoverable, not loud
+ * - inline: compact active-period row
  * - card: fuller row (legacy / elsewhere)
+ *
+ * A running period is shown in the menstruatie colours, never in `danger`.
  */
 export function MenstruationQuickAction({
   isActive,
@@ -38,13 +43,9 @@ export function MenstruationQuickAction({
   if (variant === "quiet" && !isActive) {
     return (
       <div>
-        <button
-          type="button"
-          onClick={handleClick}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark min-h-11 touch-manipulation"
-        >
-          <Droplet className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
-          Menstruatie starten
+        <button type="button" onClick={handleClick} aria-haspopup="dialog" className={textActionClass()}>
+          <Droplet {...ICON.sm} aria-hidden />
+          Noteer menstruatie
         </button>
         {sheet}
       </div>
@@ -53,22 +54,15 @@ export function MenstruationQuickAction({
 
   if (variant === "inline" && isActive) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl bg-phase-menstruatie-soft px-3.5 py-2.5">
-        <Droplet
-          className="h-4 w-4 text-danger shrink-0"
-          fill="currentColor"
-          strokeWidth={1.75}
-          aria-hidden
-        />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-ink">
-            Menstruatie · dag {day}
-          </p>
-        </div>
+      <div className="flex items-center gap-3 rounded-card bg-phase-menstruatie-soft px-4 py-1">
+        <Droplet {...iconProps("sm", "text-phase-menstruatie-strong")} fill="currentColor" aria-hidden />
+        <p className="min-w-0 flex-1 text-sm font-medium text-ink">Menstruatie · dag {day}</p>
         <button
           type="button"
           onClick={handleClick}
-          className="shrink-0 text-sm font-medium text-sage-dark min-h-11 px-1 touch-manipulation"
+          aria-haspopup="dialog"
+          aria-label="Menstruatie stoppen"
+          className={textActionClass("shrink-0")}
         >
           Stoppen
         </button>
@@ -80,37 +74,32 @@ export function MenstruationQuickAction({
   return (
     <div
       className={cn(
-        "rounded-2xl px-4 py-3.5 flex items-center gap-3.5 transition-colors",
-        isActive ? "bg-phase-menstruatie-soft" : "bg-cream-soft/80",
+        "flex items-center gap-3 rounded-card px-4 py-3",
+        isActive ? "bg-phase-menstruatie-soft" : "bg-cream-soft",
       )}
     >
-      <div className="relative shrink-0 overflow-visible" aria-hidden>
-        <span className="inline-flex h-10 w-10 items-center justify-center overflow-visible">
+      <span aria-hidden className="inline-flex h-10 w-10 shrink-0 items-center justify-center">
+        <span className={cn("inline-flex", isActive && "animate-menstruatie-adem")}>
           <Droplet
-            className={cn(
-              "h-5 w-5 overflow-visible",
-              isActive ? "text-danger animate-menstruatie-adem" : "text-sage-dark",
-            )}
+            {...iconProps("md", isActive ? "text-phase-menstruatie-strong" : "text-sage-dark")}
             fill={isActive ? "currentColor" : "none"}
-            strokeWidth={1.75}
           />
         </span>
-      </div>
+      </span>
 
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium text-ink-soft">
-          {isActive ? "Menstruatie actief" : "Cyclus"}
-        </p>
-        <p className={cn("font-display text-base leading-tight", isActive ? "text-ink" : "text-ink-soft")}>
+        <p className="type-eyebrow text-ink-soft">{isActive ? "Menstruatie actief" : "Cyclus"}</p>
+        <p className={cn("font-display text-base", isActive ? "text-ink" : "text-ink-soft")}>
           {isActive ? `Dag ${day}` : "Geen actieve menstruatie"}
         </p>
       </div>
 
-      <div className="shrink-0 flex flex-col items-end gap-1">
+      <div className="flex shrink-0 flex-col items-end gap-1">
         <Button
           size="sm"
           variant={isActive ? "secondary" : "primary"}
           onClick={handleClick}
+          aria-haspopup="dialog"
           aria-label={isActive ? "Menstruatie stoppen" : "Menstruatie starten"}
         >
           {isActive ? "Stoppen" : "Starten"}

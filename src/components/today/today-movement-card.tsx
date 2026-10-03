@@ -1,13 +1,16 @@
 "use client"
 
 import { ACCOUNT_STATE_APPLIED_EVENT } from "@/lib/client/account-sync"
-import { useEffect, useMemo, useState, useTransition } from "react"
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Repeat, X, Check, ChevronDown, Moon } from "lucide-react"
+import { Check, ChevronLeft, Moon, Pencil, Repeat, RotateCcw, X } from "lucide-react"
 import { WorkoutImage } from "@/components/training/workout-image"
-import { Chip } from "@/components/ui/chip"
-import { buttonVariants } from "@/components/ui/button"
+import { BottomSheet } from "@/components/ui/bottom-sheet"
+import { buttonVariants, textActionClass } from "@/components/ui/button"
+import { ChipRadioGroup } from "@/components/ui/chip-radio-group"
+import { IconButton } from "@/components/ui/icon-button"
+import { ListGroup, ListRow } from "@/components/ui/list-group"
 import { cn } from "@/lib/utils"
 import { workoutTypeLabel } from "@/lib/constants"
 import { undoTodaysWorkoutSession } from "@/lib/actions/training"
@@ -18,6 +21,7 @@ import {
   type DayOverride,
 } from "@/lib/client/week-plan-storage"
 import { runAction } from "@/lib/client/run-action"
+import { ICON } from "@/lib/ui/icon"
 
 export type TodayWorkoutOption = {
   id: string
@@ -29,6 +33,21 @@ export type TodayWorkoutOption = {
 
 const GENERIC_REASON = "Gebaseerd op je bewegingsvoorkeuren uit je profiel."
 
+/** "Wandelen – 20 min" → "Wandelen": the duration already has its own line. */
+function titleWithoutDuration(title: string) {
+  const stripped = title.replace(/\s*[-–—]?\s*\d+\s*(min|minuten)\.?$/i, "").trim()
+  return stripped || title
+}
+
+type SheetMode = "menu" | "swap"
+
+/**
+ * Today's (or a week day's) movement, the first row of the plan card:
+ * image · "Beweging" · title · type and duration · "Start training".
+ * "Aanpassen" is the pencil IconButton (besluit 22: one icon for adjusting
+ * a plan item): a sheet with Andere beweging · Vandaag niet · Herstel
+ * advies, like the meals.
+ */
 export function TodayMovementCard({
   userId,
   date,
@@ -41,6 +60,7 @@ export function TodayMovementCard({
   embedded = false,
   canUndoCompleted = true,
   restDay = false,
+  hideReason = false,
 }: {
   userId: string
   date: string
@@ -50,25 +70,30 @@ export function TodayMovementCard({
   alternatives: TodayWorkoutOption[]
   completed: { workoutId: string; title: string; duration: number } | null
   emphasis?: "default" | "primary"
-  /** Inside TodayCards / Week soft panel — no outer shell. */
+  /** Inside the plan card (Vandaag / Deze week) — no outer shell. */
   embedded?: boolean
   /** Only today’s completion can be undone via the session action. */
   canUndoCompleted?: boolean
   /** Planned rest day (week program) — soft Moon row unless swapped. */
   restDay?: boolean
+  /** The day voice above already says why (it came from the check-in). */
+  hideReason?: boolean
 }) {
   const router = useRouter()
   const shell = embedded
-    ? "px-4 pt-4 pb-3"
-    : emphasis === "primary"
-      ? "rounded-[1.25rem] bg-surface border border-line p-4"
-      : "rounded-[1.25rem] bg-surface border border-line p-3.5"
+    ? "p-4"
+    : cn("rounded-card border border-line bg-surface", emphasis === "primary" ? "p-5" : "p-4")
 
   const [override, setOverride] = useState<DayOverride | null>(null)
-  const [swapping, setSwapping] = useState(false)
-  const [showAdjust, setShowAdjust] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [mode, setMode] = useState<SheetMode>("menu")
   const [swapType, setSwapType] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const typeLabelId = useId()
+  const menuRef = useRef<HTMLDivElement>(null)
+  const backRef = useRef<HTMLButtonElement>(null)
+  const modeChangedRef = useRef(false)
+  const shellRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function refresh() {
@@ -83,12 +108,37 @@ export function TodayMovementCard({
     }
   }, [userId, weekStartISO, date])
 
+  // The tapped option disappears when the sheet switches view: keep focus
+  // inside the sheet.
+  useEffect(() => {
+    if (!modeChangedRef.current) return
+    modeChangedRef.current = false
+    if (mode === "swap") backRef.current?.focus()
+    else menuRef.current?.focus()
+  }, [mode])
+
+  // After a choice the button that opened the sheet may be gone (e.g. the
+  // row now says "Vandaag geen beweging"): focus the row's own control.
+  const sheetWasOpenRef = useRef(false)
+  useEffect(() => {
+    if (sheetOpen) {
+      sheetWasOpenRef.current = true
+      return
+    }
+    if (!sheetWasOpenRef.current) return
+    sheetWasOpenRef.current = false
+    // Focus already went back to the opener: leave it. While the sheet slides
+    // out, focus may still sit on the tapped option inside it (inert, about
+    // to unmount) — that counts as lost.
+    const active = document.activeElement
+    if (active && active !== document.body && !active.closest("[data-overlay]")) return
+    shellRef.current?.querySelector<HTMLElement>("button, a[href]")?.focus({ preventScroll: true })
+  }, [sheetOpen])
+
   function applyOverride(next: DayOverride | null) {
     setDayOverride(userId, weekStartISO, date, "workout", next)
     setOverride(next)
-    setSwapping(false)
-    setShowAdjust(false)
-    setSwapType(null)
+    setSheetOpen(false)
   }
 
   const typeOptions = useMemo(() => {
@@ -111,13 +161,18 @@ export function TodayMovementCard({
     return (
       <div className={shell}>
         <div className="flex items-start gap-3">
-          <span className="h-10 w-10 rounded-full bg-sage-soft flex items-center justify-center shrink-0">
-            <Check className="h-5 w-5 text-sage-dark" strokeWidth={2} />
+          <span
+            aria-hidden
+            className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-sage-dark"
+          >
+            <Check {...ICON.md} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium text-sage-dark mb-0.5">Beweging</p>
-            <p className="text-sm font-medium text-ink">Voor jezelf gedaan: {completed.title}</p>
-            <p className="text-xs text-ink-soft mt-0.5">{completed.duration} minuten</p>
+            <p className="type-eyebrow text-sage-dark">Beweging</p>
+            <h3 className="type-card-title text-ink">Voor jezelf gedaan</h3>
+            <p className="text-sm text-ink-soft">
+              {titleWithoutDuration(completed.title)} · {completed.duration} minuten
+            </p>
             {canUndoCompleted && (
               <button
                 type="button"
@@ -128,7 +183,7 @@ export function TodayMovementCard({
                     router.refresh()
                   })
                 }}
-                className="mt-1.5 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation min-h-11"
+                className={textActionClass("-ml-1 px-1 text-ink-soft")}
               >
                 {isPending ? "Bezig…" : "Ongedaan maken"}
               </button>
@@ -155,30 +210,51 @@ export function TodayMovementCard({
     return (
       <div className={shell}>
         <div className="flex items-center gap-3">
-          <span className="h-14 w-14 rounded-xl bg-sage-soft flex items-center justify-center shrink-0">
-            <Moon className="h-5 w-5 text-ink-soft" strokeWidth={1.75} />
+          <span
+            aria-hidden
+            className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-ink-soft"
+          >
+            <Moon {...ICON.md} />
           </span>
           <div className="min-w-0">
-            <p className="text-xs font-medium text-sage-dark mb-0.5">Beweging</p>
-            <p className="font-display text-lg text-ink leading-snug">Rustdag</p>
-            <p className="text-sm text-ink-soft mt-0.5">Geen beweging gepland</p>
+            <p className="type-eyebrow text-sage-dark">Beweging</p>
+            <h3 className="type-card-title text-ink">Rustdag</h3>
+            <p className="text-sm text-ink-soft">Geen beweging gepland</p>
           </div>
         </div>
       </div>
     )
   }
 
+  function openSheet() {
+    setMode("menu")
+    setSwapType(null)
+    setSheetOpen(true)
+  }
+
+  function openSwap() {
+    // Default to a different activity type when available.
+    const current = effective?.type
+    const other = typeOptions.find((t) => t !== current) ?? typeOptions[0] ?? null
+    setSwapType(other)
+    modeChangedRef.current = true
+    setMode("swap")
+  }
+
+  function backToMenu() {
+    modeChangedRef.current = true
+    setMode("menu")
+  }
+
   return (
-    <div className={shell}>
+    <div ref={shellRef} className={shell}>
       {skipped ? (
-        <div>
-          <p className="text-xs font-medium text-sage-dark mb-1">Beweging</p>
-          <p className="text-sm text-ink-soft italic">Vandaag geen beweging — ook goed</p>
-          <button
-            type="button"
-            onClick={() => applyOverride(null)}
-            className="mt-2 text-sm font-medium text-sage-dark min-h-11 touch-manipulation"
-          >
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="type-eyebrow text-sage-dark">Beweging</p>
+            <p className="text-sm text-ink-soft">Vandaag geen beweging, ook goed</p>
+          </div>
+          <button type="button" onClick={() => applyOverride(null)} className={textActionClass("shrink-0 px-1")}>
             Herstel voorstel
           </button>
         </div>
@@ -189,113 +265,96 @@ export function TodayMovementCard({
               type={effective.type}
               title={effective.title}
               imageUrl={effective.image_url}
-              className="h-14 w-14 rounded-xl shrink-0"
+              className="h-14 w-14 shrink-0 rounded-inset"
               sizes="56px"
               priority
             />
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-sage-dark mb-0.5">Beweging</p>
-              <p className="font-display text-lg text-ink leading-snug">{effective.title}</p>
-              <p className="text-sm text-ink-soft mt-0.5">
+              <p className="type-eyebrow text-sage-dark">Beweging</p>
+              <h3 className="type-card-title text-ink">{titleWithoutDuration(effective.title)}</h3>
+              <p className="text-sm text-ink-soft">
                 {workoutTypeLabel(effective.type)} · {effective.duration} minuten
               </p>
               {swapped && suggested && (
-                <p className="text-xs text-ink-soft mt-1">Jouw keuze · advies was {suggested.title}</p>
+                <p className="text-xs text-ink-soft">
+                  Jouw keuze · advies was {titleWithoutDuration(suggested.title)}
+                </p>
               )}
             </div>
+            <IconButton
+              label="Beweging aanpassen"
+              icon={Pencil}
+              aria-haspopup="dialog"
+              onClick={openSheet}
+              className="-mr-2 -mt-2"
+            />
           </div>
-          {!swapped && reason && reason !== GENERIC_REASON && (
-            <p className="text-sm text-ink-soft mt-2">{reason}</p>
+          {!swapped && !hideReason && reason && reason !== GENERIC_REASON && (
+            <p className="mt-3 text-sm text-ink-soft">{reason}</p>
           )}
-          <Link href={`/training/${effective.id}`} className={cn(buttonVariants(), "mt-3")}>
+          <Link href={`/training/${effective.id}`} className={buttonVariants({ className: "mt-4" })}>
             Start training
           </Link>
+        </>
+      ) : (
+        <p className="text-sm text-ink-soft">{reason || "Geen training voorgesteld vandaag."}</p>
+      )}
 
-          <div className="mt-1">
-            <button
-              type="button"
-              onClick={() => {
-                setShowAdjust((s) => !s)
-                if (showAdjust) {
-                  setSwapping(false)
-                  setSwapType(null)
-                }
-              }}
-              className="inline-flex items-center gap-1 min-h-11 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
-              aria-expanded={showAdjust}
-            >
-              Aanpassen
-              <ChevronDown
-                className={cn("h-3.5 w-3.5 transition-transform", showAdjust && "rotate-180")}
-                strokeWidth={2}
+      {/* Outside the branches above, so it can slide out after "Vandaag niet". */}
+      <BottomSheet open={sheetOpen} onClose={() => setSheetOpen(false)} title="Beweging aanpassen">
+        {mode === "menu" ? (
+          <div ref={menuRef} tabIndex={-1} data-focus-target="" className="pb-2">
+            <ListGroup>
+              {alternatives.length > 0 && (
+                <ListRow icon={Repeat} title="Andere beweging" onClick={openSwap} />
+              )}
+              <ListRow
+                icon={X}
+                title="Vandaag niet"
+                trailing="none"
+                onClick={() => applyOverride({ type: "skip-workout" })}
               />
-            </button>
-
-            {showAdjust && (
-              <div className="flex flex-wrap gap-1 -mt-1">
-                {alternatives.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSwapping((s) => !s)
-                      if (!swapping) {
-                        // Default to a different activity type when available.
-                        const other = typeOptions.find((t) => t !== effective.type) ?? typeOptions[0] ?? null
-                        setSwapType(other)
-                      } else {
-                        setSwapType(null)
-                      }
-                    }}
-                    className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
-                  >
-                    <Repeat className="h-3.5 w-3.5" strokeWidth={1.75} />
-                    Andere beweging
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => applyOverride({ type: "skip-workout" })}
-                  className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-ink-soft hover:text-sage-dark touch-manipulation"
-                >
-                  <X className="h-3.5 w-3.5" strokeWidth={1.75} />
-                  Vandaag niet
-                </button>
-                {swapped && (
-                  <button
-                    type="button"
-                    onClick={() => applyOverride(null)}
-                    className="inline-flex items-center min-h-11 px-2 text-xs font-medium text-sage-dark touch-manipulation"
-                  >
-                    Herstel advies
-                  </button>
-                )}
-              </div>
-            )}
+              {swapped && (
+                <ListRow
+                  icon={RotateCcw}
+                  title="Herstel advies"
+                  description={suggested ? titleWithoutDuration(suggested.title) : undefined}
+                  trailing="none"
+                  onClick={() => applyOverride(null)}
+                />
+              )}
+            </ListGroup>
           </div>
-
-          {swapping && (
-            <div className="mt-2 flex flex-col gap-2">
-              <p className="text-xs text-ink-soft">Kies een soort beweging:</p>
-              <div className="flex w-full gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {typeOptions.map((type) => (
-                  <Chip
-                    key={type}
-                    className="shrink-0"
-                    selected={swapType === type}
-                    onClick={() => setSwapType(type)}
-                  >
-                    {workoutTypeLabel(type)}
-                  </Chip>
-                ))}
-              </div>
-              <p className="text-xs text-ink-soft mb-0.5">
-                {swapType ? `${workoutTypeLabel(swapType)} — wat ga je doen?` : "Wat ga je doen?"}
+        ) : (
+          <div className="flex flex-col gap-4 pb-2">
+            <button
+              ref={backRef}
+              type="button"
+              onClick={backToMenu}
+              className={textActionClass("-ml-1 self-start px-1")}
+            >
+              <ChevronLeft {...ICON.sm} aria-hidden />
+              Terug
+            </button>
+            <div className="flex flex-col gap-2">
+              <p id={typeLabelId} className="text-sm font-medium text-ink">
+                Soort beweging
               </p>
-              {filteredAlternatives.length ? (
-                filteredAlternatives.map((alt) => (
-                  <button
+              <ChipRadioGroup
+                aria-labelledby={typeLabelId}
+                value={swapType}
+                onChange={setSwapType}
+                options={typeOptions.map((type) => ({ value: type, label: workoutTypeLabel(type) }))}
+              />
+            </div>
+            {filteredAlternatives.length ? (
+              <ListGroup label="Wat ga je doen?" labelAs="h3">
+                {filteredAlternatives.map((alt) => (
+                  <ListRow
                     key={alt.id}
-                    type="button"
+                    title={titleWithoutDuration(alt.title)}
+                    value={`${alt.duration} min`}
+                    trailing="none"
                     onClick={() =>
                       applyOverride({
                         type: "swap-workout",
@@ -304,31 +363,15 @@ export function TodayMovementCard({
                         duration: alt.duration,
                       })
                     }
-                    className="text-left text-sm text-ink rounded-xl px-3 py-2.5 min-h-11 bg-cream-soft hover:bg-sage-soft transition-colors touch-manipulation flex items-center justify-between gap-2"
-                  >
-                    <span className="truncate">{alt.title}</span>
-                    <span className="text-xs text-ink-soft shrink-0">{alt.duration} min</span>
-                  </button>
-                ))
-              ) : (
-                <p className="text-sm text-ink-soft">Geen opties in deze categorie.</p>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  setSwapping(false)
-                  setSwapType(null)
-                }}
-                className="text-xs font-medium text-ink-soft self-start touch-manipulation min-h-11"
-              >
-                Annuleren
-              </button>
-            </div>
-          )}
-        </>
-      ) : (
-        <p className="text-sm text-ink-soft">{reason || "Geen training voorgesteld vandaag."}</p>
-      )}
+                  />
+                ))}
+              </ListGroup>
+            ) : (
+              <p className="text-sm text-ink-soft">Geen opties in deze categorie.</p>
+            )}
+          </div>
+        )}
+      </BottomSheet>
     </div>
   )
 }
