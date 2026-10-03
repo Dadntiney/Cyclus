@@ -1,19 +1,20 @@
-import Link from "next/link"
+import type { Metadata } from "next"
+import { PageHeader } from "@/components/layout/page-header"
 import { ForgotPasswordForm } from "./forgot-password-form"
+
+export const metadata: Metadata = { title: "Wachtwoord vergeten" }
 
 export default function ForgotPasswordPage() {
   return (
-    <div>
-      <h1 className="font-display text-2xl text-ink mb-1.5">Wachtwoord vergeten</h1>
-      <p className="text-sm text-ink-soft mb-6">
-        Vul je e-mailadres in en we sturen je een link om je wachtwoord te resetten.
-      </p>
+    <>
+      {/* "‹ Inloggen" follows the real history (router.back()); without
+          history it replaces this screen with the login form. */}
+      <PageHeader
+        title="Wachtwoord vergeten"
+        subtitle="Vul je e-mailadres in en we sturen je een link om je wachtwoord te resetten."
+        back={{ href: "/login", label: "Inloggen" }}
+      />
       <ForgotPasswordForm />
-      <p className="mt-6 text-center text-sm text-ink-soft">
-        <Link href="/login" className="text-sage-dark font-medium hover:underline">
-          Terug naar inloggen
-        </Link>
-      </p>
-    </div>
+    </>
   )
 }
