@@ -1,26 +1,36 @@
 import Link from "next/link"
-import { Card } from "@/components/ui/card"
+import { ArrowRight } from "lucide-react"
+import { SectionHeader } from "@/components/ui/section-header"
+import { ICON } from "@/lib/ui/icon"
 import type { Milestone } from "@/lib/data/profile"
+
+/** Every tile is the same height, number on top, words underneath. */
+const TILE = "flex min-h-28 flex-col justify-between gap-2 rounded-card p-4"
 
 function StatTile({ value, label }: { value: number; label: string }) {
   return (
-    <div className="rounded-2xl bg-cream-soft px-3.5 py-3">
-      <p className="font-display text-xl text-ink">{value}</p>
-      <p className="text-xs text-ink-soft mt-0.5">{label}</p>
-    </div>
+    <li className={`${TILE} bg-cream-soft`}>
+      <p className="type-section-title text-ink tabular-nums">{value}</p>
+      <p className="text-sm text-ink-soft">{label}</p>
+    </li>
   )
 }
 
 /** A zero reads as failing — show a gentle first step instead of the number. */
 function InviteTile({ text, href, cta }: { text: string; href: string; cta: string }) {
   return (
-    <Link
-      href={href}
-      className="rounded-2xl border border-dashed border-line px-3.5 py-3 block hover:bg-cream-soft/60 transition-colors"
-    >
-      <p className="text-xs text-ink-soft">{text}</p>
-      <p className="text-sm font-semibold text-sage-dark mt-1">{cta}</p>
-    </Link>
+    <li>
+      <Link
+        href={href}
+        className={`${TILE} h-full border border-dashed border-line-strong touch-manipulation transition-colors duration-fast ease-standard hover:bg-cream-soft/60 active:bg-cream-soft`}
+      >
+        <span className="text-sm text-ink-soft">{text}</span>
+        <span className="inline-flex items-center gap-1 text-sm font-medium text-sage-dark">
+          {cta}
+          <ArrowRight {...ICON.sm} aria-hidden />
+        </span>
+      </Link>
+    </li>
   )
 }
 
@@ -38,52 +48,60 @@ export function ProgressSection({
   milestones: Milestone[]
 }) {
   return (
-    <Card>
-      <h2 className="font-display text-xl text-ink mb-1">Voortgang</h2>
-      <p className="text-sm text-ink-soft mb-4">
-        Geen scores, geen druk — gewoon een overzicht van wat je al hebt opgebouwd.
-      </p>
-      <div className="grid grid-cols-2 gap-2.5 mb-4">
-        {totalWorkoutsCompleted > 0 ? (
-          <StatTile value={totalWorkoutsCompleted} label="voor jezelf gedaan" />
-        ) : (
-          <InviteTile text="Je eerste moment voor jezelf?" href="/training" cta="Kies een korte beweging" />
-        )}
-        {totalCheckins > 0 ? (
-          <StatTile value={totalCheckins} label="check-ins" />
-        ) : (
-          <InviteTile text="Hoe voel je je vandaag?" href="/vandaag" cta="Doe een check-in" />
-        )}
-        {currentStreak > 0 && (
-          <StatTile
-            value={currentStreak}
-            label={currentStreak === 1 ? "dag bij jezelf" : "dagen bij jezelf"}
-          />
-        )}
-        {bestStreak > 0 && <StatTile value={bestStreak} label="langste bij jezelf" />}
-      </div>
+    <>
+      <section aria-label="Wat je hebt opgebouwd">
+        <ul className="grid grid-cols-2 gap-3">
+          {totalWorkoutsCompleted > 0 ? (
+            <StatTile
+              value={totalWorkoutsCompleted}
+              label={totalWorkoutsCompleted === 1 ? "training voor jezelf gedaan" : "trainingen voor jezelf gedaan"}
+            />
+          ) : (
+            <InviteTile text="Je eerste moment voor jezelf?" href="/training" cta="Kies een korte beweging" />
+          )}
+          {totalCheckins > 0 ? (
+            <StatTile value={totalCheckins} label={totalCheckins === 1 ? "check-in" : "check-ins"} />
+          ) : (
+            <InviteTile text="Hoe voel je je vandaag?" href="/vandaag" cta="Doe een check-in" />
+          )}
+          {currentStreak > 0 && (
+            <StatTile
+              value={currentStreak}
+              label={currentStreak === 1 ? "dag op rij bij jezelf" : "dagen op rij bij jezelf"}
+            />
+          )}
+          {bestStreak > 0 && (
+            <StatTile
+              value={bestStreak}
+              label={bestStreak === 1 ? "dag, je langste reeks" : "dagen, je langste reeks"}
+            />
+          )}
+        </ul>
+      </section>
 
-      {milestones.length > 0 ? (
-        <>
-          <p className="text-sm font-medium text-ink mb-2">Mijlpalen</p>
-          <div className="flex flex-wrap gap-1.5">
+      <section aria-labelledby="mijlpalen">
+        <SectionHeader id="mijlpalen" title="Mijlpalen" />
+        {milestones.length > 0 ? (
+          <ul className="flex flex-col gap-3">
             {milestones.map((m) => (
-              <span
-                key={m.id}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-sage-dark bg-sage-soft rounded-full px-2.5 py-1.5"
-              >
-                <m.icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
-                {m.label}
-              </span>
+              <li key={m.id} className="flex items-center gap-3.5">
+                <span
+                  aria-hidden
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-sage-dark"
+                >
+                  <m.icon {...ICON.sm} />
+                </span>
+                <span className="text-base text-ink">{m.label}</span>
+              </li>
             ))}
-          </div>
-        </>
-      ) : (
-        <p className="text-sm text-ink-soft">
-          Jouw reis begint hier. Je eerste mijlpaal verschijnt zodra je een check-in doet of iets
-          voor jezelf doet.
-        </p>
-      )}
-    </Card>
+          </ul>
+        ) : (
+          <p className="type-body text-ink-soft">
+            Jouw reis begint hier. Je eerste mijlpaal verschijnt zodra je een check-in doet of iets
+            voor jezelf doet.
+          </p>
+        )}
+      </section>
+    </>
   )
 }

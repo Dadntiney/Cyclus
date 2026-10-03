@@ -1,10 +1,17 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import type { ReactNode } from "react"
 import Link from "next/link"
-import { Card } from "@/components/ui/card"
+import { ChevronRight } from "lucide-react"
+import { Card, CardTitle } from "@/components/ui/card"
 import { Input, Label, Textarea } from "@/components/ui/input"
 import { Chip } from "@/components/ui/chip"
+import { ChipRadioGroup } from "@/components/ui/chip-radio-group"
+import { OptionList } from "@/components/ui/option-list"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Collapse, Disclosure } from "@/components/ui/disclosure"
+import { textActionClass } from "@/components/ui/button"
 import { TagListInput } from "@/components/ui/tag-list-input"
 import { todayISO } from "@/lib/dates/amsterdam"
 import {
@@ -25,11 +32,13 @@ import {
   MORNING_REMINDER_CONTENT_TYPE_OPTIONS,
   type MorningReminderContentType,
 } from "@/lib/constants"
+import { WORLD_CUISINE_OPTIONS } from "@/lib/nutrition/cuisine"
+import { FEATURES } from "@/lib/navigation/features"
 import { CuisinePreferencePicker } from "@/components/profile/cuisine-preference-picker"
+import { ChipGroup, SettingHeading, SwitchRow } from "@/components/profile/setting-rows"
 import { updateProfile, type UpdateProfileInput } from "@/lib/actions/profile"
 import { AutosaveStatusPill, type AutosaveStatus } from "@/components/profile/autosave-status"
-import { BuddyMark } from "@/components/buddy/buddy-mark"
-import { cn } from "@/lib/utils"
+import { ICON } from "@/lib/ui/icon"
 import type { Tables } from "@/types/database"
 
 type Profile = Tables<"profiles">
@@ -42,6 +51,21 @@ function toggle(list: string[], value: string) {
 function toggleDay(days: number[], day: number) {
   return days.includes(day) ? days.filter((d) => d !== day) : [...days, day].sort((a, b) => a - b)
 }
+
+/** Modules whose "Voorkeuren" open from a #hash (/profiel/gebruik#voeding). */
+const PANEL_IDS = ["beweging", "voeding", "mentale-rust", "medicatie"] as const
+type PanelId = (typeof PANEL_IDS)[number]
+
+const CUISINES: readonly string[] = WORLD_CUISINE_OPTIONS
+
+const FREQUENCY_OPTIONS = TRAINING_FREQUENCY_OPTIONS.map((n) => ({ value: n as number, label: `${n}x` }))
+
+/** What an unset buddy_message_frequency behaves like (lib/buddy/styles.ts). */
+const DEFAULT_BUDDY_FREQUENCY = "elke_dag"
+const BUDDY_FREQUENCY_DISPLAY = BUDDY_FREQUENCY_OPTIONS.map((o) => ({
+  value: o.value as string,
+  label: o.value === DEFAULT_BUDDY_FREQUENCY ? `${o.label} (standaard)` : o.label,
+}))
 
 interface FormState {
   name: string
@@ -153,6 +177,7 @@ export function ProfileForm({
 
   const [status, setStatus] = useState<AutosaveStatus>("idle")
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [openPanels, setOpenPanels] = useState<Partial<Record<PanelId, boolean>>>({})
 
   // Autosave engine: everything below reads/writes refs (not `state`) so it
   // never closes over a stale snapshot, and stays correct across renders
@@ -339,188 +364,149 @@ export function ProfileForm({
 
   const onBlurFlush = flushDebounce
 
+  function togglePanel(id: PanelId, open: boolean) {
+    setOpenPanels((p) => ({ ...p, [id]: open }))
+  }
+
+  // /profiel/gebruik#voeding (from Voeding, Boodschappen, Beweging, Slaap …)
+  // lands on that module with its preferences open.
+  useEffect(() => {
+    function openFromHash() {
+      let id = window.location.hash.replace(/^#/, "")
+      try {
+        id = decodeURIComponent(id)
+      } catch {
+        // keep the raw value
+      }
+      if ((PANEL_IDS as readonly string[]).includes(id)) {
+        setOpenPanels((p) => (p[id as PanelId] ? p : { ...p, [id]: true }))
+      }
+    }
+    openFromHash()
+    window.addEventListener("hashchange", openFromHash)
+    return () => window.removeEventListener("hashchange", openFromHash)
+  }, [])
+
+  const movementCount = state.trainingPreferences.length + (state.trainingFrequency ? 1 : 0)
+  const cuisineCount = state.nutritionPreferences.filter((p) => CUISINES.includes(p)).length
+  const nutritionCount =
+    state.nutritionPreferences.filter((p) => p !== "Geen voorkeur").length +
+    (state.nutritionStyle !== "normaal" ? 1 : 0)
+  const mentalCount = state.mentalWellbeingCategories.length
+
   return (
-    <div className="flex flex-col gap-5">
-      <div className={group === "all" ? "grid gap-5 lg:grid-cols-2 lg:items-start" : "flex flex-col gap-5"}>
+    <div className="flex flex-col gap-3">
       {is("account") && (
-      <Card>
-        <h2 className="font-display text-xl text-ink mb-3">Naam & leeftijd</h2>
-        <div className="flex flex-col gap-4">
-          <div>
-            <Label htmlFor="name">Naam</Label>
-            <Input
-              id="name"
-              value={state.name}
-              onChange={(e) => applyUpdate((s) => ({ ...s, name: e.target.value }), "debounced")}
-              onBlur={onBlurFlush}
-            />
-          </div>
-          <div>
-            <Label htmlFor="age">Leeftijd</Label>
-            <Input
-              id="age"
-              type="number"
-              value={state.age}
-              onChange={(e) => applyUpdate((s) => ({ ...s, age: e.target.value }), "debounced")}
-              onBlur={onBlurFlush}
-            />
-          </div>
-        </div>
-      </Card>
-      )}
+        <>
+          <Card className="flex flex-col gap-4">
+            <CardTitle as="h2">Naam & leeftijd</CardTitle>
+            <div>
+              <Label htmlFor="name">Naam</Label>
+              <Input
+                id="name"
+                value={state.name}
+                onChange={(e) => applyUpdate((s) => ({ ...s, name: e.target.value }), "debounced")}
+                onBlur={onBlurFlush}
+              />
+            </div>
+            <div>
+              <Label htmlFor="age">Leeftijd</Label>
+              <Input
+                id="age"
+                type="number"
+                inputMode="numeric"
+                value={state.age}
+                onChange={(e) => applyUpdate((s) => ({ ...s, age: e.target.value }), "debounced")}
+                onBlur={onBlurFlush}
+              />
+            </div>
+          </Card>
 
-      {is("account") && (
-      <Card>
-        <h2 className="font-display text-xl text-ink mb-1">Motivatie</h2>
-        <p className="text-xs text-ink-soft mb-3">
-          Optioneel. Waarom doe jij dit voor jezelf? Dit lees jij later terug, voor niemand
-          anders zichtbaar.
-        </p>
-        <Textarea
-          rows={2}
-          placeholder="Bijvoorbeeld: ik wil me weer sterk voelen in mijn eigen lijf."
-          value={state.motivation}
-          onChange={(e) => applyUpdate((s) => ({ ...s, motivation: e.target.value }), "debounced")}
-          onBlur={onBlurFlush}
-        />
-      </Card>
-      )}
+          <Card className="flex flex-col gap-4">
+            <div>
+              <CardTitle as="h2">Lichaam</CardTitle>
+              <p className="mt-1 text-sm text-ink-soft">Optioneel. Helpt om je advies preciezer te maken.</p>
+            </div>
+            <div>
+              <Label htmlFor="heightCm">Lengte (cm)</Label>
+              <Input
+                id="heightCm"
+                type="number"
+                inputMode="numeric"
+                value={state.heightCm}
+                onChange={(e) => applyUpdate((s) => ({ ...s, heightCm: e.target.value }), "debounced")}
+                onBlur={onBlurFlush}
+              />
+            </div>
+            <div>
+              <Label htmlFor="weightKg">Gewicht (kg)</Label>
+              <Input
+                id="weightKg"
+                type="number"
+                inputMode="decimal"
+                value={state.weightKg}
+                onChange={(e) => applyUpdate((s) => ({ ...s, weightKg: e.target.value }), "debounced")}
+                onBlur={onBlurFlush}
+              />
+            </div>
+            <div>
+              <Label htmlFor="goalWeightKg">Doelgewicht (kg, optioneel)</Label>
+              <Input
+                id="goalWeightKg"
+                type="number"
+                inputMode="decimal"
+                value={state.goalWeightKg}
+                onChange={(e) => applyUpdate((s) => ({ ...s, goalWeightKg: e.target.value }), "debounced")}
+                onBlur={onBlurFlush}
+              />
+            </div>
+          </Card>
 
-      {is("account") && (
-      <Card>
-        <h2 className="font-display text-xl text-ink mb-1">Lichaam</h2>
-        <p className="text-xs text-ink-soft mb-3">Optioneel — helpt om je advies preciezer te maken.</p>
-        <div className="flex flex-col gap-4">
-          <div>
-            <Label htmlFor="heightCm">Lengte (cm)</Label>
-            <Input
-              id="heightCm"
-              type="number"
-              inputMode="numeric"
-              value={state.heightCm}
-              onChange={(e) => applyUpdate((s) => ({ ...s, heightCm: e.target.value }), "debounced")}
-              onBlur={onBlurFlush}
-            />
-          </div>
-          <div>
-            <Label htmlFor="weightKg">Gewicht (kg)</Label>
-            <Input
-              id="weightKg"
-              type="number"
-              inputMode="decimal"
-              value={state.weightKg}
-              onChange={(e) => applyUpdate((s) => ({ ...s, weightKg: e.target.value }), "debounced")}
-              onBlur={onBlurFlush}
-            />
-          </div>
-          <div>
-            <Label htmlFor="goalWeightKg">Doelgewicht (kg, optioneel)</Label>
-            <Input
-              id="goalWeightKg"
-              type="number"
-              inputMode="decimal"
-              value={state.goalWeightKg}
-              onChange={(e) => applyUpdate((s) => ({ ...s, goalWeightKg: e.target.value }), "debounced")}
-              onBlur={onBlurFlush}
-            />
-          </div>
-        </div>
-      </Card>
-      )}
-
-      {is("account") && (
-      <Card>
-        <h2 className="font-display text-xl text-ink mb-3">Doelen</h2>
-        <div className="flex flex-wrap gap-2">
-          {GOAL_OPTIONS.map((opt) => (
-            <Chip
-              key={opt}
-              selected={state.goals.includes(opt)}
-              onClick={() => applyUpdate((s) => ({ ...s, goals: toggle(s.goals, opt) }), "immediate")}
-            >
-              {opt}
-            </Chip>
-          ))}
-        </div>
-      </Card>
-      )}
-
-      {is("account") && (
-      <Card id="aandachtspunten" className="scroll-mt-24">
-        <h2 className="font-display text-xl text-ink mb-3">Aandachtspunten</h2>
-        <p className="text-xs text-ink-soft mb-3">
-          Optioneel. Geen diagnoses — puur om je advies passender te maken.
-        </p>
-        <p className="text-sm font-medium text-ink mb-2">Aandoeningen of aandachtspunten</p>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {HEALTH_CONDITION_OPTIONS.map((opt) => (
-            <Chip
-              key={opt}
-              selected={state.healthConditions.includes(opt)}
-              onClick={() =>
-                applyUpdate((s) => ({ ...s, healthConditions: toggle(s.healthConditions, opt) }), "immediate")
-              }
-            >
-              {opt}
-            </Chip>
-          ))}
-        </div>
-        <p className="text-sm font-medium text-ink mb-2">Beperkingen bij bewegen</p>
-        <div className="flex flex-wrap gap-2">
-          {MOVEMENT_LIMITATION_OPTIONS.map((opt) => (
-            <Chip
-              key={opt}
-              selected={state.movementLimitations.includes(opt)}
-              onClick={() =>
-                applyUpdate((s) => ({ ...s, movementLimitations: toggle(s.movementLimitations, opt) }), "immediate")
-              }
-            >
-              {opt}
-            </Chip>
-          ))}
-        </div>
-      </Card>
-      )}
-
-      {is("modules") && (
-      <Card id="beweging" className="scroll-mt-24">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-xl text-ink">Beweging</h2>
-          <div className="flex gap-1.5">
-            <Chip
-              selected={state.movementEnabled}
-              onClick={() => applyUpdate((s) => ({ ...s, movementEnabled: true }), "immediate")}
-            >
-              Aan
-            </Chip>
-            <Chip
-              selected={!state.movementEnabled}
-              onClick={() => applyUpdate((s) => ({ ...s, movementEnabled: false }), "immediate")}
-            >
-              Uit
-            </Chip>
-          </div>
-        </div>
-        {state.movementEnabled ? (
-          <>
-            <p className="text-xs text-ink-soft mb-3">
-              Kies welke vormen van bewegen relevant voor je zijn — daarop stemmen we Vandaag,
-              Beweging en Deze week af.
-            </p>
-            <Link
-              href="/training"
-              className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mb-3 min-h-11 touch-manipulation"
-            >
-              Open bewegingsbibliotheek
-            </Link>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {TRAINING_OPTIONS.map((opt) => (
+          <Card className="flex flex-col gap-4">
+            <CardTitle as="h2" id="doelen-title">
+              Doelen
+            </CardTitle>
+            <div role="group" aria-labelledby="doelen-title" className="flex flex-wrap gap-2">
+              {GOAL_OPTIONS.map((opt) => (
                 <Chip
                   key={opt}
-                  selected={state.trainingPreferences.includes(opt)}
+                  selected={state.goals.includes(opt)}
+                  onClick={() => applyUpdate((s) => ({ ...s, goals: toggle(s.goals, opt) }), "immediate")}
+                >
+                  {opt}
+                </Chip>
+              ))}
+            </div>
+          </Card>
+
+          <Card id="aandachtspunten" className="flex scroll-mt-4 flex-col gap-4">
+            <div>
+              <CardTitle as="h2">Aandachtspunten</CardTitle>
+              <p className="mt-1 text-sm text-ink-soft">
+                Optioneel. Geen diagnoses, alleen om je advies passender te maken.
+              </p>
+            </div>
+            <ChipGroup label="Aandoeningen of aandachtspunten">
+              {HEALTH_CONDITION_OPTIONS.map((opt) => (
+                <Chip
+                  key={opt}
+                  selected={state.healthConditions.includes(opt)}
+                  onClick={() =>
+                    applyUpdate((s) => ({ ...s, healthConditions: toggle(s.healthConditions, opt) }), "immediate")
+                  }
+                >
+                  {opt}
+                </Chip>
+              ))}
+            </ChipGroup>
+            <ChipGroup label="Beperkingen bij bewegen">
+              {MOVEMENT_LIMITATION_OPTIONS.map((opt) => (
+                <Chip
+                  key={opt}
+                  selected={state.movementLimitations.includes(opt)}
                   onClick={() =>
                     applyUpdate(
-                      (s) => ({ ...s, trainingPreferences: toggle(s.trainingPreferences, opt) }),
+                      (s) => ({ ...s, movementLimitations: toggle(s.movementLimitations, opt) }),
                       "immediate",
                     )
                   }
@@ -528,623 +514,625 @@ export function ProfileForm({
                   {opt}
                 </Chip>
               ))}
+            </ChipGroup>
+          </Card>
+
+          <Card className="flex flex-col gap-4">
+            <div>
+              <CardTitle as="h2">Voor jezelf</CardTitle>
+              <p className="mt-1 text-sm text-ink-soft">Optioneel. Alleen jij ziet dit terug.</p>
             </div>
-            <p className="text-sm font-medium text-ink mb-2">Frequentie per week</p>
-            <div className="flex flex-wrap gap-2">
-              {TRAINING_FREQUENCY_OPTIONS.map((n) => (
-                <Chip
-                  key={n}
-                  selected={state.trainingFrequency === n}
-                  onClick={() => applyUpdate((s) => ({ ...s, trainingFrequency: n }), "immediate")}
-                >
-                  {n}x
-                </Chip>
-              ))}
+            <div>
+              <Label htmlFor="motivation">Motivatie</Label>
+              <p id="motivation-hint" className="mb-2 text-sm text-ink-soft">
+                Waarom doe jij dit voor jezelf?
+              </p>
+              <Textarea
+                id="motivation"
+                rows={2}
+                aria-describedby="motivation-hint"
+                placeholder="Bijvoorbeeld: ik wil me weer sterk voelen in mijn eigen lijf."
+                value={state.motivation}
+                onChange={(e) => applyUpdate((s) => ({ ...s, motivation: e.target.value }), "debounced")}
+                onBlur={onBlurFlush}
+              />
             </div>
-          </>
-        ) : (
-          <p className="text-xs text-ink-soft mt-2">
-            Beweging staat uit — je ziet nergens trainingsadvies. Zet dit weer aan wanneer je wilt.
-          </p>
-        )}
-      </Card>
+            <div>
+              <Label htmlFor="personalNote">Notitie voor mezelf</Label>
+              <Textarea
+                id="personalNote"
+                rows={3}
+                placeholder="Een gedachte, een reminder, een klein succesje."
+                value={state.personalNote}
+                onChange={(e) => applyUpdate((s) => ({ ...s, personalNote: e.target.value }), "debounced")}
+                onBlur={onBlurFlush}
+              />
+            </div>
+          </Card>
+        </>
       )}
 
       {is("modules") && (
-      <Card id="voeding" className="scroll-mt-24">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-xl text-ink">Voeding</h2>
-          <div className="flex gap-1.5">
-            <Chip
-              selected={state.nutritionEnabled}
-              onClick={() => applyUpdate((s) => ({ ...s, nutritionEnabled: true }), "immediate")}
+        <Card padding="none" className="divide-y divide-line">
+          <section id="beweging" aria-label="Beweging" className="scroll-mt-4 px-4">
+            <SwitchRow
+              icon={FEATURES.beweging.icon}
+              title="Beweging"
+              description={
+                state.movementEnabled
+                  ? "Trainingen en beweegtips op jouw tempo"
+                  : "Staat uit. Je ziet nergens trainingsadvies."
+              }
+              checked={state.movementEnabled}
+              onChange={(movementEnabled) => applyUpdate((s) => ({ ...s, movementEnabled }), "immediate")}
+            />
+            <Collapse open={state.movementEnabled}>
+              <Disclosure
+                label={preferencesLabel(movementCount)}
+                open={!!openPanels.beweging}
+                onOpenChange={(open) => togglePanel("beweging", open)}
+                className="pb-3"
+                contentClassName="flex flex-col gap-4 pb-1"
+              >
+                <ChipGroup
+                  label="Welke vormen van bewegen passen bij je?"
+                  hint="Daarop stemmen we Vandaag, Beweging en Deze week af."
+                >
+                  {TRAINING_OPTIONS.map((opt) => (
+                    <Chip
+                      key={opt}
+                      selected={state.trainingPreferences.includes(opt)}
+                      onClick={() =>
+                        applyUpdate(
+                          (s) => ({ ...s, trainingPreferences: toggle(s.trainingPreferences, opt) }),
+                          "immediate",
+                        )
+                      }
+                    >
+                      {opt}
+                    </Chip>
+                  ))}
+                </ChipGroup>
+                <div>
+                  <p id="frequency-label" className="mb-2 text-sm font-medium text-ink">
+                    Hoe vaak per week?
+                  </p>
+                  <ChipRadioGroup
+                    aria-labelledby="frequency-label"
+                    options={FREQUENCY_OPTIONS}
+                    value={state.trainingFrequency}
+                    onChange={(n) => applyUpdate((s) => ({ ...s, trainingFrequency: n }), "immediate")}
+                  />
+                </div>
+                <ModuleLink href={FEATURES.beweging.href}>Naar {FEATURES.beweging.label}</ModuleLink>
+              </Disclosure>
+            </Collapse>
+          </section>
+
+          <section id="voeding" aria-label="Voeding" className="scroll-mt-4 px-4">
+            <SwitchRow
+              icon={FEATURES.voeding.icon}
+              title="Voeding"
+              description={
+                state.nutritionEnabled
+                  ? "Recepten en maaltijdtips"
+                  : "Staat uit. Je ziet nergens voedingsadvies."
+              }
+              checked={state.nutritionEnabled}
+              onChange={(nutritionEnabled) => applyUpdate((s) => ({ ...s, nutritionEnabled }), "immediate")}
+            />
+            <Collapse open={state.nutritionEnabled}>
+              <Disclosure
+                label={preferencesLabel(nutritionCount)}
+                open={!!openPanels.voeding}
+                onOpenChange={(open) => togglePanel("voeding", open)}
+                className="pb-3"
+                contentClassName="flex flex-col gap-4 pb-1"
+              >
+                <p className="text-sm text-ink-soft">
+                  Je keuzes bepalen welke recepten we je voorstellen op Vandaag en in Deze week. Bij
+                  Voeding zie je altijd alle recepten.
+                </p>
+                <div>
+                  <p id="nutrition-style-label" className="mb-1 text-sm font-medium text-ink">
+                    Welke manier van eten past bij je?
+                  </p>
+                  <OptionList
+                    aria-labelledby="nutrition-style-label"
+                    framed={false}
+                    options={NUTRITION_STYLE_OPTIONS}
+                    value={state.nutritionStyle}
+                    onChange={(nutritionStyle) => applyUpdate((s) => ({ ...s, nutritionStyle }), "immediate")}
+                  />
+                </div>
+                <ChipGroup label="Voedingsvoorkeuren">
+                  {NUTRITION_OPTIONS.map((opt) => (
+                    <Chip
+                      key={opt}
+                      selected={state.nutritionPreferences.includes(opt)}
+                      onClick={() =>
+                        applyUpdate(
+                          (s) => ({ ...s, nutritionPreferences: toggle(s.nutritionPreferences, opt) }),
+                          "immediate",
+                        )
+                      }
+                    >
+                      {opt}
+                    </Chip>
+                  ))}
+                </ChipGroup>
+                {state.nutritionPreferences.includes("Allergieën") && (
+                  <div>
+                    <Label htmlFor="food-allergies">Waarvoor ben je allergisch?</Label>
+                    <p id="food-allergies-hint" className="mb-2 text-sm text-ink-soft">
+                      Recepten met deze ingrediënten stellen we niet voor op Vandaag en in Deze week.
+                      Bij Voeding zie je alle recepten: kijk daar zelf even naar de ingrediënten.
+                    </p>
+                    <TagListInput
+                      inputId="food-allergies"
+                      aria-describedby="food-allergies-hint"
+                      value={state.foodAllergies}
+                      onChange={(foodAllergies) => applyUpdate((s) => ({ ...s, foodAllergies }), "immediate")}
+                      placeholder="Bijv. noten, gluten, lactose"
+                    />
+                  </div>
+                )}
+                {state.nutritionPreferences.includes("Dingen die ik niet lust") && (
+                  <div>
+                    <Label htmlFor="disliked-foods">Wat lust je niet?</Label>
+                    <p id="disliked-foods-hint" className="mb-2 text-sm text-ink-soft">
+                      Gerechten met deze ingrediënten laten we liggen bij het voorstellen van recepten.
+                    </p>
+                    <TagListInput
+                      inputId="disliked-foods"
+                      aria-describedby="disliked-foods-hint"
+                      value={state.dislikedFoods}
+                      onChange={(dislikedFoods) => applyUpdate((s) => ({ ...s, dislikedFoods }), "immediate")}
+                      placeholder="Bijv. paddenstoelen, spruitjes"
+                    />
+                  </div>
+                )}
+                <Disclosure
+                  label={cuisineCount > 0 ? `Wereldkeukens · ${cuisineCount} gekozen` : "Wereldkeukens"}
+                  contentClassName="flex flex-col gap-2"
+                >
+                  <p className="text-sm text-ink-soft">
+                    Standaard houden we internationale keukens buiten je voorstellen. Zet aan wat je
+                    wilt zien in tips en Deze week.
+                  </p>
+                  <CuisinePreferencePicker
+                    selected={state.nutritionPreferences}
+                    onToggle={(cuisine) =>
+                      applyUpdate(
+                        (s) => ({ ...s, nutritionPreferences: toggle(s.nutritionPreferences, cuisine) }),
+                        "immediate",
+                      )
+                    }
+                  />
+                </Disclosure>
+                <ModuleLink href={FEATURES.voeding.href}>Naar {FEATURES.voeding.label}</ModuleLink>
+              </Disclosure>
+            </Collapse>
+          </section>
+
+          <section id="mentale-rust" aria-label="Mentale rust" className="scroll-mt-4 px-4">
+            <SwitchRow
+              icon={FEATURES.mentaleRust.icon}
+              title="Mentale rust"
+              description={
+                state.mentalWellbeingEnabled
+                  ? "Meditaties, mindfulness en affirmaties"
+                  : "Staat uit. Je ziet nergens meditaties of affirmaties."
+              }
+              checked={state.mentalWellbeingEnabled}
+              onChange={(mentalWellbeingEnabled) =>
+                applyUpdate((s) => ({ ...s, mentalWellbeingEnabled }), "immediate")
+              }
+            />
+            <Collapse open={state.mentalWellbeingEnabled}>
+              <Disclosure
+                label={preferencesLabel(mentalCount)}
+                open={!!openPanels["mentale-rust"]}
+                onOpenChange={(open) => togglePanel("mentale-rust", open)}
+                className="pb-3"
+                contentClassName="flex flex-col gap-4 pb-1"
+              >
+                <ChipGroup
+                  label="Waar heb je behoefte aan?"
+                  hint="Je vindt alles terug bij Mentale rust."
+                >
+                  {MENTAL_WELLBEING_CATEGORY_OPTIONS.map((opt) => (
+                    <Chip
+                      key={opt.value}
+                      selected={state.mentalWellbeingCategories.includes(opt.value)}
+                      onClick={() =>
+                        applyUpdate(
+                          (s) => ({
+                            ...s,
+                            mentalWellbeingCategories: toggle(s.mentalWellbeingCategories, opt.value),
+                          }),
+                          "immediate",
+                        )
+                      }
+                    >
+                      <opt.icon {...ICON.sm} aria-hidden />
+                      {opt.label}
+                    </Chip>
+                  ))}
+                </ChipGroup>
+                <ModuleLink href={FEATURES.mentaleRust.href}>Naar {FEATURES.mentaleRust.label}</ModuleLink>
+              </Disclosure>
+            </Collapse>
+          </section>
+
+          <section id="slaap" aria-label="Slaap" className="scroll-mt-4 px-4">
+            <SwitchRow
+              icon={FEATURES.slaap.icon}
+              title="Slaap"
+              description={
+                state.sleepTrackingEnabled
+                  ? "Bedtijd en opstaan noteren op Vandaag, inzichten bij Slaap"
+                  : "Staat uit. Je ziet nergens slaapvragen of slaapkaarten."
+              }
+              checked={state.sleepTrackingEnabled}
+              onChange={(sleepTrackingEnabled) => applyUpdate((s) => ({ ...s, sleepTrackingEnabled }), "immediate")}
+            />
+            <Collapse open={state.sleepTrackingEnabled}>
+              <div className="pb-3">
+                <ModuleLink href={FEATURES.slaap.href}>Naar {FEATURES.slaap.label}</ModuleLink>
+              </div>
+            </Collapse>
+          </section>
+
+          <section id="medicatie" aria-labelledby="medicatie-title" className="scroll-mt-4 px-4">
+            <SettingHeading
+              id="medicatie-title"
+              icon={FEATURES.medicatie.icon}
+              title="Medicatie & hormonen"
+              description="Optioneel. Wat je gebruikt en of je het op Vandaag ziet."
+            />
+            <Disclosure
+              label="Voorkeuren"
+              open={!!openPanels.medicatie}
+              onOpenChange={(open) => togglePanel("medicatie", open)}
+              className="pb-3"
+              contentClassName="flex flex-col gap-4 pb-1"
             >
-              Aan
-            </Chip>
-            <Chip
-              selected={!state.nutritionEnabled}
-              onClick={() => applyUpdate((s) => ({ ...s, nutritionEnabled: false }), "immediate")}
+              <div>
+                <p id="medication-status-label" className="mb-1 text-sm font-medium text-ink">
+                  Gebruik je medicatie die invloed kan hebben op je cyclus of hormonen?
+                </p>
+                <OptionList
+                  aria-labelledby="medication-status-label"
+                  framed={false}
+                  options={HORMONAL_MEDICATION_STATUS_OPTIONS}
+                  value={state.hormonalMedicationStatus || null}
+                  onChange={(hormonalMedicationStatus) =>
+                    applyUpdate((s) => ({ ...s, hormonalMedicationStatus }), "immediate")
+                  }
+                />
+              </div>
+              {hasMedications && (
+                <SwitchRow
+                  title="Tonen op Vandaag"
+                  description="Een kort overzicht van wat je vandaag gebruikt, op je Vandaag-pagina."
+                  checked={state.showMedicationOnDashboard}
+                  onChange={(showMedicationOnDashboard) =>
+                    applyUpdate((s) => ({ ...s, showMedicationOnDashboard }), "immediate")
+                  }
+                />
+              )}
+              <ModuleLink href={FEATURES.medicatie.href}>
+                {hasMedications ? `Naar ${FEATURES.medicatie.label}` : "Medicatie toevoegen"}
+              </ModuleLink>
+            </Disclosure>
+          </section>
+        </Card>
+      )}
+
+      {is("meldingen") && (
+        <Card id="goedemorgen" padding="none" className="scroll-mt-4 px-4">
+          <SwitchRow
+            title="Goedemorgen"
+            description={
+              state.morningReminderEnabled
+                ? "Een kort bericht in de ochtend, op dagen die jij kiest"
+                : "Staat uit. Je krijgt geen ochtendmelding."
+            }
+            checked={state.morningReminderEnabled}
+            onChange={(morningReminderEnabled) =>
+              applyUpdate((s) => ({ ...s, morningReminderEnabled }), "immediate")
+            }
+          />
+          <Collapse open={state.morningReminderEnabled}>
+            <div className="flex flex-col gap-4 pt-1 pb-4">
+              <div>
+                <Label htmlFor="morning-time">Op welk tijdstip?</Label>
+                <Input
+                  id="morning-time"
+                  type="time"
+                  value={state.morningReminderTime}
+                  onChange={(e) =>
+                    applyUpdate((s) => ({ ...s, morningReminderTime: e.target.value }), "debounced")
+                  }
+                  onBlur={onBlurFlush}
+                  className="w-40"
+                />
+              </div>
+              <ChipGroup label="Op welke dagen?">
+                {REMINDER_DAY_OPTIONS.map((opt) => (
+                  <Chip
+                    key={opt.value}
+                    selected={state.morningReminderDays.includes(opt.value)}
+                    onClick={() =>
+                      applyUpdate(
+                        (s) => ({ ...s, morningReminderDays: toggleDay(s.morningReminderDays, opt.value) }),
+                        "immediate",
+                      )
+                    }
+                  >
+                    {opt.label}
+                  </Chip>
+                ))}
+              </ChipGroup>
+              <div role="group" aria-labelledby="morning-content-label" aria-describedby="morning-content-hint">
+                <p id="morning-content-label" className="text-sm font-medium text-ink">
+                  Wat wil je ontvangen?
+                </p>
+                <p id="morning-content-hint" className="text-sm text-ink-soft">
+                  Eén of meer, samen in je ochtendmelding.
+                </p>
+                <div className="mt-1 flex flex-col">
+                  {MORNING_REMINDER_CONTENT_TYPE_OPTIONS.map((opt) => (
+                    <Checkbox
+                      key={opt.value}
+                      checked={state.morningReminderContentTypes.includes(opt.value)}
+                      description={opt.description}
+                      onCheckedChange={() =>
+                        applyUpdate((s) => {
+                          const has = s.morningReminderContentTypes.includes(opt.value)
+                          if (has) {
+                            // Keep at least one: the morning message needs content.
+                            if (s.morningReminderContentTypes.length <= 1) return s
+                            return {
+                              ...s,
+                              morningReminderContentTypes: s.morningReminderContentTypes.filter(
+                                (v) => v !== opt.value,
+                              ),
+                            }
+                          }
+                          return {
+                            ...s,
+                            morningReminderContentTypes: [...s.morningReminderContentTypes, opt.value],
+                          }
+                        }, "immediate")
+                      }
+                    >
+                      {opt.label}
+                    </Checkbox>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Collapse>
+        </Card>
+      )}
+
+      {is("buddy") && (
+        <>
+          <Card id="buddy" className="flex scroll-mt-4 flex-col gap-4">
+            <div>
+              <CardTitle as="h2" id="buddy-tone-title">
+                Toon
+              </CardTitle>
+              <p id="buddy-tone-hint" className="mt-1 text-sm text-ink-soft">
+                Kies er één of meer. Niets gekozen = de standaard, warme toon.
+              </p>
+            </div>
+            <div
+              role="group"
+              aria-labelledby="buddy-tone-title"
+              aria-describedby="buddy-tone-hint"
+              className="flex flex-wrap gap-2"
             >
-              Uit
-            </Chip>
-          </div>
-        </div>
-        {state.nutritionEnabled ? (
-          <>
-            <p className="text-xs text-ink-soft mb-3">
-              Kies een stijl en eventuele voorkeuren — daarop stemmen we Vandaag, Voeding en
-              Deze week af.
-            </p>
-            <Link
-              href="/voeding"
-              className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mb-3 min-h-11 touch-manipulation"
-            >
-              Open recepten
-            </Link>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {NUTRITION_STYLE_OPTIONS.map((opt) => (
+              {BUDDY_STYLE_OPTIONS.map((opt) => (
                 <Chip
                   key={opt.value}
-                  selected={state.nutritionStyle === opt.value}
-                  onClick={() => applyUpdate((s) => ({ ...s, nutritionStyle: opt.value }), "immediate")}
+                  selected={state.buddyStyles.includes(opt.value)}
+                  onClick={() =>
+                    applyUpdate((s) => ({ ...s, buddyStyles: toggle(s.buddyStyles, opt.value) }), "immediate")
+                  }
                 >
+                  <opt.icon {...ICON.sm} aria-hidden />
                   {opt.label}
                 </Chip>
               ))}
             </div>
-            <p className="text-sm font-medium text-ink mb-2">Voedingsvoorkeuren</p>
-            <div className="flex flex-wrap gap-2">
-              {NUTRITION_OPTIONS.map((opt) => (
-                <Chip
-                  key={opt}
-                  selected={state.nutritionPreferences.includes(opt)}
-                  onClick={() =>
-                    applyUpdate(
-                      (s) => ({ ...s, nutritionPreferences: toggle(s.nutritionPreferences, opt) }),
-                      "immediate",
-                    )
-                  }
-                >
-                  {opt}
-                </Chip>
-              ))}
+          </Card>
+
+          <Card className="flex flex-col gap-2">
+            <div>
+              <CardTitle as="h2" id="buddy-frequency-title">
+                Hoe vaak?
+              </CardTitle>
+              <p id="buddy-frequency-hint" className="mt-1 text-sm text-ink-soft">
+                Hoe vaak je de dagelijkse Buddy-kaart en &ldquo;even onthouden&rdquo;-momenten ziet.
+              </p>
             </div>
-            {state.nutritionPreferences.includes("Allergieën") && (
-              <div className="mt-3">
-                <p className="text-xs text-ink-soft mb-2">
-                  Waarvoor ben je allergisch? We laten recepten met deze ingrediënten weg.
-                </p>
-                <TagListInput
-                  value={state.foodAllergies}
-                  onChange={(foodAllergies) => applyUpdate((s) => ({ ...s, foodAllergies }), "immediate")}
-                  placeholder="Bijv. noten, gluten, lactose"
-                />
-              </div>
-            )}
-            {state.nutritionPreferences.includes("Dingen die ik niet lust") && (
-              <div className="mt-3">
-                <p className="text-xs text-ink-soft mb-2">
-                  Welke gerechten of ingrediënten lust je niet? We laten deze links liggen bij het
-                  kiezen van recepten.
-                </p>
-                <TagListInput
-                  value={state.dislikedFoods}
-                  onChange={(dislikedFoods) => applyUpdate((s) => ({ ...s, dislikedFoods }), "immediate")}
-                  placeholder="Bijv. paddenstoelen, spruitjes"
-                />
-              </div>
-            )}
-            <p className="text-sm font-medium text-ink mb-1 mt-4">Wereldkeuken (optioneel)</p>
-            <p className="text-xs text-ink-soft mb-2">
-              Standaard houden we internationale keukens buiten je weekplan. Zet aan wat je wilt zien
-              in tips en Deze week — zoek gerust op land of keuken.
-            </p>
-            <CuisinePreferencePicker
-              selected={state.nutritionPreferences}
-              onToggle={(cuisine) =>
+            <OptionList
+              aria-labelledby="buddy-frequency-title"
+              aria-describedby="buddy-frequency-hint"
+              framed={false}
+              options={BUDDY_FREQUENCY_DISPLAY}
+              // Nothing stored yet = the default; shown as chosen, not written.
+              value={state.buddyMessageFrequency || DEFAULT_BUDDY_FREQUENCY}
+              onChange={(buddyMessageFrequency) =>
+                applyUpdate((s) => ({ ...s, buddyMessageFrequency }), "immediate")
+              }
+            />
+          </Card>
+        </>
+      )}
+
+      {is("cyclus") && (
+        <>
+          <Card id="cyclus" className="flex scroll-mt-4 flex-col gap-4">
+            <CardTitle as="h2">Je cyclus</CardTitle>
+            {/* Switch and its fields in one wrapper: a closed Collapse would
+                still take a gap in the card's flex column. */}
+            <div>
+              <SwitchRow
+                title="Ik heb momenteel een menstruatiecyclus"
+                description="Zet uit als je op dit moment niet menstrueert, bijvoorbeeld na de menopauze."
+                checked={state.hasCycle}
+                onChange={(hasCycle) => applyUpdate((s) => ({ ...s, hasCycle }), "immediate")}
+                className="py-0"
+              />
+              <Collapse open={state.hasCycle}>
+                <div className="flex flex-col gap-4 pt-4">
+                  <div>
+                    <Label htmlFor="lastPeriodStart">Wanneer begon je laatste menstruatie?</Label>
+                    <Input
+                      id="lastPeriodStart"
+                      type="date"
+                      aria-describedby="lastPeriodStart-hint"
+                      value={state.lastPeriodStart}
+                      max={todayISO()}
+                      onChange={(e) => applyUpdate((s) => ({ ...s, lastPeriodStart: e.target.value }), "debounced")}
+                      onBlur={onBlurFlush}
+                    />
+                    <p id="lastPeriodStart-hint" className="mt-1.5 text-sm text-ink-soft">
+                      Je cyclusdag past zich ook vanzelf aan zodra je een nieuwe menstruatie noteert in de
+                      kalender bij Cyclus.
+                    </p>
+                    <Link href={FEATURES.cyclus.href} className={textActionClass()}>
+                      Naar de kalender
+                      <ChevronRight {...ICON.sm} aria-hidden />
+                    </Link>
+                  </div>
+                  <div>
+                    <Label htmlFor="periodLength">Hoeveel dagen duurt je menstruatie gemiddeld?</Label>
+                    <Input
+                      id="periodLength"
+                      type="number"
+                      inputMode="numeric"
+                      min={2}
+                      max={14}
+                      placeholder="Bijv. 5"
+                      aria-describedby="periodLength-hint"
+                      value={state.averagePeriodLength}
+                      onChange={(e) =>
+                        applyUpdate((s) => ({ ...s, averagePeriodLength: e.target.value }), "debounced")
+                      }
+                      onBlur={onBlurFlush}
+                    />
+                    <p id="periodLength-hint" className="mt-1.5 text-sm text-ink-soft">
+                      Alleen de bloedingsdagen, niet je hele cyclus. Meestal ergens tussen 3 en 7.
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="cycleLength">Hoe lang duurt je cyclus gemiddeld?</Label>
+                    <Input
+                      id="cycleLength"
+                      type="number"
+                      inputMode="numeric"
+                      min={15}
+                      max={60}
+                      placeholder="Aantal dagen"
+                      aria-describedby="cycleLength-hint"
+                      value={state.averageCycleLength}
+                      onChange={(e) => applyUpdate((s) => ({ ...s, averageCycleLength: e.target.value }), "debounced")}
+                      onBlur={onBlurFlush}
+                    />
+                    <p id="cycleLength-hint" className="mt-1.5 text-sm text-ink-soft">
+                      In dagen, van de eerste dag van je menstruatie tot de dag vóór de volgende.
+                    </p>
+                  </div>
+                  <div>
+                    <p id="regularity-label" className="mb-1 text-sm font-medium text-ink">
+                      Is je cyclus regelmatig?
+                    </p>
+                    <OptionList
+                      aria-labelledby="regularity-label"
+                      framed={false}
+                      options={REGULARITY_OPTIONS}
+                      value={state.regularity || null}
+                      onChange={(regularity) => applyUpdate((s) => ({ ...s, regularity }), "immediate")}
+                    />
+                  </div>
+                  <SwitchRow
+                    title="Bloedverlies bijhouden"
+                    description="Optioneel. Noteer bij menstruatiedagen in je kalender ook hoeveel bloedverlies je hebt (geen, licht, gemiddeld of hevig)."
+                    checked={state.trackFlowIntensity}
+                    onChange={(trackFlowIntensity) => applyUpdate((s) => ({ ...s, trackFlowIntensity }), "immediate")}
+                    className="py-0"
+                  />
+                </div>
+              </Collapse>
+            </div>
+          </Card>
+
+          <Card id="levensfase" className="flex scroll-mt-4 flex-col gap-4">
+            <div>
+              <CardTitle as="h2" id="life-stage-title">
+                Waar sta je nu?
+              </CardTitle>
+              <p id="life-stage-hint" className="mt-1 text-sm text-ink-soft">
+                Dan past de uitleg beter bij jou. Geen diagnose: kies wat het best bij je past.
+              </p>
+            </div>
+            <OptionList
+              aria-labelledby="life-stage-title"
+              aria-describedby="life-stage-hint"
+              framed={false}
+              options={LIFE_STAGE_OPTIONS}
+              value={state.lifeStage || null}
+              onChange={(lifeStage) =>
                 applyUpdate(
-                  (s) => ({ ...s, nutritionPreferences: toggle(s.nutritionPreferences, cuisine) }),
+                  (s) => ({
+                    ...s,
+                    lifeStage,
+                    hasCycle: lifeStage === "menopauze" ? false : s.hasCycle,
+                  }),
                   "immediate",
                 )
               }
             />
-          </>
-        ) : (
-          <p className="text-xs text-ink-soft mt-2">
-            Voeding staat uit — je ziet nergens voedingsadvies. Zet dit weer aan wanneer je wilt.
-          </p>
-        )}
-      </Card>
-      )}
-
-      {is("modules") && (
-      <Card id="mentale-rust" className="scroll-mt-24">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-xl text-ink">Mentale rust</h2>
-          <div className="flex gap-1.5">
-            <Chip
-              selected={state.mentalWellbeingEnabled}
-              onClick={() => applyUpdate((s) => ({ ...s, mentalWellbeingEnabled: true }), "immediate")}
-            >
-              Aan
-            </Chip>
-            <Chip
-              selected={!state.mentalWellbeingEnabled}
-              onClick={() => applyUpdate((s) => ({ ...s, mentalWellbeingEnabled: false }), "immediate")}
-            >
-              Uit
-            </Chip>
-          </div>
-        </div>
-        {state.mentalWellbeingEnabled ? (
-          <>
-            <p className="text-xs text-ink-soft mb-3">
-              Korte meditaties, mindfulness-oefeningen en affirmaties. Kies waar je behoefte aan
-              hebt — je vindt alles terug bij Mentale rust.
-            </p>
-            <Link
-              href="/mentale-rust"
-              className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mb-3 min-h-11 touch-manipulation"
-            >
-              Open mentale rust
-            </Link>
-            <div className="flex flex-wrap gap-2">
-              {MENTAL_WELLBEING_CATEGORY_OPTIONS.map((opt) => (
-                <Chip
-                  key={opt.value}
-                  selected={state.mentalWellbeingCategories.includes(opt.value)}
-                  onClick={() =>
-                    applyUpdate(
-                      (s) => ({
-                        ...s,
-                        mentalWellbeingCategories: toggle(s.mentalWellbeingCategories, opt.value),
-                      }),
-                      "immediate",
-                    )
-                  }
-                >
-                  <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
-                  {opt.label}
-                </Chip>
-              ))}
+            <div>
+              <Label htmlFor="perimenopauseInfo">Ervaar je veranderingen rondom de overgang? (optioneel)</Label>
+              <Textarea
+                id="perimenopauseInfo"
+                rows={3}
+                placeholder="Vertel hier kort over wat je merkt, bijvoorbeeld onregelmatige cycli of opvliegers."
+                value={state.perimenopauseInfo}
+                onChange={(e) => applyUpdate((s) => ({ ...s, perimenopauseInfo: e.target.value }), "debounced")}
+                onBlur={onBlurFlush}
+              />
+              <Link href={FEATURES.overgang.href} className={textActionClass("mt-1")}>
+                {FEATURES.overgang.label}
+                <ChevronRight {...ICON.sm} aria-hidden />
+              </Link>
             </div>
-          </>
-        ) : (
-          <p className="text-xs text-ink-soft mt-2">
-            Mentale rust staat uit — je ziet nergens meditaties, mindfulness of affirmaties. Zet
-            dit weer aan wanneer je wilt.
-          </p>
-        )}
-      </Card>
+          </Card>
+        </>
       )}
-
-      {is("meldingen") && (
-      <Card id="goedemorgen" className="scroll-mt-24">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-xl text-ink">Goedemorgen</h2>
-          <div className="flex gap-1.5">
-            <Chip
-              selected={state.morningReminderEnabled}
-              onClick={() => applyUpdate((s) => ({ ...s, morningReminderEnabled: true }), "immediate")}
-            >
-              Aan
-            </Chip>
-            <Chip
-              selected={!state.morningReminderEnabled}
-              onClick={() => applyUpdate((s) => ({ ...s, morningReminderEnabled: false }), "immediate")}
-            >
-              Uit
-            </Chip>
-          </div>
-        </div>
-        {state.morningReminderEnabled ? (
-          <>
-            <p className="text-xs text-ink-soft mb-3">
-              Een kort bericht in de ochtend, op dagen die jij kiest.
-            </p>
-            <Label htmlFor="morning-time">Tijdstip</Label>
-            <Input
-              id="morning-time"
-              type="time"
-              value={state.morningReminderTime}
-              onChange={(e) => applyUpdate((s) => ({ ...s, morningReminderTime: e.target.value }), "debounced")}
-              onBlur={onBlurFlush}
-              className="max-w-[160px] mb-4"
-            />
-            <p className="text-sm font-medium text-ink mb-2">Dagen</p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {REMINDER_DAY_OPTIONS.map((opt) => (
-                <Chip
-                  key={opt.value}
-                  selected={state.morningReminderDays.includes(opt.value)}
-                  onClick={() =>
-                    applyUpdate(
-                      (s) => ({ ...s, morningReminderDays: toggleDay(s.morningReminderDays, opt.value) }),
-                      "immediate",
-                    )
-                  }
-                >
-                  {opt.label}
-                </Chip>
-              ))}
-            </div>
-            <p className="text-sm font-medium text-ink mb-1">Inhoud</p>
-            <p className="text-xs text-ink-soft mb-2">Kies één of meer — ze komen samen in je ochtendmelding.</p>
-            <div className="flex flex-col gap-2">
-              {MORNING_REMINDER_CONTENT_TYPE_OPTIONS.map((opt) => {
-                const selected = state.morningReminderContentTypes.includes(opt.value)
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() =>
-                      applyUpdate((s) => {
-                        const has = s.morningReminderContentTypes.includes(opt.value)
-                        if (has) {
-                          if (s.morningReminderContentTypes.length <= 1) return s
-                          return {
-                            ...s,
-                            morningReminderContentTypes: s.morningReminderContentTypes.filter(
-                              (v) => v !== opt.value,
-                            ),
-                          }
-                        }
-                        return {
-                          ...s,
-                          morningReminderContentTypes: [...s.morningReminderContentTypes, opt.value],
-                        }
-                      }, "immediate")
-                    }
-                    className={cn(
-                      "text-left rounded-2xl border px-3.5 py-3 touch-manipulation transition-colors",
-                      selected ? "bg-sage-soft border-sage-dark" : "bg-surface border-line hover:border-ink/30",
-                    )}
-                    aria-pressed={selected}
-                  >
-                    <p className="text-sm font-medium text-ink">{opt.label}</p>
-                    <p className="text-xs text-ink-soft mt-0.5">{opt.description}</p>
-                  </button>
-                )
-              })}
-            </div>
-          </>
-        ) : (
-          <p className="text-xs text-ink-soft mt-2">
-            Goedemorgen staat uit — geen ochtendmelding. Zet dit weer aan wanneer je wilt.
-          </p>
-        )}
-      </Card>
-      )}
-
-      {is("modules") && (
-      <Card id="slaap" className="scroll-mt-24">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-xl text-ink">Slaap bijhouden</h2>
-          <div className="flex gap-1.5">
-            <Chip
-              selected={state.sleepTrackingEnabled}
-              onClick={() => applyUpdate((s) => ({ ...s, sleepTrackingEnabled: true }), "immediate")}
-            >
-              Aan
-            </Chip>
-            <Chip
-              selected={!state.sleepTrackingEnabled}
-              onClick={() => applyUpdate((s) => ({ ...s, sleepTrackingEnabled: false }), "immediate")}
-            >
-              Uit
-            </Chip>
-          </div>
-        </div>
-        {state.sleepTrackingEnabled ? (
-          <>
-            <p className="text-xs text-ink-soft mt-2">
-              Je ziet nu op Vandaag een snelle manier om je bedtijd en opsta-tijd in te vullen, en bij
-              Slaap je eigen slaapduur en eenvoudige inzichten.
-            </p>
-            <Link
-              href="/slaap"
-              className="inline-flex items-center gap-0.5 text-sm font-medium text-sage-dark mt-2 min-h-11 touch-manipulation"
-            >
-              Open slaap
-            </Link>
-          </>
-        ) : (
-          <p className="text-xs text-ink-soft mt-2">
-            Slaap bijhouden staat uit — je ziet nergens slaapvragen of slaapkaarten. Zet dit weer
-            aan wanneer je wilt.
-          </p>
-        )}
-      </Card>
-      )}
-
-      {is("modules") && (
-      <Card id="medicatie" className="scroll-mt-24">
-        <h2 className="font-display text-xl text-ink mb-1">Medicatie & hormonen</h2>
-        <p className="text-xs text-ink-soft mb-3">
-          Optioneel. Gebruik je hormonale medicatie of medicatie die invloed kan hebben op je
-          cyclus of hormonen?
-        </p>
-        <div className="flex flex-col gap-2 mb-4">
-          {HORMONAL_MEDICATION_STATUS_OPTIONS.map((opt) => (
-            <Chip
-              key={opt.value}
-              selected={state.hormonalMedicationStatus === opt.value}
-              onClick={() => applyUpdate((s) => ({ ...s, hormonalMedicationStatus: opt.value }), "immediate")}
-              className="w-full justify-start"
-            >
-              {opt.label}
-            </Chip>
-          ))}
-        </div>
-
-        <p className="text-xs text-ink-soft bg-cream-soft rounded-2xl p-3 mb-4">
-          Voer hier alleen het schema in dat je van je arts, apotheker of bijsluiter hebt
-          gekregen. De app geeft geen persoonlijk medisch advies en bepaalt niet welke dosering
-          of behandeling voor jou geschikt is.
-        </p>
-        <Link href="/medicatie" className="inline-block text-sm font-medium text-sage-dark mb-4">
-          {hasMedications ? "Mijn medicatie beheren" : "Medicatie toevoegen"}
-        </Link>
-
-        {hasMedications && (
-          <div className="flex items-center justify-between">
-            <div className="pr-3">
-              <p className="text-sm font-medium text-ink">Tonen op Vandaag</p>
-              <p className="text-xs text-ink-soft mt-1">
-                Laat een kort overzicht van je medicatie van vandaag zien op je Vandaag-pagina.
-              </p>
-            </div>
-            <div className="flex gap-1.5 shrink-0">
-              <Chip
-                selected={state.showMedicationOnDashboard}
-                onClick={() => applyUpdate((s) => ({ ...s, showMedicationOnDashboard: true }), "immediate")}
-              >
-                Aan
-              </Chip>
-              <Chip
-                selected={!state.showMedicationOnDashboard}
-                onClick={() => applyUpdate((s) => ({ ...s, showMedicationOnDashboard: false }), "immediate")}
-              >
-                Uit
-              </Chip>
-            </div>
-          </div>
-        )}
-      </Card>
-      )}
-
-      {is("buddy") && (
-      <Card id="buddy" className="scroll-mt-24">
-        <div className="flex items-center gap-2 mb-1">
-          <BuddyMark size="sm" decorative />
-          <h2 className="font-display text-xl text-ink">Buddy</h2>
-        </div>
-        <p className="text-xs text-ink-soft mb-3">
-          Kies hoe je Buddy klinkt. Niets kiezen = de standaard, warme toon.
-        </p>
-        <div className="flex flex-wrap gap-2 mb-4">
-          <Chip
-            selected={state.buddyStyles.length === 0}
-            onClick={() => applyUpdate((s) => ({ ...s, buddyStyles: [] }), "immediate")}
-          >
-            Geen voorkeur
-          </Chip>
-          {BUDDY_STYLE_OPTIONS.map((opt) => (
-            <Chip
-              key={opt.value}
-              selected={state.buddyStyles.includes(opt.value)}
-              onClick={() =>
-                applyUpdate((s) => ({ ...s, buddyStyles: toggle(s.buddyStyles, opt.value) }), "immediate")
-              }
-            >
-              <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
-              {opt.label}
-            </Chip>
-          ))}
-        </div>
-
-        <p className="text-sm font-medium text-ink mb-2">Hoe vaak?</p>
-        <div className="flex flex-wrap gap-2">
-          {BUDDY_FREQUENCY_OPTIONS.map((opt) => (
-            <Chip
-              key={opt.value}
-              selected={state.buddyMessageFrequency === opt.value}
-              onClick={() => applyUpdate((s) => ({ ...s, buddyMessageFrequency: opt.value }), "immediate")}
-            >
-              {opt.label}
-            </Chip>
-          ))}
-        </div>
-      </Card>
-      )}
-      {is("account") && (
-      <Card>
-        <h2 className="font-display text-xl text-ink mb-1">Notitie voor mezelf</h2>
-        <p className="text-xs text-ink-soft mb-3">
-          Een plekje voor jezelf. Alleen jij ziet dit terug.
-        </p>
-        <Textarea
-          rows={3}
-          placeholder="Schrijf hier iets voor jezelf op — een gedachte, een reminder, een klein succesje."
-          value={state.personalNote}
-          onChange={(e) => applyUpdate((s) => ({ ...s, personalNote: e.target.value }), "debounced")}
-          onBlur={onBlurFlush}
-        />
-      </Card>
-      )}
-
-      {is("cyclus") && (
-      <Card id="cyclus" className="scroll-mt-24">
-        <h2 className="font-display text-xl text-ink mb-3">Cyclusgegevens</h2>
-        <div className="flex flex-col gap-4">
-          <div>
-            <p className="text-sm font-medium text-ink mb-2">Heb je momenteel een menstruatiecyclus?</p>
-            <div className="flex gap-2">
-              <Chip
-                selected={state.hasCycle === true}
-                onClick={() => applyUpdate((s) => ({ ...s, hasCycle: true }), "immediate")}
-              >
-                Ja
-              </Chip>
-              <Chip
-                selected={state.hasCycle === false}
-                onClick={() => applyUpdate((s) => ({ ...s, hasCycle: false }), "immediate")}
-              >
-                Nee
-              </Chip>
-            </div>
-          </div>
-
-          {state.hasCycle && (
-            <>
-              <div>
-                <Label htmlFor="lastPeriodStart">Wanneer begon je laatste menstruatie?</Label>
-                <Input
-                  id="lastPeriodStart"
-                  type="date"
-                  value={state.lastPeriodStart}
-                  max={todayISO()}
-                  onChange={(e) => applyUpdate((s) => ({ ...s, lastPeriodStart: e.target.value }), "debounced")}
-                  onBlur={onBlurFlush}
-                />
-                <p className="text-xs text-ink-soft mt-1.5">
-                  Je cyclusdag past zich ook vanzelf aan zodra je een nieuwe menstruatie
-                  aanvinkt in de kalender bij Mijn cyclus.
-                </p>
-              </div>
-              <div>
-                <Label htmlFor="periodLength">Hoeveel dagen duurt je menstruatie gemiddeld?</Label>
-                <Input
-                  id="periodLength"
-                  type="number"
-                  inputMode="numeric"
-                  min={2}
-                  max={14}
-                  placeholder="Bijv. 5"
-                  value={state.averagePeriodLength}
-                  onChange={(e) =>
-                    applyUpdate((s) => ({ ...s, averagePeriodLength: e.target.value }), "debounced")
-                  }
-                  onBlur={onBlurFlush}
-                />
-                <p className="text-xs text-ink-soft mt-1.5">
-                  Alleen de bloedingsdagen — niet je hele cyclus. Meestal ergens tussen 3 en 7.
-                </p>
-              </div>
-              <div>
-                <Label htmlFor="cycleLength">Gemiddelde cyclusduur (dagen)</Label>
-                <Input
-                  id="cycleLength"
-                  type="number"
-                  inputMode="numeric"
-                  min={15}
-                  max={60}
-                  value={state.averageCycleLength}
-                  onChange={(e) => applyUpdate((s) => ({ ...s, averageCycleLength: e.target.value }), "debounced")}
-                  onBlur={onBlurFlush}
-                />
-                <p className="text-xs text-ink-soft mt-1.5">
-                  Van de eerste dag van je menstruatie tot de dag vóór de volgende.
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-ink mb-2">Regelmaat</p>
-                <div className="flex flex-wrap gap-2">
-                  {REGULARITY_OPTIONS.map((opt) => (
-                    <Chip
-                      key={opt.value}
-                      selected={state.regularity === opt.value}
-                      onClick={() => applyUpdate((s) => ({ ...s, regularity: opt.value }), "immediate")}
-                    >
-                      {opt.label}
-                    </Chip>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-ink">Bloedverlies bijhouden</p>
-                  <div className="flex gap-1.5">
-                    <Chip
-                      selected={state.trackFlowIntensity}
-                      onClick={() => applyUpdate((s) => ({ ...s, trackFlowIntensity: true }), "immediate")}
-                    >
-                      Aan
-                    </Chip>
-                    <Chip
-                      selected={!state.trackFlowIntensity}
-                      onClick={() => applyUpdate((s) => ({ ...s, trackFlowIntensity: false }), "immediate")}
-                    >
-                      Uit
-                    </Chip>
-                  </div>
-                </div>
-                <p className="text-xs text-ink-soft mt-1.5">
-                  Optioneel. Zet dit aan om bij menstruatiedagen in je kalender ook de intensiteit
-                  (geen/licht/gemiddeld/hevig) te kunnen registreren.
-                </p>
-              </div>
-            </>
-          )}
-
-          <div>
-            <p className="text-sm font-medium text-ink mb-2">Levensfase</p>
-            <p className="text-xs text-ink-soft mb-2">
-              Past de app-uitleg aan. Dit is géén diagnose — kies wat het best bij jou past.
-            </p>
-            <div className="flex flex-col gap-2">
-              {LIFE_STAGE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() =>
-                    applyUpdate(
-                      (s) => ({
-                        ...s,
-                        lifeStage: opt.value,
-                        hasCycle: opt.value === "menopauze" ? false : s.hasCycle,
-                      }),
-                      "immediate",
-                    )
-                  }
-                  className={`text-left rounded-2xl border px-3.5 py-3 touch-manipulation transition-colors ${
-                    state.lifeStage === opt.value
-                      ? "bg-sage-soft border-sage-dark"
-                      : "bg-surface border-line hover:border-ink/30"
-                  }`}
-                >
-                  <span className="block text-sm font-medium text-ink">{opt.label}</span>
-                  <span className="block text-xs text-ink-soft mt-0.5">{opt.description}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="perimenopauseInfo">
-              Ervaar je veranderingen rondom de overgang? (optioneel)
-            </Label>
-            <Textarea
-              id="perimenopauseInfo"
-              rows={3}
-              placeholder="Vertel hier kort over wat je merkt, bijvoorbeeld onregelmatige cycli of opvliegers."
-              value={state.perimenopauseInfo}
-              onChange={(e) => applyUpdate((s) => ({ ...s, perimenopauseInfo: e.target.value }), "debounced")}
-              onBlur={onBlurFlush}
-            />
-            <Link
-              href="/cyclus/overgang"
-              className="inline-block text-xs font-medium text-sage-dark mt-2"
-            >
-              Meer lezen over de overgang
-            </Link>
-          </div>
-        </div>
-      </Card>
-      )}
-      </div>
 
       <AutosaveStatusPill status={status} errorMessage={errorMessage} onRetry={handleRetryNow} />
     </div>
+  )
+}
+
+/** "Voorkeuren · 3 gekozen", or just "Voorkeuren" when nothing is chosen yet. */
+function preferencesLabel(count: number) {
+  return count > 0 ? `Voorkeuren · ${count} gekozen` : "Voorkeuren"
+}
+
+/** The way from a module's preferences to the module itself, at the end. */
+function ModuleLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className={textActionClass("self-start")}>
+      {children}
+      <ChevronRight {...ICON.sm} aria-hidden />
+    </Link>
   )
 }

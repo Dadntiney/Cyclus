@@ -1,7 +1,12 @@
+import type { Metadata } from "next"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { listDiaryEntries } from "@/lib/data/diary"
+import { FEATURES } from "@/lib/navigation/features"
+import { Page, PageSections } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
 import { DiaryClient } from "@/components/diary/diary-client"
-import { BackButton } from "@/components/ui/back-button"
+
+export const metadata: Metadata = { title: FEATURES.dagboek.label }
 
 export default async function DagboekPage() {
   const user = await getAuthedUser()
@@ -10,13 +15,11 @@ export default async function DagboekPage() {
   const entries = await listDiaryEntries(user.id)
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
-      <BackButton href="/ontdek" label="Ontdek" />
-      <div>
-        <h1 className="font-display text-3xl lg:text-4xl text-ink">Dagboek</h1>
-        <p className="text-sm text-ink-soft mt-1">Een veilige plek om van je af te schrijven.</p>
-      </div>
-      <DiaryClient entries={entries} />
-    </div>
+    <Page>
+      <PageHeader title={FEATURES.dagboek.label} subtitle="Schrijf van je af. Alleen jij ziet dit." />
+      <PageSections>
+        <DiaryClient entries={entries} />
+      </PageSections>
+    </Page>
   )
 }

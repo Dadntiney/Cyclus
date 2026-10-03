@@ -51,7 +51,7 @@ export function CuisinePreferencePicker({
           </Chip>
         ))}
         {!visible.length && (
-          <p className="text-xs text-ink-soft py-1">Geen keuken gevonden voor “{query.trim()}”.</p>
+          <p className="py-1 text-sm text-ink-soft">Geen keuken gevonden voor “{query.trim()}”.</p>
         )}
       </div>
     </div>
