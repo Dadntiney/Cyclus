@@ -81,6 +81,9 @@ export function HormoneRoadmapNote({
 
   const phaseLink = changingCycle ? FEATURES.overgang : FEATURES.fase
   const phaseLinkLabel = changingCycle ? FEATURES.overgang.label : (FEATURES.fase.linkLabel ?? FEATURES.fase.label)
+  // "Over jouw fase" only when there is a phase today (the roadmap needs
+  // one); without it Jouw fase would only say "Geen cyclusdag".
+  const showPhaseLink = Boolean(roadmap) || changingCycle
 
   return (
     <section aria-labelledby="lichaam-heading">
@@ -166,10 +169,12 @@ export function HormoneRoadmapNote({
       </ul>
 
       <div className="mt-1 flex flex-wrap items-center gap-x-5">
-        <Link href={phaseLink.href} className={textActionClass()}>
-          {phaseLinkLabel}
-          <ChevronRight {...ICON.sm} aria-hidden />
-        </Link>
+        {showPhaseLink && (
+          <Link href={phaseLink.href} className={textActionClass()}>
+            {phaseLinkLabel}
+            <ChevronRight {...ICON.sm} aria-hidden />
+          </Link>
+        )}
         <Link href={`${FEATURES.cyclus.href}#jouw-verhaal`} className={textActionClass()}>
           Jouw verhaal
           <ChevronRight {...ICON.sm} aria-hidden />

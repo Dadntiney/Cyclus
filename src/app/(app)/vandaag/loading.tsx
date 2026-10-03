@@ -10,7 +10,7 @@ export default function Loading() {
   return (
     <Page
       width="wide"
-      className="xl:grid xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] xl:items-start xl:gap-x-12"
+      className="max-w-2xl xl:grid xl:max-w-6xl xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] xl:items-start xl:gap-x-12"
     >
       {/* sr-only is absolutely positioned, so it takes no grid cell on xl. */}
       <span role="status" className="sr-only">

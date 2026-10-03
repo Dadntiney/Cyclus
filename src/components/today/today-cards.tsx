@@ -13,6 +13,7 @@ import type { Recommendation } from "@/lib/recommendations/engine"
 import type { MentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
 import type { MealSlotKey } from "@/lib/client/week-plan-storage"
 import { ICON, iconProps } from "@/lib/ui/icon"
+import { cn } from "@/lib/utils"
 
 /** The generic Mentale rust entry — not a concrete next step for today. */
 const GENERIC_RECOVERY_HREF = "/mentale-rust"
@@ -89,7 +90,9 @@ export function TodayCards({
   const showWeekLink = movementEnabled || nutritionEnabled
   const hasPlan = movementEnabled || showMeals || showGrocery || showMental || showRecoveryRow
 
-  if (!hasPlan) return null
+  // The day voice is said only here (Vandaag hides the roadmap's own why),
+  // so keep the section for it even when nothing in the plan is switched on.
+  if (!hasPlan && !focusLine) return null
 
   return (
     <section aria-labelledby="voor-vandaag-heading">
@@ -103,110 +106,112 @@ export function TodayCards({
         }
       />
       {focusLine && (
-        <div className="-mt-1 mb-3 flex items-start gap-1">
+        <div className={cn("-mt-1 flex items-start gap-1", hasPlan && "mb-3")}>
           <p className="min-w-0 flex-1 text-sm text-ink-soft">{focusLine}</p>
           {focusAction && <span className="-my-2.5 shrink-0">{focusAction}</span>}
         </div>
       )}
 
-      <Card padding="none" className="divide-y divide-line overflow-hidden">
-        {movementEnabled && (
-          <div id="beweging" className="scroll-mt-4">
-            <TodayMovementCard
+      {hasPlan && (
+        <Card padding="none" className="divide-y divide-line overflow-hidden">
+          {movementEnabled && (
+            <div id="beweging" className="scroll-mt-4">
+              <TodayMovementCard
+                userId={userId}
+                date={date}
+                weekStartISO={weekStartISO}
+                suggested={training.workout}
+                reason={training.reason}
+                alternatives={workoutAlternatives}
+                completed={completedWorkout}
+                hideReason={hideWorkoutReason}
+                emphasis="primary"
+                embedded
+              />
+            </div>
+          )}
+
+          {showMeals && (
+            <TodayMealsRows
               userId={userId}
               date={date}
               weekStartISO={weekStartISO}
-              suggested={training.workout}
-              reason={training.reason}
-              alternatives={workoutAlternatives}
-              completed={completedWorkout}
-              hideReason={hideWorkoutReason}
-              emphasis="primary"
-              embedded
+              recipeImageById={recipeImageById}
+              alternativesBySlot={mealAlternativesBySlot}
+              meals={meals.map((m) => ({
+                slot: m.slot,
+                label: m.label,
+                recipe: m.recipe
+                  ? {
+                      id: m.recipe.id,
+                      title: m.recipe.title,
+                      image_url: m.recipe.image_url,
+                      preparation_time: m.recipe.preparation_time,
+                    }
+                  : null,
+              }))}
             />
-          </div>
-        )}
+          )}
 
-        {showMeals && (
-          <TodayMealsRows
-            userId={userId}
-            date={date}
-            weekStartISO={weekStartISO}
-            recipeImageById={recipeImageById}
-            alternativesBySlot={mealAlternativesBySlot}
-            meals={meals.map((m) => ({
-              slot: m.slot,
-              label: m.label,
-              recipe: m.recipe
-                ? {
-                    id: m.recipe.id,
-                    title: m.recipe.title,
-                    image_url: m.recipe.image_url,
-                    preparation_time: m.recipe.preparation_time,
-                  }
-                : null,
-            }))}
-          />
-        )}
-
-        {showGrocery && (
-          <Link href={`${FEATURES.boodschappen.href}?modus=dag`} className={rowLinkClass}>
-            <RowTile>
-              <ShoppingCart {...ICON.sm} />
-            </RowTile>
-            <span className="min-w-0 flex-1 text-base font-medium text-ink">Boodschappen voor vandaag</span>
-            <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
-          </Link>
-        )}
-
-        {showMental && mentalSuggestion && (
-          <Link href={`/mentale-rust/${mentalSuggestion.exercise.id}`} className={rowLinkClass}>
-            <RowTile>
-              <Brain {...ICON.sm} />
-            </RowTile>
-            <span className="min-w-0 flex-1">
-              <span className="block type-eyebrow text-sage-dark">Voor je hoofd</span>
-              <span className="block text-base font-medium text-ink">
-                {mentalSuggestion.exercise.title}
-                <span className="font-normal text-ink-soft"> · {mentalSuggestion.exercise.durationMinutes} min</span>
-              </span>
-              <span className="block text-sm text-ink-soft">{mentalSuggestion.text}</span>
-            </span>
-            <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
-          </Link>
-        )}
-
-        {showRecoveryRow &&
-          (recoveryHref ? (
-            <Link href={recoveryHref} className={rowLinkClass}>
+          {showGrocery && (
+            <Link href={`${FEATURES.boodschappen.href}?modus=dag`} className={rowLinkClass}>
               <RowTile>
-                <Leaf {...ICON.sm} />
+                <ShoppingCart {...ICON.sm} />
+              </RowTile>
+              <span className="min-w-0 flex-1 text-base font-medium text-ink">Boodschappen voor vandaag</span>
+              <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
+            </Link>
+          )}
+
+          {showMental && mentalSuggestion && (
+            <Link href={`/mentale-rust/${mentalSuggestion.exercise.id}`} className={rowLinkClass}>
+              <RowTile>
+                <Brain {...ICON.sm} />
               </RowTile>
               <span className="min-w-0 flex-1">
-                <span className="block type-eyebrow text-sage-dark">Even voor jezelf</span>
+                <span className="block type-eyebrow text-sage-dark">Voor je hoofd</span>
                 <span className="block text-base font-medium text-ink">
-                  {recovery.title}
-                  <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
+                  {mentalSuggestion.exercise.title}
+                  <span className="font-normal text-ink-soft"> · {mentalSuggestion.exercise.durationMinutes} min</span>
                 </span>
+                <span className="block text-sm text-ink-soft">{mentalSuggestion.text}</span>
               </span>
               <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
             </Link>
-          ) : (
-            <div className="flex min-h-14 items-center gap-3 px-4 py-3">
-              <RowTile>
-                <Leaf {...ICON.sm} />
-              </RowTile>
-              <span className="min-w-0 flex-1">
-                <span className="block type-eyebrow text-sage-dark">Even voor jezelf</span>
-                <span className="block text-base font-medium text-ink">
-                  {recovery.title}
-                  <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
+          )}
+
+          {showRecoveryRow &&
+            (recoveryHref ? (
+              <Link href={recoveryHref} className={rowLinkClass}>
+                <RowTile>
+                  <Leaf {...ICON.sm} />
+                </RowTile>
+                <span className="min-w-0 flex-1">
+                  <span className="block type-eyebrow text-sage-dark">Even voor jezelf</span>
+                  <span className="block text-base font-medium text-ink">
+                    {recovery.title}
+                    <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
+                  </span>
                 </span>
-                <span className="block text-sm text-ink-soft">{recovery.description}</span>
-              </span>
-            </div>
-          ))}
-      </Card>
+                <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
+              </Link>
+            ) : (
+              <div className="flex min-h-14 items-center gap-3 px-4 py-3">
+                <RowTile>
+                  <Leaf {...ICON.sm} />
+                </RowTile>
+                <span className="min-w-0 flex-1">
+                  <span className="block type-eyebrow text-sage-dark">Even voor jezelf</span>
+                  <span className="block text-base font-medium text-ink">
+                    {recovery.title}
+                    <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
+                  </span>
+                  <span className="block text-sm text-ink-soft">{recovery.description}</span>
+                </span>
+              </div>
+            ))}
+        </Card>
+      )}
     </section>
   )
 }

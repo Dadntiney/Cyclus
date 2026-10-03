@@ -37,8 +37,9 @@ const WATER_QUOTE = /\b(water|drink\w*|vocht\w*)\b/i
  * 8. Profiel aanvullen
  * 9. Even afronden
  *
- * xl: greeting, phase and check-in on the left; the rest on the right (no
- * sticky columns, besluit 28).
+ * Below xl one readable column (content width); on xl greeting, phase and
+ * check-in on the left and the rest on the right (no sticky columns,
+ * besluit 28).
  */
 export default async function VandaagPage() {
   const user = await getAuthedUser()
@@ -191,7 +192,7 @@ export default async function VandaagPage() {
   return (
     <Page
       width="wide"
-      className="xl:grid xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] xl:items-start xl:gap-x-12"
+      className="max-w-2xl xl:grid xl:max-w-6xl xl:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] xl:items-start xl:gap-x-12"
     >
       <div>
         <PageHeader
