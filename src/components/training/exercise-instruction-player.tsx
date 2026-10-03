@@ -144,7 +144,8 @@ export function ExerciseInstructionPlayer({
       )}
     >
       {reduceMotion && endPose && endPose !== instruction.poses[0] ? (
-        <div className="grid grid-cols-2 gap-2 px-3 pt-3">
+        // Decorative like the moving figure: the cue list below carries the instructions.
+        <div aria-hidden className="grid grid-cols-2 gap-2 px-3 pt-3">
           {[
             { label: "Start", pose: instruction.poses[0] },
             { label: "Eind", pose: endPose },

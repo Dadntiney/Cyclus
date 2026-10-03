@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
-import type { ReactNode } from "react"
+import { useEffect, useRef, type ReactNode } from "react"
 import { ChevronRight, Footprints, Heart, Salad, Sparkles } from "lucide-react"
 import type { SavedMomentKind } from "@/lib/data/moments"
 import { ICON, iconProps } from "@/lib/ui/icon"
@@ -52,6 +52,13 @@ const GROUP_TITLES: Record<GroupKey, string> = {
   recepten: "Recepten",
   beweging: "Beweging",
   momenten: "Momenten",
+}
+
+/** What "Alle n" counts, for screen readers ("Alle 7 oefeningen"). */
+const GROUP_ITEMS: Record<GroupKey, string> = {
+  recepten: "recepten",
+  beweging: "oefeningen",
+  momenten: "momenten",
 }
 
 // Same row rhythm as ListRow: 56px minimum, the focus outline inside the row.
@@ -201,6 +208,18 @@ export function FavoritesView({
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const filter = parseFavoritesFilter(searchParams.get("soort"))
+  const filterRowRef = useRef<HTMLDivElement>(null)
+  // "Alle n" disappears once its filter is on: focus moves to that filter's
+  // chip instead of being lost.
+  const focusFilterRef = useRef(false)
+
+  useEffect(() => {
+    if (!focusFilterRef.current) return
+    focusFilterRef.current = false
+    filterRowRef.current
+      ?.querySelector<HTMLElement>('[role="radio"][aria-checked="true"]')
+      ?.focus({ preventScroll: true })
+  }, [filter])
 
   function select(next: FavoritesFilter) {
     if (next === filter) return
@@ -208,6 +227,7 @@ export function FavoritesView({
   }
 
   function showGroup(group: GroupKey) {
+    focusFilterRef.current = true
     select(group)
     // "Alle n" sits lower on the page: start the full list at the top.
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -244,7 +264,10 @@ export function FavoritesView({
               title={GROUP_TITLES[group]}
               action={
                 counts[group] > ALL_VIEW_LIMIT ? (
-                  <SectionAction onClick={() => showGroup(group)}>Alle {counts[group]}</SectionAction>
+                  <SectionAction onClick={() => showGroup(group)}>
+                    Alle {counts[group]}
+                    <span className="sr-only"> {GROUP_ITEMS[group]}</span>
+                  </SectionAction>
                 ) : undefined
               }
             />
@@ -261,14 +284,16 @@ export function FavoritesView({
 
   return (
     <div className="flex flex-col gap-6">
-      <ChipRadioGroup
-        aria-label="Soort favorieten"
-        options={FAVORITES_FILTERS}
-        value={filter}
-        onChange={select}
-        className="scroller-bleed flex-nowrap"
-        chipClassName="shrink-0 whitespace-nowrap"
-      />
+      <div ref={filterRowRef}>
+        <ChipRadioGroup
+          aria-label="Soort favorieten"
+          options={FAVORITES_FILTERS}
+          value={filter}
+          onChange={select}
+          className="scroller-bleed flex-nowrap"
+          chipClassName="shrink-0 whitespace-nowrap"
+        />
+      </div>
       {content}
     </div>
   )
