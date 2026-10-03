@@ -7,7 +7,8 @@ import { FavoriteHeartIcon, useFavoriteToggle } from "@/components/moments/use-f
 /**
  * Save an exercise — the same "bewaren" gesture as recipes and moments:
  * a 44px IconButton (aria-pressed), a light haptic and the app-wide toast
- * "Bewaard in Favorieten · Bekijk".
+ * "Bewaard in Favorieten". Inside a running (immersive) session the toast
+ * has no "Bekijk": that would leave the training and lose her progress.
  */
 export function ExerciseFavoriteButton({
   exerciseId,

@@ -176,59 +176,61 @@ export function WorkoutSession({
       <>
         <PageHeader eyebrow={eyebrow} title={title} subtitle={workoutMeta(workout.duration, total)} />
 
-        <Card className="flex flex-col gap-4">
-          {workout.description && <p className="text-base text-ink">{workout.description}</p>}
-          {total > 0 && (
-            <div className="flex flex-col gap-3">
-              <CardTitle as="h2">Wat ga je doen?</CardTitle>
-              <ol className="flex flex-col gap-4">
-                {exercises.map((ex, i) => {
-                  const selfHosted = hasSelfHostedMedia(ex)
-                  const instruction = selfHosted ? null : lookupExerciseInstruction(ex.name)
-                  const expanded = previewId === ex.id
-                  const meta = exerciseMeta(workout.type, ex)
-                  return (
-                    <li key={ex.id} className="flex items-start gap-3">
-                      <span
-                        aria-hidden
-                        className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sage-soft text-xs font-semibold text-sage-dark"
-                      >
-                        {i + 1}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-base font-medium text-ink">{ex.name}</p>
-                        {meta && <p className="text-sm text-ink-soft">{meta}</p>}
-                        {(selfHosted || instruction) && (
-                          <Disclosure
-                            label="Bekijk uitvoering"
-                            openLabel="Verberg uitvoering"
-                            open={expanded}
-                            onOpenChange={(open) => setPreviewId(open ? ex.id : null)}
-                            contentClassName="pt-2"
-                          >
-                            {/* Only the open preview is mounted: the figure animates every frame. */}
-                            {expanded &&
-                              (selfHosted ? (
-                                <ExerciseDemo
-                                  name={ex.name}
-                                  muscleGroup={ex.muscle_group}
-                                  videoUrl={ex.demo_video_url}
-                                  imageUrl={ex.demo_image_url}
-                                  className="aspect-video w-full rounded-inset"
-                                />
-                              ) : instruction ? (
-                                <ExerciseInstructionPlayer instruction={instruction} compact />
-                              ) : null)}
-                          </Disclosure>
-                        )}
-                      </div>
-                    </li>
-                  )
-                })}
-              </ol>
-            </div>
-          )}
-        </Card>
+        {(workout.description || total > 0) && (
+          <Card className="flex flex-col gap-4">
+            {workout.description && <p className="text-base text-ink">{workout.description}</p>}
+            {total > 0 && (
+              <div className="flex flex-col gap-3">
+                <CardTitle as="h2">Wat ga je doen?</CardTitle>
+                <ol className="flex flex-col gap-4">
+                  {exercises.map((ex, i) => {
+                    const selfHosted = hasSelfHostedMedia(ex)
+                    const instruction = selfHosted ? null : lookupExerciseInstruction(ex.name)
+                    const expanded = previewId === ex.id
+                    const meta = exerciseMeta(workout.type, ex)
+                    return (
+                      <li key={ex.id} className="flex items-start gap-3">
+                        <span
+                          aria-hidden
+                          className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sage-soft text-xs font-semibold text-sage-dark"
+                        >
+                          {i + 1}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-base font-medium text-ink">{ex.name}</p>
+                          {meta && <p className="text-sm text-ink-soft">{meta}</p>}
+                          {(selfHosted || instruction) && (
+                            <Disclosure
+                              label="Bekijk uitvoering"
+                              openLabel="Verberg uitvoering"
+                              open={expanded}
+                              onOpenChange={(open) => setPreviewId(open ? ex.id : null)}
+                              contentClassName="pt-2"
+                            >
+                              {/* Only the open preview is mounted: the figure animates every frame. */}
+                              {expanded &&
+                                (selfHosted ? (
+                                  <ExerciseDemo
+                                    name={ex.name}
+                                    muscleGroup={ex.muscle_group}
+                                    videoUrl={ex.demo_video_url}
+                                    imageUrl={ex.demo_image_url}
+                                    className="aspect-video w-full rounded-inset"
+                                  />
+                                ) : instruction ? (
+                                  <ExerciseInstructionPlayer instruction={instruction} compact />
+                                ) : null)}
+                            </Disclosure>
+                          )}
+                        </div>
+                      </li>
+                    )
+                  })}
+                </ol>
+              </div>
+            )}
+          </Card>
+        )}
 
         <StickyActionBar className="mt-6">
           <Button className="w-full" onClick={() => setStarted(true)} disabled={total === 0}>

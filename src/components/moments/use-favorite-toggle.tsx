@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { Heart } from "lucide-react"
 import { toast } from "@/components/ui/toast"
 import { runAction } from "@/lib/client/run-action"
+import { useImmersiveActive } from "@/lib/hooks/use-immersive"
 import { triggerHaptic } from "@/lib/platform"
 import { ICON } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
@@ -34,6 +35,9 @@ export function useFavoriteToggle({ initialFavorited, toggle, viewHref, onFavori
   const [changes, setChanges] = useState(0)
   const [isPending, startTransition] = useTransition()
   const pathname = usePathname()
+  // In a running training (immersive) "Bekijk" would leave the session
+  // without the stop sheet and lose her progress, so it is left out there.
+  const immersive = useImmersiveActive()
   // Requests run one after another (a quick "Ongedaan maken" must not race
   // the toggle it undoes), and only the latest answer sets the heart.
   const queueRef = useRef<Promise<unknown>>(Promise.resolve())
@@ -52,8 +56,8 @@ export function useFavoriteToggle({ initialFavorited, toggle, viewHref, onFavori
       next
         ? {
             title: "Bewaard in Favorieten",
-            // No "Bekijk" while she is already looking at Favorieten.
-            action: pathname === "/favorieten" ? undefined : { label: "Bekijk", href: viewHref },
+            // No "Bekijk" while she is already looking at Favorieten, or mid-session.
+            action: pathname === "/favorieten" || immersive ? undefined : { label: "Bekijk", href: viewHref },
           }
         : { title: "Verwijderd uit Favorieten", action: { label: "Ongedaan maken", onClick: () => run(true) } },
     )
