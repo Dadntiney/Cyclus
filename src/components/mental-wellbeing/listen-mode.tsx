@@ -104,6 +104,10 @@ export function ListenMode({
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
   const finishedRef = useRef(false)
+  // Set once she stops or leaves. Browsers fire `end` on the utterance that
+  // cancel() interrupts; without this, the next line would still be spoken
+  // 1.4s later by a ListenMode that is already gone.
+  const stoppedRef = useRef(false)
 
   useEffect(() => {
     if (hasAudioFile || !speechSupported) return
@@ -117,7 +121,10 @@ export function ListenMode({
 
   // Stop speaking immediately if she navigates away or switches to Lezen.
   useEffect(() => {
+    // (Re)set on mount: Strict Mode runs this cleanup once before the real mount.
+    stoppedRef.current = false
     return () => {
+      stoppedRef.current = true
       if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
       if (!hasAudioFile && typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel()
@@ -132,6 +139,7 @@ export function ListenMode({
   }
 
   function speakFrom(index: number) {
+    if (stoppedRef.current) return
     if (index >= segments.length) {
       finish()
       return
@@ -143,6 +151,7 @@ export function ListenMode({
     const dutchVoice = pickDutchVoice(voicesRef.current)
     if (dutchVoice) utterance.voice = dutchVoice
     utterance.onend = () => {
+      if (stoppedRef.current) return
       pauseTimerRef.current = setTimeout(() => speakFrom(index + 1), INTER_SEGMENT_PAUSE_MS)
     }
     window.speechSynthesis.speak(utterance)
@@ -165,6 +174,7 @@ export function ListenMode({
   }
 
   function handleStopSpeech() {
+    stoppedRef.current = true
     if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
     window.speechSynthesis.cancel()
     onStop()
