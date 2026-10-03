@@ -1,9 +1,8 @@
 "use client"
 
 import { useEffect, useState, useTransition } from "react"
-import { Bell, BellOff } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { SwitchRow } from "@/components/profile/setting-rows"
 import { subscribeToPush, unsubscribeFromPush } from "@/lib/actions/push"
 
 type Status = "checking" | "unsupported" | "ios-needs-install" | "denied" | "subscribed" | "not-subscribed"
@@ -126,46 +125,44 @@ export function PushNotificationsCard() {
 
   if (status === "checking" || status === "unsupported") return null
 
+  const title = "Meldingen op dit apparaat"
+
   return (
-    <Card>
-      <p className="text-sm font-medium text-ink inline-flex items-center gap-1.5 mb-1">
-        <Bell className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-        Pushmeldingen
-      </p>
-
-      {status === "ios-needs-install" && (
-        <p className="text-xs text-ink-soft">
-          Zet GoFiev eerst toe aan je beginscherm (deel-icoon → &ldquo;Zet op beginscherm&rdquo;) om
-          pushmeldingen te kunnen ontvangen — dat is een beperking van iOS, niet van GoFiev.
-        </p>
-      )}
-
-      {status === "denied" && (
-        <p className="text-xs text-ink-soft">
-          Je hebt meldingen voor GoFiev geblokkeerd in je browser. Zet dit aan via de
-          site-instellingen van je browser om weer meldingen te ontvangen.
-        </p>
-      )}
-
-      {(status === "subscribed" || status === "not-subscribed") && (
-        <>
-          <p className="text-xs text-ink-soft mb-3">
-            Ontvang je ingestelde herinneringen ook als GoFiev niet open staat — helemaal
-            optioneel, en je bepaalt zelf welke herinneringen je hieronder aan hebt staan.
+    <Card id="pushmeldingen" padding="none" className="scroll-mt-4 px-4">
+      {status === "subscribed" || status === "not-subscribed" ? (
+        <SwitchRow
+          title={title}
+          description={
+            isPending
+              ? "Even bezig…"
+              : "Je herinneringen ook als GoFiev niet open staat. Jij bepaalt welke aan staan."
+          }
+          checked={status === "subscribed"}
+          onChange={(on) => (on ? handleEnable() : handleDisable())}
+          disabled={isPending}
+        />
+      ) : (
+        <div className="flex min-h-14 flex-col justify-center gap-0.5 py-3">
+          <p className="text-base font-medium text-ink">{title}</p>
+          <p className="text-sm text-ink-soft">
+            {status === "ios-needs-install" ? (
+              <>
+                Zet GoFiev eerst op je beginscherm (deel-icoon → &ldquo;Zet op beginscherm&rdquo;) om
+                pushmeldingen te kunnen ontvangen. Dat is een beperking van iOS, niet van GoFiev.
+              </>
+            ) : (
+              <>
+                Je hebt meldingen voor GoFiev geblokkeerd in je browser. Zet ze aan via de
+                site-instellingen van je browser om weer meldingen te ontvangen.
+              </>
+            )}
           </p>
-          {error && <p className="text-xs text-danger mb-3">{error}</p>}
-          {status === "subscribed" ? (
-            <Button variant="secondary" size="sm" onClick={handleDisable} disabled={isPending}>
-              <BellOff className="h-4 w-4" strokeWidth={1.75} />
-              {isPending ? "Bezig..." : "Pushmeldingen uitzetten op dit apparaat"}
-            </Button>
-          ) : (
-            <Button size="sm" onClick={handleEnable} disabled={isPending}>
-              <Bell className="h-4 w-4" strokeWidth={1.75} />
-              {isPending ? "Bezig..." : "Pushmeldingen aanzetten op dit apparaat"}
-            </Button>
-          )}
-        </>
+        </div>
+      )}
+      {error && (
+        <p role="alert" className="pb-3 text-sm text-danger">
+          {error}
+        </p>
       )}
     </Card>
   )
