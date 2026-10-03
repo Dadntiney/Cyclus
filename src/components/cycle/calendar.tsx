@@ -1,6 +1,6 @@
 "use client"
 
-import { useId, useMemo, useState, useTransition } from "react"
+import { useId, useMemo, useRef, useState, useTransition } from "react"
 import {
   addDays,
   addMonths,
@@ -106,6 +106,7 @@ export function Calendar({
 
   const monthLabelId = useId()
   const flowLabelId = useId()
+  const monthLabelRef = useRef<HTMLParagraphElement>(null)
 
   const days = useMemo(() => {
     const start = startOfMonth(month)
@@ -232,7 +233,16 @@ export function Calendar({
         }
         action={
           isCurrentMonth ? undefined : (
-            <Button variant="tonal" size="sm" onClick={() => setMonth(startOfMonth(todayDate()))}>
+            <Button
+              variant="tonal"
+              size="sm"
+              onClick={() => {
+                setMonth(startOfMonth(todayDate()))
+                // The button disappears in the current month: keep focus
+                // on the calendar instead of dropping it to the page.
+                monthLabelRef.current?.focus()
+              }}
+            >
               Vandaag
             </Button>
           )
@@ -245,7 +255,14 @@ export function Calendar({
             icon={ChevronLeft}
             onClick={() => setMonth((m) => subMonths(m, 1))}
           />
-          <p id={monthLabelId} aria-live="polite" className="type-card-title text-ink capitalize">
+          <p
+            ref={monthLabelRef}
+            id={monthLabelId}
+            tabIndex={-1}
+            data-focus-target=""
+            aria-live="polite"
+            className="type-card-title text-ink capitalize"
+          >
             {format(month, "MMMM yyyy", { locale: nl })}
           </p>
           <IconButton
@@ -290,7 +307,11 @@ export function Calendar({
               <button
                 key={iso}
                 type="button"
-                disabled={future || pendingDate === iso}
+                // While saving, the day stays focusable (aria-disabled, taps
+                // ignored in handleDayClick): the closing sheet hands focus
+                // back to this very button, which a `disabled` one refuses.
+                disabled={future}
+                aria-disabled={pendingDate === iso || undefined}
                 onClick={() => handleDayClick(day)}
                 aria-label={`${format(day, "EEEE d MMMM yyyy", { locale: nl })}${
                   isMenstruation ? ", menstruatie" : ""

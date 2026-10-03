@@ -111,13 +111,15 @@ export function PeriScoreForm({
     const trend = formatPeriScoreTrend(saved.previous, saved.score)
     return (
       <Card as="section" aria-labelledby={`${uid}-saved`}>
-        <p className="type-eyebrow text-sage-dark">Opgeslagen</p>
+        <p aria-hidden className="type-eyebrow text-sage-dark">Opgeslagen</p>
         <h2
           ref={savedHeadingRef}
           id={`${uid}-saved`}
           tabIndex={-1}
+          data-focus-target=""
           className="type-numeral text-ink mt-2"
         >
+          <span className="sr-only">Score opgeslagen: </span>
           {saved.score}/100
         </h2>
         <p className="text-base text-ink font-medium mt-1">{band.label}</p>

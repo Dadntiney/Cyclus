@@ -76,6 +76,7 @@ export function DoctorAppointmentsSection({
   const formTitleRef = useRef<HTMLHeadingElement>(null)
   const addButtonRef = useRef<HTMLButtonElement>(null)
   const returnFocusToAdd = useRef(false)
+  const focusAfterDelete = useRef(false)
 
   const uid = useId()
   const formTitleId = `${uid}-form-title`
@@ -95,6 +96,15 @@ export function DoctorAppointmentsSection({
       addButtonRef.current?.focus()
     }
   }, [open])
+
+  // After a delete the trash button that opened the Dialog is gone (and
+  // disabled while saving), so focus would fall to the page: put it on
+  // the add button, or on the open form's title.
+  useEffect(() => {
+    if (pendingDelete || !focusAfterDelete.current) return
+    focusAfterDelete.current = false
+    ;(addButtonRef.current ?? formTitleRef.current)?.focus()
+  }, [pendingDelete])
 
   function resetForm() {
     setEditingId(null)
@@ -158,12 +168,14 @@ export function DoctorAppointmentsSection({
     setDeleteError(null)
     startTransition(async () => {
       const result = await deleteDoctorAppointment(row.id)
-      setPendingDelete(null)
       if (result.error) {
+        setPendingDelete(null)
         setDeleteError(result.error)
         return
       }
       if (editingId === row.id) closeForm()
+      else focusAfterDelete.current = true
+      setPendingDelete(null)
       toast.show({ title: "Afspraak verwijderd" })
       router.refresh()
     })
@@ -194,7 +206,13 @@ export function DoctorAppointmentsSection({
 
       {open && (
         <Card className="flex flex-col gap-4 mb-3">
-          <h3 ref={formTitleRef} id={formTitleId} tabIndex={-1} className="type-card-title text-ink">
+          <h3
+            ref={formTitleRef}
+            id={formTitleId}
+            tabIndex={-1}
+            data-focus-target=""
+            className="type-card-title text-ink"
+          >
             {editingId ? "Afspraak aanpassen" : "Afspraak toevoegen"}
           </h3>
           <div>
