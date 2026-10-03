@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useRef, useState, useTransition } from "react"
 import { usePathname } from "next/navigation"
 import { Heart } from "lucide-react"
 import { toast } from "@/components/ui/toast"
@@ -34,6 +34,10 @@ export function useFavoriteToggle({ initialFavorited, toggle, viewHref, onFavori
   const [changes, setChanges] = useState(0)
   const [isPending, startTransition] = useTransition()
   const pathname = usePathname()
+  // Requests run one after another (a quick "Ongedaan maken" must not race
+  // the toggle it undoes), and only the latest answer sets the heart.
+  const queueRef = useRef<Promise<unknown>>(Promise.resolve())
+  const latestRef = useRef(0)
 
   function apply(next: boolean) {
     setFavorited(next)
@@ -53,8 +57,13 @@ export function useFavoriteToggle({ initialFavorited, toggle, viewHref, onFavori
           }
         : { title: "Verwijderd uit Favorieten", action: { label: "Ongedaan maken", onClick: () => run(true) } },
     )
+    const id = ++latestRef.current
+    const request = queueRef.current.then(() => runAction(toggle))
+    queueRef.current = request.catch(() => undefined)
     startTransition(async () => {
-      const result = await runAction(toggle)
+      // runAction turns failures into { error }; only a Next.js redirect still throws, as before.
+      const result = await request
+      if (id !== latestRef.current) return
       if (typeof result?.favorited === "boolean") {
         apply(result.favorited)
         return
