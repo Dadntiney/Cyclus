@@ -28,7 +28,14 @@ export function LegalContents({ sections }: { sections: readonly LegalSectionRef
     if (!target) return
     e.preventDefault()
     target.focus({ preventScroll: true })
-    target.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" })
+    // Scroll by hand instead of scrollIntoView: the root's scroll-padding
+    // keeps room for the mobile app bar, which these pages (outside the
+    // app shell) do not have. Only the heading's own scroll-mt-4 counts.
+    const margin = Number.parseFloat(getComputedStyle(target).scrollMarginTop) || 0
+    window.scrollTo({
+      top: target.getBoundingClientRect().top + window.scrollY - margin,
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    })
   }
 
   return (
