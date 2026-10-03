@@ -177,18 +177,21 @@ export default async function CyclusdagPage() {
   )
   const savedTexts = await getSavedMomentTexts(user.id)
 
-  // Eyebrow: soft states name what may be happening; otherwise the day,
-  // marked as an estimate unless her period is running (then it's her day).
+  // Eyebrow (ontwerpvisie §4.4: "Jouw fase · dag 11 · schatting"): the
+  // page name first, so the phase h1 reads as "Jouw fase". Soft states name
+  // what may be happening; otherwise the day, marked as an estimate unless
+  // her period is running (then it's her own day count).
   const softHint = presented.menstruationSoftHint
   const periodRunning = cycleProfile.active_period_start != null
-  const eyebrow =
+  const eyebrowDetail =
     softHint === "predicted"
-      ? "Menstruatie kan komen"
+      ? "menstruatie kan komen"
       : softHint === "ended"
-        ? "Menstruatie gestopt"
+        ? "menstruatie gestopt"
         : periodRunning
-          ? `Cyclusdag ${view.cycleDay}`
-          : `Cyclusdag ${view.cycleDay} · schatting`
+          ? `dag ${view.cycleDay}`
+          : `dag ${view.cycleDay} · schatting`
+  const eyebrow = `${FEATURES.fase.label} · ${eyebrowDetail}`
 
   return (
     <Page>

@@ -39,10 +39,11 @@ function splitIntro(intro: string): { lead: string; rest: string } {
 }
 
 /**
- * De overgang (ontwerpvisie §7.8): a reading page. Only the eyebrow
- * carries the info tint; what she shared sits right under the header in a
- * subtle card (besluit 21); when to see a care provider is its own section
- * instead of hiding in "meer weten".
+ * De overgang (ontwerpvisie §7.8): a reading page with the plain sage
+ * eyebrow "Uitleg" (§4.4: sage, not info — status colours are for errors
+ * only); what she shared sits right under the header in a subtle card
+ * (besluit 21); when to see a care provider is its own section instead of
+ * hiding in "meer weten".
  */
 export default async function OvergangPage() {
   const supabase = await createClient()
@@ -68,7 +69,7 @@ export default async function OvergangPage() {
   return (
     <Page>
       <PageHeader
-        eyebrow={<span className="text-info">Cyclus & ouder worden</span>}
+        eyebrow="Uitleg"
         title={FEATURES.overgang.label}
         subtitle={intro.lead}
       />
@@ -121,7 +122,7 @@ export default async function OvergangPage() {
 
         <aside aria-label="Even weten" className="max-w-prose flex items-start gap-2">
           <div className="min-w-0 flex-1">
-            <p className="type-eyebrow text-info mb-1">Even weten</p>
+            <p className="type-eyebrow text-sage-dark mb-1">Even weten</p>
             <p className="font-display text-lg text-ink">{funFact}</p>
           </div>
           <MomentFavoriteButton
