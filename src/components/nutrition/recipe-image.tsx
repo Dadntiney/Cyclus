@@ -5,6 +5,12 @@ import { cn } from "@/lib/utils"
 interface RecipeImageProps {
   title: string
   imageUrl: string | null
+  /**
+   * Alternative text. Defaults to the title; pass "" where the title sits
+   * right next to the photo (recipe card, recipe hero), so a screen reader
+   * doesn't hear it twice.
+   */
+  alt?: string
   className?: string
   iconClassName?: string
   sizes?: string
@@ -15,6 +21,7 @@ interface RecipeImageProps {
 export function RecipeImage({
   title,
   imageUrl,
+  alt,
   className,
   iconClassName,
   sizes,
@@ -28,7 +35,7 @@ export function RecipeImage({
     <div className={cn("relative overflow-hidden bg-cream-soft", className)}>
       <Image
         src={imageUrl}
-        alt={title}
+        alt={alt ?? title}
         fill
         sizes={sizes ?? "(min-width: 640px) 50vw, 100vw"}
         // Photos come from different sources/photographers; a shared,
