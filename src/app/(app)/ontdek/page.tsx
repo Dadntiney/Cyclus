@@ -1,157 +1,106 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import type { LucideIcon } from "lucide-react"
-import {
-  BookOpen,
-  Brain,
-  CalendarDays,
-  Footprints,
-  Heart,
-  Moon,
-  NotebookPen,
-  Pill,
-  Salad,
-} from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
+import { FEATURES, type Feature } from "@/lib/navigation/features"
+import { ICON } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 import { Page } from "@/components/layout/page"
 import { PageHeader } from "@/components/layout/page-header"
+import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
+import { ListGroup, ListRow } from "@/components/ui/list-group"
 
-export const metadata: Metadata = { title: "Ontdek" }
+export const metadata: Metadata = { title: FEATURES.ontdek.label }
 
-type Tile = {
-  href: string
-  title: string
+type Library = {
+  feature: Feature
   description: string
-  icon: LucideIcon
   off?: boolean
-  wide?: boolean
 }
 
 /**
- * Ontdek: one calm place for every library, so she can find back what she
- * saw yesterday. Modules she switched off stay visible but quiet — the page
- * behind them explains how to switch them on.
+ * Ontdek answers one question: "wat kan ik doen of lezen?" (ontwerpvisie
+ * §7.3). Four libraries in a calm 2×2 (4 in a row on desktop), and one row
+ * to everything she saved. Planning, trackers and her own records live in
+ * Vandaag, Cyclus and Profiel. A library she switched off stays visible
+ * but quiet; the page behind it explains how to switch it on.
  */
 export default async function OntdekPage() {
   const user = await getAuthedUser()
   if (!user) return null
   const profile = await getProfile(user.id)
 
-  const tiles: Tile[] = [
+  const libraries: Library[] = [
     {
-      href: "/deze-week",
-      title: "Deze week",
-      description: "Je weekplan voor eten en bewegen, en de boodschappenlijst.",
-      icon: CalendarDays,
-      wide: true,
-    },
-    {
-      href: "/voeding",
-      title: "Voeding",
-      description: "Recepten die bij je passen.",
-      icon: Salad,
+      feature: FEATURES.voeding,
+      description: "Recepten die bij je passen",
       off: profile?.nutrition_enabled === false,
     },
     {
-      href: "/training",
-      title: "Beweging",
-      description: "Trainingen op jouw tempo.",
-      icon: Footprints,
+      feature: FEATURES.beweging,
+      description: "Trainingen op jouw tempo",
       off: profile?.movement_enabled === false,
     },
     {
-      href: "/mentale-rust",
-      title: "Mentale rust",
-      description: "Korte meditaties en ademhaling.",
-      icon: Brain,
+      feature: FEATURES.mentaleRust,
+      description: "Meditatie en ademhaling",
       off: profile?.mental_wellbeing_enabled !== true,
     },
     {
-      href: "/slaap",
-      title: "Slaap",
-      description: "Je slaap en wat helpt.",
-      icon: Moon,
-      off: profile?.sleep_tracking_enabled !== true,
-    },
-    {
-      href: "/kennis",
-      title: "Kennis",
-      description: "Uitleg over hormonen en de overgang.",
-      icon: BookOpen,
-    },
-    {
-      href: "/dagboek",
-      title: "Dagboek",
-      description: "Schrijf van je af, alleen voor jou.",
-      icon: NotebookPen,
-    },
-    {
-      href: "/favorieten",
-      title: "Favorieten",
-      description: "Wat je hebt bewaard.",
-      icon: Heart,
-    },
-    {
-      href: "/medicatie",
-      title: "Medicatie",
-      description: "Je eigen schema bijhouden.",
-      icon: Pill,
+      feature: FEATURES.kennis,
+      description: "Hormonen en de overgang",
     },
   ]
 
   return (
-    // Pilot of <Page> + <PageHeader> (foundation-shell); the tiles below are
-    // reworked into the 2×2 by the discover stream.
     <Page>
       <PageHeader
-        title="Ontdek"
-        subtitle="Alles wat GoFiev voor je heeft, op één plek. Kies wat je nu fijn lijkt."
+        title={FEATURES.ontdek.label}
+        subtitle="Recepten, beweging, rust en uitleg. Kies wat je nu fijn lijkt."
       />
-      <ul className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        {tiles.map((tile) => (
-          <li key={tile.href} className={cn(tile.wide && "col-span-2 lg:col-span-3")}>
-            <Link
-              href={tile.href}
-              className={cn(
-                "flex h-full gap-3 rounded-[1.25rem] border p-4 touch-manipulation transition-[border-color,transform] duration-150 motion-safe:active:scale-[0.985] hover:border-ink/20",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50",
-                tile.wide ? "items-center bg-sage-soft border-transparent" : "flex-col bg-surface border-line",
-              )}
-            >
-              <span
-                className={cn(
-                  "h-10 w-10 shrink-0 rounded-full flex items-center justify-center",
-                  tile.wide ? "bg-surface" : "bg-sage-soft",
-                  tile.off && "bg-cream-soft",
-                )}
-              >
-                <tile.icon
-                  className={cn("h-5 w-5", tile.off ? "text-ink-soft" : "text-sage-dark")}
-                  strokeWidth={1.75}
-                  aria-hidden
-                />
-              </span>
-              <span className="min-w-0">
-                <span className="flex items-center gap-2">
-                  <span className={cn("font-medium", tile.off ? "text-ink-soft" : "text-ink")}>
-                    {tile.title}
-                  </span>
-                  {tile.off && (
-                    <span className="text-[11px] text-ink-soft bg-cream-soft rounded-full px-2 py-0.5">
-                      staat uit
+      <div className="flex flex-col gap-6">
+        <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {libraries.map(({ feature, description, off }) => {
+            const Icon = feature.icon
+            return (
+              <li key={feature.href}>
+                <Link href={feature.href} className="block h-full rounded-card touch-manipulation">
+                  <Card padding="sm" interactive className="flex h-full flex-col gap-3">
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+                        off ? "bg-cream-soft text-ink-soft" : "bg-sage-soft text-sage-dark",
+                      )}
+                    >
+                      <Icon {...ICON.md} />
                     </span>
-                  )}
-                </span>
-                <span className="block text-xs text-ink-soft mt-0.5 leading-relaxed">
-                  {tile.description}
-                </span>
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+                    <span className="flex flex-col gap-0.5">
+                      <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className={cn("text-base font-medium", off ? "text-ink-soft" : "text-ink")}>
+                          {feature.label}
+                        </span>
+                        {off && <Badge>staat uit</Badge>}
+                      </span>
+                      <span className="text-sm text-ink-soft line-clamp-2">{description}</span>
+                    </span>
+                  </Card>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+
+        <ListGroup>
+          <ListRow
+            href={FEATURES.favorieten.href}
+            icon={FEATURES.favorieten.icon}
+            title={FEATURES.favorieten.label}
+            description="Bewaarde recepten, beweging en momenten"
+          />
+        </ListGroup>
+      </div>
     </Page>
   )
 }

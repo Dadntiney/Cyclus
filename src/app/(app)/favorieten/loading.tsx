@@ -1,5 +1,5 @@
 import { SkeletonPage } from "@/components/ui/skeleton"
 
 export default function Loading() {
-  return <SkeletonPage count={2} back />
+  return <SkeletonPage variant="list" count={5} back />
 }

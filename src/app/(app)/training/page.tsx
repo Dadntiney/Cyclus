@@ -1,15 +1,28 @@
+import type { Metadata } from "next"
 import Link from "next/link"
-import { Settings2, Dumbbell, Heart } from "lucide-react"
+import { Footprints } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getWorkoutLibrary } from "@/lib/data/training"
-import { WorkoutLibrary } from "@/components/training/workout-library"
-import { Card } from "@/components/ui/card"
-import { EmptyState } from "@/components/ui/empty-state"
-import { buttonVariants } from "@/components/ui/button"
-import { BackButton } from "@/components/ui/back-button"
+import { FEATURES } from "@/lib/navigation/features"
 import { TRAINING_PREFERENCE_TO_TYPE } from "@/lib/constants"
+import { Page } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
+import { WorkoutLibrary } from "@/components/training/workout-library"
+import { EmptyState } from "@/components/ui/empty-state"
+import { buttonVariants, textActionClass } from "@/components/ui/button"
 
+export const metadata: Metadata = { title: FEATURES.beweging.label }
+
+const PREFERENCES_HREF = `${FEATURES.gebruik.href}#beweging`
+
+/**
+ * Beweging: the library of trainings (ontwerpvisie §7.5). One header with
+ * the one action (Favorieten, a text action: the heart only means
+ * "bewaren", besluit 12), the type chips with her preferences at the end,
+ * then the trainings. Today's suggestion lives on Vandaag; this page does
+ * not point there.
+ */
 export default async function TrainingPage() {
   const user = await getAuthedUser()
   if (!user) return null
@@ -18,23 +31,19 @@ export default async function TrainingPage() {
 
   if (profile && !profile.movement_enabled) {
     return (
-      <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <BackButton href="/ontdek" label="Ontdek" />
-        <h1 className="font-display text-3xl lg:text-4xl text-ink mb-1">Beweging</h1>
-        <p className="text-sm text-ink-soft mb-6">Jouw weekplanning en trainingsbibliotheek.</p>
-        <Card>
-          <EmptyState
-            icon={<Dumbbell className="h-8 w-8" strokeWidth={1.5} />}
-            title="Beweging staat nu uit"
-            description="Je ziet hierdoor nergens trainingsadvies. Wil je dit toch weer gebruiken?"
-            action={
-              <Link href="/profiel/gebruik#beweging" className={buttonVariants({ variant: "secondary" })}>
-                Zet aan in mijn profiel
-              </Link>
-            }
-          />
-        </Card>
-      </div>
+      <Page>
+        <PageHeader title={FEATURES.beweging.label} subtitle="Trainingen op jouw tempo." />
+        <EmptyState
+          icon={Footprints}
+          title="Beweging staat nu uit"
+          description="Je ziet hierdoor nergens trainingsadvies. Wil je het toch weer gebruiken?"
+          action={
+            <Link href={PREFERENCES_HREF} className={buttonVariants({ variant: "tonal", size: "sm" })}>
+              Aanzetten in {FEATURES.gebruik.label}
+            </Link>
+          }
+        />
+      </Page>
     )
   }
 
@@ -47,55 +56,34 @@ export default async function TrainingPage() {
     : workouts
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6 lg:gap-8">
-      <div>
-        <BackButton href="/ontdek" label="Ontdek" />
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="font-display text-3xl lg:text-4xl text-ink">Beweging</h1>
-            <p className="text-sm text-ink-soft mt-1">
-              Jouw trainingsbibliotheek. Het advies voor vandaag staat op Vandaag.
-            </p>
-          </div>
-          <Link
-            href="/training/favorieten"
-            className="flex items-center gap-1.5 text-sm font-medium text-sage-dark"
-          >
-            <Heart className="h-4 w-4" />
-            Favorieten
+    <Page>
+      <PageHeader
+        title={FEATURES.beweging.label}
+        subtitle={
+          rawPreferences.length
+            ? "Trainingen die passen bij wat jij fijn vindt."
+            : "Trainingen op jouw tempo, voor elke dag."
+        }
+        action={
+          <Link href="/favorieten?soort=beweging" className={textActionClass()}>
+            {FEATURES.favorieten.label}
           </Link>
-        </div>
-      </div>
-
-      <div>
-        <div className="flex items-baseline justify-between mb-3">
-          <h2 className="font-display text-xl text-ink">
-            {rawPreferences.length ? "Trainingen voor jou" : "Alle trainingen"}
-          </h2>
-          <Link
-            href="/profiel/gebruik#beweging"
-            className="inline-flex items-center gap-1 text-xs font-medium text-sage-dark touch-manipulation"
-          >
-            <Settings2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-            Voorkeuren
-          </Link>
-        </div>
-        {rawPreferences.length > 0 && (
-          <p className="text-xs text-ink-soft mb-3">
-            Gefilterd op basis van je gekozen bewegingsvormen ({rawPreferences.join(", ")}).
-          </p>
-        )}
-        {libraryWorkouts.length ? (
-          <WorkoutLibrary workouts={libraryWorkouts} />
-        ) : (
-          <Card>
-            <p className="text-sm text-ink-soft">
-              We hebben nog geen workouts voor de vorm(en) van bewegen die je koos. Pas je
-              voorkeuren aan in je profiel, of laat het ons weten.
-            </p>
-          </Card>
-        )}
-      </div>
-    </div>
+        }
+      />
+      {libraryWorkouts.length ? (
+        <WorkoutLibrary workouts={libraryWorkouts} preferencesHref={PREFERENCES_HREF} />
+      ) : (
+        <EmptyState
+          icon={Footprints}
+          title="Nog geen trainingen voor jouw keuze"
+          description="We hebben nog geen trainingen voor de vormen van bewegen die je koos. Kies er gerust een paar bij."
+          action={
+            <Link href={PREFERENCES_HREF} className={buttonVariants({ variant: "tonal", size: "sm" })}>
+              Voorkeuren aanpassen
+            </Link>
+          }
+        />
+      )}
+    </Page>
   )
 }

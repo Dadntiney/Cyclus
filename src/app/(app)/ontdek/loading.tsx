@@ -1,5 +1,5 @@
 import { SkeletonPage } from "@/components/ui/skeleton"
 
 export default function Loading() {
-  return <SkeletonPage cards={3} />
+  return <SkeletonPage variant="grid" count={4} />
 }
