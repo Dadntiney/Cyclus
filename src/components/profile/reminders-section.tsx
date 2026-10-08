@@ -12,6 +12,7 @@ import { IconButton } from "@/components/ui/icon-button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { SectionHeader } from "@/components/ui/section-header"
 import { ICON } from "@/lib/ui/icon"
+import { focusElementById } from "@/lib/ui/focus"
 import { REMINDER_TYPE_OPTIONS, REMINDER_DAY_OPTIONS } from "@/lib/constants"
 import { createReminder, updateReminder, deleteReminder, toggleReminder } from "@/lib/actions/reminders"
 import type { ReminderInput } from "@/lib/validations/reminder"
@@ -280,6 +281,9 @@ export function RemindersSection({
   function handleDeleteFromForm(id: string) {
     cancelForm()
     handleDelete(id)
+    // The form (and the button she pressed) is gone: land on the section
+    // heading instead of the page.
+    requestAnimationFrame(() => focusElementById("herinneringen"))
   }
 
   function handleToggle(reminder: Reminder) {

@@ -398,6 +398,9 @@ Bekijk".
   voor een eigen overlay.
 - `usePrefersReducedMotion()` (`@/lib/hooks/use-prefers-reduced-motion`) voor
   beweging die vanuit JavaScript loopt; CSS-animaties gebruiken `motion-safe:`.
+- `focusElementById(id)` (`@/lib/ui/focus`) als de knop die ze gebruikte
+  verdwijnt (verwijderde rij, weggeklikte banner, gesloten formulier): de focus
+  gaat naar de volgende rij of de sectiekop, nooit terug naar het document.
 - `useRovingRadio({ count, selectedIndex, onSelect, orientation, isDisabled })`
   → `getItemProps(i)` op elk `role="radio"`-element binnen een `role="radiogroup"`.
 

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card"
 import { IconButton } from "@/components/ui/icon-button"
 import { textActionClass } from "@/components/ui/button"
 import { FEATURES } from "@/lib/navigation/features"
+import { focusElementById } from "@/lib/ui/focus"
 
 const STORAGE_KEY = "gofiev:cyclus-levensfase-verborgen"
 
@@ -67,12 +68,7 @@ export function LifeStageBanner({
     hide()
     // The button disappears with the banner: hand focus to what follows,
     // instead of letting it fall back to the document.
-    const next = focusAfterDismissId ? document.getElementById(focusAfterDismissId) : null
-    if (next) {
-      if (!next.hasAttribute("tabindex")) next.setAttribute("tabindex", "-1")
-      next.setAttribute("data-focus-target", "")
-      next.focus()
-    }
+    if (focusAfterDismissId) focusElementById(focusAfterDismissId)
   }
 
   return (

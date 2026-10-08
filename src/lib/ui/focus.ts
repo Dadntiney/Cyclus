@@ -67,3 +67,22 @@ export function prefersReducedMotion(): boolean {
     window.matchMedia("(prefers-reduced-motion: reduce)").matches
   )
 }
+
+/**
+ * Hand focus to a heading or other element after the control she used
+ * disappears (a removed row, a dismissed banner), instead of letting it
+ * fall back to the document. Non-focusable targets get `tabindex="-1"`
+ * and the quiet focus style of `[data-focus-target]`. Returns whether an
+ * element was found.
+ */
+export function focusElementById(id: string): boolean {
+  const el = typeof document === "undefined" ? null : document.getElementById(id)
+  if (!el) return false
+  if (el.tabIndex < 0 && !el.hasAttribute("tabindex")) {
+    el.setAttribute("tabindex", "-1")
+    el.setAttribute("data-focus-target", "")
+  }
+  // Scrolls only when the target is out of view.
+  el.focus()
+  return true
+}
