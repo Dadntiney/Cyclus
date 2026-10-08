@@ -1,6 +1,6 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
-import { CalendarClock, ChevronRight, Cookie, Droplets, Footprints, Heart, Leaf, Lightbulb, Salad } from "lucide-react"
+import { CalendarClock, ChevronRight, Cookie, Droplets, Footprints, Leaf, Lightbulb, Salad, Sparkles } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { Anticipation } from "@/lib/cycle/anticipation"
 import type { PhaseHydrationTip, PhaseSnackTip } from "@/lib/cycle/phase-content"
@@ -18,7 +18,9 @@ const KIND_ICON: Record<RoadmapSupportKind, LucideIcon> = {
   voeding: Salad,
   rust: Leaf,
   tip: Lightbulb,
-  helped: Heart,
+  // "Wat bij jou werkt": the same icon as in Jouw verhaal on Cyclus. Not a
+  // heart, which in GoFiev only means "bewaard".
+  helped: Sparkles,
 }
 
 /** At most two supports on Vandaag (ontwerpvisie §7.1). */

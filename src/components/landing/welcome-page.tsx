@@ -37,7 +37,7 @@ export function WelcomePage() {
         <div>
           {/* The same lockup as the auth screens (AUTH-2). */}
           <Lockup className="mb-10" />
-          <h1 className="type-page-title text-ink lg:text-5xl lg:leading-tight">
+          <h1 className="type-page-title text-ink">
             Je lichaam verandert. Je hoeft het niet alleen uit te zoeken.
           </h1>
           <p className="text-ink-soft text-base lg:text-lg leading-relaxed mt-5 max-w-md">

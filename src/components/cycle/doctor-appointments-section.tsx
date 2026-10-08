@@ -193,7 +193,7 @@ export function DoctorAppointmentsSection({
       <SectionHeader
         id={`${uid}-title`}
         title="Afspraken & notities"
-        description="Optioneel. Noteer een afspraakdatum en wat je met je arts afsprak (bijv. HT aangepast), eventueel met een herinnering."
+        description="Optioneel. Noteer een afspraakdatum en wat je met je arts afsprak (bijv. hormoontherapie aangepast), eventueel met een herinnering."
         action={
           open ? undefined : (
             <IconButton ref={addButtonRef} label="Afspraak toevoegen" icon={Plus} tone="soft" onClick={openCreate} />
@@ -228,7 +228,7 @@ export function DoctorAppointmentsSection({
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Bijv. HT aangepast: progesteron 2 weken wel / 2 weken niet"
+              placeholder="Bijv. hormoontherapie aangepast: progesteron 2 weken wel / 2 weken niet"
             />
           </div>
           <div className="flex items-center justify-between gap-3">
