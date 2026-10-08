@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { Card } from "@/components/ui/card"
 import type { DoctorSummary } from "@/lib/cycle/doctor-summary"
-import { formatReadableDate } from "@/components/cycle/date-format"
+import { formatShortDate } from "@/lib/dates/format"
 import { symptomLabel } from "@/lib/constants"
 
 function fmt(value: number | null) {
@@ -135,7 +135,7 @@ export function DoctorSummaryView({ summary }: { summary: DoctorSummary }) {
           <ul className="text-sm text-ink mb-2 list-disc pl-5">
             {summary.appointmentNotes.map((n) => (
               <li key={`${n.date ?? "x"}-${n.notes}`}>
-                {n.date ? `${formatReadableDate(n.date)}: ` : null}
+                {n.date ? `${formatShortDate(n.date, { year: true })}: ` : null}
                 {n.notes}
               </li>
             ))}

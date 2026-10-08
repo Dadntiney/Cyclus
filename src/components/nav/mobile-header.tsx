@@ -143,7 +143,9 @@ export function MobileHeader() {
   const pathname = usePathname()
   const options = useAppBarOptions()
   const { appBarHidden } = useImmersiveState()
-  useMeasuredHeightVar(ref, "--mobile-header-h")
+  // Cleared when she leaves the app shell (e.g. after logging out), so
+  // pages without an app bar fall back to the CSS default of 0px.
+  useMeasuredHeightVar(ref, "--mobile-header-h", false, { clearOnUnmount: true })
 
   const tabRoot = isTabRoot(pathname)
   const fallback = tabRoot || options.back === false ? null : (options.back ?? parentOf(pathname))

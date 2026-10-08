@@ -182,7 +182,7 @@ export const LIFE_STAGE_OPTIONS = [
   {
     value: "menopauze",
     label: "Na de menopauze",
-    description: "Geen menstruatie meer — focus op klachten, slaap en HT.",
+    description: "Geen menstruatie meer — focus op klachten, slaap en eventueel hormoontherapie.",
   },
   {
     value: "onbekend",
@@ -314,15 +314,15 @@ export const REMINDER_DAY_OPTIONS = [
 // decides which quick-add entry points are shown.
 export const HORMONAL_MEDICATION_STATUS_OPTIONS = [
   { value: "nee", label: "Nee" },
-  { value: "ht", label: "Ja, hormoontherapie (HT)" },
-  { value: "ac", label: "Ja, anticonceptie (AC)" },
+  { value: "ht", label: "Ja, hormoontherapie" },
+  { value: "ac", label: "Ja, anticonceptie" },
   { value: "andere_hormonaal", label: "Ja, andere hormonale medicatie" },
   { value: "andere_medicatie", label: "Ja, niet-hormonale medicatie die mogelijk invloed heeft" },
   { value: "onbekend_liever_niet", label: "Weet ik niet / wil ik liever niet aangeven" },
 ] as const
 
 export const MEDICATION_CATEGORY_OPTIONS = [
-  { value: "ht", label: "Hormoontherapie (HT)", icon: Pill },
+  { value: "ht", label: "Hormoontherapie", icon: Pill },
   { value: "anticonceptie", label: "Anticonceptie", icon: Shield },
   { value: "andere_hormonaal", label: "Andere hormonale medicatie", icon: FlaskConical },
   { value: "andere_medicatie", label: "Niet-hormonale medicatie", icon: ClipboardList },

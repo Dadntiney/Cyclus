@@ -5,10 +5,15 @@ import { Footprints, Salad, Brain, Moon } from "lucide-react"
 import { BuddyMark } from "@/components/buddy/buddy-mark"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Chip } from "@/components/ui/chip"
+import { ChipRadioGroup } from "@/components/ui/chip-radio-group"
 import { Input, Label, Textarea, FieldError } from "@/components/ui/input"
+import { OptionList } from "@/components/ui/option-list"
 import { TagListInput } from "@/components/ui/tag-list-input"
 import { todayISO } from "@/lib/dates/amsterdam"
+import { ICON, iconProps } from "@/lib/ui/icon"
 import {
   GOAL_OPTIONS,
   TRAINING_OPTIONS,
@@ -24,7 +29,6 @@ import {
 } from "@/lib/constants"
 import { completeOnboarding } from "@/lib/actions/onboarding"
 import { acceptHealthDataConsent } from "@/lib/actions/consent"
-import { cn } from "@/lib/utils"
 
 interface FormData {
   name: string
@@ -94,6 +98,8 @@ function toggle(list: string[], value: string) {
 }
 
 const SLEEP_GOAL = "Beter slapen"
+/** "1x" … "7x", as in Profiel → Wat ik gebruik. */
+const FREQUENCY_OPTIONS = TRAINING_FREQUENCY_OPTIONS.map((n) => ({ value: n as number, label: `${n}x` }))
 const NO_NUTRITION_PREFERENCE = "Geen voorkeur"
 
 /** "Geen voorkeur" and a real preference can't both be on. */
@@ -308,7 +314,7 @@ export function OnboardingWizard({
   }
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto px-6 py-8">
+    <div className="min-h-dvh flex flex-col max-w-md mx-auto px-5 py-8">
       {step > 0 && (
         <div className="mb-8">
           <p className="text-xs font-medium text-ink-soft mb-2" aria-live="polite">
@@ -316,7 +322,7 @@ export function OnboardingWizard({
           </p>
           <div className="w-full h-1.5 rounded-full bg-cream-soft overflow-hidden">
             <div
-              className="h-full bg-sage-fill rounded-full transition-all duration-300"
+              className="h-full bg-sage-fill rounded-full transition-[width] duration-slow ease-standard"
               style={{ width: `${(step / (totalSteps - 1)) * 100}%` }}
             />
           </div>
@@ -479,8 +485,8 @@ function WelcomeStep({
 }) {
   return (
     <div className="text-center">
-      <p className="text-sage-dark font-medium mb-3">Welkom bij GoFiev</p>
-      <h1 className="font-display text-4xl leading-tight text-ink mb-4">
+      <p className="type-eyebrow text-sage-dark mb-3">Welkom bij GoFiev</p>
+      <h1 className="type-page-title text-ink mb-4">
         Jouw lichaam.
         <br />
         Jouw ritme.
@@ -492,14 +498,8 @@ function WelcomeStep({
         profiel. Jij houdt de regie; niets hoeft perfect.
       </p>
       {!consentGiven && (
-        <label className="flex items-start gap-2.5 text-left text-sm text-ink leading-snug cursor-pointer rounded-[1.25rem] bg-surface border border-line px-3.5 py-3">
-          <input
-            type="checkbox"
-            checked={healthConsent}
-            onChange={(e) => onHealthConsentChange(e.target.checked)}
-            className="mt-1 h-4 w-4 rounded border-line accent-sage-fill shrink-0"
-          />
-          <span>
+        <Card padding="sm" className="py-1 text-left">
+          <Checkbox checked={healthConsent} onCheckedChange={onHealthConsentChange} className="text-sm text-ink">
             Ik bevestig dat mijn gezondheids- en cyclusgegevens mogen worden verwerkt om GoFiev
             persoonlijker te maken.{" "}
             <a
@@ -510,8 +510,8 @@ function WelcomeStep({
             >
               Privacyverklaring
             </a>
-          </span>
-        </label>
+          </Checkbox>
+        </Card>
       )}
     </div>
   )
@@ -530,7 +530,7 @@ function AboutStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Even kennismaken</h2>
+      <h2 className="type-page-title text-ink mb-3">Even kennismaken</h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">
         Je naam gebruiken we om je welkom te heten, je leeftijd helpt om passendere uitleg en
         suggesties te geven.
@@ -574,7 +574,7 @@ function CycleStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Jouw cyclus</h2>
+      <h2 className="type-page-title text-ink mb-3">Jouw cyclus</h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">
         Elke cyclus is anders. We gaan nooit uit van een standaard van 28 dagen.
       </p>
@@ -711,7 +711,7 @@ function MultiSelectStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-3xl text-ink mb-3">{title}</h2>
+      <h2 className="type-page-title text-ink mb-3">{title}</h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">{subtitle}</p>
       <div className="flex flex-wrap gap-2">
         {options.map((opt) => (
@@ -733,7 +733,7 @@ function ModulesStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Waar wil je ondersteuning bij?</h2>
+      <h2 className="type-page-title text-ink mb-3">Waar wil je ondersteuning bij?</h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">
         Kies wat je nu fijn lijkt. Sla je iets over, dan staat het uit — je zet het later
         altijd aan in je profiel.
@@ -810,11 +810,14 @@ function ModuleRow({
   options: { label: string; selected: boolean; onSelect: () => void }[]
 }) {
   return (
-    <div className="rounded-2xl bg-cream-soft p-4" role="group" aria-label={title}>
+    <Card padding="sm" role="group" aria-label={title}>
       <div className="flex items-start gap-3">
-        <div className="h-10 w-10 shrink-0 rounded-full bg-sage-soft flex items-center justify-center">
-          <Icon className="h-5 w-5 text-sage-dark" strokeWidth={1.75} aria-hidden />
-        </div>
+        <span
+          aria-hidden
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-sage-dark"
+        >
+          <Icon {...ICON.sm} />
+        </span>
         <div className="min-w-0">
           <p className="font-medium text-ink">{title}</p>
           <p className="text-sm text-ink-soft">{description}</p>
@@ -827,7 +830,7 @@ function ModuleRow({
           </Chip>
         ))}
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -840,7 +843,7 @@ function MentalWellbeingPreferencesStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Bij welke gevoelens wil je ondersteuning?</h2>
+      <h2 className="type-page-title text-ink mb-3">Bij welke gevoelens wil je ondersteuning?</h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">
         Optioneel, en je kunt er meerdere kiezen. Zo laten we je sneller passende meditaties,
         mindfulness-oefeningen en affirmaties zien.
@@ -848,7 +851,7 @@ function MentalWellbeingPreferencesStep({
       <div className="flex flex-wrap gap-2">
         {MENTAL_WELLBEING_CATEGORY_OPTIONS.map((opt) => (
           <Chip key={opt.value} selected={selected.includes(opt.value)} onClick={() => onToggle(opt.value)}>
-            <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
+            <opt.icon {...iconProps("sm", "mr-1 inline")} aria-hidden />
             {opt.label}
           </Chip>
         ))}
@@ -866,32 +869,25 @@ function NutritionStyleStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Voedingsvoorkeur</h2>
+      <h2 id="onboarding-nutrition-style" className="type-page-title text-ink mb-3">
+        Voedingsvoorkeur
+      </h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">
         Kies een stijl die bij je past. We laten je nooit een extreem of streng dieet zien.
       </p>
-      <div className="flex flex-col gap-3">
-        {NUTRITION_STYLE_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => onChange(opt.value)}
-            className={cn(
-              "flex flex-col gap-1 rounded-3xl px-4 py-3.5 text-left transition-colors",
-              value === opt.value
-                ? "bg-sage-soft ring-1 ring-sage/40"
-                : "bg-surface border border-line hover:bg-sage-soft/40",
-            )}
-          >
-            <span className="font-medium text-ink">{opt.label}</span>
-            <span className="text-xs text-ink-soft">
-              {opt.value === "koolhydraatarm"
-                ? "We laten vooral recepten zien die van nature lager in koolhydraten zijn."
-                : "We laten een gebalanceerde mix van recepten zien."}
-            </span>
-          </button>
-        ))}
-      </div>
+      <OptionList
+        aria-labelledby="onboarding-nutrition-style"
+        value={value}
+        onChange={onChange}
+        options={NUTRITION_STYLE_OPTIONS.map((opt) => ({
+          value: opt.value,
+          label: opt.label,
+          description:
+            opt.value === "koolhydraatarm"
+              ? "We laten vooral recepten zien die van nature lager in koolhydraten zijn."
+              : "We laten een gebalanceerde mix van recepten zien.",
+        }))}
+      />
     </div>
   )
 }
@@ -905,33 +901,19 @@ function FrequencyStep({
 }) {
   return (
     <div>
-      <h2 id="onboarding-frequency" className="font-display text-3xl text-ink mb-3 scroll-mt-6">
+      <h2 id="onboarding-frequency" className="type-page-title text-ink mb-3 scroll-mt-4">
         Hoe vaak wil je bewegen?
       </h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">
         Per week, van 1 tot 7 dagen. We stellen hier een passend weekprogramma op.
       </p>
-      <div className="flex justify-between gap-1.5" role="radiogroup" aria-label="Keer per week">
-        {TRAINING_FREQUENCY_OPTIONS.map((n) => (
-          <button
-            key={n}
-            type="button"
-            role="radio"
-            aria-checked={value === n}
-            aria-label={`${n} keer per week`}
-            onClick={() => onChange(n)}
-            className={cn(
-              "h-11 w-11 shrink-0 rounded-full border text-base font-medium transition-colors",
-              value === n
-                ? "bg-sage-fill border-sage-fill text-white"
-                : "bg-surface border-line text-ink hover:bg-sage-soft/50",
-            )}
-          >
-            {n}
-          </button>
-        ))}
-      </div>
-      <p className="text-xs text-ink-soft mt-2 text-center">keer per week</p>
+      {/* The same choice as in Profiel → Wat ik gebruik. */}
+      <ChipRadioGroup
+        aria-labelledby="onboarding-frequency"
+        options={FREQUENCY_OPTIONS}
+        value={value}
+        onChange={onChange}
+      />
     </div>
   )
 }
@@ -945,26 +927,24 @@ function StyleStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Welke stijl past bij jou?</h2>
+      <h2 id="onboarding-style" className="type-page-title text-ink mb-3">
+        Welke stijl past bij jou?
+      </h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">Dit kleurt de toon van je aanbevelingen.</p>
-      <div className="flex flex-col gap-3">
-        {STYLE_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => onChange(opt.value)}
-            className={cn(
-              "flex items-center gap-3 rounded-3xl px-4 py-3.5 text-left transition-colors",
-              value === opt.value
-                ? "bg-sage-soft ring-1 ring-sage/40"
-                : "bg-sage-soft/40 hover:bg-sage-soft/70",
-            )}
-          >
-            <opt.icon className="h-5 w-5 text-sage-dark" strokeWidth={1.75} />
-            <span className="font-medium text-ink">{opt.label}</span>
-          </button>
-        ))}
-      </div>
+      <OptionList
+        aria-labelledby="onboarding-style"
+        value={value || null}
+        onChange={onChange}
+        options={STYLE_OPTIONS.map((opt) => ({
+          value: opt.value,
+          label: (
+            <span className="inline-flex items-center gap-2">
+              <opt.icon {...iconProps("md", "text-sage-dark")} aria-hidden />
+              {opt.label}
+            </span>
+          ),
+        }))}
+      />
     </div>
   )
 }
@@ -984,7 +964,7 @@ function BuddyStyleStep({
 }) {
   return (
     <div>
-      <h2 className="font-display text-3xl text-ink mb-3">Hoe praat je Buddy met je?</h2>
+      <h2 className="type-page-title text-ink mb-3">Hoe praat je Buddy met je?</h2>
       <p className="text-ink-soft text-base leading-relaxed mb-7">
         Optioneel. Kies één of meerdere stijlen die bij je passen — je berichten, tips en
         weetjes krijgen dan die toon. Later altijd aan te passen via Profiel.
@@ -995,7 +975,7 @@ function BuddyStyleStep({
         </Chip>
         {BUDDY_STYLE_OPTIONS.map((opt) => (
           <Chip key={opt.value} selected={styles.includes(opt.value)} onClick={() => onToggleStyle(opt.value)}>
-            <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
+            <opt.icon {...iconProps("sm", "mr-1 inline")} aria-hidden />
             {opt.label}
           </Chip>
         ))}
@@ -1039,7 +1019,7 @@ function BuddyIntroStep({ name, styles }: { name: string; styles: string[] }) {
       <div className="mx-auto mb-4 flex justify-center">
         <BuddyMark size="xl" />
       </div>
-      <h2 className="font-display text-3xl text-ink mb-3">Maak kennis met je Buddy</h2>
+      <h2 className="type-page-title text-ink mb-3">Maak kennis met je Buddy</h2>
       <p className="text-ink-soft text-sm">
         {name ? `${name}, je` : "Je"} Buddy is er om mee te praten over hoe je je voelt, je
         cyclus en je dag. Geen diagnoses, wel een luisterend oor en praktische tips. Bij

@@ -39,15 +39,14 @@ const PHASE_TEXT: Record<CyclePhase, string> = {
  *
  * Soft states (predicted / just stopped) show no day numeral: that number
  * only means something while her period is running or the cycle is known.
- * Vandaag passes no tagline: what the day asks for is said once, under
- * "Voor jou vandaag". One optional quiet line (`note`, or the older
- * `subtitle`) can sit under the band.
+ * No tagline on either screen (§7.1): what the day asks for is said once,
+ * under "Voor jou vandaag" on Vandaag. One optional practical line
+ * (`note`) can sit under the band.
  */
 export function PhaseContextCard({
   phase,
   phaseLabel,
   cycleDay,
-  subtitle,
   hasCycle,
   isMenstruationActive,
   menstruationDay,
@@ -62,12 +61,6 @@ export function PhaseContextCard({
   phase: CyclePhase
   phaseLabel: string
   cycleDay: number
-  /**
-   * Older name for the quiet line under the band (Cyclus still passes it).
-   * Prefer `note`; Vandaag passes neither, so it shows no tagline. Hidden
-   * in the soft states, whose caption already says what is going on.
-   */
-  subtitle?: string
   hasCycle: boolean
   isMenstruationActive: boolean
   menstruationDay: number | null
@@ -91,7 +84,7 @@ export function PhaseContextCard({
   const softMode = Boolean(softHint) && !isMenstruationActive
   const activeDay = isMenstruationActive && menstruationDay ? menstruationDay : null
   const shownDay = activeDay ?? cycleDay
-  const line = note ?? (softMode ? null : subtitle || null)
+  const line = note
 
   const caption = softMode
     ? (softMenstruationNote(softHint) ?? "")

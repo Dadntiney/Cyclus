@@ -21,7 +21,7 @@ import { getMorningMessage } from "@/lib/data/morning-messages"
 import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
 import type { MorningReminderContentType } from "@/lib/constants"
 import { IconButton } from "@/components/ui/icon-button"
-import { ToastLayer } from "@/components/ui/toast"
+import { ToastLayer, toastSlotClass } from "@/components/ui/toast"
 import { iconProps } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
@@ -201,12 +201,7 @@ export function ReminderToastHost({
   return (
     <ToastLayer>
       {/* Always mounted, so a screen reader hears a reminder as it appears. */}
-      <div
-        role="status"
-        aria-live="polite"
-        data-toast-region=""
-        className="pointer-events-none fixed inset-x-0 z-60 flex flex-col items-center gap-2 px-5"
-      >
+      <div role="status" aria-live="polite" className={toastSlotClass("reminders")}>
         {visible.map((toast) => (
           <div
             key={toast.id}

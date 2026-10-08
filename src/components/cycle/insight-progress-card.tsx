@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ChevronRight } from "lucide-react"
 import type { InsightProgress } from "@/lib/cycle/cycle-recap"
 import { textActionClass } from "@/components/ui/button"
+import { FEATURES } from "@/lib/navigation/features"
 import { ICON } from "@/lib/ui/icon"
 
 /**
@@ -42,7 +43,7 @@ export function InsightProgressBlock({ progress }: { progress: InsightProgress }
           )
         })}
       </ul>
-      <Link href="/vandaag#checkin" className={textActionClass("mt-2")}>
+      <Link href={`${FEATURES.vandaag.href}#checkin`} className={textActionClass("mt-2")}>
         Check-in van vandaag
         <ChevronRight {...ICON.sm} aria-hidden />
       </Link>

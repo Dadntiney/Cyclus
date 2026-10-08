@@ -1,8 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { BookOpen, Moon } from "lucide-react"
-import { format, parseISO, subDays } from "date-fns"
-import { nl } from "date-fns/locale"
+import { format, subDays } from "date-fns"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getSleepHistory } from "@/lib/data/sleep"
@@ -16,6 +15,7 @@ import {
 import { WAKE_FEELING_OPTIONS } from "@/lib/constants"
 import { FEATURES } from "@/lib/navigation/features"
 import { todayISO } from "@/lib/dates/amsterdam"
+import { formatWeekdayDate } from "@/lib/dates/format"
 import { Page, PageSections } from "@/components/layout/page"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card } from "@/components/ui/card"
@@ -166,7 +166,7 @@ export default async function SlaapPage() {
                   return (
                     <li key={entry.id} className="flex items-center justify-between gap-3 px-4 py-3.5">
                       <p className="text-base font-medium text-ink capitalize">
-                        {format(parseISO(entry.date), "EEEE d MMM", { locale: nl }).replace(/\.$/, "")}
+                        {formatWeekdayDate(entry.date)}
                       </p>
                       <p className="flex items-center gap-2 text-sm text-ink-soft">
                         {mins != null && <span>{formatSleepDuration(mins)}</span>}

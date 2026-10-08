@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { format, parseISO } from "date-fns"
-import { nl } from "date-fns/locale"
 import { MoreHorizontal, NotebookPen, Trash2 } from "lucide-react"
 import { BottomSheet } from "@/components/ui/bottom-sheet"
 import { Card } from "@/components/ui/card"
@@ -15,6 +13,7 @@ import { SectionHeader } from "@/components/ui/section-header"
 import { toast } from "@/components/ui/toast"
 import { createDiaryEntry, deleteDiaryEntry, updateDiaryEntry } from "@/lib/actions/diary"
 import { runAction } from "@/lib/client/run-action"
+import { formatLongDate } from "@/lib/dates/format"
 import { ICON } from "@/lib/ui/icon"
 
 type Entry = {
@@ -33,6 +32,7 @@ export function DiaryClient({ entries }: { entries: Entry[] }) {
   const [body, setBody] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const fieldRef = useRef<HTMLTextAreaElement>(null)
   const hasText = body.trim().length > 0
 
   function save() {
@@ -53,6 +53,7 @@ export function DiaryClient({ entries }: { entries: Entry[] }) {
       <section aria-label="Nieuwe notitie" className="flex flex-col gap-2">
         <Card padding="none">
           <Textarea
+            ref={fieldRef}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={5}
@@ -85,6 +86,11 @@ export function DiaryClient({ entries }: { entries: Entry[] }) {
             title="Nog geen notities"
             description="Wat je hierboven opschrijft, komt hier te staan. Het blijft privé en alleen voor jou."
             className="py-6"
+            action={
+              <button type="button" onClick={() => fieldRef.current?.focus()} className={textActionClass()}>
+                Schrijf je eerste notitie
+              </button>
+            }
           />
         ) : (
           <ul className="flex flex-col gap-3">
@@ -109,7 +115,7 @@ function DiaryEntryCard({ entry }: { entry: Entry }) {
   const [draft, setDraft] = useState(entry.body)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-  const dateLabel = format(parseISO(entry.date), "d MMMM yyyy", { locale: nl })
+  const dateLabel = formatLongDate(entry.date, { year: true })
   const editId = `diary-edit-${entry.id}`
   const keepRef = useRef<HTMLButtonElement>(null)
   const editFieldRef = useRef<HTMLTextAreaElement>(null)

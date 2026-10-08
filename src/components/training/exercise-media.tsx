@@ -1,4 +1,5 @@
 import { getExerciseVisual, type ExerciseTone } from "@/lib/training/exercise-visual"
+import { ICON } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
 const TONE_CLASSES: Record<ExerciseTone, { bg: string; ring: string; icon: string }> = {
@@ -43,7 +44,7 @@ export function ExerciseMedia({ name, muscleGroup, className, iconClassName }: E
         </svg>
       </div>
       <div className={cn("relative flex items-center justify-center rounded-full shadow-sm", tones.ring, iconClassName ?? "h-14 w-14")}>
-        <Icon className={cn(tones.icon, iconClassName ? "h-1/2 w-1/2" : "h-6 w-6")} strokeWidth={1.5} />
+        <Icon className={cn(tones.icon, iconClassName ? "h-1/2 w-1/2" : "h-6 w-6")} strokeWidth={ICON.lg.strokeWidth} />
       </div>
     </div>
   )

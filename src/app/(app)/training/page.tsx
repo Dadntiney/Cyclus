@@ -65,7 +65,7 @@ export default async function TrainingPage() {
             : "Trainingen op jouw tempo, voor elke dag."
         }
         action={
-          <Link href="/favorieten?soort=beweging" className={textActionClass()}>
+          <Link href={`${FEATURES.favorieten.href}?soort=beweging`} className={textActionClass()}>
             {FEATURES.favorieten.label}
           </Link>
         }

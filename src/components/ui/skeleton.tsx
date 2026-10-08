@@ -30,7 +30,7 @@ interface SkeletonPageProps {
   width?: "content" | "wide"
   /** The page shows a back link (md+ only — on mobile it lives in the app bar). */
   back?: boolean
-  /** The page has a 4:3 hero image above its title (recipe). */
+  /** The page has a hero image above its title (recipe: 4:3, 21:9 on lg, max 420px). */
   hero?: boolean
   /** The page header has a subtitle line. Default true. */
   subtitle?: boolean
@@ -64,7 +64,7 @@ export function SkeletonPage({
       <span className="sr-only">Even laden…</span>
       <div aria-hidden className="mb-6">
         {back && <Skeleton className="hidden md:block h-11 w-24 mb-2 rounded-full" />}
-        {hero && <Skeleton className="aspect-[4/3] w-full rounded-card mb-5" />}
+        {hero && <Skeleton className="mb-5 aspect-[4/3] max-h-105 w-full rounded-card lg:aspect-[21/9]" />}
         {/* type-page-title line box: 32 × 1.1 ≈ 36px (lg: 36 × 1.1 ≈ 40px) */}
         <div className="flex h-9 lg:h-10 items-center">
           <Skeleton className="h-8 lg:h-9 w-48" />

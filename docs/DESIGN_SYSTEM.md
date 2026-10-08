@@ -60,12 +60,11 @@ Regels:
 - Kalender: "vandaag" = stip onder het nummer of vette inkt, **geen ring**
   (ring = focus/selectie).
 
-**Verouderde aliassen** (werken nog; de sweep verwijdert ze):
-`bg` → `cream`, `bg-subtle` → `cream-soft`, `text` → `ink`, `text-muted` →
-`ink-soft`, `border` → `line`, `primary` → `sage`, `primary-text` →
-`sage-dark`, `primary-soft` → `sage-soft`, `primary-fill(-hover)` →
-`sage-fill(-darker)`, `accent(-soft)` → `peach(-soft)`, `success(-soft)` →
-`sage-dark` / `sage-soft`.
+**Oude aliassen zijn verwijderd** (sweep): `bg`, `bg-subtle`, `text`,
+`text-muted`, `border`, `primary(-text|-soft|-fill|-fill-hover)`,
+`accent(-soft)` en `success(-soft)` bestaan niet meer als kleur. Gebruik
+`cream`, `cream-soft`, `ink`, `ink-soft`, `line`, `sage`, `sage-dark`,
+`sage-soft`, `sage-fill(-darker)`, `peach(-soft)`.
 
 ## 3. Typografie
 
@@ -100,7 +99,7 @@ grootte (`cn("type-card-title", "text-sm")` houdt beide). Ook `rounded-card`,
 
 | Token | Waarde | Utility | Gebruik |
 |---|---|---|---|
-| `--radius-xs` | 6px | `rounded-xs` | alleen checkbox |
+| `--radius-xs` | 6px | `rounded-xs` | checkbox; verder alleen de staart van een Buddy-ballon (`rounded-br-xs` / `rounded-bl-xs`) en de bovenkant van grafiekbalkjes (`rounded-t-xs`) |
 | `--radius-inset` | 12px | `rounded-inset` | inputs, insets in kaarten, icoontegels, thumbnails, skeletons |
 | `--radius-card` | 20px | `rounded-card` | **elke** kaart, lijstgroep, getint vlak, hero-beeld, toast |
 | `--radius-sheet` | 28px | `rounded-sheet` / `rounded-t-sheet` | bottom sheet, dialog |
@@ -190,7 +189,8 @@ Even afronden = `NotebookPen`.
 
 Animaties: `animate-sheet-in/-out`, `animate-dialog-in/-out`,
 `animate-fade-in/-out`, `animate-rise-in` (toast), `animate-page-push`
-(alleen opacity .92→1, geen blijvende fill — besluit 10). Indrukken:
+(alleen opacity .92→1, geen blijvende fill — besluit 10). De oude
+`animate-pop-in`, `animate-page-in` en `animate-page-soft` zijn verwijderd. Indrukken:
 `motion-safe:active:scale-[0.97]` (controls, tabs) of `scale-[0.985]` (kaarten).
 Geen overshoot, geen `transition-all`.
 
@@ -317,7 +317,6 @@ Eén triggerstijl (15/500 sage-dark, chevron 16 die draait, 44px). De inhoud
 blijft gemount en is `inert` als hij dicht is; padding hoort *binnen* `Collapse`.
 Een dichte `Collapse` is 0px hoog maar telt in een `flex`/`grid` met `gap` nog
 als item (dus één extra gap): zet hem dan samen met zijn kop in één wrapper.
-`Expandable` (oud) werkt nog en rendert nu `Disclosure`.
 
 ### 10.6 Velden
 
@@ -383,14 +382,22 @@ het icoon dan dáár: een Server Component kan geen component (functie) als prop
 aan een Client Component doorgeven. Hetzelfde geldt voor `ListRow icon`.
 
 SkeletonPage spiegelt `<Page>` + `<PageHeader>` (zelfde container, titelhoogte
-en `mb-6`), zodat de kop niet springt. `ActionToast` alleen voor een korte
-bevestiging op dezelfde plek; meldingen voor de hele app gaan via de toast-host
-(shell-stroom).
+en `mb-6`), zodat de kop niet springt. Bevestigingen ("Bewaard", "Verwijderd ·
+Ongedaan maken") gaan altijd via de toast-host (§12.7); er is geen aparte
+in-page bevestiging meer.
+
+Het bewaar-hartje (recept, oefening, moment) is overal hetzelfde:
+`useFavoriteToggle` + `FavoriteHeartIcon` uit
+`@/components/moments/use-favorite-toggle` in een `IconButton` met
+`pressed`: optimistisch, lichte haptiek en de toast "Bewaard in Favorieten ·
+Bekijk".
 
 ### 10.9 Hooks
 
 - `useOverlay(open, onClose, { initialFocus })` → `{ mounted, phase, rootRef, panelRef, titleRef, titleId, contentKey }`
-  voor een eigen overlay. `useOverlayBehavior` is verouderd.
+  voor een eigen overlay.
+- `usePrefersReducedMotion()` (`@/lib/hooks/use-prefers-reduced-motion`) voor
+  beweging die vanuit JavaScript loopt; CSS-animaties gebruiken `motion-safe:`.
 - `useRovingRadio({ count, selectedIndex, onSelect, orientation, isDisabled })`
   → `getItemProps(i)` op elk `role="radio"`-element binnen een `role="radiogroup"`.
 
@@ -546,7 +553,8 @@ export default async function SlaapPage() {
 ### 12.4 De app-balk (mobiel)
 
 Vaste rij van 48px onder de safe area, volledig ondoorzichtig, publiceert
-`--mobile-header-h` (md+ = 0, daar is de sidebar). Links "‹ Vorige", midden de
+`--mobile-header-h` (md+ = 0, daar is de sidebar; ook 0 op schermen zonder
+`#app-root`: welkom, inloggen, onboarding en juridisch). Links "‹ Vorige", midden de
 compacte titel, rechts hoogstens één actie. Geen logo.
 
 - **Compacte titel**: `AppBarConfig.title` → vaste naam (`titleForPath`) →
@@ -640,10 +648,12 @@ toast.dismiss()
 - De host staat in de root-layout, in `#toast-layer` naast `#app-root`: een
   open sheet of dialog maakt de app inert, maar toasts blijven zichtbaar en
   bedienbaar, boven de scrim (`z-60`).
-- Een eigen zwevende melding (autosave-pill, herinneringen) portal je met
-  `<ToastLayer>…</ToastLayer>` in dezelfde laag, met `[data-toast-region]` voor
-  dezelfde positie. `ActionToast` blijft voor een korte bevestiging op dezelfde
-  plek in de pagina.
+- `#toast-layer` is zelf de ene, vaste stapelregio (`[data-toast-region]`):
+  de app-toast, de autosave-pill en herinneringen zijn er *slots* in en
+  overlappen dus nooit — ze stapelen, de app-toast het dichtst bij de
+  tabbalk. Een eigen zwevende melding portal je met
+  `<ToastLayer><div className={toastSlotClass("…")}>…</div></ToastLayer>`,
+  zonder eigen `fixed`-wrapper.
 
 ### 12.8 Immersief scherm en `StickyActionBar`
 
@@ -699,3 +709,15 @@ useImmersive(isRunning, { appBar: "hide" })  // ook de app-balk weg (alleen safe
 - [ ] Meldingen via `toast.show`; eigen zwevende UI in `<ToastLayer>`.
 - [ ] Flow met een einde: `useImmersive()` + `StickyActionBar` als direct kind van `<Page>`.
 - [ ] Scherm zonder zichtbare h1: `<AppBarConfig title alwaysShowTitle />`.
+
+## 13. Bewaking
+
+`src/lib/ui/design-guard.test.ts` (draait mee met `npx vitest run`) faalt
+zodra `src/app` of `src/components` een losse waarde terugbrengt:
+`rounded-[…]`, `rounded-sm…3xl`, `text-[…]`-maten, `focus(-visible):ring`,
+`outline-none`, `bg-ink/45`, de oude animaties, `transition-all`,
+`shadow-sm…2xl`, een andere `scroll-mt` dan `scroll-mt-4`, een los
+`strokeWidth`-getal en `max-w-3xl…5xl`. Dezelfde test controleert dat elke
+pagina een titel exporteert. Uitzonderingen staan met reden in de
+`ALLOWLIST` van de test (o.a. de bevroren Buddy-composer, besluit 34) en
+vallen af zodra ze niets meer raken.

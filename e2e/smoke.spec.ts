@@ -30,7 +30,8 @@ async function login(page: Page) {
   await expect(page).toHaveURL(/\/vandaag/, { timeout: 20_000 })
 }
 
-// Every main screen must render a heading without hitting an error screen.
+// Every main screen must render a heading without hitting an error screen,
+// and carry its own title ("Ontdek · GoFiev", DESIGN_SYSTEM §12.3).
 // Headings depend on her data (phase names, greeting), so only presence is
 // checked.
 const SCREENS = [
@@ -41,6 +42,8 @@ const SCREENS = [
   "/cyclus",
   "/cyclus/vandaag",
   "/cyclus/overgang",
+  "/cyclus/klachtenlast",
+  "/cyclus/samenvatting",
   "/voeding",
   "/training",
   "/mentale-rust",
@@ -52,6 +55,12 @@ const SCREENS = [
   "/buddy",
   "/profiel",
   "/profiel/gegevens",
+  "/profiel/cyclus",
+  "/profiel/gebruik",
+  "/profiel/meldingen",
+  "/profiel/buddy",
+  "/profiel/voortgang",
+  "/profiel/privacy",
 ]
 
 test.describe("met testaccount", () => {
@@ -65,9 +74,17 @@ test.describe("met testaccount", () => {
       const response = await page.goto(path)
       expect(response?.status(), path).toBeLessThan(400)
       await expect(page.getByRole("heading", { level: 1 }).first(), path).toHaveText(/\S/)
+      await expect(page, path).toHaveTitle(/\S · GoFiev$/)
       await expect(page.getByText(/er ging iets mis/i), path).toHaveCount(0)
     }
     expect(errors).toEqual([])
+  })
+
+  test("oude favorietenpagina gaat naar Favorieten · Recepten", async ({ page }) => {
+    await login(page)
+    await page.goto("/voeding/favorieten")
+    await expect(page).toHaveURL(/\/favorieten\?soort=recepten/)
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Favorieten")
   })
 
   test("navigeren via het menu", async ({ page, isMobile }) => {

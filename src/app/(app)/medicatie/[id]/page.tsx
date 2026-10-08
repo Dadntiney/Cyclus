@@ -5,9 +5,8 @@ import { getMedication } from "@/lib/data/medications"
 import { MedicationWizard } from "@/components/medication/medication-wizard"
 import { getCyclicalPhaseInfo, type MedicationSchedule } from "@/lib/medication/schedule"
 import { Card } from "@/components/ui/card"
-import { format, parseISO } from "date-fns"
-import { nl } from "date-fns/locale"
 import type { MedicationInput } from "@/lib/validations/medication"
+import { formatLongDate } from "@/lib/dates/format"
 
 export const metadata: Metadata = { title: "Medicatie bewerken" }
 
@@ -33,7 +32,7 @@ export default async function EditMedicationPage({
     endDate: medication.end_date,
   }
   const phaseInfo = getCyclicalPhaseInfo(schedule, new Date())
-  const formatPhaseDate = (iso: string) => format(parseISO(iso), "d MMMM", { locale: nl })
+  const formatPhaseDate = (iso: string) => formatLongDate(iso)
 
   const unitDivisibleByWeek =
     medication.schedule_type === "cyclisch" &&

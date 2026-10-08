@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils"
 import { ICON } from "@/lib/ui/icon"
 import { useImmersiveActive } from "@/lib/hooks/use-immersive"
 import { useActiveTab } from "@/lib/navigation/hooks"
-import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
-import { DropletMark } from "@/components/brand/droplet-mark"
+import { Lockup } from "@/components/brand/lockup"
+import { FEATURES } from "@/lib/navigation/features"
 import { NAV_ITEMS } from "./nav-items"
 
 function NavPendingHint() {
@@ -55,12 +55,11 @@ export function Sidebar({ avatarUrl }: { avatarUrl: string | null }) {
       )}
     >
       <Link
-        href="/vandaag"
+        href={FEATURES.vandaag.href}
         prefetch
-        className="inline-flex items-center gap-2.5 font-display text-2xl text-ink px-2 mb-10 rounded-inset"
+        className="inline-flex px-2 mb-10 rounded-inset"
       >
-        <DropletMark className="h-5.5 w-4.5" />
-        {APP_DISPLAY_NAME}
+        <Lockup />
       </Link>
 
       <nav className="flex-1" aria-label="Hoofdnavigatie">

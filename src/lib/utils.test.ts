@@ -52,7 +52,7 @@ describe("cn — GoFiev design tokens (besluit 14)", () => {
     expect(cn("ease-enter", "ease-exit")).toBe("ease-exit")
     expect(cn("duration-150", "duration-fast")).toBe("duration-fast")
     expect(cn("duration-base", "duration-exit")).toBe("duration-exit")
-    expect(cn("animate-pop-in", "animate-dialog-in")).toBe("animate-dialog-in")
+    expect(cn("animate-fade-in", "animate-dialog-in")).toBe("animate-dialog-in")
     expect(cn("animate-sheet-in", "animate-sheet-out")).toBe("animate-sheet-out")
   })
 

@@ -10,7 +10,7 @@ import { SectionHeader } from "@/components/ui/section-header"
 import { StickyActionBar } from "@/components/ui/sticky-action-bar"
 import { PageSections } from "@/components/layout/page"
 import { ValueSparkline, listNl } from "@/components/cycle/simple-bars"
-import { formatReadableDate } from "@/components/cycle/date-format"
+import { formatShortDate } from "@/lib/dates/format"
 import {
   PERI_SCORE_ITEMS,
   computePeriScore,
@@ -58,6 +58,8 @@ export function PeriScoreForm({
   const [saved, setSaved] = useState<{ score: number; previous: number | null } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showGaps, setShowGaps] = useState(false)
+  // Announced once per save attempt (not on every answer, besluit 24).
+  const [gapAttempt, setGapAttempt] = useState<{ n: number; open: number } | null>(null)
   const [isPending, startTransition] = useTransition()
 
   const uid = useId()
@@ -90,6 +92,7 @@ export function PeriScoreForm({
     setError(null)
     if (openCount > 0) {
       setShowGaps(true)
+      setGapAttempt((prev) => ({ n: (prev?.n ?? 0) + 1, open: openCount }))
       focusFirstGap()
       return
     }
@@ -224,7 +227,7 @@ export function PeriScoreForm({
               <ul role="list" className="divide-y divide-line">
                 {history.map((row) => (
                   <li key={row.assessed_on} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
-                    <span className="text-ink-soft">{formatReadableDate(row.assessed_on)}</span>
+                    <span className="text-ink-soft">{formatShortDate(row.assessed_on, { year: true })}</span>
                     <span className="font-medium text-ink tabular-nums">{row.score}/100</span>
                   </li>
                 ))}
@@ -250,8 +253,13 @@ export function PeriScoreForm({
           </Button>
         </div>
         {showGaps && openCount > 0 && (
-          <p role="alert" className="text-sm text-danger">
+          <p className="text-sm text-danger">
             Nog {openCount} {openCount === 1 ? "vraag" : "vragen"} open
+          </p>
+        )}
+        {gapAttempt && showGaps && openCount > 0 && (
+          <p key={gapAttempt.n} role="alert" className="sr-only">
+            Nog {gapAttempt.open} {gapAttempt.open === 1 ? "vraag" : "vragen"} open
           </p>
         )}
         {error && (

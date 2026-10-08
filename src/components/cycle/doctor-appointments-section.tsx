@@ -24,17 +24,14 @@ import {
   type DoctorReminderLeadDays,
 } from "@/lib/reminders/options"
 import { todayISO } from "@/lib/dates/amsterdam"
-import { formatReadableDate } from "@/components/cycle/date-format"
+import { formatShortDate } from "@/lib/dates/format"
 import { iconProps } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
 function formatDateLabel(iso: string | null) {
   if (!iso) return null
-  try {
-    return formatReadableDate(iso)
-  } catch {
-    return iso
-  }
+  // Stored as yyyy-MM-dd; anything else is shown as it was saved.
+  return /^\d{4}-\d{2}-\d{2}/.test(iso) ? formatShortDate(iso, { year: true }) : iso
 }
 
 function normalizeTime(time: string | null): string {

@@ -22,6 +22,7 @@ import {
 } from "@/lib/client/week-plan-storage"
 import { runAction } from "@/lib/client/run-action"
 import { ICON } from "@/lib/ui/icon"
+import { todayISO } from "@/lib/dates/amsterdam"
 
 export type TodayWorkoutOption = {
   id: string
@@ -79,6 +80,8 @@ export function TodayMovementCard({
   /** The day voice above already says why (it came from the check-in). */
   hideReason?: boolean
 }) {
+  // Deze week shows the same rows for other days: say "vandaag" only today.
+  const isToday = date === todayISO()
   const router = useRouter()
   const shell = embedded
     ? "p-4"
@@ -252,7 +255,9 @@ export function TodayMovementCard({
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="type-eyebrow text-sage-dark">Beweging</p>
-            <p className="text-sm text-ink-soft">Vandaag geen beweging, ook goed</p>
+            <p className="text-sm text-ink-soft">
+              {isToday ? "Vandaag geen beweging, ook goed" : "Geen beweging deze dag, ook goed"}
+            </p>
           </div>
           <button type="button" onClick={() => applyOverride(null)} className={textActionClass("shrink-0 px-1")}>
             Herstel voorstel
@@ -297,7 +302,7 @@ export function TodayMovementCard({
           </Link>
         </>
       ) : (
-        <p className="text-sm text-ink-soft">{reason || "Geen training voorgesteld vandaag."}</p>
+        <p className="text-sm text-ink-soft">{reason || (isToday ? "Geen training voorgesteld vandaag." : "Geen training voorgesteld deze dag.")}</p>
       )}
 
       {/* Outside the branches above, so it can slide out after "Vandaag niet". */}
@@ -310,7 +315,7 @@ export function TodayMovementCard({
               )}
               <ListRow
                 icon={X}
-                title="Vandaag niet"
+                title={isToday ? "Vandaag niet" : "Deze dag niet"}
                 trailing="none"
                 onClick={() => applyOverride({ type: "skip-workout" })}
               />

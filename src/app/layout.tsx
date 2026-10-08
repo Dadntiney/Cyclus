@@ -84,8 +84,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <NavigationTracker />
         {children}
         {/* Top-level layer for toasts and other floating feedback, outside
-            #app-root: stays live while an overlay makes the app inert. */}
-        <div id="toast-layer" />
+            #app-root: stays live while an overlay makes the app inert. It is
+            the one fixed region (12px above the tab bar, globals.css); the
+            app toast, autosave pill and reminders stack in it as slots. */}
+        <div
+          id="toast-layer"
+          data-toast-region=""
+          className="pointer-events-none fixed inset-x-0 z-60 flex flex-col px-5"
+        />
         <ToastHost />
         <ClientBootstrap />
         {/* Vercel Speed Insights: real load times from real phones, visible in

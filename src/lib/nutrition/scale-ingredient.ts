@@ -163,10 +163,6 @@ export function scaleIngredientLine(raw: string, factor: number): string {
   return `${scaledQty} ${parsed.name}`.trim()
 }
 
-export function scaleIngredientList(list: unknown, factor: number): string[] {
-  return parseIngredientList(list).map((line) => scaleIngredientLine(line, factor))
-}
-
 // ---------------------------------------------------------------------------
 // Cook-friendly scaling for the recipe page (display only). The grocery list
 // keeps scaleQuantityForGrocery above; nothing here changes what is stored.

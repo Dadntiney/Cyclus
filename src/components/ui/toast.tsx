@@ -24,7 +24,10 @@ import { cn } from "@/lib/utils"
  * - Rendered in the top-level toast layer (#toast-layer), outside
  *   #app-root, so it stays readable and tappable while a sheet is open.
  *
- * `ActionToast` (ui/action-toast) stays for a tiny in-place "Bewaard ✓".
+ * The toast layer is the one stacking region for all floating feedback:
+ * this toast, the autosave pill and reminder toasts each render a slot in
+ * it (via `ToastLayer`), so two of them never overlap — they stack, the
+ * toast nearest the tab bar.
  */
 
 export interface ToastAction {
@@ -167,6 +170,18 @@ export const toast = {
 
 const TOAST_LAYER_ID = "toast-layer"
 
+/**
+ * Order of the slots in the toast layer, top to bottom: reminders, the
+ * autosave pill, then the app toast (the answer to what she just did)
+ * nearest the tab bar.
+ */
+const SLOT_ORDER = { reminders: "order-1", autosave: "order-2", toast: "order-3" } as const
+
+/** Classes for one slot in the toast layer (see `ToastLayer`). */
+export function toastSlotClass(slot: keyof typeof SLOT_ORDER, className?: string): string {
+  return cn("toast-slot flex w-full flex-col items-center gap-2", SLOT_ORDER[slot], className)
+}
+
 function noopSubscribe() {
   return () => {}
 }
@@ -184,6 +199,10 @@ function useToastLayerElement(): HTMLElement | null {
  * Render `children` in the top-level toast layer, outside #app-root — for
  * other floating feedback (autosave pill, reminder toasts) so it is never
  * trapped by a page transition or made inert by an open sheet (besluit 10).
+ *
+ * The layer itself is the fixed, stacking region (`[data-toast-region]` in
+ * the root layout): render one plain slot (`toastSlotClass`), no fixed
+ * wrapper of your own, and the slots stack instead of overlapping.
  */
 export function ToastLayer({ children }: { children: ReactNode }) {
   const layer = useToastLayerElement()
@@ -216,13 +235,7 @@ export function ToastHost() {
   if (!layer) return null
 
   return createPortal(
-    <div
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      data-toast-region=""
-      className="pointer-events-none fixed inset-x-0 z-60 flex justify-center px-5"
-    >
+    <div role="status" aria-live="polite" aria-atomic="true" className={toastSlotClass("toast")}>
       {item && (
         <div
           key={item.id}

@@ -1,8 +1,8 @@
-import { addDays, differenceInCalendarDays, format, parseISO } from "date-fns"
-import { nl } from "date-fns/locale"
+import { addDays, differenceInCalendarDays, parseISO } from "date-fns"
 import { classifyPhase, type CyclePhase } from "@/lib/cycle/estimate"
 import type { CycleHistoryEntry } from "@/lib/cycle/history"
 import { symptomLabel } from "@/lib/constants"
+import { formatDateRange } from "@/lib/dates/format"
 
 /**
  * Makes the payoff of tracking visible on the Cyclus hub:
@@ -134,7 +134,7 @@ export function composeCycleRecap(
   }
 
   const end = addDays(start, cycle.cycleLength - 1)
-  const rangeLabel = `${format(start, "d MMM", { locale: nl })} – ${format(end, "d MMM", { locale: nl })}`
+  const rangeLabel = formatDateRange(start, end)
 
   return { rangeLabel, lines }
 }

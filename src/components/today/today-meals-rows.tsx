@@ -11,6 +11,7 @@ import { IconButton } from "@/components/ui/icon-button"
 import { Input, Label } from "@/components/ui/input"
 import { ListGroup, ListRow } from "@/components/ui/list-group"
 import { ICON } from "@/lib/ui/icon"
+import { todayISO } from "@/lib/dates/amsterdam"
 import {
   loadWeekOverrides,
   setDayOverride,
@@ -64,6 +65,8 @@ export function TodayMealsRows({
   alternativesBySlot?: Partial<Record<MealSlotKey, TodayMealAlternative[]>>
   recipeImageById?: Record<string, string | null>
 }) {
+  // Deze week shows the same rows for other days: say "vandaag" only today.
+  const isToday = date === todayISO()
   const [overrides, setOverrides] = useState<Record<string, DayOverride>>({})
   const [sheetOpen, setSheetOpen] = useState(false)
   const [adjustSlot, setAdjustSlot] = useState<MealSlotKey | null>(null)
@@ -176,7 +179,9 @@ export function TodayMealsRows({
             <div key={meal.slot} data-meal-row={`${rowPrefix}${meal.slot}`} className="flex min-h-14 items-center gap-3 py-2 pl-4 pr-3">
               <div className="min-w-0 flex-1">
                 <p className="type-eyebrow text-sage-dark">{meal.label}</p>
-                <p className="text-sm text-ink-soft">Vandaag overgeslagen, ook goed</p>
+                <p className="text-sm text-ink-soft">
+                  {isToday ? "Vandaag overgeslagen, ook goed" : "Overgeslagen, ook goed"}
+                </p>
               </div>
               <button
                 type="button"
@@ -267,7 +272,7 @@ export function TodayMealsRows({
               <ListRow icon={PencilLine} title="Eigen maaltijd" onClick={() => changeMode("custom")} />
               <ListRow
                 icon={X}
-                title="Vandaag niet"
+                title={isToday ? "Vandaag niet" : "Deze dag niet"}
                 trailing="none"
                 onClick={() => applyOverride(sheetMeal.slot, { type: "skip-meal", slot: sheetMeal.slot })}
               />

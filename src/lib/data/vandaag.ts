@@ -410,6 +410,9 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
   return {
     profile,
     cycleProfile,
+    /** Same history + effective last start as /cyclus, so "Volgende ~d MMM" matches there. */
+    cycleHistory,
+    effectiveLastStart,
     checkin,
     cycleEstimate: dayCycleEstimate,
     predictedMenstruation,

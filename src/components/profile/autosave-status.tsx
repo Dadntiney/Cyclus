@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Check, Loader2 } from "lucide-react"
 import { textActionClass } from "@/components/ui/button"
-import { ToastLayer } from "@/components/ui/toast"
+import { ToastLayer, toastSlotClass } from "@/components/ui/toast"
 import { CHECK_ICON, iconProps } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
@@ -71,10 +71,7 @@ export function AutosaveStatusPill({
       <p ref={liveRef} role="status" aria-live="polite" className="sr-only" />
       {shown !== "idle" && (
         <ToastLayer>
-          <div
-            data-toast-region=""
-            className="pointer-events-none fixed inset-x-0 z-60 flex justify-center px-5"
-          >
+          <div className={toastSlotClass("autosave")}>
             <div
               className={cn(
                 "pointer-events-auto flex min-h-10 max-w-sm items-center gap-2 rounded-full border bg-surface-elevated px-4 py-1 text-sm shadow-elevated",

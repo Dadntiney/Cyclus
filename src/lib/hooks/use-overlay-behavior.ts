@@ -118,32 +118,3 @@ export function useOverlay(open: boolean, onClose: () => void, options: UseOverl
     contentKey: openCount,
   }
 }
-
-/**
- * @deprecated Use `useOverlay` (focus, inert, overlay stack, exit phase).
- * Kept unchanged for old call sites: returns whether the overlay may
- * portal yet, locks body scroll while open and closes on Escape.
- */
-export function useOverlayBehavior(open: boolean, onClose: () => void) {
-  const mounted = useSyncExternalStore(subscribeNoop, getClientSnapshot, getServerSnapshot)
-
-  useEffect(() => {
-    if (!open) return
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = "hidden"
-    return () => {
-      document.body.style.overflow = previousOverflow
-    }
-  }, [open])
-
-  useEffect(() => {
-    if (!open) return
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose()
-    }
-    window.addEventListener("keydown", handleKey)
-    return () => window.removeEventListener("keydown", handleKey)
-  }, [open, onClose])
-
-  return mounted
-}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, type ReactNode } from "react"
-import { usePrefersReducedMotion } from "@/components/training/use-reduced-motion"
+import { usePrefersReducedMotion } from "@/lib/hooks/use-prefers-reduced-motion"
 import { cn } from "@/lib/utils"
 
 /**

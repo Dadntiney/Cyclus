@@ -15,11 +15,12 @@ import { MomentFavoriteButton } from "@/components/moments/moment-favorite-butto
 import { SleepCard } from "@/components/sleep/sleep-card"
 import { ProfileCompleteCard } from "@/components/today/profile-complete-card"
 import { greeting } from "@/lib/greeting"
+import { FEATURES } from "@/lib/navigation/features"
 import { estimateNextPeriod } from "@/lib/cycle/next-period"
 import { getDailyBuddyQuote } from "@/lib/data/buddy-quotes"
 import { shouldShowBuddyMessage, type BuddyStyle } from "@/lib/buddy/styles"
 
-export const metadata: Metadata = { title: "Vandaag" }
+export const metadata: Metadata = { title: FEATURES.vandaag.label }
 
 /** A Buddy quote about drinking: then the vocht tip steps aside (besluit 29). */
 const WATER_QUOTE = /\b(water|drink\w*|vocht\w*)\b/i
@@ -48,6 +49,8 @@ export default async function VandaagPage() {
   const {
     profile,
     cycleProfile,
+    cycleHistory,
+    effectiveLastStart,
     cycleEstimate,
     isMenstruationActive,
     menstruationDay,
@@ -81,12 +84,15 @@ export default async function VandaagPage() {
     !profile?.hormonal_medication_status &&
     (profile?.health_conditions?.length ?? 0) === 0 &&
     (profile?.movement_limitations?.length ?? 0) === 0
+  // The same inputs as /cyclus (effective last start + her finished
+  // cycles), so the phase status shows the same "Volgende ~d MMM" there.
   const nextPeriod = estimateNextPeriod({
-    lastPeriodStart: cycleProfile?.last_period_start ?? null,
+    lastPeriodStart: effectiveLastStart,
     averageCycleLength: cycleProfile?.average_cycle_length ?? null,
     hasCycle,
     regularity: cycleProfile?.regularity ?? null,
     lifeStage: cycleProfile?.life_stage ?? null,
+    history: cycleHistory,
   })
 
   const hasMeaningfulCheckin = Boolean(
@@ -197,7 +203,7 @@ export default async function VandaagPage() {
       <div>
         <PageHeader
           title={`${greeting()}${name}`}
-          compactTitle="Vandaag"
+          compactTitle={FEATURES.vandaag.label}
           subtitle={phaseStatus ? undefined : "Fijn dat je er bent. Kies vandaag wat bij je past."}
         />
         <div className="flex flex-col gap-8">

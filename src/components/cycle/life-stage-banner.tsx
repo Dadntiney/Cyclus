@@ -48,13 +48,32 @@ function hide() {
  * Cyclusinstellingen. Rendered only after hydration, so a dismissed banner
  * never flashes in.
  */
-export function LifeStageBanner({ changingCycle = false }: { changingCycle?: boolean }) {
+export function LifeStageBanner({
+  changingCycle = false,
+  focusAfterDismissId,
+}: {
+  changingCycle?: boolean
+  /** Heading that takes focus after "Niet nu" (the banner itself goes away). */
+  focusAfterDismissId?: string
+}) {
   const hidden = useSyncExternalStore(
     subscribe,
     () => hiddenThisVisit || readHidden(),
     () => true,
   )
   if (hidden) return null
+
+  function dismiss() {
+    hide()
+    // The button disappears with the banner: hand focus to what follows,
+    // instead of letting it fall back to the document.
+    const next = focusAfterDismissId ? document.getElementById(focusAfterDismissId) : null
+    if (next) {
+      if (!next.hasAttribute("tabindex")) next.setAttribute("tabindex", "-1")
+      next.setAttribute("data-focus-target", "")
+      next.focus()
+    }
+  }
 
   return (
     <Card tone="subtle" padding="sm" className="flex items-start gap-2">
@@ -69,7 +88,7 @@ export function LifeStageBanner({ changingCycle = false }: { changingCycle?: boo
           Levensfase kiezen
         </Link>
       </div>
-      <IconButton label="Niet nu" icon={X} onClick={hide} className="-mr-2 -mt-2" />
+      <IconButton label="Niet nu" icon={X} onClick={dismiss} className="-mr-2 -mt-2" />
     </Card>
   )
 }

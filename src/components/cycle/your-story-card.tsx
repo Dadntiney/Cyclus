@@ -1,4 +1,4 @@
-import { BookOpen, Compass, Sparkles } from "lucide-react"
+import { CalendarDays, Eye, Sparkles } from "lucide-react"
 import type { ReactNode } from "react"
 import type { YourStory } from "@/lib/cycle/your-story"
 import { iconProps } from "@/lib/ui/icon"
@@ -20,7 +20,8 @@ function StoryLine({ icon, label, children }: { icon: ReactNode; label: string; 
  * only the parts there is something to say about, each with its own label,
  * so the block never promises what it doesn't show. A block inside the one
  * "Jouw patronen" card on Cyclus. (No heart icon here: in GoFiev a heart
- * only means "bewaard".)
+ * only means "bewaard"; no Kennis or Ontdek icon either — one icon per
+ * concept, so "Deze week" borrows the Deze week icon.)
  */
 export function YourStoryBlock({ story }: { story: YourStory }) {
   const showInView = Boolean(story.cycleInView.trim())
@@ -30,7 +31,7 @@ export function YourStoryBlock({ story }: { story: YourStory }) {
       <h3 className="type-card-title text-ink">Jouw verhaal</h3>
       <div className="flex flex-col gap-4 mt-3">
         {showInView && (
-          <StoryLine icon={<BookOpen {...iconProps("sm", "text-sage-dark")} aria-hidden />} label="In beeld">
+          <StoryLine icon={<Eye {...iconProps("sm", "text-sage-dark")} aria-hidden />} label="In beeld">
             <p className="text-sm text-ink">{story.cycleInView}</p>
           </StoryLine>
         )}
@@ -51,7 +52,7 @@ export function YourStoryBlock({ story }: { story: YourStory }) {
         )}
 
         {story.whatFitsThisWeek && (
-          <StoryLine icon={<Compass {...iconProps("sm", "text-sage-dark")} aria-hidden />} label="Deze week">
+          <StoryLine icon={<CalendarDays {...iconProps("sm", "text-sage-dark")} aria-hidden />} label="Deze week">
             <p className="text-sm text-ink">{story.whatFitsThisWeek}</p>
           </StoryLine>
         )}

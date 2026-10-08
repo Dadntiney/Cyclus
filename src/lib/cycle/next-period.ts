@@ -108,21 +108,3 @@ function averageAbsoluteSwing(lengths: number[]): number {
   }
   return total / (lengths.length - 1)
 }
-
-export function formatNextPeriodEstimate(estimate: NextPeriodEstimate): string {
-  const when =
-    estimate.daysUntil === 0
-      ? "Rond vandaag"
-      : estimate.daysUntil > 0
-        ? `Over ongeveer ${estimate.daysUntil} dag${estimate.daysUntil === 1 ? "" : "en"}`
-        : `Ongeveer ${Math.abs(estimate.daysUntil)} dag${Math.abs(estimate.daysUntil) === 1 ? "" : "en"} geleden (schatting)`
-
-  const confidenceLabel =
-    estimate.confidence === "hoog"
-      ? "Redelijk zeker"
-      : estimate.confidence === "middel"
-        ? "Voorzichtige schatting"
-        : "Ruime schatting — je cyclus wisselt"
-
-  return `${when} (venster ±${estimate.windowDays} dagen). ${confidenceLabel}.`
-}

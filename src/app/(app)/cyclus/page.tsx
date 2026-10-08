@@ -25,7 +25,7 @@ import { computePersonalInsights } from "@/lib/cycle/insights"
 import { computeSymptomCoOccurrences } from "@/lib/cycle/co-occurrence"
 import { computeWhatHelpedInsights } from "@/lib/cycle/what-helped"
 import { composeYourStory } from "@/lib/cycle/your-story"
-import { isLowDay, mostlyLowRecently, phaseTagline, usesChangingCycleLens } from "@/lib/cycle/day-lens"
+import { mostlyLowRecently, usesChangingCycleLens } from "@/lib/cycle/day-lens"
 import { composeCycleRecap, composeInsightProgress } from "@/lib/cycle/cycle-recap"
 import { estimateNextPeriod } from "@/lib/cycle/next-period"
 import { computeCycleDeviationAlerts } from "@/lib/cycle/deviation"
@@ -37,7 +37,7 @@ import { YourStoryBlock } from "@/components/cycle/your-story-card"
 import { Calendar } from "@/components/cycle/calendar"
 import { LifeStageBanner } from "@/components/cycle/life-stage-banner"
 import { CycleLengthSparkline, SimpleBars } from "@/components/cycle/simple-bars"
-import { formatPeriodRange } from "@/components/cycle/date-format"
+import { formatDateRange } from "@/lib/dates/format"
 import { PhaseContextCard } from "@/components/today/phase-context-card"
 import { CycleSetupCard } from "@/components/today/cycle-setup-card"
 import { Page } from "@/components/layout/page"
@@ -64,11 +64,12 @@ const VISIBLE_CYCLES = 3
 
 function PeriodRow({
   period,
-  currentYear,
+  today,
   showFlow,
 }: {
   period: CycleHistoryEntry
-  currentYear: number
+  /** Her Amsterdam today: the year is only written when it differs. */
+  today: Date
   showFlow: boolean
 }) {
   const flowOption = showFlow ? FLOW_OPTIONS.find((f) => f.value === period.dominantFlow) : undefined
@@ -84,7 +85,7 @@ function PeriodRow({
   return (
     <li className="px-4 py-3.5">
       <p className="text-base font-medium text-ink">
-        {formatPeriodRange(period.start, period.end, currentYear)}
+        {formatDateRange(period.start, period.end, { now: today })}
       </p>
       <p className="text-sm text-ink-soft mt-0.5">{details.join(" · ")}</p>
     </li>
@@ -147,7 +148,7 @@ export default async function CyclusPage() {
   const trackFlowEnabled = profile?.track_flow_intensity ?? false
   const sleepEnabled = profile?.sleep_tracking_enabled === true
   const today = todayISO()
-  const currentYear = todayDate().getFullYear()
+  const todayAmsterdam = todayDate()
   const lifeStage = cycleProfile?.life_stage ?? null
   const lifeStageLabel = LIFE_STAGE_OPTIONS.find((o) => o.value === lifeStage)?.label
   const postCycleMode = lifeStage === "menopauze" || cycleProfile?.has_cycle === false
@@ -342,12 +343,6 @@ export default async function CyclusPage() {
   const menstruationDay = activePeriodStart
     ? differenceInCalendarDays(parseISO(today), parseISO(activePeriodStart)) + 1
     : null
-  const todayCheckin = (checkins ?? []).find((c) => c.date === today) ?? null
-  const lowDay = isLowDay(todayCheckin)
-  const phaseSubtitle =
-    cycleEstimate && !(presentedToday.predictedMenstruation && !isMenstruationActive)
-      ? phaseTagline(cycleEstimate.phase, { lowDay, changingCycle })
-      : ""
 
   // ── Jouw patronen: one card, only the blocks with something to say ────
   const barItems = patterns
@@ -405,7 +400,7 @@ export default async function CyclusPage() {
   const morePeriods = pastPeriods.slice(VISIBLE_CYCLES)
 
   const settings = FEATURES.cyclusinstellingen
-  const checkinHref = "/vandaag#checkin"
+  const checkinHref = `${FEATURES.vandaag.href}#checkin`
 
   return (
     <Page className="xl:max-w-6xl">
@@ -428,7 +423,7 @@ export default async function CyclusPage() {
                 Jouw klachten staan centraal
               </CardTitle>
               <p className="text-sm text-ink-soft mt-2">
-                Check-ins, slaap, medicatie/HT en de klachtenlast-score blijven beschikbaar.
+                Check-ins, slaap, medicatie en de klachtenlast-score blijven beschikbaar.
               </p>
               {periLatest?.score != null && (
                 <p className="text-sm text-ink mt-3">
@@ -442,7 +437,6 @@ export default async function CyclusPage() {
               phaseLabel={cycleEstimate.phaseLabel}
               roughEstimate={changingCycle}
               cycleDay={cycleEstimate.cycleDay}
-              subtitle={phaseSubtitle}
               hasCycle={Boolean(cycleProfile?.has_cycle)}
               isMenstruationActive={isMenstruationActive}
               menstruationDay={menstruationDay}
@@ -457,7 +451,7 @@ export default async function CyclusPage() {
               phase="menstruatie"
               phaseLabel="Menstruatie"
               cycleDay={menstruationDay}
-              subtitle="Je hebt menstruatie gestart. Vul je cyclusgegevens aan voor een volledige fase-inschatting."
+              note="Vul je cyclusgegevens aan voor een volledige fase-inschatting."
               hasCycle
               isMenstruationActive
               menstruationDay={menstruationDay}
@@ -477,7 +471,7 @@ export default async function CyclusPage() {
             />
           )}
 
-          {!lifeStage && <LifeStageBanner changingCycle={changingCycle} />}
+          {!lifeStage && <LifeStageBanner changingCycle={changingCycle} focusAfterDismissId="jouw-verhaal" />}
         </div>
 
         <div className="flex flex-col gap-8">
@@ -559,7 +553,7 @@ export default async function CyclusPage() {
                       <PeriodRow
                         key={period.start}
                         period={period}
-                        currentYear={currentYear}
+                        today={todayAmsterdam}
                         showFlow={trackFlowEnabled}
                       />
                     ))}
@@ -577,7 +571,7 @@ export default async function CyclusPage() {
                           <PeriodRow
                             key={period.start}
                             period={period}
-                            currentYear={currentYear}
+                            today={todayAmsterdam}
                             showFlow={trackFlowEnabled}
                           />
                         ))}

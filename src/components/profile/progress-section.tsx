@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react"
 import { SectionHeader } from "@/components/ui/section-header"
 import { ICON } from "@/lib/ui/icon"
 import type { Milestone } from "@/lib/data/profile"
+import { FEATURES } from "@/lib/navigation/features"
 
 /** Every tile is the same height, number on top, words underneath. */
 const TILE = "flex min-h-28 flex-col justify-between gap-2 rounded-card p-4"
@@ -57,12 +58,12 @@ export function ProgressSection({
               label={totalWorkoutsCompleted === 1 ? "training voor jezelf gedaan" : "trainingen voor jezelf gedaan"}
             />
           ) : (
-            <InviteTile text="Je eerste moment voor jezelf?" href="/training" cta="Kies een korte beweging" />
+            <InviteTile text="Je eerste moment voor jezelf?" href={FEATURES.beweging.href} cta="Kies een korte beweging" />
           )}
           {totalCheckins > 0 ? (
             <StatTile value={totalCheckins} label={totalCheckins === 1 ? "check-in" : "check-ins"} />
           ) : (
-            <InviteTile text="Hoe voel je je vandaag?" href="/vandaag" cta="Doe een check-in" />
+            <InviteTile text="Hoe voel je je vandaag?" href={`${FEATURES.vandaag.href}#checkin`} cta="Doe een check-in" />
           )}
           {currentStreak > 0 && (
             <StatTile

@@ -69,8 +69,6 @@
   /* Muted plum-ink for informational lines — on-brand, not bright purple */
   --color-info: #5e5560;
   --color-info-soft: #eee8ec;
-  --color-success: var(--color-sage-dark);
-  --color-success-soft: var(--color-sage-soft);
 
   /* ——— Cycle phases (dedicated) ——— */
   --color-phase-menstruatie: #c98a7e;
@@ -104,27 +102,6 @@
   /* The one focus ring (6.5:1 on cream, 9.4:1 in Nacht). */
   --color-focus: var(--color-sage-dark);
 
-  /* ——— DEPRECATED semantic aliases ———
-     Do not use in new UI; the Ritme names above are canonical
-     (docs/DESIGN_SYSTEM.md). Kept only so old call sites keep working until
-     the sweep removes them: bg → cream, bg-subtle → cream-soft,
-     text → ink, text-muted → ink-soft, border → line, primary → sage,
-     primary-text → sage-dark, primary-soft → sage-soft,
-     primary-fill(-hover) → sage-fill(-darker), accent(-soft) → peach(-soft),
-     success(-soft) → sage-dark / sage-soft. */
-  --color-bg: var(--color-cream);
-  --color-bg-subtle: var(--color-cream-soft);
-  --color-text: var(--color-ink);
-  --color-text-muted: var(--color-ink-soft);
-  --color-border: var(--color-line);
-  --color-primary: var(--color-sage);
-  --color-primary-text: var(--color-sage-dark);
-  --color-primary-soft: var(--color-sage-soft);
-  --color-primary-fill: var(--color-sage-fill);
-  --color-primary-fill-hover: var(--color-sage-fill-darker);
-  --color-accent: var(--color-peach);
-  --color-accent-soft: var(--color-peach-soft);
-
   /* ——— Elevation ———
      Depth is reserved for sheets and floating chrome; cards use a hairline. */
   --shadow-card: 0 1px 2px rgba(46, 37, 41, 0.04);
@@ -155,7 +132,7 @@
   --motion-dialog-in: dialog-in var(--duration-base) var(--ease-enter) backwards;
   --motion-dialog-out: dialog-out var(--duration-exit) var(--ease-exit) forwards;
   --motion-rise-in: rise-in var(--duration-base) var(--ease-enter) backwards;
-  --motion-page-push: page-soft var(--duration-fast) var(--ease-enter);
+  --motion-page-push: page-push var(--duration-fast) var(--ease-enter);
 
   /* ——— Layout ——— */
   /* Page gutter (= px-5 lg:px-8); edge-bleed scrollers read it. */
@@ -320,8 +297,6 @@
   --color-warning-soft: var(--color-warning-soft);
   --color-info: var(--color-info);
   --color-info-soft: var(--color-info-soft);
-  --color-success: var(--color-success);
-  --color-success-soft: var(--color-success-soft);
   --color-scrim: var(--color-scrim);
   --color-focus: var(--color-focus);
 
@@ -343,20 +318,6 @@
   --color-chart-1: var(--color-chart-1);
   --color-chart-2: var(--color-chart-2);
   --color-chart-track: var(--color-chart-track);
-
-  /* DEPRECATED aliases — see the note in :root. */
-  --color-bg: var(--color-bg);
-  --color-bg-subtle: var(--color-bg-subtle);
-  --color-text: var(--color-text);
-  --color-text-muted: var(--color-text-muted);
-  --color-border: var(--color-border);
-  --color-primary: var(--color-primary);
-  --color-primary-text: var(--color-primary-text);
-  --color-primary-soft: var(--color-primary-soft);
-  --color-primary-fill: var(--color-primary-fill);
-  --color-primary-fill-hover: var(--color-primary-fill-hover);
-  --color-accent: var(--color-accent);
-  --color-accent-soft: var(--color-accent-soft);
 
   --shadow-card: var(--shadow-card);
   --shadow-elevated: var(--shadow-elevated);
@@ -382,12 +343,6 @@
   --animate-dialog-out: var(--motion-dialog-out);
   --animate-rise-in: var(--motion-rise-in);
   --animate-page-push: var(--motion-page-push);
-  /* DEPRECATED: pop-in now uses dialog-in (no overshoot); page-in and
-     page-soft are kept for old call sites. Use dialog-in / rise-in /
-     page-push in new UI. */
-  --animate-pop-in: var(--motion-dialog-in);
-  --animate-page-in: page-in var(--duration-fast) var(--ease-enter) backwards;
-  --animate-page-soft: var(--motion-page-push);
 
   /* Type scale — larger than Tailwind's defaults for 30+/40+ readers.
      Smallest text is 13px; running text 15–17px. */
@@ -413,7 +368,8 @@
   --text-numeral--line-height: 0.9;
 }
 
-/* Shape: three radii plus pill. rounded-xs is for the checkbox only. */
+/* Shape: three radii plus pill. rounded-xs: checkbox, Buddy bubble tail and
+   chart bar tops only (docs/DESIGN_SYSTEM.md §4). */
 @theme {
   --radius-xs: 0.375rem;
   --radius-inset: 0.75rem;
@@ -668,33 +624,6 @@ select {
   }
 }
 
-/* DEPRECATED overshoot pop-in. Nothing references it any more
-   (animate-pop-in now runs dialog-in); the sweep deletes it. */
-@keyframes pop-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.85);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.03);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes page-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes sheet-in {
   from {
     transform: translateY(100%);
@@ -802,16 +731,10 @@ select {
   .animate-menstruatie-adem {
     animation: none;
   }
-
-  /* Deprecated aliases: off entirely for reduced motion, as before. */
-  .animate-pop-in,
-  .animate-page-in,
-  .animate-page-soft {
-    animation: none;
-  }
 }
 
-@keyframes page-soft {
+/* Page push (besluit 10): opacity only, no transform, no lasting fill. */
+@keyframes page-push {
   from {
     opacity: 0.92;
   }
@@ -875,6 +798,14 @@ select {
   }
 }
 
+/* Pages outside the app shell (welcome, login, legal, onboarding) have no
+   app bar, so anchors and focus scrolling need no 48px offset there. */
+@media (max-width: 767px) {
+  :root:not(:has(#app-root)) {
+    --mobile-header-h: 0px;
+  }
+}
+
 /* Component rules sit in the components layer, so a utility class passed
    by a page (className) still wins. */
 @layer components {
@@ -885,6 +816,13 @@ select {
       calc(var(--bottom-nav-h, 0px) + var(--sticky-action-h, 0px) + 0.75rem),
       calc(env(safe-area-inset-bottom) + 0.75rem)
     );
+  }
+
+  /* One stacking region (#toast-layer): the app toast, autosave pill and
+     reminders are slots in it. Spacing sits on top of each slot that shows
+     something, so an empty live region never pushes a toast up. */
+  .toast-slot:not(:empty) {
+    margin-top: 0.5rem;
   }
 
   @media (min-width: 768px) {
