@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { cache } from "react"
 import { notFound } from "next/navigation"
 import { getKnowledgeArticle, listKnowledgeArticles } from "@/lib/data/knowledge"
-import { FEATURES } from "@/lib/navigation/features"
+import { FEATURES, NOT_FOUND_TITLE } from "@/lib/navigation/features"
 import { Page, PageSections } from "@/components/layout/page"
 import { PageHeader } from "@/components/layout/page-header"
 import { ListGroup, ListRow } from "@/components/ui/list-group"
@@ -18,7 +18,7 @@ const loadArticle = cache((slug: string) => getKnowledgeArticle(slug))
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const article = await loadArticle(slug)
-  return { title: article?.title ?? FEATURES.kennis.label }
+  return { title: article?.title ?? NOT_FOUND_TITLE }
 }
 
 export default async function KennisArticlePage({

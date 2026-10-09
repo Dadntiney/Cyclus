@@ -6,7 +6,7 @@ import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getWorkoutDetail, getFavoriteExerciseIds } from "@/lib/data/training"
 import { ensureWorkoutImage } from "@/lib/images/ensure-workout-image"
-import { FEATURES } from "@/lib/navigation/features"
+import { NOT_FOUND_TITLE } from "@/lib/navigation/features"
 import { SHOW_WORKOUT_PHOTOS } from "@/components/training/workout-image"
 import { WorkoutSession } from "@/components/training/workout-session"
 import { workoutDisplayTitle } from "@/components/training/workout-format"
@@ -18,7 +18,7 @@ const loadWorkout = cache((workoutId: string) => getWorkoutDetail(workoutId))
 export async function generateMetadata({ params }: { params: Promise<{ workoutId: string }> }): Promise<Metadata> {
   const { workoutId } = await params
   const { workout } = await loadWorkout(workoutId)
-  return { title: workout ? workoutDisplayTitle(workout.title) : FEATURES.beweging.label }
+  return { title: workout ? workoutDisplayTitle(workout.title) : NOT_FOUND_TITLE }
 }
 
 export default async function WorkoutDetailPage({

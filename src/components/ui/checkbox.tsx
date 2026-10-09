@@ -42,7 +42,8 @@ export function Checkbox({
     <label
       htmlFor={inputId}
       className={cn(
-        "flex min-h-11 items-start gap-3 py-2.5 touch-manipulation select-none",
+        // relative: the sr-only input (absolute) stays inside its row, also in a closed Collapse.
+        "relative flex min-h-11 items-start gap-3 py-2.5 touch-manipulation select-none",
         disabled ? "opacity-50" : "cursor-pointer",
         className,
       )}

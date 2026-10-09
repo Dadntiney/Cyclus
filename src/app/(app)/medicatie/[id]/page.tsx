@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { cache } from "react"
 import { notFound } from "next/navigation"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getMedication } from "@/lib/data/medications"
@@ -7,8 +8,19 @@ import { getCyclicalPhaseInfo, type MedicationSchedule } from "@/lib/medication/
 import { Card } from "@/components/ui/card"
 import type { MedicationInput } from "@/lib/validations/medication"
 import { formatLongDate } from "@/lib/dates/format"
+import { NOT_FOUND_TITLE } from "@/lib/navigation/features"
 
-export const metadata: Metadata = { title: "Medicatie bewerken" }
+// One query per request, shared by the document title and the page.
+const loadMedication = cache(async (id: string) => {
+  const user = await getAuthedUser()
+  return user ? getMedication(user.id, id) : null
+})
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const medication = await loadMedication(id)
+  return { title: medication ? "Medicatie bewerken" : NOT_FOUND_TITLE }
+}
 
 /** The wizard renders its own Page + PageHeader: each step is one question. */
 export default async function EditMedicationPage({
@@ -20,7 +32,7 @@ export default async function EditMedicationPage({
   const user = await getAuthedUser()
   if (!user) return null
 
-  const medication = await getMedication(user.id, id)
+  const medication = await loadMedication(id)
   if (!medication) notFound()
 
   const schedule: MedicationSchedule = {

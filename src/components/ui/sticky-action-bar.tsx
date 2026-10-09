@@ -12,8 +12,10 @@ import { cn } from "@/lib/utils"
  *
  * Put it last, as a direct child of <Page> (or another container as tall
  * as the page): sticky only travels within its parent, so inside a short
- * wrapper it scrolls away with that wrapper. It bleeds to the page gutter
- * on both sides. Its height is published as
+ * wrapper it scrolls away with that wrapper. In a `<Page fill>` (wizard
+ * steps) it rests at the bottom of the screen even when the step is short
+ * (`mt-auto`). On phones it bleeds to the page gutter on both sides; on
+ * md+ it keeps the content width. Its height is published as
  * `--sticky-action-h`, so toasts appear above it.
  *
  * ```tsx
@@ -43,7 +45,7 @@ export function StickyActionBar({
       ref={ref}
       data-sticky-action-bar=""
       className={cn(
-        "sticky-action-bar sticky z-20 flex flex-col gap-2 border-t border-line bg-cream pt-3",
+        "sticky-action-bar sticky z-20 mt-auto flex flex-col gap-2 border-t border-line bg-cream pt-3",
         bleed && "sticky-action-bar-bleed",
         className,
       )}

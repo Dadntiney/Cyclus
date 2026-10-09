@@ -78,12 +78,17 @@ export function ListenMode({
   onStop,
   onFinish,
   onRead,
+  focusPlay = false,
+  onPlayFocused,
 }: {
   exercise: MindfulExercise
   onStop: () => void
   onFinish: () => void
   /** Switch to Lezen (when this device cannot read aloud). */
   onRead: () => void
+  /** Put focus on Afspelen once mounted (after "Stoppen" / "Nog een keer"). */
+  focusPlay?: boolean
+  onPlayFocused?: () => void
 }) {
   const hasAudioFile = Boolean(exercise.audioUrl)
   // Server: assume support, so no "not supported" flash before hydration.
@@ -101,6 +106,7 @@ export function ListenMode({
 
   const [segments] = useState(() => buildSegments(exercise))
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const playRef = useRef<HTMLButtonElement>(null)
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const voicesRef = useRef<SpeechSynthesisVoice[]>([])
   const finishedRef = useRef(false)
@@ -118,6 +124,13 @@ export function ListenMode({
     window.speechSynthesis.addEventListener("voiceschanged", loadVoices)
     return () => window.speechSynthesis.removeEventListener("voiceschanged", loadVoices)
   }, [hasAudioFile, speechSupported])
+
+  // The button she used (Stoppen, Nog een keer) is gone: continue on Afspelen.
+  useEffect(() => {
+    if (!focusPlay || !playRef.current) return
+    playRef.current.focus({ preventScroll: true })
+    onPlayFocused?.()
+  }, [focusPlay, onPlayFocused])
 
   // Stop speaking immediately if she navigates away or switches to Lezen.
   useEffect(() => {
@@ -285,6 +298,7 @@ export function ListenMode({
         <div className="flex items-center justify-center gap-6">
           <IconButton label="Stoppen" icon={Square} tone="soft" onClick={handleStop} disabled={!started} />
           <button
+            ref={playRef}
             type="button"
             onClick={handlePlayPause}
             aria-label={playing ? "Pauzeren" : started ? "Verder luisteren" : "Afspelen"}

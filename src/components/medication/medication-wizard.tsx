@@ -264,7 +264,7 @@ export function MedicationWizard({
       : copy.subtitle
 
   return (
-    <Page>
+    <Page fill>
       <PageHeader
         title={copy.title}
         compactTitle={mode === "edit" ? "Medicatie bewerken" : "Medicatie toevoegen"}

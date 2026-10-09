@@ -55,6 +55,11 @@ export interface Feature {
    * "Hele week" action on Vandaag that opens Deze week.
    */
   linkLabel?: string
+  /**
+   * The one description under the name in a list row (Profiel, Over
+   * Buddy), for destinations listed in more than one place.
+   */
+  description?: string
 }
 
 export const FEATURES = {
@@ -97,11 +102,26 @@ export const FEATURES = {
   cyclusinstellingen: { href: "/profiel/cyclus", label: "Cyclusinstellingen", icon: Settings2, tab: "/profiel" },
   gebruik: { href: "/profiel/gebruik", label: "Wat ik gebruik", icon: Layers, tab: "/profiel" },
   meldingen: { href: "/profiel/meldingen", label: "Meldingen", icon: Bell, tab: "/profiel" },
-  buddyStijl: { href: "/profiel/buddy", label: "Buddy-stijl", icon: Palette, tab: "/profiel" },
-  privacy: { href: "/profiel/privacy", label: "Privacy", icon: Shield, tab: "/profiel" },
+  buddyStijl: {
+    href: "/profiel/buddy",
+    label: "Buddy-stijl",
+    icon: Palette,
+    tab: "/profiel",
+    description: "Toon en hoe vaak Buddy van zich laat horen",
+  },
+  privacy: {
+    href: "/profiel/privacy",
+    label: "Privacy",
+    icon: Shield,
+    tab: "/profiel",
+    description: "Toestemming en je gegevens",
+  },
 } as const satisfies Record<string, Feature>
 
 export type FeatureKey = keyof typeof FEATURES
+
+/** Document title and h1 when a record (recipe, article, …) does not exist. */
+export const NOT_FOUND_TITLE = "Pagina niet gevonden"
 
 /** The five tabs, in order. */
 export const TAB_FEATURES = [

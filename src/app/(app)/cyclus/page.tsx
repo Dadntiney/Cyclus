@@ -48,6 +48,7 @@ import { Card, CardTitle } from "@/components/ui/card"
 import { Disclosure } from "@/components/ui/disclosure"
 import { EmptyState } from "@/components/ui/empty-state"
 import { IconButton } from "@/components/ui/icon-button"
+import { JumpLink } from "@/components/ui/jump-link"
 import { ListGroup, ListRow } from "@/components/ui/list-group"
 import { SectionHeader } from "@/components/ui/section-header"
 import { todayDate, todayISO } from "@/lib/dates/amsterdam"
@@ -586,9 +587,9 @@ export default async function CyclusPage() {
                   title="Nog geen afgeronde cycli"
                   description="Markeer menstruatiedagen in de kalender. Afgeronde periodes verschijnen hier."
                   action={
-                    <a href="#kalender" className={textActionClass()}>
+                    <JumpLink targetId="kalender" className={textActionClass()}>
                       Naar de kalender
-                    </a>
+                    </JumpLink>
                   }
                 />
               )}

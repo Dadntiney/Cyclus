@@ -25,16 +25,31 @@ const WIDTH: Record<PageWidth, string> = {
 export function Page({
   width = "content",
   as: Tag = "div",
+  fill = false,
   className,
   children,
 }: {
   width?: PageWidth
   as?: "div" | "article"
+  /**
+   * A step in an immersive flow (wizard): at least as tall as the screen
+   * under the app bar, as a flex column, so the StickyActionBar (last child,
+   * `mt-auto`) rests at the bottom on a short step instead of right under
+   * the content — the main button stays in the same place on every step.
+   */
+  fill?: boolean
   className?: string
   children: ReactNode
 }) {
   return (
-    <Tag className={cn("mx-auto w-full px-5 pt-4 pb-8 lg:px-8 lg:pt-10", WIDTH[width], className)}>
+    <Tag
+      className={cn(
+        "mx-auto w-full px-5 pt-4 pb-8 lg:px-8 lg:pt-10",
+        WIDTH[width],
+        fill && "flex min-h-[calc(100dvh-var(--mobile-header-h))] flex-col pb-0",
+        className,
+      )}
+    >
       {children}
     </Tag>
   )
