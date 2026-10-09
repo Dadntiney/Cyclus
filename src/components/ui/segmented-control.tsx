@@ -63,7 +63,10 @@ export function SegmentedControl<T extends string>({
             onClick={() => onChange(opt.value)}
             {...getItemProps(i)}
             className={cn(
-              "min-h-11 min-w-16 rounded-full px-4 text-sm font-medium touch-manipulation select-none whitespace-nowrap",
+              "min-h-11 rounded-full text-sm font-medium touch-manipulation select-none whitespace-nowrap",
+              // Full width: equal segments, so less padding; four labels
+              // like "Momenten" still fit side by side at 320px (13px floor).
+              fullWidth ? "min-w-0 px-2 max-[359px]:px-1 max-[359px]:text-xs" : "min-w-16 px-4",
               "transition-[background-color,color,box-shadow] duration-fast ease-standard",
               "disabled:opacity-50 disabled:pointer-events-none",
               checked

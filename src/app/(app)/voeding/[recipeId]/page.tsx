@@ -16,6 +16,7 @@ import { DIFFICULTY_LABELS, formatPrepTime, nutritionStats } from "@/components/
 import { Page } from "@/components/layout/page"
 import { PageHeader } from "@/components/layout/page-header"
 import { SectionHeader } from "@/components/ui/section-header"
+import { NOT_FOUND_TITLE } from "@/lib/navigation/features"
 import { ICON, iconProps } from "@/lib/ui/icon"
 
 // One query per request, shared by the document title and the page.
@@ -24,7 +25,7 @@ const loadRecipe = cache((recipeId: string) => getRecipeDetail(recipeId))
 export async function generateMetadata({ params }: { params: Promise<{ recipeId: string }> }): Promise<Metadata> {
   const { recipeId } = await params
   const recipe = await loadRecipe(recipeId)
-  return { title: recipe?.title ?? "Recept" }
+  return { title: recipe?.title ?? NOT_FOUND_TITLE }
 }
 
 function parseStringArray(value: unknown): string[] {
@@ -121,11 +122,19 @@ export default async function RecipeDetailPage({
             <p id="voedingswaarden" className="mb-2 text-sm text-ink-soft">
               Voedingswaarden per portie, bij benadering
             </p>
-            <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2">
+            {/* One row of four on a phone (two only below 360px), compact:
+                the value on top, a long label ("Koolhydraten") may break
+                over two lines without moving the values. */}
+            <dl className="grid grid-cols-2 gap-2 min-[360px]:grid-cols-4 min-[360px]:gap-1.5 lg:grid-cols-2 lg:gap-2">
               {stats.map((stat) => (
-                <div key={stat.key} className="flex flex-col-reverse rounded-inset bg-cream-soft px-3 py-3 text-center">
-                  <dt className="text-xs text-ink-soft">{stat.label}</dt>
-                  <dd className="text-base font-semibold text-ink tabular-nums">{stat.value}</dd>
+                <div
+                  key={stat.key}
+                  className="flex flex-col-reverse justify-end rounded-inset bg-cream-soft px-1 py-2.5 text-center lg:px-3 lg:py-3"
+                >
+                  <dt className="text-xs text-ink-soft wrap-break-word hyphens-auto">{stat.label}</dt>
+                  <dd className="whitespace-nowrap text-sm font-semibold text-ink tabular-nums lg:text-base">
+                    {stat.value}
+                  </dd>
                 </div>
               ))}
             </dl>

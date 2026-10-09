@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Sparkles, X } from "lucide-react"
 import { AppBarConfig } from "@/components/nav/app-bar-context"
 import { PageHeader } from "@/components/layout/page-header"
@@ -24,6 +24,8 @@ import { completeWorkoutSession, fetchAlternativeExercise } from "@/lib/actions/
 import { runAction } from "@/lib/client/run-action"
 import { leaveFlow } from "@/lib/client/navigation-depth"
 import { useImmersive } from "@/lib/hooks/use-immersive"
+import { FEATURES } from "@/lib/navigation/features"
+import { useBackTarget } from "@/lib/navigation/hooks"
 import { lookupExerciseInstruction } from "@/lib/training/exercise-instructions"
 import { formatExercisePrescription } from "@/lib/training/prescription"
 import { workoutTypeLabel } from "@/lib/constants"
@@ -77,6 +79,10 @@ export function WorkoutSession({
   name: string | null
 }) {
   const router = useRouter()
+  const pathname = usePathname()
+  const backTarget = useBackTarget(pathname, { href: FEATURES.beweging.href, label: FEATURES.beweging.label })
+  const leaveLabel =
+    backTarget && backTarget.label !== "Terug" ? `Terug naar ${backTarget.label}` : "Terug"
   const [started, setStarted] = useState(false)
   const [exercises, setExercises] = useState(initialExercises)
   const [index, setIndex] = useState(0)
@@ -243,14 +249,21 @@ export function WorkoutSession({
 
   if (finished) {
     const doneCount = doneIds.size
+    // Everything skipped: no praise for what did not happen, and an easy
+    // way back without saving anything.
+    const skippedAll = doneCount === 0
     return (
       <>
         <PageHeader
           titleId={doneTitleId}
           eyebrow="Training klaar"
-          title={`Mooi gedaan${name ? `, ${name}` : ""}.`}
+          title={skippedAll ? "Vandaag was het even niet het moment" : `Mooi gedaan${name ? `, ${name}` : ""}.`}
           compactTitle="Training klaar"
-          subtitle={`Je hebt ${doneCount} van de ${total} oefeningen afgerond. Je hebt vandaag weer iets voor jezelf gedaan.`}
+          subtitle={
+            skippedAll
+              ? "Dat mag ook. Je lichaam vraagt niet elke dag hetzelfde; deze training staat er een andere keer gewoon weer."
+              : `Je hebt ${doneCount} van de ${total} oefeningen afgerond. Je hebt vandaag weer iets voor jezelf gedaan.`
+          }
         />
         <StickyActionBar>
           {finishError && (
@@ -261,6 +274,13 @@ export function WorkoutSession({
           <Button className="w-full" onClick={handleFinishWorkout} disabled={isPending}>
             {isPending ? "Bezig…" : "Training afronden"}
           </Button>
+          {skippedAll && (
+            <div className="flex justify-center">
+              <button type="button" className={textActionClass()} onClick={stop} disabled={isPending}>
+                {leaveLabel}
+              </button>
+            </div>
+          )}
         </StickyActionBar>
       </>
     )

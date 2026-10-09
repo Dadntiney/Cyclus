@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useId, useMemo, useRef, useState, type ReactNode, type RefObject } from "react"
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 import { Salad, SlidersHorizontal } from "lucide-react"
 import { RecipeCard } from "./recipe-card"
@@ -45,6 +45,54 @@ const TIME_OPTIONS: { value: TimeLimit | typeof ANY_TIME; label: string }[] = [
   ...TIME_LIMITS.map((limit) => ({ value: limit, label: `${limit} min` })),
 ]
 
+/*
+ * How many recipes "Toon nog …" has shown, per filter selection, for this
+ * tab (sessionStorage). Going back from a recipe remounts the library: with
+ * the count restored in the very first client render, the list is as long
+ * as she left it and the browser can put her back at the card she opened
+ * (DISC-4). The server render (and hydration) always starts at one page.
+ */
+const SHOWN_KEY = "gofiev:voeding:getoond"
+let shownMemory: string | null = null
+const shownListeners = new Set<() => void>()
+
+function readShown(): string | null {
+  try {
+    return window.sessionStorage.getItem(SHOWN_KEY) ?? shownMemory
+  } catch {
+    return shownMemory
+  }
+}
+
+function writeShown(filterKey: string, count: number) {
+  shownMemory = JSON.stringify({ key: filterKey, count })
+  try {
+    window.sessionStorage.setItem(SHOWN_KEY, shownMemory)
+  } catch {
+    // Private mode: the in-memory copy still covers this visit.
+  }
+  shownListeners.forEach((listener) => listener())
+}
+
+function subscribeShown(listener: () => void) {
+  shownListeners.add(listener)
+  return () => {
+    shownListeners.delete(listener)
+  }
+}
+
+function shownCountFor(raw: string | null, filterKey: string): number {
+  if (!raw) return PAGE_SIZE
+  try {
+    const parsed = JSON.parse(raw) as { key?: unknown; count?: unknown }
+    return parsed.key === filterKey && typeof parsed.count === "number" && parsed.count > PAGE_SIZE
+      ? parsed.count
+      : PAGE_SIZE
+  } catch {
+    return PAGE_SIZE
+  }
+}
+
 function countLabel(n: number) {
   return `${n} ${n === 1 ? "recept" : "recepten"}`
 }
@@ -69,9 +117,10 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
   const ordered = useMemo(() => orderRecipes(recipes), [recipes])
   const filtered = useMemo(() => ordered.filter((recipe) => matchesFilters(recipe, filters)), [ordered, filters])
 
-  // "Toon nog …" starts over whenever the selection changes.
-  const [shown, setShown] = useState({ key: filterKey, count: PAGE_SIZE })
-  const visibleCount = shown.key === filterKey ? shown.count : PAGE_SIZE
+  // "Toon nog …" starts over whenever the selection changes, and is kept
+  // for the way back from a recipe.
+  const storedShown = useSyncExternalStore(subscribeShown, readShown, () => null)
+  const visibleCount = shownCountFor(storedShown, filterKey)
   const visible = filtered.slice(0, visibleCount)
   const hiddenCount = Math.max(0, filtered.length - visible.length)
 
@@ -89,7 +138,7 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
 
   function showMore() {
     focusIndexRef.current = visibleCount
-    setShown({ key: filterKey, count: visibleCount + PAGE_SIZE })
+    writeShown(filterKey, visibleCount + PAGE_SIZE)
   }
 
   // After "Toon nog …", move focus to the first new recipe so keyboard and
@@ -115,7 +164,14 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
     else if (box.left < row.left + edge) scroller.scrollLeft -= row.left + edge - box.left
   }, [filters.meal])
 
-  function clearAll() {
+  // Both "Wis filters" clear the same set: the Filters-sheet choices. The
+  // meal moment stays as chosen (DISC-8).
+  function clearSheetFilters() {
+    apply({ ...NO_FILTERS, meal: filters.meal })
+    filtersButtonRef.current?.focus()
+  }
+
+  function showAllRecipes() {
     apply(NO_FILTERS)
     filtersButtonRef.current?.focus()
   }
@@ -129,55 +185,54 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
           onChange={(meal) => apply({ ...filters, meal: meal === ALL ? null : meal })}
         />
 
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <p role="status" className="mr-1 flex min-h-11 items-center text-sm text-ink-soft">
+        {/* Count and Filters on one line; the active filters as one
+            compact chip row under it, "Wis filters" at the end (besluit 32). */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-3">
+            <p role="status" className="flex min-h-11 items-center text-sm text-ink-soft">
               {countLabel(filtered.length)}
             </p>
-            {active.map((filter) => (
-              <Chip
-                key={`${filter.kind}-${filter.value}`}
-                removable
-                onClick={() => {
-                  apply(removeFilter(filters, filter))
-                  // The chip disappears; keep the focus on something that stays.
-                  filtersButtonRef.current?.focus()
-                }}
-              >
-                {filter.label}
-              </Chip>
-            ))}
-            {active.length > 1 && (
-              <button
-                type="button"
-                onClick={() => {
-                  // Clears the filters shown here; the meal moment stays as chosen.
-                  apply({ ...NO_FILTERS, meal: filters.meal })
-                  filtersButtonRef.current?.focus()
-                }}
-                className={textActionClass("px-2")}
-              >
-                Wis filters
-              </button>
-            )}
+            <Button
+              ref={filtersButtonRef}
+              variant="secondary"
+              size="sm"
+              aria-haspopup="dialog"
+              onClick={() => setSheetOpen(true)}
+              className="shrink-0"
+            >
+              <SlidersHorizontal {...ICON.sm} aria-hidden />
+              Filters
+              {sheetCount > 0 && (
+                <Badge tone="sage">
+                  {sheetCount}
+                  <span className="sr-only"> aan</span>
+                </Badge>
+              )}
+            </Button>
           </div>
-          <Button
-            ref={filtersButtonRef}
-            variant="secondary"
-            size="sm"
-            aria-haspopup="dialog"
-            onClick={() => setSheetOpen(true)}
-            className="shrink-0"
-          >
-            <SlidersHorizontal {...ICON.sm} aria-hidden />
-            Filters
-            {sheetCount > 0 && (
-              <Badge tone="sage">
-                {sheetCount}
-                <span className="sr-only"> aan</span>
-              </Badge>
-            )}
-          </Button>
+          {active.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              {active.map((filter) => (
+                <Chip
+                  key={`${filter.kind}-${filter.value}`}
+                  removable
+                  className="whitespace-nowrap"
+                  onClick={() => {
+                    apply(removeFilter(filters, filter))
+                    // The chip disappears; keep the focus on something that stays.
+                    filtersButtonRef.current?.focus()
+                  }}
+                >
+                  {filter.label}
+                </Chip>
+              ))}
+              {active.length > 1 && (
+                <button type="button" onClick={clearSheetFilters} className={textActionClass("px-2")}>
+                  Wis filters
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -205,9 +260,15 @@ export function RecipeLibrary({ recipes }: { recipes: RecipeCardData[] }) {
             title="Geen recepten bij deze filters"
             description="Probeer een andere combinatie, of bekijk alles."
             action={
-              <Button variant="secondary" size="sm" onClick={clearAll}>
-                Wis filters
-              </Button>
+              sheetCount > 0 ? (
+                <Button variant="secondary" size="sm" onClick={clearSheetFilters}>
+                  Wis filters
+                </Button>
+              ) : (
+                <Button variant="secondary" size="sm" onClick={showAllRecipes}>
+                  Bekijk alle recepten
+                </Button>
+              )
             }
           />
         )}

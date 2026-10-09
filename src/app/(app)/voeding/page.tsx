@@ -54,9 +54,11 @@ export default async function VoedingPage() {
         subtitle={
           <>
             Recepten om uit te kiezen. Je plan voor vandaag staat op{" "}
+            {/* Vertical padding on an inline link grows the tap area to
+                ~44px without moving the line. */}
             <Link
               href={FEATURES.vandaag.href}
-              className="font-medium text-sage-dark underline underline-offset-4 touch-manipulation"
+              className="py-3 font-medium text-sage-dark underline underline-offset-4 touch-manipulation"
             >
               {FEATURES.vandaag.label}
             </Link>

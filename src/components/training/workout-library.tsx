@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { ChevronRight, SlidersHorizontal } from "lucide-react"
+import { ChevronRight, Settings } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { ChipRadioGroup } from "@/components/ui/chip-radio-group"
 import { IconButton } from "@/components/ui/icon-button"
@@ -18,7 +18,7 @@ const ALL = "alles"
 
 /**
  * The Beweging library: one row of type chips (one choice; her preferences
- * at the end of the row) and the trainings as tappable cards — difficulty,
+ * as a gear after the row, always in view) and the trainings as tappable cards — difficulty,
  * title, "7 min · Yoga".
  */
 export function WorkoutLibrary({ workouts, preferencesHref }: { workouts: Workout[]; preferencesHref: string }) {
@@ -33,16 +33,26 @@ export function WorkoutLibrary({ workouts, preferencesHref }: { workouts: Workou
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="scroller-bleed flex items-center gap-2">
-        <ChipRadioGroup
-          aria-label="Soort training"
-          options={typeOptions}
-          value={activeType}
-          onChange={setActiveType}
-          className="shrink-0 flex-nowrap"
-          chipClassName="shrink-0 whitespace-nowrap"
+      <div className="flex items-center gap-2">
+        <div className="scroller-bleed-start min-w-0 flex-1">
+          <ChipRadioGroup
+            aria-label="Soort training"
+            options={typeOptions}
+            value={activeType}
+            onChange={setActiveType}
+            className="w-max flex-nowrap"
+            chipClassName="shrink-0 whitespace-nowrap"
+          />
+        </div>
+        {/* A settings gear, not the filter sliders: it leaves the page
+            (Profiel → Wat ik gebruik). Outside the scroller, so it is
+            always in view. */}
+        <IconButton
+          label="Voorkeuren voor beweging"
+          icon={Settings}
+          href={preferencesHref}
+          className="shrink-0"
         />
-        <IconButton label="Voorkeuren voor beweging" icon={SlidersHorizontal} href={preferencesHref} />
       </div>
 
       <ul className="flex flex-col gap-3">

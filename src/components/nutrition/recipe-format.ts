@@ -62,7 +62,9 @@ export function recipeMetaLine(
 const NUTRITION_FIELDS: Record<string, { label: string; unit: string }> = {
   calorieen: { label: "Energie", unit: "kcal" },
   eiwit: { label: "Eiwit", unit: "g" },
-  koolhydraten: { label: "Koolhydraten", unit: "g" },
+  // Soft hyphen: in a narrow nutrition tile it breaks as "Koolhy-draten"
+  // (not "Koolhydrat/en" where no hyphenation dictionary exists).
+  koolhydraten: { label: "Koolhy\u00addraten", unit: "g" },
   vet: { label: "Vet", unit: "g" },
 }
 

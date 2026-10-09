@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 import { RecipeImage } from "@/components/nutrition/recipe-image"
 import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
 import { buttonVariants } from "@/components/ui/button"
-import { ChipRadioGroup } from "@/components/ui/chip-radio-group"
+import { SegmentedControl } from "@/components/ui/segmented-control"
 import { EmptyState } from "@/components/ui/empty-state"
 import { SectionAction, SectionHeader } from "@/components/ui/section-header"
 import {
@@ -210,7 +210,7 @@ export function FavoritesView({
   const filter = parseFavoritesFilter(searchParams.get("soort"))
   const filterRowRef = useRef<HTMLDivElement>(null)
   // "Alle n" disappears once its filter is on: focus moves to that filter's
-  // chip instead of being lost.
+  // segment instead of being lost.
   const focusFilterRef = useRef(false)
 
   useEffect(() => {
@@ -285,13 +285,13 @@ export function FavoritesView({
   return (
     <div className="flex flex-col gap-6">
       <div ref={filterRowRef}>
-        <ChipRadioGroup
+        {/* Four fixed modes, all visible at once (§10.3: SegmentedControl). */}
+        <SegmentedControl
           aria-label="Soort favorieten"
           options={FAVORITES_FILTERS}
           value={filter}
           onChange={select}
-          className="scroller-bleed flex-nowrap"
-          chipClassName="shrink-0 whitespace-nowrap"
+          fullWidth
         />
       </div>
       {content}
