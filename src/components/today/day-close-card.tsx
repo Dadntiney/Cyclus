@@ -12,6 +12,7 @@ import { Button, textActionClass } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Collapse } from "@/components/ui/disclosure"
 import { Label, Textarea } from "@/components/ui/input"
+import { JumpLink } from "@/components/ui/jump-link"
 import { FEATURES } from "@/lib/navigation/features"
 import { triggerHaptic } from "@/lib/platform"
 import { ICON, iconProps } from "@/lib/ui/icon"
@@ -25,7 +26,8 @@ const DANKBAARHEID_HREF = "/mentale-rust/dankbaarheidsmoment"
 
 /**
  * "Even afronden" — the evening wrap-up, folded by default (it never opens
- * by itself). Open: what is still open as anchor links, one prompt "Wat
+ * by itself). Open: what is still open as in-page links (JumpLink: no
+ * history entry, so "back" keeps working), one prompt "Wat
  * neem je mee van vandaag?", a row of plain text links and "Dag laten
  * rusten". The affirmation (with a heart to save it) appears once the day
  * rests. Icon: NotebookPen (besluit 22); a heart only ever means "bewaren".
@@ -37,6 +39,7 @@ export function DayCloseCard({
   hasCheckin,
   movementEnabled,
   movementDone,
+  restDay = false,
   sleepTrackingEnabled,
   hasSleepEntry,
   mentalWellbeingEnabled = false,
@@ -48,6 +51,8 @@ export function DayCloseCard({
   hasCheckin: boolean
   movementEnabled: boolean
   movementDone: boolean
+  /** A planned rest day: nothing to "do", so no "Beweging nog open" row. */
+  restDay?: boolean
   sleepTrackingEnabled: boolean
   hasSleepEntry: boolean
   mentalWellbeingEnabled?: boolean
@@ -162,15 +167,15 @@ export function DayCloseCard({
       key: "checkin",
       done: hasCheckin,
       label: hasCheckin ? "Even bij jezelf geweest" : "Check-in nog open",
-      href: "#checkin",
+      target: "checkin",
     },
-    ...(movementEnabled
+    ...(movementEnabled && (movementHandled || !restDay)
       ? [
           {
             key: "movement",
             done: movementHandled,
             label: movementHandled ? "Beweging genoteerd" : "Beweging nog open",
-            href: "#beweging",
+            target: "beweging",
           },
         ]
       : []),
@@ -180,7 +185,7 @@ export function DayCloseCard({
             key: "sleep",
             done: hasSleepEntry,
             label: hasSleepEntry ? "Slaap genoteerd" : "Slaap nog invullen",
-            href: "#slaap-vandaag",
+            target: "slaap-vandaag",
           },
         ]
       : []),
@@ -270,10 +275,10 @@ export function DayCloseCard({
                   </li>
                 ) : (
                   <li key={item.key}>
-                    <a href={item.href} className={textActionClass("gap-2")}>
+                    <JumpLink targetId={item.target} className={textActionClass("gap-2")}>
                       <Circle {...iconProps("sm", "text-ink-soft")} aria-hidden />
                       {item.label}
-                    </a>
+                    </JumpLink>
                   </li>
                 ),
               )}

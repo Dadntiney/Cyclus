@@ -81,9 +81,11 @@ export function DayStrip({
               selected
                 ? "border-sage-fill bg-sage-fill text-white"
                 : cn(
-                    "bg-surface text-ink hover:bg-cream-soft/60 active:bg-cream-soft",
+                    "hover:bg-cream-soft/60 active:bg-cream-soft",
                     d.highlight ? "border-sage-dark/50" : "border-line",
-                    d.isPast && !d.isToday && "opacity-60",
+                    // Past days step back by surface and ink-soft (≥4.5:1 in
+                    // both themes), never by opacity on the text (TC-3).
+                    d.isPast && !d.isToday ? "bg-cream text-ink-soft" : "bg-surface text-ink",
                   ),
             )}
           >
@@ -96,7 +98,10 @@ export function DayStrip({
                 )}
               />
             )}
-            <span aria-hidden className={cn("text-xs", d.isToday ? "font-semibold" : "font-medium opacity-80")}>
+            <span
+              aria-hidden
+              className={cn("text-xs", d.isToday ? "font-semibold" : "font-medium", !selected && "text-ink-soft")}
+            >
               {d.weekdayShort}
             </span>
             <span aria-hidden className="text-base font-semibold tabular-nums">
@@ -108,6 +113,7 @@ export function DayStrip({
                 className={cn(
                   "h-1 w-5 rounded-full",
                   d.phase ? (selected ? "bg-white/80" : PHASE_BAR[d.phase]) : "bg-transparent",
+                  d.isPast && !d.isToday && !selected && "opacity-60",
                 )}
               />
             )}

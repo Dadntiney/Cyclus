@@ -52,6 +52,7 @@ export function TodayCards({
   focusAction = null,
   hideWorkoutReason = false,
   showRecovery = true,
+  restDay = false,
   recipeImageById = {},
 }: {
   recommendation: Recommendation
@@ -69,6 +70,8 @@ export function TodayCards({
   /** The day voice already explains today (from the check-in): skip the workout's reason. */
   hideWorkoutReason?: boolean
   showRecovery?: boolean
+  /** A planned rest day: the movement row shows "Rustdag", as on Deze week. */
+  restDay?: boolean
   recipeImageById?: Record<string, string | null>
 }) {
   const { training, nutrition, recovery, movementEnabled, nutritionEnabled } = recommendation
@@ -127,6 +130,7 @@ export function TodayCards({
                 hideReason={hideWorkoutReason}
                 emphasis="primary"
                 embedded
+                restDay={restDay}
               />
             </div>
           )}

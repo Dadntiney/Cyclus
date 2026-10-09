@@ -59,3 +59,15 @@ const twMerge = extendTailwindMerge<"type-role">({
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+/**
+ * "Titel: zin" in Dutch: the word after a colon starts lowercase, unless
+ * it is an abbreviation ("PMS") — "Rustiger trainingsvolume: het is oké…".
+ */
+export function joinTitleSentence(title: string, text: string): string {
+  const first = text.charAt(0)
+  const second = text.charAt(1)
+  const isAbbreviation = second !== "" && second === second.toUpperCase() && second !== second.toLowerCase()
+  const body = isAbbreviation ? text : first.toLowerCase() + text.slice(1)
+  return `${title}: ${body}`
+}

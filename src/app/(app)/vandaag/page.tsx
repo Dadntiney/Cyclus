@@ -57,6 +57,7 @@ export default async function VandaagPage() {
     predictedMenstruation,
     menstruationSoftHint,
     recommendation,
+    restDay,
     bodyRecognition,
     anticipation,
     hormoneRoadmap,
@@ -242,6 +243,7 @@ export default async function VandaagPage() {
             }
             hideWorkoutReason={dayVoice?.source === "checkin"}
             showRecovery={wantRecoveryRow}
+            restDay={restDay}
             recipeImageById={recipeImageById}
           />
         )}
@@ -283,6 +285,7 @@ export default async function VandaagPage() {
           hasCheckin={hasMeaningfulCheckin}
           movementEnabled={profile?.movement_enabled ?? true}
           movementDone={Boolean(completedWorkout)}
+          restDay={restDay}
           sleepTrackingEnabled={sleepEnabled}
           hasSleepEntry={Boolean(sleepEntry)}
           mentalWellbeingEnabled={profile?.mental_wellbeing_enabled === true}

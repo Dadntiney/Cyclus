@@ -207,10 +207,12 @@ export function CheckinForm({
 
   // 30 chips at once was too much for a daily check-in: show a short set
   // (common ones + whatever she already picked), the rest grouped behind
-  // "Alle klachten".
+  // "Alle klachten". The order stays put: a chip never jumps away from
+  // under her finger when she taps it; picks from the full list join at
+  // the end.
   const quickSymptoms = useMemo(() => {
     const picked = state.symptoms.filter((s) => symptomOptions.includes(s))
-    const quick = [...picked, ...QUICK_SYMPTOMS.filter((s) => symptomOptions.includes(s))]
+    const quick = [...QUICK_SYMPTOMS.filter((s) => symptomOptions.includes(s)), ...picked]
     return [...Array.from(new Set(quick)), "Anders", "Geen klachten"].filter(
       (s, i, all) => all.indexOf(s) === i,
     )

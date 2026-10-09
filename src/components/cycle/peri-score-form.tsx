@@ -11,6 +11,7 @@ import { StickyActionBar } from "@/components/ui/sticky-action-bar"
 import { PageSections } from "@/components/layout/page"
 import { ValueSparkline, listNl } from "@/components/cycle/simple-bars"
 import { formatShortDate } from "@/lib/dates/format"
+import { cn } from "@/lib/utils"
 import {
   PERI_SCORE_ITEMS,
   computePeriScore,
@@ -69,6 +70,10 @@ export function PeriScoreForm({
   const total = PERI_SCORE_ITEMS.length
   const answered = PERI_SCORE_ITEMS.filter((item) => answers[item.id] !== undefined).length
   const openCount = total - answered
+  // With gaps only the first open question (where focus goes) is marked
+  // in the error colour; the rest get a quiet "Nog open" — an optional
+  // questionnaire, not an error list (TC-16).
+  const firstGapId = PERI_SCORE_ITEMS.find((item) => answers[item.id] === undefined)?.id ?? null
 
   const liveScore = useMemo(() => {
     if (Object.keys(answers).length !== PERI_SCORE_ITEMS.length) return null
@@ -185,8 +190,11 @@ export function PeriScoreForm({
                     aria-describedby={isGap ? `${helpId} ${gapId}` : helpId}
                   />
                   {isGap && (
-                    <p id={gapId} className="mt-1.5 text-sm text-danger">
-                      Nog niet ingevuld
+                    <p
+                      id={gapId}
+                      className={cn("mt-1.5 text-sm", item.id === firstGapId ? "text-danger" : "text-ink-soft")}
+                    >
+                      {item.id === firstGapId ? "Nog niet ingevuld" : "Nog open"}
                     </p>
                   )}
                 </li>
@@ -253,7 +261,7 @@ export function PeriScoreForm({
           </Button>
         </div>
         {showGaps && openCount > 0 && (
-          <p className="text-sm text-danger">
+          <p className="text-sm text-ink-soft">
             Nog {openCount} {openCount === 1 ? "vraag" : "vragen"} open
           </p>
         )}

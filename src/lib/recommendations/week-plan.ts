@@ -13,6 +13,7 @@ import { lifeStagePrefersGentler } from "@/lib/recommendations/life-stage-bias"
 import { filterRecipesForNutritionPrefs } from "@/lib/nutrition/dislikes"
 import { dietPrefsForCategoryMatch, filterRecipesByCuisinePrefs } from "@/lib/nutrition/cuisine"
 import { pickRotating } from "@/lib/content/rotate"
+import { joinTitleSentence } from "@/lib/utils"
 
 export type WeekPlanWorkout = Pick<
   Tables<"workouts">,
@@ -319,7 +320,7 @@ export function buildWeekPlan(input: BuildWeekPlanInput): WeekDayPlan[] {
       const first = tips.length
         ? pickRotating(tips, `${seed}-${dateISO}-tip1`, `${seed}-lifestyle`)
         : null
-      if (first) focusTips.push(`${first.title}: ${first.text}`)
+      if (first) focusTips.push(joinTitleSentence(first.title, first.text))
     }
 
     const snackTip = cycleEstimate

@@ -1,6 +1,6 @@
 "use client"
 
-import { useId, useMemo, useRef, useState, useTransition } from "react"
+import { useId, useMemo, useRef, useState, useTransition, type KeyboardEvent } from "react"
 import {
   addDays,
   addMonths,
@@ -107,6 +107,10 @@ export function Calendar({
   const monthLabelId = useId()
   const flowLabelId = useId()
   const monthLabelRef = useRef<HTMLParagraphElement>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
+  // Roving focus (TC-13): the grid is one Tab stop; arrows move by a day
+  // or a week, Home/End to the start or end of the week.
+  const [activeDate, setActiveDate] = useState<string | null>(null)
 
   const days = useMemo(() => {
     const start = startOfMonth(month)
@@ -119,6 +123,55 @@ export function Calendar({
   const monthKey = format(month, "yyyy-MM")
   const isCurrentMonth = todayISO.startsWith(monthKey)
   const inMonth = (iso: string) => iso.startsWith(monthKey)
+
+  const firstOfMonth = `${monthKey}-01`
+  const rovingDate =
+    activeDate && inMonth(activeDate) && activeDate <= todayISO
+      ? activeDate
+      : isCurrentMonth
+        ? todayISO
+        : firstOfMonth
+
+  function handleGridKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const target = event.target as HTMLElement
+    const iso = target.dataset.date
+    if (!iso) return
+    const current = parseISO(iso)
+    const weekdayIndex = (getDay(current) + 6) % 7
+    let next: Date | null = null
+    switch (event.key) {
+      case "ArrowLeft":
+        next = addDays(current, -1)
+        break
+      case "ArrowRight":
+        next = addDays(current, 1)
+        break
+      case "ArrowUp":
+        next = addDays(current, -7)
+        break
+      case "ArrowDown":
+        next = addDays(current, 7)
+        break
+      case "Home":
+        next = addDays(current, -weekdayIndex)
+        break
+      case "End":
+        next = addDays(current, 6 - weekdayIndex)
+        break
+      default:
+        return
+    }
+    event.preventDefault()
+    let nextIso = format(next, "yyyy-MM-dd")
+    // Stay inside this month and never on a future (disabled) day.
+    if (nextIso < firstOfMonth) nextIso = firstOfMonth
+    const lastOfMonth = format(endOfMonth(month), "yyyy-MM-dd")
+    if (nextIso > lastOfMonth) nextIso = lastOfMonth
+    if (nextIso > todayISO) nextIso = todayISO < firstOfMonth ? iso : todayISO
+    if (nextIso === iso) return
+    setActiveDate(nextIso)
+    gridRef.current?.querySelector<HTMLButtonElement>(`[data-date="${nextIso}"]`)?.focus()
+  }
 
   // Legend: only what this month actually shows.
   const legendMenstruation = Array.from(dates).some(inMonth)
@@ -261,7 +314,9 @@ export function Calendar({
             tabIndex={-1}
             data-focus-target=""
             aria-live="polite"
-            className="type-card-title text-ink capitalize"
+            // One line for every month name, so the grid never jumps
+            // between "Oktober" and "September" on a 320px screen.
+            className="type-card-title min-w-0 whitespace-nowrap text-ink capitalize max-[359px]:text-base"
           >
             {format(month, "MMMM yyyy", { locale: nl })}
           </p>
@@ -283,8 +338,10 @@ export function Calendar({
         {/* Keyed per month: a calm crossfade on month change (none under reduced motion). */}
         <div
           key={monthKey}
+          ref={gridRef}
           role="group"
           aria-labelledby={monthLabelId}
+          onKeyDown={handleGridKeyDown}
           className="grid grid-cols-7 gap-y-1.5 motion-safe:animate-fade-in"
         >
           {Array.from({ length: leadingBlanks }).map((_, i) => (
@@ -312,6 +369,9 @@ export function Calendar({
                 // back to this very button, which a `disabled` one refuses.
                 disabled={future}
                 aria-disabled={pendingDate === iso || undefined}
+                data-date={iso}
+                tabIndex={iso === rovingDate ? 0 : -1}
+                onFocus={() => setActiveDate(iso)}
                 onClick={() => handleDayClick(day)}
                 aria-label={`${format(day, "EEEE d MMMM yyyy", { locale: nl })}${
                   isMenstruation ? ", menstruatie" : ""
@@ -320,7 +380,7 @@ export function Calendar({
                 }`}
                 aria-haspopup="dialog"
                 className={cn(
-                  "relative mx-auto flex aspect-square w-full max-w-11 items-center justify-center rounded-full text-sm tabular-nums touch-manipulation",
+                  "relative mx-auto flex aspect-square w-full max-w-11 items-center justify-center rounded-full text-sm leading-none tabular-nums touch-manipulation",
                   "transition-[background-color,opacity] duration-fast ease-standard",
                   isMenstruation
                     ? "bg-phase-menstruatie text-phase-menstruatie-on font-medium"
@@ -346,7 +406,8 @@ export function Calendar({
                   <span
                     aria-hidden
                     className={cn(
-                      "absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full",
+                      // Room under the digit also in a 34px cell (320px screen).
+                      "absolute bottom-0.5 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full min-[360px]:bottom-1",
                       isMenstruation ? "bg-phase-menstruatie-on" : "bg-ink",
                     )}
                   />
@@ -400,8 +461,12 @@ export function Calendar({
           <div className="flex flex-col gap-4 pb-2">
             <p className="text-sm text-ink-soft">
               {selectedMarked
-                ? "Deze dag staat genoteerd als menstruatiedag."
-                : "Was je deze dag ongesteld?"}
+                ? selectedDate === todayISO
+                  ? "Vandaag staat genoteerd als menstruatiedag."
+                  : "Deze dag staat genoteerd als menstruatiedag."
+                : selectedDate === todayISO
+                  ? "Ben je vandaag ongesteld?"
+                  : "Was je deze dag ongesteld?"}
             </p>
 
             {trackFlowEnabled && (

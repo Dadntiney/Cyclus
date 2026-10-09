@@ -143,25 +143,27 @@ export function PhaseContextCard({
 
       {line && <p className="mt-3 text-sm text-ink-soft">{line}</p>}
 
+      {/* One row from 360px (the status gives way first, the action never
+          wraps); only on a smaller screen may the action drop below. */}
       {hasCycle && (
-        <div className="mt-4 flex flex-wrap items-center gap-x-3 border-t border-ink/10 pt-2">
+        <div className="mt-4 flex flex-wrap items-center gap-x-2 border-t border-ink/10 pt-2 min-[360px]:flex-nowrap">
           <span
             className={cn(
-              "inline-flex min-h-11 items-center gap-2 whitespace-nowrap text-sm",
+              "inline-flex min-h-11 min-w-0 items-center gap-2 text-sm",
               isMenstruationActive ? "font-medium text-phase-menstruatie-strong" : "text-ink-soft",
             )}
           >
-            <span className={cn("inline-flex", isMenstruationActive && "animate-menstruatie-adem")}>
+            <span className={cn("inline-flex shrink-0", isMenstruationActive && "animate-menstruatie-adem")}>
               <Droplet {...ICON.sm} fill={isMenstruationActive ? "currentColor" : "none"} aria-hidden />
             </span>
-            {statusLabel}
+            <span className="truncate">{statusLabel}</span>
           </span>
           <button
             type="button"
             onClick={() => setSheetOpen(true)}
             aria-haspopup="dialog"
             aria-label={isMenstruationActive ? "Menstruatie stoppen" : undefined}
-            className={textActionClass("ml-auto")}
+            className={textActionClass("ml-auto shrink-0 whitespace-nowrap")}
           >
             {isMenstruationActive ? "Stoppen" : "Noteer menstruatie"}
           </button>

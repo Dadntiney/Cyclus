@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { cn } from "./utils"
+import { cn, joinTitleSentence } from "./utils"
 
 describe("cn — GoFiev design tokens (besluit 14)", () => {
   it("lets a radius token replace another radius", () => {
@@ -62,5 +62,17 @@ describe("cn — GoFiev design tokens (besluit 14)", () => {
     expect(cn("border-line", "border-line-strong")).toBe("border-line-strong")
     expect(cn("text-ink", "text-danger")).toBe("text-danger")
     expect(cn("px-4", false && "px-2", undefined, "py-3")).toBe("px-4 py-3")
+  })
+})
+
+describe("joinTitleSentence", () => {
+  it("lowercases the first word after the colon", () => {
+    expect(joinTitleSentence("Rustiger trainingsvolume", "Het is oké om minder te doen.")).toBe(
+      "Rustiger trainingsvolume: het is oké om minder te doen.",
+    )
+  })
+
+  it("keeps an abbreviation as it is", () => {
+    expect(joinTitleSentence("Let op", "PMS kan meespelen.")).toBe("Let op: PMS kan meespelen.")
   })
 })

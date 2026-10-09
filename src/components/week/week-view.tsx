@@ -166,6 +166,8 @@ export function WeekView({
   // "Zaterdag 3 okt · Ovulatie (schatting)": the phase as a badge, never a
   // cycle-day claim for a period that has not started.
   let phaseBadge: string | null = null
+  // The badge already says "ruwe schatting": the line below need not repeat it.
+  let badgeSaysRough = false
   if (day.cycleEstimate) {
     if (softHint) {
       phaseBadge = formatPresentedCycleHeadline(
@@ -179,6 +181,7 @@ export function WeekView({
       phaseBadge = formatPresentedCycleHeadline(day.cycleEstimate, day.date, activePeriodStart)
     } else {
       phaseBadge = `${day.cycleEstimate.phaseLabel} (${changingCycle ? "ruwe schatting" : "schatting"})`
+      badgeSaysRough = changingCycle
     }
   }
 
@@ -194,7 +197,9 @@ export function WeekView({
         : day.isToday || !day.cycleEstimate || !phaseContent
           ? null
           : changingCycle
-            ? phaseTagline(day.cycleEstimate.phase, { changingCycle: true })
+            ? badgeSaysRough
+              ? null
+              : phaseTagline(day.cycleEstimate.phase, { changingCycle: true })
             : phaseContent.shortDescription
 
   // A phase "use your energy" tip never contradicts a tired check-in.

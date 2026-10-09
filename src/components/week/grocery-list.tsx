@@ -1,7 +1,7 @@
 "use client"
 
 import { ACCOUNT_STATE_APPLIED_EVENT } from "@/lib/client/account-sync"
-import { useEffect, useId, useMemo, useState } from "react"
+import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -54,7 +54,22 @@ function GroceryCategorySection({
   const done = category.items.filter((i) => checked.has(i.id)).length
   const allDone = done === category.items.length
   const [open, setOpen] = useState(!allDone)
+  // Fold once everything is in huis (also when her saved list loads in),
+  // without remounting: the section keeps its identity and focus (TC-15).
+  const [wasAllDone, setWasAllDone] = useState(allDone)
+  if (wasAllDone !== allDone) {
+    setWasAllDone(allDone)
+    if (allDone) setOpen(false)
+  }
+  const headingRef = useRef<HTMLButtonElement>(null)
   const contentId = useId()
+
+  function toggleItem(id: string) {
+    // Checking the last item folds the section: the row she tapped goes
+    // away, so focus moves to the heading, which now says "Alles in huis".
+    if (!checked.has(id) && done === category.items.length - 1) headingRef.current?.focus()
+    onToggle(id)
+  }
   // Still-to-buy first; what she already has sinks to the bottom.
   const items = [...category.items].sort((a, b) => Number(checked.has(a.id)) - Number(checked.has(b.id)))
 
@@ -62,6 +77,7 @@ function GroceryCategorySection({
     <section>
       <h2>
         <button
+          ref={headingRef}
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
@@ -98,7 +114,7 @@ function GroceryCategorySection({
                   type="button"
                   role="checkbox"
                   aria-checked={isChecked}
-                  onClick={() => onToggle(item.id)}
+                  onClick={() => toggleItem(item.id)}
                   className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left touch-manipulation -outline-offset-2 transition-colors duration-fast ease-standard hover:bg-cream-soft/60 active:bg-cream-soft"
                 >
                   <span
@@ -312,10 +328,9 @@ export function GroceryList({
       ) : (
         <div className="flex flex-col gap-4">
           {categories.map((cat) => {
-            const allDone = cat.items.every((i) => checked.has(i.id))
             return (
               <GroceryCategorySection
-                key={`${cat.category}-${allDone}`}
+                key={cat.category}
                 category={cat}
                 checked={checked}
                 mode={mode}

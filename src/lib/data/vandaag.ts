@@ -420,6 +420,8 @@ export const getVandaagData = cache(async function getVandaagData(userId: string
     isMenstruationActive: activePeriodStart !== null,
     menstruationDay,
     recommendation,
+    /** A planned rest day in her week programme (the same signal as Deze week). */
+    restDay: todayPlan?.workout.focus === "rust" && !recommendation?.training.workout,
     bodyRecognition,
     anticipation,
     hormoneRoadmap,

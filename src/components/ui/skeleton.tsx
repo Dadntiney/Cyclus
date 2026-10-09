@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { cn } from "@/lib/utils"
 
 export function Skeleton({ className }: { className?: string }) {
@@ -34,6 +35,10 @@ interface SkeletonPageProps {
   hero?: boolean
   /** The page header has a subtitle line. Default true. */
   subtitle?: boolean
+  /** The page header has an eyebrow above the title (Jouw fase). */
+  eyebrow?: boolean
+  /** A page-specific body instead of the `variant` blocks (day strip, chip rows …). */
+  children?: ReactNode
 }
 
 /**
@@ -49,6 +54,8 @@ export function SkeletonPage({
   back = false,
   hero = false,
   subtitle = true,
+  eyebrow = false,
+  children,
 }: SkeletonPageProps) {
   const n = count ?? cards ?? 3
 
@@ -65,9 +72,17 @@ export function SkeletonPage({
       <div aria-hidden className="mb-6">
         {back && <Skeleton className="hidden md:block h-11 w-24 mb-2 rounded-full" />}
         {hero && <Skeleton className="mb-5 aspect-[4/3] max-h-105 w-full rounded-card lg:aspect-[21/9]" />}
-        {/* type-page-title line box: 32 × 1.1 ≈ 36px (lg: 36 × 1.1 ≈ 40px) */}
-        <div className="flex h-9 lg:h-10 items-center">
-          <Skeleton className="h-8 lg:h-9 w-48" />
+        {eyebrow && (
+          // type-eyebrow line (13 × 1.45 ≈ 19px) + mb-1
+          <div className="mb-1 flex h-4.75 items-center">
+            <Skeleton className="h-3.5 w-32" />
+          </div>
+        )}
+        {/* The h1's own line box (type-page-title: 26–32px × 1.1, lg 36px),
+            so the title never jumps when the page arrives. */}
+        <div className="type-page-title flex items-center">
+          <span className="invisible w-0">&nbsp;</span>
+          <Skeleton className="h-[0.85em] w-48" />
         </div>
         {subtitle && (
           // mt-1 + one text-sm line (22.5px)
@@ -77,7 +92,9 @@ export function SkeletonPage({
         )}
       </div>
 
-      {variant === "list" ? (
+      {children ? (
+        <div aria-hidden>{children}</div>
+      ) : variant === "list" ? (
         <div aria-hidden className="rounded-card bg-surface border border-line divide-y divide-line overflow-hidden">
           {Array.from({ length: n }).map((_, i) => (
             <div key={i} className="flex min-h-14 items-center gap-3.5 px-4 py-3">

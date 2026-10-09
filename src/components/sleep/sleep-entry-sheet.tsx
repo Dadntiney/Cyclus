@@ -22,7 +22,9 @@ function fieldsFromInitial(initial: SleepEntry | null) {
     wakeFeeling: (initial?.wake_feeling ?? null) as string | null,
     sleepQuality: (initial?.sleep_quality ?? null) as string | null,
     wakeCount: initial?.wake_count ?? null,
-    showMore: Boolean(initial?.sleep_quality || initial?.wake_count !== null),
+    // Open only when a saved night already has an extra filled in (a new
+    // night has no entry: `undefined !== null` used to open it every time).
+    showMore: Boolean(initial?.sleep_quality) || (initial?.wake_count ?? null) !== null,
   }
 }
 
@@ -136,7 +138,13 @@ export function SleepEntrySheet({
           </div>
         </div>
 
-        <Disclosure label="Meer toevoegen" open={showMore} onOpenChange={setShowMore} className="-mt-2">
+        <Disclosure
+          label="Meer toevoegen"
+          openLabel="Minder tonen"
+          open={showMore}
+          onOpenChange={setShowMore}
+          className="-mt-2"
+        >
           <div className="flex flex-col gap-5">
             <div>
               <p id={qualityLabelId} className="text-sm font-medium text-ink mb-2">

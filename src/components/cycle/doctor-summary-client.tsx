@@ -12,7 +12,6 @@ import { DoctorSummaryView } from "@/components/cycle/doctor-summary-view"
 import { PageSections } from "@/components/layout/page"
 import { Button, textActionClass } from "@/components/ui/button"
 import { SegmentedControl } from "@/components/ui/segmented-control"
-import { StickyActionBar } from "@/components/ui/sticky-action-bar"
 import type { CycleHistoryEntry } from "@/lib/cycle/history"
 import type { CheckinLike } from "@/lib/cycle/patterns"
 
@@ -26,10 +25,11 @@ const PERIOD_OPTIONS: readonly { value: WeeksOption; label: string }[] = [
 ]
 
 /**
- * Voor je arts, in order (ontwerpvisie §7.8): period → summary → whatever
- * the page passes as `children` (Afspraken & notities) → one primary
- * action in the thumb zone. Renders as siblings, so the StickyActionBar is
- * a direct child of the <Page> and stays in reach over the whole page.
+ * Voor je arts, in order (ontwerpvisie §7.8): period → summary → one
+ * primary action "Printen of pdf" plus the link "Download tekst" → whatever
+ * the page passes as `children` (Afspraken & notities). The actions sit in
+ * the page, not in a sticky bar: this is a page for reading, and the
+ * appointment form below has its own primary button.
  */
 export function DoctorSummaryClient({
   checkins,
@@ -90,36 +90,37 @@ export function DoctorSummaryClient({
   }
 
   return (
-    <>
-      <PageSections>
-        <section aria-labelledby={periodLabelId} className="print:hidden">
-          <h2 id={periodLabelId} className="type-group-label text-ink-soft px-1 mb-2">
-            Periode
-          </h2>
-          <SegmentedControl
-            aria-labelledby={periodLabelId}
-            fullWidth
-            options={PERIOD_OPTIONS}
-            value={String(weeks) as WeeksOption}
-            onChange={(value) => setWeeks(Number(value) as DoctorSummaryWeeks)}
-          />
-        </section>
+    <PageSections>
+      <section aria-labelledby={periodLabelId} className="print:hidden">
+        <h2 id={periodLabelId} className="type-group-label text-ink-soft px-1 mb-2">
+          Periode
+        </h2>
+        <SegmentedControl
+          aria-labelledby={periodLabelId}
+          fullWidth
+          options={PERIOD_OPTIONS}
+          value={String(weeks) as WeeksOption}
+          onChange={(value) => setWeeks(Number(value) as DoctorSummaryWeeks)}
+        />
+      </section>
 
+      <div>
         <DoctorSummaryView summary={summary} />
-
-        {children}
-      </PageSections>
-
-      <StickyActionBar className="mt-8 print:hidden">
-        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-          <Button className="min-w-40 flex-1" onClick={() => window.print()}>
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 print:hidden">
+          <Button className="w-full min-[360px]:w-auto" onClick={() => window.print()}>
             Printen of pdf
           </Button>
-          <button type="button" onClick={downloadText} className={textActionClass("px-1")}>
+          <button
+            type="button"
+            onClick={downloadText}
+            className={textActionClass("mx-auto whitespace-nowrap px-1 min-[360px]:mx-0")}
+          >
             Download tekst
           </button>
         </div>
-      </StickyActionBar>
-    </>
+      </div>
+
+      {children}
+    </PageSections>
   )
 }

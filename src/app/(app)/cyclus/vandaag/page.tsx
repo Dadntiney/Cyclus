@@ -15,6 +15,7 @@ import {
 } from "@/lib/cycle/history"
 import { computePhaseSymptomInsights, getTopPhaseSymptomInsight } from "@/lib/cycle/patterns"
 import { buildCyclusdagView } from "@/lib/cycle/cyclusdag"
+import { usesChangingCycleLens } from "@/lib/cycle/day-lens"
 import { getPhaseContent } from "@/lib/cycle/phase-content"
 import { FEATURES } from "@/lib/navigation/features"
 import { Page, PageSections } from "@/components/layout/page"
@@ -183,6 +184,18 @@ export default async function CyclusdagPage() {
   // her period is running (then it's her own day count).
   const softHint = presented.menstruationSoftHint
   const periodRunning = cycleProfile.active_period_start != null
+  // Same lens as the phase status on Vandaag and Cyclus, so one flow says
+  // "ruwe schatting" everywhere for a changing cycle (TC-8).
+  const changingCycle = usesChangingCycleLens({
+    lifeStage: cycleProfile.life_stage ?? null,
+    age: profile?.age ?? null,
+    regularity: cycleProfile.regularity ?? null,
+    perimenopauseInfo: cycleProfile.perimenopause_information ?? null,
+    recentSymptoms: [...(checkins ?? [])]
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, 30)
+      .flatMap((c) => c.symptoms ?? []),
+  })
   const eyebrowDetail =
     softHint === "predicted"
       ? "menstruatie kan komen"
@@ -190,7 +203,7 @@ export default async function CyclusdagPage() {
         ? "menstruatie gestopt"
         : periodRunning
           ? `dag ${view.cycleDay}`
-          : `dag ${view.cycleDay} · schatting`
+          : `dag ${view.cycleDay} · ${changingCycle ? "ruwe schatting" : "schatting"}`
   const eyebrow = `${FEATURES.fase.label} · ${eyebrowDetail}`
 
   return (
