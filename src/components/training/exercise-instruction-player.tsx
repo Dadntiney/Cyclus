@@ -3,7 +3,7 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react"
 import { Volume2, VolumeX } from "lucide-react"
 import { CyclusFigure } from "@/components/training/cyclus-figure"
-import { figureFrame, peakPose } from "@/components/training/figure-geometry"
+import { figureFrame, peakPose, posesDiffer } from "@/components/training/figure-geometry"
 import { usePrefersReducedMotion } from "@/lib/hooks/use-prefers-reduced-motion"
 import { Button } from "@/components/ui/button"
 import type { ExerciseInstruction } from "@/lib/training/exercise-instructions"
@@ -143,7 +143,7 @@ export function ExerciseInstructionPlayer({
         className,
       )}
     >
-      {reduceMotion && endPose && endPose !== instruction.poses[0] ? (
+      {reduceMotion && endPose && posesDiffer(endPose, instruction.poses[0]) ? (
         // Decorative like the moving figure: the cue list below carries the instructions.
         <div aria-hidden className="grid grid-cols-2 gap-2 px-3 pt-3">
           {[

@@ -29,6 +29,31 @@ export function CyclusFigure({
     figureJoints(pose)
   const rotation = pose.bodyRotation ?? 0
   const lift = groundOffset(pose)
+  // On the floor (plank, push-up, side plank) the far arm goes behind the
+  // body, so it reads as the arm on the other side instead of a short one.
+  const farArmBehind = Math.abs(rotation) >= 45
+  const farArm = (
+    <>
+      <line
+        x1={lShoulder.x}
+        y1={lShoulder.y}
+        x2={lElbow.x}
+        y2={lElbow.y}
+        stroke={skin}
+        strokeWidth="9"
+        strokeLinecap="round"
+      />
+      <line
+        x1={lElbow.x}
+        y1={lElbow.y}
+        x2={lHand.x}
+        y2={lHand.y}
+        stroke={skin}
+        strokeWidth="8"
+        strokeLinecap="round"
+      />
+    </>
+  )
   const matCenter = (fitted.matFrom + fitted.matTo) / 2
   const matHalf = Math.max(24, (fitted.matTo - fitted.matFrom) / 2)
 
@@ -63,12 +88,14 @@ export function CyclusFigure({
 
       <g transform={`translate(0 ${lift})`}>
       <g transform={`rotate(${rotation} ${pivot.x} ${pivot.y})`}>
-      {/* Hair bun */}
-      <circle cx={pose.rootX + 10} cy={headY - 10} r="7" fill="var(--color-sage-dark)" />
+      {/* Hair bun, at the back of the head: she faces right. */}
+      <circle cx={pose.rootX - 10} cy={headY - 10} r="7" fill="var(--color-sage-dark)" />
       <ellipse cx={pose.rootX} cy={headY - 2} rx="15" ry="12" fill="var(--color-sage-dark)" />
 
       {/* Head */}
       <circle cx={pose.rootX} cy={headY} r="13" fill={skin} />
+
+      {farArmBehind && farArm}
 
       {/* Torso / top */}
       <path
@@ -81,24 +108,7 @@ export function CyclusFigure({
       />
 
       {/* Arms */}
-      <line
-        x1={lShoulder.x}
-        y1={lShoulder.y}
-        x2={lElbow.x}
-        y2={lElbow.y}
-        stroke={skin}
-        strokeWidth="9"
-        strokeLinecap="round"
-      />
-      <line
-        x1={lElbow.x}
-        y1={lElbow.y}
-        x2={lHand.x}
-        y2={lHand.y}
-        stroke={skin}
-        strokeWidth="8"
-        strokeLinecap="round"
-      />
+      {!farArmBehind && farArm}
       <line
         x1={rShoulder.x}
         y1={rShoulder.y}

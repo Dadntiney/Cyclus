@@ -56,8 +56,9 @@ export function figureJoints(pose: FigurePose) {
   const rHip = { x: torsoBottom.x + 10, y: hipY }
   const lKnee = endPoint(lHip.x, lHip.y, THIGH, pose.lHip)
   const rKnee = endPoint(rHip.x, rHip.y, THIGH, pose.rHip)
-  const lFoot = endPoint(lKnee.x, lKnee.y, SHIN, pose.lHip + pose.lKnee)
-  const rFoot = endPoint(rKnee.x, rKnee.y, SHIN, pose.rHip + pose.rKnee)
+  // Knees bend backwards: the shin turns back from the thigh by the knee angle.
+  const lFoot = endPoint(lKnee.x, lKnee.y, SHIN, pose.lHip - pose.lKnee)
+  const rFoot = endPoint(rKnee.x, rKnee.y, SHIN, pose.rHip - pose.rKnee)
 
   const headY = pose.rootY - 22
 
@@ -100,7 +101,7 @@ function figureParts(pose: FigurePose): Part[] {
     // Head, hair and bun.
     { x: pose.rootX, y: j.headY, r: 13 },
     { x: pose.rootX, y: j.headY - 2, r: 15 },
-    { x: pose.rootX + 10, y: j.headY - 10, r: 7 },
+    { x: pose.rootX - 10, y: j.headY - 10, r: 7 },
     // Torso corners and the curve under the hips.
     { ...j.lShoulder, r: 4.5 },
     { ...j.rShoulder, r: 4.5 },
@@ -121,6 +122,15 @@ function figureParts(pose: FigurePose): Part[] {
   ]
   const rotation = pose.bodyRotation ?? 0
   return parts.map((p) => ({ ...rotate(p, j.pivot, rotation), r: p.r }))
+}
+
+type JointName = "lHand" | "rHand" | "lElbow" | "rElbow" | "lShoulder" | "rShoulder" | "lHip" | "rHip" | "lKnee" | "rKnee" | "lFoot" | "rFoot"
+
+/** Where a joint lands on screen: rotated with the body and grounded on the floor. */
+export function placedJoint(pose: FigurePose, name: JointName): Point {
+  const j = figureJoints(pose)
+  const p = rotate(j[name], j.pivot, pose.bodyRotation ?? 0)
+  return { x: p.x, y: p.y + groundOffset(pose) }
 }
 
 export interface Bounds {
@@ -237,4 +247,15 @@ export function peakPose(poses: readonly FigurePose[]): FigurePose | undefined {
     }
   }
   return best
+}
+
+/**
+ * Whether two poses look different: some joint angle or position moves by
+ * more than a few degrees/units. A plank that only "breathes" does not, so
+ * it gets one still instead of two identical Start/Eind figures.
+ */
+export function posesDiffer(a: FigurePose, b: FigurePose, threshold = 6): boolean {
+  return (Object.keys(a) as (keyof FigurePose)[]).some(
+    (key) => Math.abs((a[key] ?? 0) - (b[key] ?? 0)) > threshold,
+  )
 }
