@@ -73,7 +73,7 @@ Regels:
 
 | Stijl | Utility | Font | Grootte/regel | Gebruik |
 |---|---|---|---|---|
-| display-1 | `type-page-title` | Fraunces 400 SOFT | 32/1.1 (lg 36) | h1, één per pagina |
+| display-1 | `type-page-title` | Fraunces 400 SOFT | 32/1.1 (lg 36; onder 390px vloeiend tot 26 bij 320) | h1, één per pagina |
 | display-2 | `type-section-title` | Fraunces 400 | 24/1.25 | h2-sectietitel buiten kaarten |
 | display-3 | `type-card-title` | Fraunces 400 | 20/1.3 | h3-kaarttitel (max. 1 per kaart), sheet- en dialogtitel, lege staat |
 | numeral | `type-numeral` | Fraunces 400, tabular | 44/0.9 | cyclusdag (vervangt `text-[2.75rem]`/`text-[3.25rem]`) |
@@ -84,6 +84,12 @@ Regels:
 | groepslabel | `type-group-label` | Jakarta 500 | 13/1.45 | label boven een lijstgroep + `text-ink-soft` |
 
 Regels: 13px is de ondergrens (geen `text-[10px]`/`[11px]`). Geen `text-[…]`.
+Lange Nederlandse samenstellingen ("Gebruiksvoorwaarden",
+"Klachtenlast-overzicht") mogen nooit zijwaarts scrollen: `type-page-title`
+breekt woorden af (`hyphens: auto`, `lang="nl"`) met `overflow-wrap` als
+vangnet, `type-section-title` en `type-card-title` hebben ook
+`overflow-wrap: break-word`. Kaarttitels in een smal raster (receptkaart)
+krijgen `wrap-break-word hyphens-auto`.
 Gewichten 400/500/600, geen bold. Een titel houdt dezelfde stijl ingeklapt en
 uitgeklapt. Koppen: één h1, h2 voor secties, h3 voor kaarten — kaarttitels
 nooit als `<p>`. `type-body*` bestaan voor symmetrie (reset het font binnen
@@ -130,7 +136,13 @@ Alle andere doelen blijven ≥44px.
 
 **Horizontale chiprijen:** `scroller-bleed` (loopt door tot de schermrand,
 houdt 4px boven/onder vrij voor de focusring):
-`<div className="scroller-bleed flex gap-2">…chips…</div>`.
+`<div className="scroller-bleed flex gap-2">…chips…</div>`. Volgt er een
+vaste knop (zoals het tandwiel naar voorkeuren op Beweging), dan loopt de
+rij alleen naar links door met `scroller-bleed-start min-w-0 flex-1` en
+staat de knop erbuiten, zodat hij op elke breedte zichtbaar blijft.
+`SlidersHorizontal` betekent alleen "filter op deze pagina" (een sheet) en
+`Settings2` is Cyclusinstellingen (besluit 22); een link naar voorkeuren
+elders (Beweging → Wat ik gebruik) gebruikt het tandwiel `Settings`.
 
 ## 6. Elevatie
 
@@ -246,7 +258,7 @@ interactief; een verwijderbaar filter is `<Chip removable>`.
 
 | Keuze | Component | Voorbeelden |
 |---|---|---|
-| exclusief, 2–4 "modi" | `SegmentedControl` (`fullWidth`) | Week/Dag, 4/8/12 wk/6 mnd, Favorieten-filter, Luisteren/Lezen |
+| exclusief, 2–4 "modi" | `SegmentedControl` (`fullWidth`) | Week/Dag, 4/8/12 wk/6 mnd, Favorieten-filter (Alles/Recepten/Oefeningen/Momenten), Luisteren/Lezen |
 | exclusief, korte labels in een raster | `ChipRadioGroup` (`columns`) | flow, klachtenlast (4 niveaus) |
 | exclusief, met uitleg per optie | `OptionList` | levensfase, medicatiestatus, regelmaat, voedingsstijl, buddyfrequentie, Weergave |
 | filters en meerkeuze | `Chip` | maaltijdmoment, wensen, dagen |
@@ -259,6 +271,8 @@ interactief; een verwijderbaar filter is `<Chip removable>`.
 ```tsx
 <SegmentedControl aria-label="Periode" fullWidth value={weeks} onChange={setWeeks}
   options={[{ value: "4", label: "4 wk" }, { value: "8", label: "8 wk" }, { value: "12", label: "12 wk" }]} />
+// fullWidth: gelijke segmenten zonder minimumbreedte (px-2; onder 360px px-1 en
+// 13px), zodat vier labels ook op 320px in één rij passen.
 
 <ChipRadioGroup aria-labelledby={qId} aria-describedby={helpId} columns={4} value={score} onChange={setScore}
   options={[{ value: 0, label: "Niet" }, { value: 1, label: "Mild" }, { value: 2, label: "Matig" }, { value: 3, label: "Ernstig" }]} />
@@ -371,6 +385,7 @@ Overlay alleen voor een korte taak of keuze. Bevestig verwijderen met
 <SkeletonPage variant="list" count={6} />         // Profiel-achtige lijsten
 <SkeletonPage variant="grid" count={4} />         // Ontdek
 <SkeletonPage cards={4} />                        // oude prop, blijft werken
+<SkeletonPage back eyebrow>…eigen vormen…</SkeletonPage>  // kop + eigen body (Deze week, Voeding)
 ```
 
 EmptyState: altijd plat (nooit in een Card), icoon 24 in een sage-soft cirkel
@@ -382,7 +397,11 @@ het icoon dan dáár: een Server Component kan geen component (functie) als prop
 aan een Client Component doorgeven. Hetzelfde geldt voor `ListRow icon`.
 
 SkeletonPage spiegelt `<Page>` + `<PageHeader>` (zelfde container, titelhoogte
-en `mb-6`), zodat de kop niet springt. Bevestigingen ("Bewaard", "Verwijderd ·
+en `mb-6`), zodat de kop niet springt. De titelbalk staat in een
+`type-page-title`-regel, dus hij is precies één regel h1 hoog; `eyebrow`
+reserveert de eyebrow-regel. Wijkt de body af van kaarten/lijst/raster (een
+DayStrip, een chiprij met telregel), geef dan `children`: dezelfde vormen en
+hoogtes als de echte pagina, zodat er na het laden niets verspringt. Bevestigingen ("Bewaard", "Verwijderd ·
 Ongedaan maken") gaan altijd via de toast-host (§12.7); er is geen aparte
 in-page bevestiging meer.
 
@@ -524,8 +543,11 @@ export default async function SlaapPage() {
 }
 ```
 
-- **`<Page width as className>`** — container: `max-w-2xl` (content) of
+- **`<Page width as className fill>`** — container: `max-w-2xl` (content) of
   `max-w-6xl` (`width="wide"`), `px-5 pt-4 pb-8`, op `lg` `px-8 pt-10`.
+  `fill` maakt de pagina minstens schermhoog (een flexkolom zonder
+  `pb`), voor een flow met een `StickyActionBar`: de balk staat dan ook bij
+  een korte stap onderaan (medicatie-wizard).
   `<PageSections>` = kolom met 32px tussen secties.
 - **`<PageHeader>`** — de enige paginakop, ritme exact volgens §5.4:
   16px vanaf de app-balk (`pt-4` van Page) → eyebrow (`mb-1`) → h1
@@ -547,7 +569,10 @@ export default async function SlaapPage() {
 - De h1 heeft `tabIndex={-1}` en `data-focus-target`: na een push zet
   PageTransition de focus erop (zonder ring, zonder scroll).
 - **Titelregel (H7):** elke pagina exporteert `metadata = { title: "…" }` of
-  `generateMetadata`. De root-layout maakt daar "`<titel> · GoFiev`" van
+  `generateMetadata`. Een detailpagina die niets vindt (`notFound()`) geeft
+  in `generateMetadata` `NOT_FOUND_TITLE` ("Pagina niet gevonden") terug;
+  `(app)/not-found.tsx` toont dan binnen de app-shell dezelfde titel als h1,
+  met één weg terug naar Vandaag. De root-layout maakt daar "`<titel> · GoFiev`" van
   (`title.template`); zonder titel blijft het
   "GoFiev — Jouw lichaam. Jouw ritme. Jouw dag.". Gebruik dezelfde naam als de
   h1 (bij vaste bestemmingen: `FEATURES.x.label`).
@@ -626,7 +651,21 @@ de app"; `markNavigation()` is een no-op.
   niet in `main` zit).
 - **Ankers (besluit 11):** een doel krijgt alleen `scroll-mt-4`. De hoogte van
   de app-balk zit in `html { scroll-padding-top: var(--mobile-header-h) }` —
-  dat is de enige offset. Geen `scroll-mt-24` of eigen pixels.
+  dat is de enige offset. Geen `scroll-mt-24` of eigen pixels. Onderaan
+  houdt `scroll-padding-bottom` (mobiel: tabbalk + `--sticky-action-h`)
+  een gefocust veld boven de tabbalk en de actiebalk (WCAG 2.4.11); de
+  Buddy (`data-keyboard`) doet daar niet aan mee.
+- **Springen binnen de pagina:** gebruik `<JumpLink targetId="kalender">`
+  (`@/components/ui/jump-link`), geen kale `<a href="#…">`. Die zou een
+  hash-stap op de geschiedenis zetten waar de router niets mee kan, zodat
+  "terug" het oude scherm laat staan. JumpLink scrollt (zacht, behalve bij
+  reduced motion) en zet de focus op het doel, zonder geschiedenisstap.
+- **Focus na terug:** PageTransition onthoudt per pagina de laatst gebruikte
+  knop of link in `main` en zet de focus daar weer op na terug/vooruit (of
+  op de h1 als die er niet meer is), zodat toetsenbord en schermlezer hun
+  plek houden. Velden worden niet onthouden. Haalt een actie de knop zelf
+  weg (Opslaan verdwijnt, een kaart wordt verwijderd), zet de focus dan op
+  de sectiekop met `focusElementById` (`@/lib/ui/focus`).
 - Pull-to-refresh en `overscroll-behavior-y: contain` blijven staan; een
   element dat zelf scrolt of sleept, zet `data-no-pull-refresh`.
 
@@ -679,8 +718,14 @@ useImmersive(isRunning, { appBar: "hide" })  // ook de app-balk weg (alleen safe
   Lezen kan met `useImmersiveActive()`.
 - `StickyActionBar` houdt de hoofdactie in de duimzone: plakt direct boven de
   tabbalk, of boven de safe area als die (immersief, toetsenbord) weg is.
-  Ondoorzichtig cream met hairline, loopt tot de paginarand (`bleed={false}`
-  binnen een kaart). Publiceert `--sticky-action-h`, zodat toasts erboven komen.
+  Ondoorzichtig cream met hairline; op mobiel loopt hij tot de schermrand
+  (`bleed={false}` binnen een kaart), vanaf md blijft hij binnen de
+  inhoudskolom. Publiceert `--sticky-action-h`, zodat toasts erboven komen.
+  Hij heeft `mt-auto`: in een `<Page fill>` zakt hij bij een korte stap
+  naar de onderkant in plaats van midden in het scherm te zweven.
+- Twee knoppen die op 320px niet naast elkaar passen horen niet in een
+  StickyActionBar (die zou dan twee rijen hoog worden): zet ze onder de
+  inhoud (Voor je arts: "Printen of pdf" + de tekstactie "Download tekst").
 - **Plaats hem als direct kind van `<Page>`** (of een even hoge container):
   `sticky` werkt alleen binnen de ouder; in een korte wrapper scrolt hij mee weg.
 
@@ -710,7 +755,8 @@ useImmersive(isRunning, { appBar: "hide" })  // ook de app-balk weg (alleen safe
 - [ ] Geen `router.push` naar een ouder; gebruik `goBackOr`, `replaceTo` of `leaveFlow`.
 - [ ] Ankers alleen `scroll-mt-4`.
 - [ ] Meldingen via `toast.show`; eigen zwevende UI in `<ToastLayer>`.
-- [ ] Flow met een einde: `useImmersive()` + `StickyActionBar` als direct kind van `<Page>`.
+- [ ] Flow met een einde: `useImmersive()` + `StickyActionBar` als direct kind van `<Page fill>`.
+- [ ] Springen binnen de pagina met `JumpLink`, niet met `<a href="#…">`.
 - [ ] Scherm zonder zichtbare h1: `<AppBarConfig title alwaysShowTitle />`.
 
 ## 13. Bewaking
