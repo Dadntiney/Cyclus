@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
 import { PRIVACY_POLICY_TITLE, PRIVACY_POLICY_VERSION } from "@/lib/legal/versions"
+import { formatLongDate } from "@/lib/dates/format"
 import { LegalList, LegalPage, LegalSection, legalLinkClass } from "./_legal/legal-page"
 
 export const metadata: Metadata = { title: PRIVACY_POLICY_TITLE }
@@ -23,7 +24,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title={PRIVACY_POLICY_TITLE}
-      subtitle={`Versie ${PRIVACY_POLICY_VERSION}`}
+      subtitle={`Versie van ${formatLongDate(PRIVACY_POLICY_VERSION, { year: true })}`}
       sections={Object.values(S)}
     >
       <LegalSection {...S.wie}>

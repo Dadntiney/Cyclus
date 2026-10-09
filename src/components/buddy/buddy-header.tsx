@@ -72,13 +72,13 @@ export function BuddyHeader() {
               href={FEATURES.buddyStijl.href}
               icon={FEATURES.buddyStijl.icon}
               title={FEATURES.buddyStijl.label}
-              description="Toon en hoe vaak Buddy van zich laat horen"
+              description={FEATURES.buddyStijl.description}
             />
             <ListRow
               href={FEATURES.privacy.href}
               icon={FEATURES.privacy.icon}
               title={FEATURES.privacy.label}
-              description="Toestemmingen en je gegevens"
+              description={FEATURES.privacy.description}
             />
           </ListGroup>
         </div>

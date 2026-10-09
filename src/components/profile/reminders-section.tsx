@@ -110,10 +110,12 @@ export function RemindersSection({
   const showForm = adding || editingId !== null
 
   // Form sits above the bottom nav — scroll so Opslaan is reachable on mobile.
+  // The button she used is gone now: focus moves to the form's title.
   useEffect(() => {
     if (!showForm) return
     const id = window.setTimeout(() => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" })
+      document.getElementById("reminder-form-title")?.focus({ preventScroll: true })
     }, 50)
     return () => window.clearTimeout(id)
   }, [showForm])
@@ -142,10 +144,13 @@ export function RemindersSection({
     setAdding(false)
   }
 
+  // Closing the form (Opslaan, Annuleren, ✕) removes the control she used:
+  // focus returns to the "Herinneringen" heading, not to the page.
   function cancelForm() {
     setAdding(false)
     setEditingId(null)
     setError(null)
+    requestAnimationFrame(() => focusElementById("herinneringen"))
   }
 
   function toggleDay(day: number) {
@@ -408,7 +413,9 @@ export function RemindersSection({
         className="flex flex-col gap-4 scroll-mb-[calc(var(--bottom-nav-h,5.5rem)+1rem)]"
       >
         <div className="flex items-center justify-between gap-3">
-          <h3 className="type-card-title text-ink">{editingId ? "Herinnering wijzigen" : "Nieuwe herinnering"}</h3>
+          <h3 id="reminder-form-title" tabIndex={-1} data-focus-target="" className="type-card-title text-ink">
+            {editingId ? "Herinnering wijzigen" : "Nieuwe herinnering"}
+          </h3>
           <IconButton label="Sluiten" icon={X} onClick={cancelForm} className="-mr-2" />
         </div>
 

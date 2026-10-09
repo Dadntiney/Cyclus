@@ -30,7 +30,7 @@ const INSTELLINGEN = [
   { feature: FEATURES.cyclusinstellingen, description: "Lengte, regelmaat, levensfase" },
   { feature: FEATURES.gebruik, description: "Onderdelen aan of uit" },
   { feature: FEATURES.meldingen, description: "Goedemorgen en herinneringen" },
-  { feature: FEATURES.buddyStijl, description: "Toon en hoe vaak" },
+  { feature: FEATURES.buddyStijl, description: FEATURES.buddyStijl.description },
 ] as const
 
 export default async function ProfielPage() {
@@ -87,7 +87,7 @@ export default async function ProfielPage() {
             href={FEATURES.privacy.href}
             icon={FEATURES.privacy.icon}
             title={FEATURES.privacy.label}
-            description="Toestemming en je gegevens"
+            description={FEATURES.privacy.description}
           />
           <LogoutRow />
         </ListGroup>

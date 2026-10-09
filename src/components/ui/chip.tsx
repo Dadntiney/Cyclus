@@ -45,7 +45,8 @@ export function Chip({ selected, fill, removable, role, className, children, ...
         "relative inline-flex items-center justify-center gap-1.5 rounded-full border min-h-11 text-sm font-medium touch-manipulation select-none",
         "transition-[background-color,border-color,color,transform] duration-fast ease-standard motion-safe:active:scale-[0.97]",
         "disabled:opacity-50 disabled:pointer-events-none",
-        fill ? "w-full px-2 py-2.5 whitespace-nowrap" : "px-4 py-2.5",
+        // A long option that wraps reads left-aligned, like the rows around it.
+        fill ? "w-full px-2 py-2.5 whitespace-nowrap" : "px-4 py-2.5 text-left",
         active
           ? "bg-sage-soft text-sage-darker border-sage-dark"
           : "bg-transparent text-ink border-line-strong hover:bg-cream-soft/60 active:bg-cream-soft/60",

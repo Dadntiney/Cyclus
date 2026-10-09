@@ -33,6 +33,9 @@ export function PushNotificationsCard() {
   const [status, setStatus] = useState<Status>("checking")
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  // She closed the browser prompt without choosing: nothing is blocked,
+  // the switch stays and she can simply try again later.
+  const [hint, setHint] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -65,9 +68,14 @@ export function PushNotificationsCard() {
     setError(null)
     startTransition(async () => {
       try {
+        setHint(null)
         const permission = await Notification.requestPermission()
-        if (permission !== "granted") {
+        if (permission === "denied") {
           setStatus("denied")
+          return
+        }
+        if (permission !== "granted") {
+          setHint("Je hebt nog niets gekozen. Je kunt het later opnieuw proberen.")
           return
         }
         const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
@@ -135,7 +143,7 @@ export function PushNotificationsCard() {
           description={
             isPending
               ? "Even bezig…"
-              : "Je herinneringen, ook als GoFiev niet openstaat. Jij kiest welke er aanstaan."
+              : (hint ?? "Je herinneringen, ook als GoFiev niet openstaat. Jij kiest welke er aanstaan.")
           }
           checked={status === "subscribed"}
           onChange={(on) => (on ? handleEnable() : handleDisable())}

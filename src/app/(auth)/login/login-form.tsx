@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useEffect, useState } from "react"
 import { login, type ActionState } from "@/lib/actions/auth"
 import { Input, Label, FieldError } from "@/components/ui/input"
 import { SubmitButton } from "@/components/ui/submit-button"
@@ -13,6 +13,14 @@ export function LoginForm({ next }: { next?: string }) {
   // Hidden while a new attempt runs, so the same message is announced
   // again (role="alert") when it comes back.
   const error = pending ? undefined : state.error
+  // Controlled, so a failed attempt keeps her e-mail address (React resets
+  // uncontrolled fields after a form action); only the password is retyped.
+  const [email, setEmail] = useState("")
+
+  // After a failed attempt focus goes to the password field, not the page.
+  useEffect(() => {
+    if (state.error) document.getElementById("password")?.focus()
+  }, [state])
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -25,6 +33,9 @@ export function LoginForm({ next }: { next?: string }) {
           type="email"
           autoComplete="email"
           required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          aria-invalid={error ? true : undefined}
           aria-describedby={error ? "login-fout" : undefined}
         />
       </div>
@@ -35,6 +46,7 @@ export function LoginForm({ next }: { next?: string }) {
           name="password"
           autoComplete="current-password"
           required
+          aria-invalid={error ? true : undefined}
           aria-describedby={error ? "login-fout" : undefined}
         />
       </div>

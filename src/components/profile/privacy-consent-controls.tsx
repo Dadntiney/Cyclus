@@ -10,6 +10,7 @@ import {
 import { Button, textActionClass } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { runAction } from "@/lib/client/run-action"
+import { formatLongDate } from "@/lib/dates/format"
 
 function ConsentRow({ title, status, children }: { title: string; status: string; children?: ReactNode }) {
   return (
@@ -41,7 +42,7 @@ export function PrivacyConsentControls({
           title="Gezondheidsgegevens"
           status={
             healthConsentAt
-              ? `Toestemming gegeven op ${new Date(healthConsentAt).toLocaleDateString("nl-NL")}.`
+              ? `Toestemming gegeven op ${formatLongDate(healthConsentAt, { year: true })}.`
               : "Nog geen toestemming. Die is nodig om cyclus- en check-in-gegevens te gebruiken."
           }
         >
@@ -69,7 +70,7 @@ export function PrivacyConsentControls({
             title="Buddy AI"
             status={
               buddyAiConsentAt
-                ? `AI-toestemming actief sinds ${new Date(buddyAiConsentAt).toLocaleDateString("nl-NL")}.`
+                ? `AI-toestemming actief sinds ${formatLongDate(buddyAiConsentAt, { year: true })}.`
                 : "Zonder toestemming blijft Buddy lokaal (geen externe AI)."
             }
           >

@@ -11,6 +11,7 @@ import { Textarea, Label } from "@/components/ui/input"
 import { EmptyState } from "@/components/ui/empty-state"
 import { SectionHeader } from "@/components/ui/section-header"
 import { toast } from "@/components/ui/toast"
+import { focusElementById } from "@/lib/ui/focus"
 import { createDiaryEntry, deleteDiaryEntry, updateDiaryEntry } from "@/lib/actions/diary"
 import { runAction } from "@/lib/client/run-action"
 import { formatLongDate } from "@/lib/dates/format"
@@ -34,6 +35,17 @@ export function DiaryClient({ entries }: { entries: Entry[] }) {
   const [isPending, startTransition] = useTransition()
   const fieldRef = useRef<HTMLTextAreaElement>(null)
   const hasText = body.trim().length > 0
+  const shownCount = useRef(entries.length)
+
+  // A note was added (Opslaan disappears) or removed (its card is gone):
+  // focus would fall to the page, so it goes to "Eerdere notities", where
+  // the change is.
+  useEffect(() => {
+    if (shownCount.current === entries.length) return
+    shownCount.current = entries.length
+    const active = document.activeElement
+    if (!active || active === document.body || !active.isConnected) focusElementById("eerdere-notities")
+  }, [entries.length])
 
   function save() {
     setError(null)
@@ -146,6 +158,7 @@ function DiaryEntryCard({ entry }: { entry: Entry }) {
         return
       }
       setEditing(false)
+      toast.show({ title: "Opgeslagen" })
       router.refresh()
     })
   }
@@ -159,6 +172,7 @@ function DiaryEntryCard({ entry }: { entry: Entry }) {
         setError(result.error)
         return
       }
+      toast.show({ title: "Notitie verwijderd" })
       router.refresh()
     })
   }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { PageHeader } from "@/components/layout/page-header"
+import { AuthLockup } from "../auth-lockup"
 import { textActionClass } from "@/components/ui/button"
 import { LoginForm } from "./login-form"
 
@@ -15,7 +16,12 @@ export default async function LoginPage({
 
   return (
     <>
-      <PageHeader title="Inloggen" subtitle="Welkom terug. Fijn dat je er weer bent." back={false} />
+      <PageHeader
+        title="Inloggen"
+        subtitle="Welkom terug. Fijn dat je er weer bent."
+        back={false}
+        media={<AuthLockup />}
+      />
       {/* auth/callback sends her here when an e-mail link could not be used
           (expired or opened twice). Not her mistake, so a calm note. */}
       {error === "auth-callback" && (

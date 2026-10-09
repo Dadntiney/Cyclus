@@ -4,13 +4,15 @@ import { SectionHeader } from "@/components/ui/section-header"
 import { ICON } from "@/lib/ui/icon"
 import type { Milestone } from "@/lib/data/profile"
 import { FEATURES } from "@/lib/navigation/features"
+import { cn } from "@/lib/utils"
 
 /** Every tile is the same height, number on top, words underneath. */
 const TILE = "flex min-h-28 flex-col justify-between gap-2 rounded-card p-4"
 
+/** Number and label from the top: a label that wraps never changes the gap. */
 function StatTile({ value, label }: { value: number; label: string }) {
   return (
-    <li className={`${TILE} bg-cream-soft`}>
+    <li className={cn(TILE, "justify-start gap-1 bg-cream-soft")}>
       <p className="type-section-title text-ink tabular-nums">{value}</p>
       <p className="text-sm text-ink-soft">{label}</p>
     </li>

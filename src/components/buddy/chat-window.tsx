@@ -346,7 +346,9 @@ export function ChatWindow({
                 </div>
               </BuddyRow>
               {/* Starting points — they only fill the input; she decides to send. */}
-              <div role="group" aria-label="Voorbeeldvragen" className="mt-3 flex flex-col items-end gap-2">
+              {/* Calm suggestion rows, not tall pills: one line each on a
+                  phone, left-aligned, so the first run fits on a small screen. */}
+              <div role="group" aria-label="Voorbeeldvragen" className="mt-3 flex flex-col items-stretch gap-2">
                 {STARTER_QUESTIONS.map((q) => (
                   <Chip
                     key={q}
@@ -354,7 +356,7 @@ export function ChatWindow({
                       setInput(q)
                       composerRef.current?.focus()
                     }}
-                    className="max-w-full text-left"
+                    className="justify-start rounded-inset text-left"
                   >
                     {q}
                   </Chip>

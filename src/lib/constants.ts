@@ -6,8 +6,6 @@ import {
   Salad,
   Zap,
   Heart,
-  NotebookPen,
-  Stethoscope,
   Moon,
   Sparkles,
   MoreHorizontal,
@@ -28,6 +26,7 @@ import {
   BatteryLow,
   BatteryWarning,
 } from "lucide-react"
+import { FEATURES } from "@/lib/navigation/features"
 
 export const GOAL_OPTIONS = [
   "Meer energie",
@@ -280,12 +279,17 @@ export const FLOW_OPTIONS = [
 ] as const
 
 // Optional reminders (see the `reminders` table).
+/**
+ * Reminder types. Each icon is the icon of where the reminder leads
+ * (FEATURES, besluit 34): the check-in lives on Vandaag, klachten on
+ * Klachtenlast, "wat speelt er in jouw fase" on Jouw fase.
+ */
 export const REMINDER_TYPE_OPTIONS = [
-  { value: "dagelijkse_checkin", label: "Dagelijkse check-in", icon: NotebookPen, defaultLabel: "Vul je dagelijkse gegevens in" },
-  { value: "symptomen", label: "Klachten registreren", icon: Stethoscope, defaultLabel: "Klachten bijhouden" },
+  { value: "dagelijkse_checkin", label: "Dagelijkse check-in", icon: FEATURES.vandaag.icon, defaultLabel: "Vul je dagelijkse gegevens in" },
+  { value: "symptomen", label: "Klachten registreren", icon: FEATURES.klachtenlast.icon, defaultLabel: "Klachten bijhouden" },
   { value: "beweging", label: "Bewegen", icon: Footprints, defaultLabel: "Tijd om even te bewegen", requires: "movement_enabled" },
   { value: "voeding", label: "Voeding", icon: Salad, defaultLabel: "Even denken aan wat je lichaam nodig heeft", requires: "nutrition_enabled" },
-  { value: "cyclus", label: "Cyclus", icon: Moon, defaultLabel: "Even kijken wat er in jouw fase speelt" },
+  { value: "cyclus", label: "Cyclus", icon: FEATURES.fase.icon, defaultLabel: "Even kijken wat er in jouw fase speelt" },
   { value: "herstel", label: "Zelfzorg & herstel", icon: Sparkles, defaultLabel: "Even een moment van rust" },
   { value: "routine", label: "Persoonlijke routine", icon: Leaf, defaultLabel: "Jouw persoonlijke routine" },
   {
