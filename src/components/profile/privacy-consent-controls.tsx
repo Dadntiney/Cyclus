@@ -1,14 +1,26 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 import {
   acceptBuddyAiConsent,
   acceptHealthDataConsent,
   revokeBuddyAiConsent,
 } from "@/lib/actions/consent"
-import { Button } from "@/components/ui/button"
+import { Button, textActionClass } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { runAction } from "@/lib/client/run-action"
+import { formatLongDate } from "@/lib/dates/format"
+
+function ConsentRow({ title, status, children }: { title: string; status: string; children?: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1 p-4">
+      <p className="text-base font-medium text-ink">{title}</p>
+      <p className="text-sm text-ink-soft">{status}</p>
+      {children && <div className="mt-2 flex flex-wrap gap-2">{children}</div>}
+    </div>
+  )
+}
 
 export function PrivacyConsentControls({
   healthConsentAt,
@@ -25,45 +37,48 @@ export function PrivacyConsentControls({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="rounded-xl bg-cream-soft/80 px-3.5 py-3">
-        <p className="text-sm font-medium text-ink">Gezondheidsgegevens</p>
-        <p className="text-xs text-ink-soft mt-1 leading-relaxed">
-          {healthConsentAt
-            ? `Toestemming gegeven op ${new Date(healthConsentAt).toLocaleDateString("nl-NL")}.`
-            : "Nog geen toestemming — nodig om cyclus- en check-in-gegevens te gebruiken."}
-        </p>
-        {!healthConsentAt && (
-          <Button
-            type="button"
-            size="sm"
-            className="mt-2.5"
-            disabled={isPending}
-            onClick={() => {
-              setError(null)
-              startTransition(async () => {
-                const result = await runAction(() => acceptHealthDataConsent())
-                if (result.error) setError(result.error)
-                else router.refresh()
-              })
-            }}
-          >
-            Toestemming geven
-          </Button>
-        )}
-      </div>
+      <Card padding="none" className="divide-y divide-line">
+        <ConsentRow
+          title="Gezondheidsgegevens"
+          status={
+            healthConsentAt
+              ? `Toestemming gegeven op ${formatLongDate(healthConsentAt, { year: true })}.`
+              : "Nog geen toestemming. Die is nodig om cyclus- en check-in-gegevens te gebruiken."
+          }
+        >
+          {!healthConsentAt && (
+            <Button
+              type="button"
+              size="sm"
+              disabled={isPending}
+              onClick={() => {
+                setError(null)
+                startTransition(async () => {
+                  const result = await runAction(() => acceptHealthDataConsent())
+                  if (result.error) setError(result.error)
+                  else router.refresh()
+                })
+              }}
+            >
+              Toestemming geven
+            </Button>
+          )}
+        </ConsentRow>
 
-      {buddyAiAvailable && (
-        <div className="rounded-xl bg-cream-soft/80 px-3.5 py-3">
-          <p className="text-sm font-medium text-ink">Buddy AI</p>
-          <p className="text-xs text-ink-soft mt-1 leading-relaxed">
-            {buddyAiConsentAt
-              ? `AI-toestemming actief sinds ${new Date(buddyAiConsentAt).toLocaleDateString("nl-NL")}.`
-              : "Zonder toestemming blijft Buddy lokaal (geen externe AI)."}
-          </p>
-          <div className="mt-2.5 flex flex-wrap gap-2">
+        {buddyAiAvailable && (
+          <ConsentRow
+            title="Buddy AI"
+            status={
+              buddyAiConsentAt
+                ? `AI-toestemming actief sinds ${formatLongDate(buddyAiConsentAt, { year: true })}.`
+                : "Zonder toestemming blijft Buddy lokaal (geen externe AI)."
+            }
+          >
             {!buddyAiConsentAt ? (
+              // Optional extra: never the louder button next to the health consent.
               <Button
                 type="button"
+                variant="tonal"
                 size="sm"
                 disabled={isPending}
                 onClick={() => {
@@ -89,16 +104,20 @@ export function PrivacyConsentControls({
                     else router.refresh()
                   })
                 }}
-                className="text-sm font-medium text-ink-soft min-h-11 px-1 touch-manipulation"
+                className={textActionClass("text-ink-soft")}
               >
                 AI-toestemming intrekken
               </button>
             )}
-          </div>
-        </div>
-      )}
+          </ConsentRow>
+        )}
+      </Card>
 
-      {error && <p className="text-xs text-danger">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm text-danger">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

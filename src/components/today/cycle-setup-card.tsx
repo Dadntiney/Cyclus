@@ -2,7 +2,10 @@
 
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
+import { Card } from "@/components/ui/card"
 import { MenstruationQuickAction } from "@/components/cycle/menstruation-quick-action"
+import { FEATURES } from "@/lib/navigation/features"
+import { ICON, iconProps } from "@/lib/ui/icon"
 
 /**
  * When she has a cycle but we can't estimate a phase yet (missing last period
@@ -10,24 +13,30 @@ import { MenstruationQuickAction } from "@/components/cycle/menstruation-quick-a
  * text link under a generic greeting.
  */
 export function CycleSetupCard() {
+  const Icon = FEATURES.cyclusinstellingen.icon
   return (
-    <div className="rounded-[1.25rem] bg-surface border border-line overflow-hidden">
+    <Card padding="none">
       <Link
-        href="/profiel/cyclus"
-        className="flex items-center gap-3 px-3.5 py-2.5 touch-manipulation motion-safe:active:scale-[0.99] transition-transform"
+        href={FEATURES.cyclusinstellingen.href}
+        className="flex min-h-14 items-center gap-3 rounded-t-card px-4 py-3 touch-manipulation -outline-offset-2 transition-colors duration-fast ease-standard hover:bg-cream-soft/60 active:bg-cream-soft"
       >
+        <span
+          aria-hidden
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-sage-dark"
+        >
+          <Icon {...ICON.sm} />
+        </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-ink">Jouw cyclus</span>
-          <span className="block text-xs text-ink-soft mt-0.5 leading-relaxed">
-            Vul je laatste menstruatie in voor een fase-inschatting — of start hieronder
-            als je vandaag begint.
+          <span className="block text-base font-medium text-ink">{FEATURES.cyclusinstellingen.label}</span>
+          <span className="block text-sm text-ink-soft">
+            Vul je laatste menstruatie in voor een fase-inschatting, of noteer hieronder dat je vandaag begint.
           </span>
         </span>
-        <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
+        <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
       </Link>
-      <div className="border-t border-line px-3.5">
+      <div className="border-t border-line px-4">
         <MenstruationQuickAction isActive={false} day={null} variant="quiet" />
       </div>
-    </div>
+    </Card>
   )
 }

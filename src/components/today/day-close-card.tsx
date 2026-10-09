@@ -1,21 +1,36 @@
 "use client"
 
 import { ACCOUNT_STATE_APPLIED_EVENT, syncToAccount } from "@/lib/client/account-sync"
-import { useEffect, useRef, useState, useTransition } from "react"
+import { useEffect, useId, useRef, useState, useTransition } from "react"
 import Link from "next/link"
-import { Moon, CheckCircle2, Circle, Heart, Sparkles, NotebookPen, ChevronDown } from "lucide-react"
+import { CheckCircle2, ChevronDown, Circle, NotebookPen } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getDayCloseLine, getEveningAffirmation } from "@/lib/data/day-close-notes"
+import { getEveningAffirmation } from "@/lib/data/day-close-notes"
 import { createDiaryEntry } from "@/lib/actions/diary"
 import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
+import { Button, textActionClass } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Collapse } from "@/components/ui/disclosure"
+import { Label, Textarea } from "@/components/ui/input"
+import { JumpLink } from "@/components/ui/jump-link"
+import { FEATURES } from "@/lib/navigation/features"
+import { triggerHaptic } from "@/lib/platform"
+import { ICON, iconProps } from "@/lib/ui/icon"
 import {
   loadWeekOverrides,
   WEEK_OVERRIDES_CHANGED_EVENT,
 } from "@/lib/client/week-plan-storage"
 
+const AVONDMEDITATIE_HREF = "/mentale-rust/avondroutine-voor-diepe-ontspanning"
+const DANKBAARHEID_HREF = "/mentale-rust/dankbaarheidsmoment"
+
 /**
- * Evening wrap-up on Vandaag. Collapsed by default before evening so the
- * daytime page stays one calm composition — not a second dashboard.
+ * "Even afronden" — the evening wrap-up, folded by default (it never opens
+ * by itself). Open: what is still open as in-page links (JumpLink: no
+ * history entry, so "back" keeps working), one prompt "Wat
+ * neem je mee van vandaag?", a row of plain text links and "Dag laten
+ * rusten". The affirmation (with a heart to save it) appears once the day
+ * rests. Icon: NotebookPen (besluit 22); a heart only ever means "bewaren".
  */
 export function DayCloseCard({
   userId,
@@ -24,6 +39,7 @@ export function DayCloseCard({
   hasCheckin,
   movementEnabled,
   movementDone,
+  restDay = false,
   sleepTrackingEnabled,
   hasSleepEntry,
   mentalWellbeingEnabled = false,
@@ -35,6 +51,8 @@ export function DayCloseCard({
   hasCheckin: boolean
   movementEnabled: boolean
   movementDone: boolean
+  /** A planned rest day: nothing to "do", so no "Beweging nog open" row. */
+  restDay?: boolean
   sleepTrackingEnabled: boolean
   hasSleepEntry: boolean
   mentalWellbeingEnabled?: boolean
@@ -43,18 +61,19 @@ export function DayCloseCard({
   const [closed, setClosed] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [movementHandled, setMovementHandled] = useState(movementDone)
-  const [hydrated, setHydrated] = useState(false)
   const [gratitude, setGratitude] = useState("")
   const [gratitudeSaved, setGratitudeSaved] = useState(false)
   const [gratitudeError, setGratitudeError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-  const didInitExpandRef = useRef(false)
+  const toggleRef = useRef<HTMLButtonElement>(null)
+  const contentId = useId()
+  const promptId = useId()
+  const errorId = useId()
 
   // Per user, so a shared device never shows someone else's evening; the
   // closed flag is also mirrored to the account (account-sync.ts).
   const storageKey = `cyclus:day-closed:${userId}:${date}`
   const gratitudeKey = `cyclus:day-gratitude:${userId}:${date}`
-  const closeLine = getDayCloseLine(date)
   const affirmation = getEveningAffirmation(date)
 
   useEffect(() => {
@@ -76,12 +95,6 @@ export function DayCloseCard({
         setClosed(false)
         setMovementHandled(movementDone)
       }
-      if (!didInitExpandRef.current) {
-        didInitExpandRef.current = true
-        // Evening (17+) opens once; later movementDone refreshes must not collapse.
-        setExpanded(new Date().getHours() >= 17)
-        setHydrated(true)
-      }
     }
     syncFromClient()
     window.addEventListener(WEEK_OVERRIDES_CHANGED_EVENT, syncFromClient)
@@ -102,6 +115,9 @@ export function DayCloseCard({
     }
     syncToAccount(storageKey, "1")
     setClosed(true)
+    void triggerHaptic("light")
+    // The button she tapped is gone now; keep focus on the card.
+    toggleRef.current?.focus()
   }
 
   function saveGratitudeThen(onDone?: () => void) {
@@ -143,6 +159,7 @@ export function DayCloseCard({
     syncToAccount(storageKey, null)
     setClosed(false)
     setExpanded(true)
+    toggleRef.current?.focus()
   }
 
   const items = [
@@ -150,13 +167,15 @@ export function DayCloseCard({
       key: "checkin",
       done: hasCheckin,
       label: hasCheckin ? "Even bij jezelf geweest" : "Check-in nog open",
+      target: "checkin",
     },
-    ...(movementEnabled
+    ...(movementEnabled && (movementHandled || !restDay)
       ? [
           {
             key: "movement",
             done: movementHandled,
             label: movementHandled ? "Beweging genoteerd" : "Beweging nog open",
+            target: "beweging",
           },
         ]
       : []),
@@ -166,197 +185,162 @@ export function DayCloseCard({
             key: "sleep",
             done: hasSleepEntry,
             label: hasSleepEntry ? "Slaap genoteerd" : "Slaap nog invullen",
+            target: "slaap-vandaag",
           },
         ]
       : []),
   ]
 
-  const doneCount = items.filter((i) => i.done).length
-
-  if (hydrated && closed) {
-    return (
-      <div className="rounded-[1.25rem] bg-surface border border-line px-4 py-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle2 className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} />
-              <p className="text-sm font-medium text-ink">Dag mag rusten</p>
-            </div>
-            {gratitudeSaved && gratitude.trim() && (
-              <p className="text-sm text-ink/80 pl-6 mb-2 leading-relaxed">
-                Meegenomen: {gratitude.trim()}
-              </p>
-            )}
-            <p className="font-display text-[1.05rem] leading-snug text-ink/90 pl-6">
-              {closeLine}
-            </p>
-            {mentalWellbeingEnabled && (
-              <Link
-                href="/mentale-rust/avondroutine-voor-diepe-ontspanning"
-                className="mt-3 ml-6 inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark min-h-11 touch-manipulation"
-              >
-                <Moon className="h-3.5 w-3.5" strokeWidth={1.75} />
-                Avondmeditatie
-              </Link>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={reopen}
-            className="text-xs font-medium text-sage-dark min-h-11 px-1 touch-manipulation shrink-0"
-          >
-            Heropen
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (hydrated && !expanded) {
-    return (
-      <button
-        type="button"
-        onClick={() => setExpanded(true)}
-        className="w-full rounded-[1.25rem] bg-surface border border-line px-4 py-3.5 flex items-center gap-3 text-left touch-manipulation motion-safe:active:scale-[0.99] transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-      >
-        <Moon className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} aria-hidden />
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-ink">Even afronden</span>
-          <span className="block text-xs text-ink-soft mt-0.5">
-            {doneCount === 0
-              ? "Kort terugkijken als je wilt — niks hoeft"
-              : doneCount === items.length
-                ? "Alles wat je wilde is genoteerd"
-                : `${doneCount} van ${items.length} aangeraakt · open wanneer jij wilt`}
-          </span>
-        </span>
-        <ChevronDown className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
-      </button>
-    )
-  }
+  const savedLine = gratitudeSaved ? gratitude.trim() : ""
 
   return (
-    <div className="rounded-[1.25rem] bg-surface border border-line px-4 py-4">
-      <div className="flex items-center gap-2 mb-1">
-        <Moon className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-        <h2 className="font-display text-xl text-ink">Even afronden</h2>
-      </div>
-      <p className="text-sm text-ink-soft mb-3">
-        Kort terugkijken — makkelijk en zonder oordeel. Niet alles hoeft aangevinkt.
-      </p>
-
-      <ul className="flex flex-col gap-2 mb-4">
-        {items.map((item) => (
-          <li key={item.key} className="flex items-center gap-2 text-sm">
-            {item.done ? (
-              <CheckCircle2 className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} />
-            ) : (
-              <Circle className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
-            )}
-            <span className={cn(item.done ? "text-ink" : "text-ink-soft")}>{item.label}</span>
-            {item.key === "sleep" && !item.done && (
-              <a
-                href="#slaap-vandaag"
-                className="ml-auto inline-flex items-center min-h-11 text-xs font-medium text-sage-dark touch-manipulation"
-              >
-                Naar slaap
-              </a>
-            )}
-            {item.key === "movement" && !item.done && (
-              <span className="ml-auto text-xs text-ink-soft">Boven bij Beweging</span>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      <div className="rounded-2xl bg-cream-soft px-3.5 py-3.5 mb-3">
-        <div className="flex items-center gap-2 mb-2">
-          <Heart className="h-3.5 w-3.5 text-sage-dark shrink-0" strokeWidth={1.75} />
-          <p className="text-sm font-medium text-ink">Wat neem je mee van vandaag?</p>
-        </div>
-        {gratitudeSaved ? (
-          <p className="text-sm text-ink leading-relaxed">{gratitude.trim()}</p>
-        ) : (
-          <>
-            <textarea
-              value={gratitude}
-              onChange={(e) => setGratitude(e.target.value)}
-              rows={2}
-              maxLength={280}
-              placeholder="Iets kleins mag ook — een moment, een inzicht, een gevoel…"
-              aria-label="Wat neem je mee van vandaag"
-              className="w-full rounded-xl border border-line/60 bg-surface px-3 py-2.5 text-base text-ink placeholder:text-ink-soft/80 resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/40 min-h-[2.75rem]"
-            />
-            {gratitude.trim() && (
-              <button
-                type="button"
-                disabled={isPending}
-                onClick={() => saveGratitudeThen()}
-                className="mt-2 text-xs font-medium text-sage-dark min-h-11 px-1 touch-manipulation"
-              >
-                {isPending ? "Bewaren…" : "Bewaar in dagboek"}
-              </button>
-            )}
-            {gratitudeError && <p className="text-xs text-danger mt-1">{gratitudeError}</p>}
-          </>
-        )}
-      </div>
-
-      <div className="rounded-2xl bg-cream-soft px-3.5 py-3.5 mb-3">
-        <div className="flex items-center justify-between gap-2 mb-1.5">
-          <div className="flex items-center gap-2 min-w-0">
-            <Sparkles className="h-3.5 w-3.5 text-sage-dark shrink-0" strokeWidth={1.75} />
-            <p className="text-xs font-medium text-ink-soft uppercase tracking-wide">Voor vanavond</p>
-          </div>
-          <MomentFavoriteButton
-            kind="affirmation"
-            text={affirmation}
-            source="day-close-affirmation"
-            initialFavorited={savedTexts.includes(affirmation)}
-            size="sm"
-          />
-        </div>
-        <p className="font-display text-[1.05rem] leading-snug text-ink">
-          &ldquo;{affirmation}&rdquo;
-        </p>
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-4">
-        {mentalWellbeingEnabled && (
-          <>
-            <Link
-              href="/mentale-rust/dankbaarheidsmoment"
-              className="inline-flex items-center gap-1.5 rounded-full bg-cream-soft px-3 py-2 text-xs font-medium text-ink touch-manipulation min-h-11"
-            >
-              <Heart className="h-3.5 w-3.5 text-sage-dark" strokeWidth={1.75} />
-              Dankbaarheid · 2 min
-            </Link>
-            <Link
-              href="/mentale-rust/avondroutine-voor-diepe-ontspanning"
-              className="inline-flex items-center gap-1.5 rounded-full bg-cream-soft px-3 py-2 text-xs font-medium text-ink touch-manipulation min-h-11"
-            >
-              <Moon className="h-3.5 w-3.5 text-sage-dark" strokeWidth={1.75} />
-              Avondmeditatie
-            </Link>
-          </>
-        )}
-        <Link
-          href="/dagboek"
-          className="inline-flex items-center gap-1.5 rounded-full bg-cream-soft px-3 py-2 text-xs font-medium text-ink touch-manipulation min-h-11"
+    <Card as="section" padding="none" aria-labelledby={`${contentId}-titel`}>
+      <h2>
+        <button
+          ref={toggleRef}
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          aria-controls={contentId}
+          className={cn(
+            "flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left touch-manipulation -outline-offset-2",
+            "transition-colors duration-fast ease-standard hover:bg-cream-soft/60 active:bg-cream-soft",
+            expanded ? "rounded-t-card" : "rounded-card",
+          )}
         >
-          <NotebookPen className="h-3.5 w-3.5 text-sage-dark" strokeWidth={1.75} />
-          Dagboek
-        </Link>
-      </div>
+          <span
+            aria-hidden
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-sage-dark"
+          >
+            <NotebookPen {...ICON.sm} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span id={`${contentId}-titel`} className="block text-base font-medium text-ink">
+              Even afronden
+            </span>
+            <span className="block text-sm text-ink-soft">
+              {closed ? "Dag mag rusten" : "Kort terugkijken, als je wilt"}
+            </span>
+          </span>
+          <ChevronDown
+            {...iconProps(
+              "sm",
+              cn(
+                "text-ink-soft transition-transform duration-base ease-standard motion-reduce:transition-none",
+                expanded && "rotate-180",
+              ),
+            )}
+            aria-hidden
+          />
+        </button>
+      </h2>
 
-      <button
-        type="button"
-        onClick={markClosed}
-        disabled={isPending}
-        className="w-full inline-flex items-center justify-center min-h-11 rounded-xl bg-sage-fill text-sm font-medium text-white touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 motion-safe:active:scale-[0.99] transition-transform disabled:opacity-70"
-      >
-        {isPending ? "Even bewaren…" : "Dag laten rusten"}
-      </button>
-    </div>
+      <Collapse open={expanded} id={contentId}>
+        {closed ? (
+          <div className="flex flex-col gap-3 px-4 pb-4 pt-1">
+            {savedLine && <p className="text-sm text-ink-soft">Meegenomen: {savedLine}</p>}
+            <div className="flex items-start gap-1">
+              <p className="min-w-0 flex-1 font-display text-base leading-snug text-ink">
+                &ldquo;{affirmation}&rdquo;
+              </p>
+              <span className="-my-2 shrink-0">
+                <MomentFavoriteButton
+                  kind="affirmation"
+                  text={affirmation}
+                  source="day-close-affirmation"
+                  initialFavorited={savedTexts.includes(affirmation)}
+                  size="sm"
+                />
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-5">
+              {mentalWellbeingEnabled && (
+                <Link href={AVONDMEDITATIE_HREF} className={textActionClass()}>
+                  Avondmeditatie
+                </Link>
+              )}
+              <button type="button" onClick={reopen} className={textActionClass()}>
+                Heropen
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4 px-4 pb-4 pt-1">
+            <ul className="flex flex-col">
+              {items.map((item) =>
+                item.done ? (
+                  <li key={item.key} className="flex min-h-11 items-center gap-2 text-sm text-ink">
+                    <CheckCircle2 {...iconProps("sm", "text-sage-dark")} aria-hidden />
+                    {item.label}
+                  </li>
+                ) : (
+                  <li key={item.key}>
+                    <JumpLink targetId={item.target} className={textActionClass("gap-2")}>
+                      <Circle {...iconProps("sm", "text-ink-soft")} aria-hidden />
+                      {item.label}
+                    </JumpLink>
+                  </li>
+                ),
+              )}
+            </ul>
+
+            <div>
+              <Label htmlFor={gratitudeSaved ? undefined : promptId}>Wat neem je mee van vandaag?</Label>
+              {gratitudeSaved ? (
+                <p className="text-sm text-ink">{gratitude.trim()}</p>
+              ) : (
+                <>
+                  <Textarea
+                    id={promptId}
+                    value={gratitude}
+                    onChange={(e) => setGratitude(e.target.value)}
+                    rows={2}
+                    maxLength={280}
+                    placeholder="Iets kleins mag ook: een moment, een inzicht, een gevoel…"
+                    aria-invalid={gratitudeError ? true : undefined}
+                    aria-describedby={gratitudeError ? errorId : undefined}
+                  />
+                  {gratitude.trim() && (
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => saveGratitudeThen()}
+                      className={textActionClass("-ml-1 px-1")}
+                    >
+                      {isPending ? "Bewaren…" : "Bewaar in dagboek"}
+                    </button>
+                  )}
+                  {gratitudeError && (
+                    <p id={errorId} role="alert" className="mt-1 text-sm text-danger">
+                      {gratitudeError}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-5">
+              <Link href={FEATURES.dagboek.href} className={textActionClass()}>
+                {FEATURES.dagboek.label}
+              </Link>
+              {mentalWellbeingEnabled && (
+                <>
+                  <Link href={DANKBAARHEID_HREF} className={textActionClass()}>
+                    Dankbaarheid · 2 min
+                  </Link>
+                  <Link href={AVONDMEDITATIE_HREF} className={textActionClass()}>
+                    Avondmeditatie
+                  </Link>
+                </>
+              )}
+            </div>
+
+            <Button className="w-full" onClick={markClosed} disabled={isPending}>
+              {isPending ? "Even bewaren…" : "Dag laten rusten"}
+            </Button>
+          </div>
+        )}
+      </Collapse>
+    </Card>
   )
 }

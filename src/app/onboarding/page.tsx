@@ -1,7 +1,10 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { createClient, getAuthedUser } from "@/lib/supabase/server"
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard"
 import { PRIVACY_POLICY_VERSION } from "@/lib/legal/versions"
+
+export const metadata: Metadata = { title: "Welkom" }
 
 export default async function OnboardingPage() {
   const supabase = await createClient()
@@ -21,7 +24,7 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream">
+    <main className="min-h-dvh bg-cream">
       <OnboardingWizard
         initialName={profile?.name ?? ""}
         consentGiven={
@@ -29,6 +32,6 @@ export default async function OnboardingPage() {
           profile?.health_data_consent_version === PRIVACY_POLICY_VERSION
         }
       />
-    </div>
+    </main>
   )
 }

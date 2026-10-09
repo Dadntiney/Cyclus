@@ -20,7 +20,13 @@ import { isScheduleStartDay, isScheduleStopDay, isAbsoluteMedicationEndDay } fro
 import { getMorningMessage } from "@/lib/data/morning-messages"
 import { todayISO as amsterdamTodayISO } from "@/lib/dates/amsterdam"
 import type { MorningReminderContentType } from "@/lib/constants"
+import { IconButton } from "@/components/ui/icon-button"
+import { ToastLayer, toastSlotClass } from "@/components/ui/toast"
+import { iconProps } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
+
+/** Matches --duration-exit. */
+const EXIT_MS = 180
 
 export interface MorningReminderSettings {
   enabled: boolean
@@ -75,6 +81,11 @@ function medicationToast(medication: MedicationReminderLike, now: Date): Toast {
  * toast, plus a native browser Notification if she's granted permission.
  * There's no push server behind this — it can't wake up a closed browser —
  * so it only ever fires while Cyclus is actually open.
+ *
+ * The toasts live in the app's toast layer: 12px above the tab bar (and
+ * any StickyActionBar), never under the safe area, readable while a sheet
+ * is open. They stay until she closes them, rise in and fade out, and are
+ * announced politely.
  */
 export function ReminderToastHost({
   reminders,
@@ -177,33 +188,34 @@ export function ReminderToastHost({
     return () => clearInterval(interval)
   }, [reminders, medications, doctorAppointments, buddyStyles, morningReminder])
 
+  const [leaving, setLeaving] = useState<string[]>([])
+
   function dismiss(id: string) {
-    setVisible((prev) => prev.filter((r) => r.id !== id))
+    setLeaving((prev) => (prev.includes(id) ? prev : [...prev, id]))
+    window.setTimeout(() => {
+      setVisible((prev) => prev.filter((r) => r.id !== id))
+      setLeaving((prev) => prev.filter((x) => x !== id))
+    }, EXIT_MS)
   }
 
-  if (!visible.length) return null
-
   return (
-    <div className="fixed bottom-20 md:bottom-6 inset-x-0 z-40 flex flex-col items-center gap-2 px-4 pointer-events-none">
-      {visible.map((toast) => (
-        <div
-          key={toast.id}
-          className={cn(
-            "pointer-events-auto w-full max-w-sm bg-surface border border-line rounded-2xl shadow-lg px-4 py-3 flex items-center gap-3 animate-pop-in",
-          )}
-        >
-          <toast.icon className="h-5 w-5 shrink-0 text-sage-dark" strokeWidth={1.75} aria-hidden />
-          <p className="flex-1 text-sm text-ink">{toast.text}</p>
-          <button
-            type="button"
-            onClick={() => dismiss(toast.id)}
-            className="shrink-0 h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation"
-            aria-label="Sluiten"
+    <ToastLayer>
+      {/* Always mounted, so a screen reader hears a reminder as it appears. */}
+      <div role="status" aria-live="polite" className={toastSlotClass("reminders")}>
+        {visible.map((toast) => (
+          <div
+            key={toast.id}
+            className={cn(
+              "pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-card bg-surface-elevated py-1 pr-1 pl-4 shadow-elevated",
+              leaving.includes(toast.id) ? "animate-fade-out" : "animate-rise-in",
+            )}
           >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      ))}
-    </div>
+            <toast.icon {...iconProps("md", "text-sage-dark")} aria-hidden />
+            <p className="flex-1 py-2 text-sm text-ink">{toast.text}</p>
+            <IconButton label="Sluiten" icon={X} onClick={() => dismiss(toast.id)} />
+          </div>
+        ))}
+      </div>
+    </ToastLayer>
   )
 }

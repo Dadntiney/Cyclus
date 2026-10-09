@@ -1,10 +1,8 @@
 "use client"
 
 import { ACCOUNT_STATE_APPLIED_EVENT } from "@/lib/client/account-sync"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { format, parseISO } from "date-fns"
-import { nl } from "date-fns/locale"
 import { Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { groceryItemSubtitle, type GroceryCategory } from "@/lib/nutrition/grocery-list"
@@ -18,10 +16,139 @@ import {
   type ServingsPrefs,
 } from "@/lib/client/servings-storage"
 import { ServingsStepper } from "@/components/nutrition/servings-stepper"
+import { DayStrip } from "@/components/week/day-strip"
+import { BottomSheet } from "@/components/ui/bottom-sheet"
+import { Chip } from "@/components/ui/chip"
+import { Collapse } from "@/components/ui/disclosure"
+import { SegmentedControl } from "@/components/ui/segmented-control"
+import { formatWeekdayDate } from "@/lib/dates/format"
+import { CHECK_STROKE, iconProps } from "@/lib/ui/icon"
 import type { WeekDayPlan, WeekPlanRecipe } from "@/lib/recommendations/week-plan"
 
 export type GroceryMode = "week" | "day"
 
+const MODE_OPTIONS = [
+  { value: "week" as const, label: "Week" },
+  { value: "day" as const, label: "Dag" },
+]
+
+function personen(n: number) {
+  return `${n} ${n === 1 ? "persoon" : "personen"}`
+}
+
+/**
+ * One category: the heading is the toggle (h2 › button), the rows open in
+ * place. Folded when everything in it is checked off.
+ */
+function GroceryCategorySection({
+  category,
+  checked,
+  mode,
+  onToggle,
+}: {
+  category: GroceryCategory
+  checked: Set<string>
+  mode: GroceryMode
+  onToggle: (id: string) => void
+}) {
+  const done = category.items.filter((i) => checked.has(i.id)).length
+  const allDone = done === category.items.length
+  const [open, setOpen] = useState(!allDone)
+  // Fold once everything is in huis (also when her saved list loads in),
+  // without remounting: the section keeps its identity and focus (TC-15).
+  const [wasAllDone, setWasAllDone] = useState(allDone)
+  if (wasAllDone !== allDone) {
+    setWasAllDone(allDone)
+    if (allDone) setOpen(false)
+  }
+  const headingRef = useRef<HTMLButtonElement>(null)
+  const contentId = useId()
+
+  function toggleItem(id: string) {
+    // Checking the last item folds the section: the row she tapped goes
+    // away, so focus moves to the heading, which now says "Alles in huis".
+    if (!checked.has(id) && done === category.items.length - 1) headingRef.current?.focus()
+    onToggle(id)
+  }
+  // Still-to-buy first; what she already has sinks to the bottom.
+  const items = [...category.items].sort((a, b) => Number(checked.has(a.id)) - Number(checked.has(b.id)))
+
+  return (
+    <section>
+      <h2>
+        <button
+          ref={headingRef}
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-controls={contentId}
+          className="flex min-h-11 w-full items-center justify-between gap-3 rounded-inset text-left touch-manipulation"
+        >
+          <span className="type-card-title min-w-0 text-ink">
+            {category.category}
+            <span className="font-sans text-sm font-normal text-ink-soft"> · {category.items.length}</span>
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-1.5 text-xs text-ink-soft">
+            {done > 0 && (allDone ? "Alles in huis" : `${done} afgevinkt`)}
+            <ChevronDown
+              {...iconProps(
+                "sm",
+                cn("transition-transform duration-base ease-standard motion-reduce:transition-none", open && "rotate-180"),
+              )}
+              aria-hidden
+            />
+          </span>
+        </button>
+      </h2>
+      <Collapse open={open} id={contentId}>
+        <div className="pt-2">
+          <div className="divide-y divide-line overflow-hidden rounded-card border border-line bg-surface">
+            {items.map((item) => {
+              const isChecked = checked.has(item.id)
+              const subtitle = groceryItemSubtitle(item, mode)
+              // Keep this structure (box span, then a span holding name +
+              // subtitle): the smoke test reads the item name from it.
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="checkbox"
+                  aria-checked={isChecked}
+                  onClick={() => toggleItem(item.id)}
+                  className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left touch-manipulation -outline-offset-2 transition-colors duration-fast ease-standard hover:bg-cream-soft/60 active:bg-cream-soft"
+                >
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-xs border-[1.5px] text-white transition-colors duration-fast ease-standard",
+                      isChecked ? "border-sage-fill bg-sage-fill" : "border-line-strong bg-surface",
+                    )}
+                  >
+                    {isChecked && <Check className="h-4 w-4" strokeWidth={CHECK_STROKE} />}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={cn("block text-base", isChecked ? "text-ink-soft line-through" : "text-ink")}>
+                      {item.name}
+                    </span>
+                    {subtitle && <span className="block text-sm text-ink-soft">{subtitle}</span>}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </Collapse>
+    </section>
+  )
+}
+
+/**
+ * Boodschappen (ontwerpvisie §7.2): Week/Dag as a SegmentedControl, the
+ * same DayStrip as Deze week in Dag-mode, portions as an inline chip that
+ * opens a sheet with the stepper, one helper line and one status line
+ * "12 van 88 afgevinkt". Checked items and portions live where they always
+ * did (this device + account sync).
+ */
 export function GroceryList({
   userId,
   weekStartISO,
@@ -56,6 +183,7 @@ export function GroceryList({
     defaultServings: DEFAULT_HOUSEHOLD_SERVINGS,
     byRecipeId: {},
   })
+  const [servingsOpen, setServingsOpen] = useState(false)
 
   useEffect(() => {
     // localStorage only on client — keep SSR markup stable, then hydrate.
@@ -104,6 +232,19 @@ export function GroceryList({
     servingsPrefs,
   ])
 
+  const stripDays = useMemo(
+    () =>
+      days.map((d) => ({
+        date: d.date,
+        weekdayShort: d.weekdayShort,
+        isToday: d.isToday,
+        isPast: d.isPast,
+        // The same strip as Deze week, phase line included.
+        phase: d.cycleEstimate?.phase ?? null,
+      })),
+    [days],
+  )
+
   function syncUrl(nextMode: GroceryMode, nextDate: string) {
     const params = new URLSearchParams()
     if (nextMode === "day") {
@@ -137,160 +278,88 @@ export function GroceryList({
   }
 
   const recipeOverrideCount = Object.keys(servingsPrefs.byRecipeId).length
+  const totalItems = categories.reduce((sum, cat) => sum + cat.items.length, 0)
+  const checkedItems = categories.reduce((sum, cat) => sum + cat.items.filter((i) => checked.has(i.id)).length, 0)
+  const selectedDayIndex = Math.max(
+    0,
+    days.findIndex((d) => d.date === selectedDate),
+  )
 
   return (
-    <div className="flex flex-col gap-5">
-      <div
-        className="inline-flex self-start rounded-full bg-cream-soft border border-line p-1"
-        role="tablist"
-        aria-label="Boodschappenweergave"
-      >
-        {(
-          [
-            { id: "week" as const, label: "Week" },
-            { id: "day" as const, label: "Dag" },
-          ] as const
-        ).map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            role="tab"
-            aria-selected={mode === tab.id}
-            onClick={() => selectMode(tab.id)}
-            className={cn(
-              "min-h-10 px-5 rounded-full text-sm font-medium touch-manipulation transition-colors",
-              mode === tab.id
-                ? "bg-surface-elevated text-ink font-semibold ring-1 ring-line shadow-[0_1px_3px_rgba(46,37,41,0.12)]"
-                : "text-ink-soft",
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+    <div className="flex flex-col gap-4">
+      <SegmentedControl
+        fullWidth
+        aria-label="Boodschappen per"
+        options={MODE_OPTIONS}
+        value={mode}
+        onChange={selectMode}
+      />
 
       {mode === "day" && (
-        <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
-          {days.map((d) => {
-            const selected = d.date === selectedDate
-            return (
-              <button
-                key={d.date}
-                type="button"
-                onClick={() => selectDay(d.date)}
-                aria-pressed={selected}
-                aria-label={`${d.weekday} ${format(parseISO(d.date), "d MMMM", { locale: nl })}${d.isToday ? ", vandaag" : ""}`}
-                className={cn(
-                  "flex flex-col items-center gap-1 rounded-2xl border px-1 py-2.5 min-h-14 touch-manipulation transition-colors",
-                  selected ? "bg-sage-fill border-sage-fill text-white" : "bg-surface border-line text-ink",
-                )}
-              >
-                <span className="text-xs font-medium opacity-80">{d.weekdayShort}</span>
-                <span className="text-base font-semibold tabular-nums">{format(parseISO(d.date), "d")}</span>
-              </button>
-            )
-          })}
-        </div>
+        <DayStrip days={stripDays} selectedIndex={selectedDayIndex} onSelect={(i) => selectDay(days[i].date)} />
       )}
 
-      <div className="rounded-[1.25rem] bg-surface border border-line px-4 py-3.5 flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-ink">Basis porties</p>
-          <p className="text-xs text-ink-soft mt-0.5 leading-snug">
-            Hoeveelheden op de lijst volgen dit aantal
-            {recipeOverrideCount > 0
-              ? ` · ${recipeOverrideCount} recept${recipeOverrideCount === 1 ? "" : "en"} afwijkend`
-              : ""}
-            . Per recept aanpasbaar op de receptpagina.
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+        <Chip onClick={() => setServingsOpen(true)} aria-haspopup="dialog">
+          Voor {personen(servingsPrefs.defaultServings)}
+          <ChevronDown {...iconProps("sm")} aria-hidden />
+        </Chip>
+        {totalItems > 0 && (
+          <p className="text-sm font-medium text-ink">
+            {checkedItems} van {totalItems} afgevinkt
           </p>
-        </div>
-        <ServingsStepper
-          value={servingsPrefs.defaultServings}
-          onChange={(n) => setServingsPrefs(setDefaultServings(userId, n))}
-          size="sm"
-        />
+        )}
       </div>
 
-      <p className="text-sm text-ink-soft -mt-1">
+      <p className="-mt-1 text-sm text-ink-soft">
         {mode === "week"
           ? "Alles voor je weekplanning. Vink af wat je al in huis hebt of hebt gehaald."
           : selectedDate
-            ? `Alleen voor ${format(parseISO(selectedDate), "EEEE d MMMM", { locale: nl })}${selectedDate === todayISO ? " (vandaag)" : ""}.`
+            ? `Alleen voor ${formatWeekdayDate(selectedDate, { month: "long" })}${selectedDate === todayISO ? " (vandaag)" : ""}.`
             : "Kies een dag."}
       </p>
 
       {!categories.length ? (
         <p className="text-sm text-ink-soft">
           {mode === "day"
-            ? "Geen maaltijden op deze dag — of ze zijn overgeslagen."
-            : "Nog geen boodschappen — zodra je weekplanning maaltijden bevat, verschijnen ze hier automatisch."}
+            ? "Geen maaltijden op deze dag, of ze zijn overgeslagen."
+            : "Nog geen boodschappen. Zodra je weekplanning maaltijden bevat, verschijnen ze hier vanzelf."}
         </p>
       ) : (
-        categories.map((cat) => {
-          // Still-to-buy first; what she already has sinks to the bottom.
-          const items = [...cat.items].sort(
-            (a, b) => Number(checked.has(a.id)) - Number(checked.has(b.id)),
-          )
-          const done = cat.items.filter((i) => checked.has(i.id)).length
-          const allDone = done === cat.items.length
-          return (
-            <details key={`${cat.category}-${allDone}`} open={!allDone} className="group">
-              <summary className="flex items-center justify-between gap-3 mb-2.5 cursor-pointer list-none min-h-11 touch-manipulation [&::-webkit-details-marker]:hidden">
-                <h2 className="font-display text-lg text-ink">
-                  {cat.category}
-                  <span className="font-sans text-sm text-ink-soft font-normal"> · {cat.items.length}</span>
-                </h2>
-                <span className="inline-flex items-center gap-1.5 text-xs text-ink-soft">
-                  {done > 0 && (allDone ? "Alles in huis" : `${done} afgevinkt`)}
-                  <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" strokeWidth={1.75} aria-hidden />
-                </span>
-              </summary>
-              <div className="rounded-[1.25rem] bg-surface border border-line divide-y divide-line overflow-hidden">
-                {items.map((item) => {
-                  const isChecked = checked.has(item.id)
-                  const subtitle = groceryItemSubtitle(item, mode)
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      role="checkbox"
-                      aria-checked={isChecked}
-                      onClick={() => toggle(item.id)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 min-h-12 text-left touch-manipulation transition-colors active:bg-cream-soft"
-                    >
-                      {/* Small checkbox (not a thumbnail-sized tile); row stays ≥44px for touch. */}
-                      <span
-                        aria-hidden
-                        className={cn(
-                          "shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors",
-                          isChecked
-                            ? "bg-sage-fill border-sage-dark text-white"
-                            : "border-sage-dark/45 bg-surface",
-                        )}
-                      >
-                        {isChecked && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span
-                          className={cn(
-                            "block text-sm font-medium",
-                            isChecked ? "text-ink-soft/60 line-through" : "text-ink",
-                          )}
-                        >
-                          {item.name}
-                        </span>
-                        {subtitle && (
-                          <span className="block text-xs text-ink-soft mt-0.5">{subtitle}</span>
-                        )}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </details>
-          )
-        })
+        <div className="flex flex-col gap-4">
+          {categories.map((cat) => {
+            return (
+              <GroceryCategorySection
+                key={cat.category}
+                category={cat}
+                checked={checked}
+                mode={mode}
+                onToggle={toggle}
+              />
+            )
+          })}
+        </div>
       )}
+
+      <BottomSheet open={servingsOpen} onClose={() => setServingsOpen(false)} title="Porties">
+        <div className="flex flex-col gap-4 pb-2">
+          <p className="text-sm text-ink-soft">
+            De hoeveelheden op de lijst volgen dit aantal personen
+            {recipeOverrideCount > 0
+              ? `, behalve ${recipeOverrideCount} recept${recipeOverrideCount === 1 ? "" : "en"} waarvoor je zelf iets anders koos`
+              : ""}
+            . Per recept pas je het aan op de receptpagina.
+          </p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-base font-medium text-ink">{personen(servingsPrefs.defaultServings)}</p>
+            <ServingsStepper
+              value={servingsPrefs.defaultServings}
+              onChange={(n) => setServingsPrefs(setDefaultServings(userId, n))}
+              label="Aantal personen"
+            />
+          </div>
+        </div>
+      </BottomSheet>
     </div>
   )
 }

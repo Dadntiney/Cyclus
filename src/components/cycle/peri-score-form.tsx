@@ -1,12 +1,17 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Chip } from "@/components/ui/chip"
+import { Button, textActionClass } from "@/components/ui/button"
+import { ChipRadioGroup } from "@/components/ui/chip-radio-group"
 import { Textarea, Label } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { ValueSparkline } from "@/components/cycle/simple-bars"
+import { SectionHeader } from "@/components/ui/section-header"
+import { StickyActionBar } from "@/components/ui/sticky-action-bar"
+import { PageSections } from "@/components/layout/page"
+import { ValueSparkline, listNl } from "@/components/cycle/simple-bars"
+import { formatShortDate } from "@/lib/dates/format"
+import { cn } from "@/lib/utils"
 import {
   PERI_SCORE_ITEMS,
   computePeriScore,
@@ -16,14 +21,30 @@ import {
 } from "@/lib/cycle/peri-score"
 import { savePeriAssessment } from "@/lib/actions/peri-assessment"
 import { runAction } from "@/lib/client/run-action"
+import { FEATURES } from "@/lib/navigation/features"
 
-const LEVELS = [
-  { value: 0 as const, label: "Niet" },
-  { value: 1 as const, label: "Mild" },
-  { value: 2 as const, label: "Matig" },
-  { value: 3 as const, label: "Hevig" },
+type Level = 0 | 1 | 2 | 3
+
+const LEVELS: readonly { value: Level; label: string }[] = [
+  { value: 0, label: "Niet" },
+  { value: 1, label: "Mild" },
+  { value: 2, label: "Matig" },
+  { value: 3, label: "Hevig" },
 ]
 
+function prefersReducedMotion() {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+}
+
+/**
+ * The monthly Klachtenlast check: every question a 4-column radio group,
+ * a sticky "n van 16 ingevuld" with the one save button. Saving with
+ * gaps doesn't call the server: the page scrolls to the first open
+ * question, focuses it and marks every gap (danger, besluit 21).
+ *
+ * Renders siblings (sections + StickyActionBar), so the bar is a direct
+ * child of the <Page>.
+ */
 export function PeriScoreForm({
   previousScore = null,
   history = [],
@@ -33,49 +54,97 @@ export function PeriScoreForm({
 }) {
   const [answers, setAnswers] = useState<PeriAnswers>({})
   const [notes, setNotes] = useState("")
-  const [savedScore, setSavedScore] = useState<number | null>(null)
+  // The score just saved, with the score it is compared to — captured at
+  // save time, because the page refreshes with this measurement on top.
+  const [saved, setSaved] = useState<{ score: number; previous: number | null } | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [showGaps, setShowGaps] = useState(false)
+  // Announced once per save attempt (not on every answer, besluit 24).
+  const [gapAttempt, setGapAttempt] = useState<{ n: number; open: number } | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  const uid = useId()
+  const listRef = useRef<HTMLOListElement>(null)
+  const savedHeadingRef = useRef<HTMLHeadingElement>(null)
+
+  const total = PERI_SCORE_ITEMS.length
+  const answered = PERI_SCORE_ITEMS.filter((item) => answers[item.id] !== undefined).length
+  const openCount = total - answered
+  // With gaps only the first open question (where focus goes) is marked
+  // in the error colour; the rest get a quiet "Nog open" — an optional
+  // questionnaire, not an error list (TC-16).
+  const firstGapId = PERI_SCORE_ITEMS.find((item) => answers[item.id] === undefined)?.id ?? null
 
   const liveScore = useMemo(() => {
     if (Object.keys(answers).length !== PERI_SCORE_ITEMS.length) return null
     return computePeriScore(answers)
   }, [answers])
 
+  useEffect(() => {
+    if (saved) savedHeadingRef.current?.focus()
+  }, [saved])
+
+  function focusFirstGap() {
+    const first = PERI_SCORE_ITEMS.find((item) => answers[item.id] === undefined)
+    if (!first) return
+    const row = listRef.current?.querySelector<HTMLElement>(`[data-item="${first.id}"]`)
+    if (!row) return
+    row.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" })
+    row.querySelector<HTMLElement>('[role="radio"][tabindex="0"]')?.focus({ preventScroll: true })
+  }
+
   function handleSave() {
     setError(null)
+    if (openCount > 0) {
+      setShowGaps(true)
+      setGapAttempt((prev) => ({ n: (prev?.n ?? 0) + 1, open: openCount }))
+      focusFirstGap()
+      return
+    }
+    const previous = previousScore
     startTransition(async () => {
       const result = await runAction(() => savePeriAssessment({ answers, notes }))
       if (result.error) {
         setError(result.error)
         return
       }
-      setSavedScore(result.score ?? null)
+      setShowGaps(false)
+      const score = result.score ?? null
+      if (score !== null) setSaved({ score, previous })
     })
   }
 
-  if (savedScore !== null) {
-    const band = periScoreBand(savedScore)
-    const trend = formatPeriScoreTrend(previousScore, savedScore)
+  if (saved) {
+    const band = periScoreBand(saved.score)
+    const trend = formatPeriScoreTrend(saved.previous, saved.score)
     return (
-      <Card>
-        <p className="text-sm text-sage-dark font-medium mb-1">Opgeslagen</p>
-        <p className="font-display text-3xl text-ink mb-1">{savedScore}/100</p>
-        <p className="text-base text-ink font-medium">{band.label}</p>
-        <p className="text-sm text-ink-soft mt-2 leading-relaxed">{band.description}</p>
+      <Card as="section" aria-labelledby={`${uid}-saved`}>
+        <p aria-hidden className="type-eyebrow text-sage-dark">Opgeslagen</p>
+        <h2
+          ref={savedHeadingRef}
+          id={`${uid}-saved`}
+          tabIndex={-1}
+          data-focus-target=""
+          className="type-numeral text-ink mt-2"
+        >
+          <span className="sr-only">Score opgeslagen: </span>
+          {saved.score}/100
+        </h2>
+        <p className="text-base text-ink font-medium mt-1">{band.label}</p>
+        <p className="text-sm text-ink-soft mt-2">{band.description}</p>
         {trend && <p className="text-sm text-ink-soft mt-2">{trend}</p>}
         <p className="text-xs text-ink-soft mt-4">
           Dit is geen diagnose of medische score — wel een handig overzicht voor jezelf of je arts.
         </p>
-        <div className="flex flex-wrap gap-3 mt-4">
-          <Link href="/cyclus/samenvatting" className="text-sm font-medium text-sage-dark underline">
-            Arts-samenvatting
+        <div className="flex flex-wrap gap-x-5 mt-2">
+          <Link href={FEATURES.voorJeArts.href} className={textActionClass()}>
+            {FEATURES.voorJeArts.label}
           </Link>
           <button
             type="button"
-            className="text-sm font-medium text-sage-dark underline"
+            className={textActionClass()}
             onClick={() => {
-              setSavedScore(null)
+              setSaved(null)
               setAnswers({})
               setNotes("")
             }}
@@ -87,83 +156,132 @@ export function PeriScoreForm({
     )
   }
 
+  const historyOldestFirst = [...history].reverse().map((row) => row.score)
+
   return (
-    <div className="flex flex-col gap-4">
-      <Card>
-        <h2 className="font-display text-xl text-ink mb-1">Klachtenlast (30 dagen)</h2>
-        <p className="text-sm text-ink-soft leading-relaxed mb-4">
-          Geef per klacht aan hoe zwaar die de afgelopen maand voor jou was. Je krijgt een cijfer
-          van 0–100 om veranderingen over tijd te zien — geen diagnose.
-        </p>
+    <>
+      <PageSections>
+        <section aria-labelledby={`${uid}-questions`}>
+          <SectionHeader
+            id={`${uid}-questions`}
+            title="Over de afgelopen 30 dagen"
+            description="Geef per klacht aan hoe zwaar die de afgelopen maand voor jou was. Je krijgt een cijfer van 0–100 om veranderingen over tijd te zien — geen diagnose."
+          />
+          <ol ref={listRef} className="flex flex-col gap-6 mt-2">
+            {PERI_SCORE_ITEMS.map((item) => {
+              const labelId = `${uid}-${item.id}-label`
+              const helpId = `${uid}-${item.id}-help`
+              const gapId = `${uid}-${item.id}-gap`
+              const isGap = showGaps && answers[item.id] === undefined
+              return (
+                <li key={item.id} data-item={item.id} className="scroll-mt-4">
+                  <p id={labelId} className="text-base font-medium text-ink">
+                    {item.label}
+                  </p>
+                  <p id={helpId} className="text-sm text-ink-soft mb-2">
+                    {item.help}
+                  </p>
+                  <ChipRadioGroup
+                    columns={4}
+                    options={LEVELS}
+                    value={answers[item.id]}
+                    onChange={(value) => setAnswers((prev) => ({ ...prev, [item.id]: value }))}
+                    aria-labelledby={labelId}
+                    aria-describedby={isGap ? `${helpId} ${gapId}` : helpId}
+                  />
+                  {isGap && (
+                    <p
+                      id={gapId}
+                      className={cn("mt-1.5 text-sm", item.id === firstGapId ? "text-danger" : "text-ink-soft")}
+                    >
+                      {item.id === firstGapId ? "Nog niet ingevuld" : "Nog open"}
+                    </p>
+                  )}
+                </li>
+              )
+            })}
+          </ol>
+        </section>
 
-        <div className="flex flex-col gap-5">
-          {PERI_SCORE_ITEMS.map((item) => (
-            <div key={item.id}>
-              <p className="text-sm font-medium text-ink">{item.label}</p>
-              <p className="text-xs text-ink-soft mb-2">{item.help}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {LEVELS.map((level) => (
-                  <Chip
-                    key={level.value}
-                    selected={answers[item.id] === level.value}
-                    onClick={() => setAnswers((prev) => ({ ...prev, [item.id]: level.value }))}
-                  >
-                    {level.label}
-                  </Chip>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-5">
-          <Label htmlFor="peri-notes">Notitie (optioneel)</Label>
+        <div>
+          <Label htmlFor={`${uid}-notes`}>Notitie (optioneel)</Label>
           <Textarea
-            id="peri-notes"
+            id={`${uid}-notes`}
             rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
+            // Tab focus here can stop with the field half under the sticky
+            // "Score opslaan" bar; one nudge that honours scroll-padding.
+            onFocus={(e) => {
+              const field = e.currentTarget
+              requestAnimationFrame(() => field.scrollIntoView({ block: "nearest" }))
+            }}
             placeholder="Bijvoorbeeld: vooral ’s nachts, of na stressvolle weken."
           />
         </div>
 
-        {liveScore !== null && (
-          <p className="text-sm text-ink-soft mt-3">
-            Voorbeeldscore nu: <span className="font-medium text-ink">{liveScore}/100</span>
-          </p>
+        {history.length > 0 && (
+          <section aria-labelledby={`${uid}-history`}>
+            <SectionHeader
+              id={`${uid}-history`}
+              title="Eerdere metingen"
+              description="Lager is lichter — scores van 0 tot 100."
+            />
+            <Card padding="none">
+              {history.length >= 2 && (
+                <div className="px-4 pt-4 pb-3 border-b border-line">
+                  <ValueSparkline
+                    values={historyOldestFirst}
+                    formatValue={(v) => String(v)}
+                    barClassName="bg-chart-1/80"
+                    label={`Klachtenlast van je laatste ${historyOldestFirst.length} metingen, van oud naar nieuw: ${listNl(historyOldestFirst.map(String))}`}
+                  />
+                </div>
+              )}
+              <ul role="list" className="divide-y divide-line">
+                {history.map((row) => (
+                  <li key={row.assessed_on} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                    <span className="text-ink-soft">{formatShortDate(row.assessed_on, { year: true })}</span>
+                    <span className="font-medium text-ink tabular-nums">{row.score}/100</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </section>
         )}
+      </PageSections>
 
-        <div className="mt-4 flex items-center gap-3">
-          <Button type="button" onClick={handleSave} disabled={isPending}>
+      <StickyActionBar className="mt-8">
+        <div className="flex items-center justify-between gap-3">
+          <p className="min-w-0 text-sm text-ink-soft tabular-nums">
+            {answered} van {total} ingevuld
+            {liveScore !== null && (
+              <>
+                {" · "}
+                <span className="font-medium text-ink">{liveScore}/100</span>
+              </>
+            )}
+          </p>
+          <Button type="button" onClick={handleSave} disabled={isPending} className="shrink-0">
             {isPending ? "Opslaan…" : "Score opslaan"}
           </Button>
-          {error && <p className="text-sm text-danger">{error}</p>}
         </div>
-      </Card>
-
-      {history.length > 0 && (
-        <Card>
-          <h3 className="font-display text-xl text-ink mb-1">Eerdere metingen</h3>
-          <p className="text-xs text-ink-soft mb-3">Lager is lichter — scores van 0 tot 100.</p>
-          {history.length >= 2 && (
-            <div className="mb-4">
-              <ValueSparkline
-                values={[...history].reverse().map((row) => row.score)}
-                formatValue={(v) => String(v)}
-                barClassName="bg-chart-1/80"
-              />
-            </div>
-          )}
-          <ul className="flex flex-col gap-2">
-            {history.map((row) => (
-              <li key={row.assessed_on} className="flex items-center justify-between text-sm">
-                <span className="text-ink-soft">{row.assessed_on}</span>
-                <span className="font-medium text-ink">{row.score}/100</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
-    </div>
+        {showGaps && openCount > 0 && (
+          <p className="text-sm text-ink-soft">
+            Nog {openCount} {openCount === 1 ? "vraag" : "vragen"} open
+          </p>
+        )}
+        {gapAttempt && showGaps && openCount > 0 && (
+          <p key={gapAttempt.n} role="alert" className="sr-only">
+            Nog {gapAttempt.open} {gapAttempt.open === 1 ? "vraag" : "vragen"} open
+          </p>
+        )}
+        {error && (
+          <p role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+        )}
+      </StickyActionBar>
+    </>
   )
 }

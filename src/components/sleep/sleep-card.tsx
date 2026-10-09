@@ -2,10 +2,13 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Moon } from "lucide-react"
+import { ChevronRight, Moon } from "lucide-react"
 import { SleepEntrySheet } from "@/components/sleep/sleep-entry-sheet"
+import { textActionClass } from "@/components/ui/button"
 import { computeSleepDurationMinutes, formatSleepDuration } from "@/lib/sleep/duration"
 import { WAKE_FEELING_OPTIONS } from "@/lib/constants"
+import { FEATURES } from "@/lib/navigation/features"
+import { ICON, iconProps } from "@/lib/ui/icon"
 import type { Tables } from "@/types/database"
 
 type SleepEntry = Tables<"sleep_entries">
@@ -14,6 +17,10 @@ const WAKE_FEELING_BY_VALUE = new Map<string, (typeof WAKE_FEELING_OPTIONS)[numb
   WAKE_FEELING_OPTIONS.map((o) => [o.value, o]),
 )
 
+/**
+ * Last night on Vandaag: one tap opens the entry sheet; an optional
+ * observation and a link to Slaap sit underneath.
+ */
 export function SleepCard({
   date,
   entry,
@@ -31,58 +38,57 @@ export function SleepCard({
       ? computeSleepDurationMinutes(entry.bedtime, entry.wake_time)
       : null
   const hasDuration = durationMinutes != null
+  const feeling = entry?.wake_feeling ? WAKE_FEELING_BY_VALUE.get(entry.wake_feeling) : undefined
 
   return (
     <>
-      <div className="rounded-[1.25rem] bg-surface border border-line overflow-hidden">
+      <div className="rounded-card bg-surface border border-line overflow-hidden">
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="w-full text-left px-4 py-3.5 touch-manipulation transition-colors duration-150 motion-safe:active:bg-sage-soft/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-inset"
+          aria-haspopup="dialog"
+          className="w-full text-left px-4 py-3.5 touch-manipulation -outline-offset-2 transition-colors duration-fast ease-standard hover:bg-cream-soft/60 active:bg-cream-soft"
         >
-          <div className="flex items-center gap-3">
+          <span className="flex items-center gap-3">
             <span
-              className="shrink-0 h-10 w-10 rounded-full bg-sage-soft flex items-center justify-center"
               aria-hidden
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage-soft text-sage-dark"
             >
-              <Moon className="h-4.5 w-4.5 text-sage-dark" strokeWidth={1.75} />
+              <Moon {...ICON.sm} />
             </span>
-            <div className="min-w-0 flex-1">
+            <span className="min-w-0 flex-1">
               {hasDuration ? (
                 <>
-                  <p className="font-medium text-ink text-sm">{formatSleepDuration(durationMinutes)} geslapen</p>
-                  {entry?.wake_feeling && WAKE_FEELING_BY_VALUE.has(entry.wake_feeling) && (
-                    <p className="text-xs text-ink-soft mt-0.5 inline-flex items-center gap-1">
-                      {(() => {
-                        const FeelingIcon = WAKE_FEELING_BY_VALUE.get(entry.wake_feeling)!.icon
-                        return <FeelingIcon className="h-3 w-3" strokeWidth={1.75} aria-hidden />
-                      })()}
-                      {WAKE_FEELING_BY_VALUE.get(entry.wake_feeling)!.label}
-                    </p>
+                  <span className="block text-base font-medium text-ink">
+                    {formatSleepDuration(durationMinutes)} geslapen
+                  </span>
+                  {feeling && (
+                    <span className="mt-0.5 inline-flex items-center gap-1 text-sm text-ink-soft">
+                      <feeling.icon {...iconProps("sm", "h-3.5 w-3.5")} aria-hidden />
+                      {feeling.label}
+                    </span>
                   )}
                 </>
               ) : (
                 <>
-                  <p className="font-medium text-ink text-sm">Hoe heb je geslapen?</p>
-                  <p className="text-xs text-ink-soft mt-0.5">
+                  <span className="block text-base font-medium text-ink">Hoe heb je geslapen?</span>
+                  <span className="block text-sm text-ink-soft mt-0.5">
                     {entry?.bedtime || entry?.wake_time
                       ? "Vul bedtijd én opsta-tijd in voor je slaapduur"
                       : "Tik om je nacht in te vullen"}
-                  </p>
+                  </span>
                 </>
               )}
-            </div>
-          </div>
+            </span>
+          </span>
         </button>
         {(observation || historyHref) && (
-          <div className="border-t border-line px-4 py-3 flex flex-col gap-0.5">
-            {observation && <p className="text-xs text-ink-soft leading-relaxed">{observation}</p>}
+          <div className="border-t border-line px-4 pt-3 pb-1">
+            {observation && <p className="text-sm text-ink-soft">{observation}</p>}
             {historyHref && (
-              <Link
-                href={historyHref}
-                className="text-xs font-medium text-sage-dark inline-flex items-center min-h-11 touch-manipulation w-fit"
-              >
-                Slaapgeschiedenis
+              <Link href={historyHref} className={textActionClass()}>
+                {FEATURES.slaap.label}
+                <ChevronRight {...ICON.sm} aria-hidden />
               </Link>
             )}
           </div>

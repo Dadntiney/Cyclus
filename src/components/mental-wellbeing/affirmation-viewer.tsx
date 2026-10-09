@@ -1,16 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useId, useState } from "react"
 import { RefreshCw } from "lucide-react"
-import { Card } from "@/components/ui/card"
+import { textActionClass } from "@/components/ui/button"
 import { MomentFavoriteButton } from "@/components/moments/moment-favorite-button"
 import type { Affirmation } from "@/lib/data/affirmations"
+import { ICON } from "@/lib/ui/icon"
 
 /**
- * A simple "one at a time" viewer — no long list to scroll through, just the
- * current affirmation and a way to see another one. Starts on a day-seeded
- * pick so reloading the same day doesn't shuffle it, but "Volgende" always
- * moves forward.
+ * One affirmation at a time, as a small quote at the bottom of Mentale
+ * rust (no card): "Volgende" and the save-heart under it, both 44px.
+ * Starts on a day-seeded pick so reloading the same day doesn't shuffle
+ * it, but "Volgende" always moves forward, with a short crossfade.
  */
 export function AffirmationViewer({
   affirmations,
@@ -21,7 +22,10 @@ export function AffirmationViewer({
   seed: string
   savedTexts?: string[]
 }) {
-  const startIndex = seed.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) % affirmations.length
+  const titleId = useId()
+  const startIndex = affirmations.length
+    ? seed.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) % affirmations.length
+    : 0
   const [index, setIndex] = useState(startIndex)
   const [saved, setSaved] = useState(() => new Set(savedTexts))
 
@@ -29,8 +33,23 @@ export function AffirmationViewer({
   const affirmation = affirmations[index]
 
   return (
-    <Card className="text-center relative">
-      <div className="absolute top-2 right-2">
+    <section aria-labelledby={titleId}>
+      <h2 id={titleId} className="type-eyebrow text-sage-dark">
+        Een klein moment voor jezelf
+      </h2>
+      <blockquote key={affirmation.id} className="mt-2 type-card-title text-ink animate-fade-in">
+        &ldquo;{affirmation.text}&rdquo;
+      </blockquote>
+      <div className="mt-2 flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => setIndex((i) => (i + 1) % affirmations.length)}
+          className={textActionClass()}
+        >
+          <RefreshCw {...ICON.sm} aria-hidden />
+          Volgende
+          <span className="sr-only"> affirmatie</span>
+        </button>
         <MomentFavoriteButton
           key={affirmation.id}
           kind="affirmation"
@@ -38,7 +57,7 @@ export function AffirmationViewer({
           source="affirmations"
           sourceKey={affirmation.id}
           initialFavorited={saved.has(affirmation.text)}
-          size="sm"
+          className="-mr-3"
           onFavoritedChange={(favorited) => {
             setSaved((prev) => {
               const next = new Set(prev)
@@ -49,15 +68,6 @@ export function AffirmationViewer({
           }}
         />
       </div>
-      <p className="font-display text-xl text-ink leading-snug px-2 pt-2">&ldquo;{affirmation.text}&rdquo;</p>
-      <button
-        type="button"
-        onClick={() => setIndex((i) => (i + 1) % affirmations.length)}
-        className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark touch-manipulation motion-safe:active:scale-[0.96] transition-transform"
-      >
-        <RefreshCw className="h-3.5 w-3.5" strokeWidth={2} />
-        Volgende affirmatie
-      </button>
-    </Card>
+    </section>
   )
 }

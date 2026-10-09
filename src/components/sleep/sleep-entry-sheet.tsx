@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useId, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronDown } from "lucide-react"
 import { BottomSheet } from "@/components/ui/bottom-sheet"
 import { Input, Label, FieldError } from "@/components/ui/input"
 import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
+import { Disclosure } from "@/components/ui/disclosure"
 import { WAKE_FEELING_OPTIONS, SLEEP_QUALITY_OPTIONS, WAKE_COUNT_OPTIONS } from "@/lib/constants"
 import { saveSleepEntry } from "@/lib/actions/sleep"
 import type { Tables } from "@/types/database"
 import { runAction } from "@/lib/client/run-action"
+import { ICON } from "@/lib/ui/icon"
 
 type SleepEntry = Tables<"sleep_entries">
 
@@ -21,15 +22,18 @@ function fieldsFromInitial(initial: SleepEntry | null) {
     wakeFeeling: (initial?.wake_feeling ?? null) as string | null,
     sleepQuality: (initial?.sleep_quality ?? null) as string | null,
     wakeCount: initial?.wake_count ?? null,
-    showMore: Boolean(initial?.sleep_quality || initial?.wake_count !== null),
+    // Open only when a saved night already has an extra filled in (a new
+    // night has no entry: `undefined !== null` used to open it every time).
+    showMore: Boolean(initial?.sleep_quality) || (initial?.wake_count ?? null) !== null,
   }
 }
 
 /**
  * Quick-entry sheet — bedtime, wake time and how she felt waking up are
  * always visible (the three things worth logging in a few seconds); sleep
- * quality and how often she woke up are optional extras behind "meer
+ * quality and how often she woke up are optional extras behind "Meer
  * toevoegen", same progressive-disclosure pattern as the daily check-in.
+ * Chips toggle (tap again to clear), so every answer stays optional.
  */
 export function SleepEntrySheet({
   open,
@@ -68,6 +72,11 @@ export function SleepEntrySheet({
     }
   }
 
+  const uid = useId()
+  const feelingLabelId = `${uid}-feeling`
+  const qualityLabelId = `${uid}-quality`
+  const wakeCountLabelId = `${uid}-wake-count`
+
   function handleSave() {
     setError(null)
     startTransition(async () => {
@@ -89,40 +98,59 @@ export function SleepEntrySheet({
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Hoe heb je geslapen?">
-      <div className="flex flex-col gap-4 pb-4">
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      title="Hoe heb je geslapen?"
+      footer={
+        <Button onClick={handleSave} disabled={isPending} className="w-full">
+          {isPending ? "Bezig…" : "Opslaan"}
+        </Button>
+      }
+    >
+      <div className="flex flex-col gap-5 pb-2">
         <div className="flex gap-3">
-          <div className="flex-1">
-            <Label htmlFor="bedtime">Naar bed</Label>
-            <Input id="bedtime" type="time" value={bedtime} onChange={(e) => setBedtime(e.target.value)} />
+          <div className="min-w-0 flex-1">
+            <Label htmlFor={`${uid}-bedtime`}>Naar bed</Label>
+            <Input id={`${uid}-bedtime`} type="time" value={bedtime} onChange={(e) => setBedtime(e.target.value)} />
           </div>
-          <div className="flex-1">
-            <Label htmlFor="wake-time">Wakker</Label>
-            <Input id="wake-time" type="time" value={wakeTime} onChange={(e) => setWakeTime(e.target.value)} />
+          <div className="min-w-0 flex-1">
+            <Label htmlFor={`${uid}-wake-time`}>Wakker</Label>
+            <Input id={`${uid}-wake-time`} type="time" value={wakeTime} onChange={(e) => setWakeTime(e.target.value)} />
           </div>
         </div>
 
         <div>
-          <p className="text-sm font-medium text-ink mb-2">Hoe voelde je je bij het wakker worden?</p>
-          <div className="flex flex-wrap gap-2">
+          <p id={feelingLabelId} className="text-sm font-medium text-ink mb-2">
+            Hoe voelde je je bij het wakker worden?
+          </p>
+          <div role="group" aria-labelledby={feelingLabelId} className="flex flex-wrap gap-2">
             {WAKE_FEELING_OPTIONS.map((opt) => (
               <Chip
                 key={opt.value}
                 selected={wakeFeeling === opt.value}
                 onClick={() => setWakeFeeling(wakeFeeling === opt.value ? null : opt.value)}
               >
-                <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
+                <opt.icon {...ICON.sm} aria-hidden />
                 {opt.label}
               </Chip>
             ))}
           </div>
         </div>
 
-        {showMore ? (
-          <>
+        <Disclosure
+          label="Meer toevoegen"
+          openLabel="Minder tonen"
+          open={showMore}
+          onOpenChange={setShowMore}
+          className="-mt-2"
+        >
+          <div className="flex flex-col gap-5">
             <div>
-              <p className="text-sm font-medium text-ink mb-2">Hoe was je slaap?</p>
-              <div className="flex flex-wrap gap-2">
+              <p id={qualityLabelId} className="text-sm font-medium text-ink mb-2">
+                Hoe was je slaap?
+              </p>
+              <div role="group" aria-labelledby={qualityLabelId} className="flex flex-wrap gap-2">
                 {SLEEP_QUALITY_OPTIONS.map((opt) => (
                   <Chip
                     key={opt.value}
@@ -135,8 +163,10 @@ export function SleepEntrySheet({
               </div>
             </div>
             <div>
-              <p className="text-sm font-medium text-ink mb-2">Hoe vaak werd je wakker?</p>
-              <div className="flex flex-wrap gap-2">
+              <p id={wakeCountLabelId} className="text-sm font-medium text-ink mb-2">
+                Hoe vaak werd je wakker?
+              </p>
+              <div role="group" aria-labelledby={wakeCountLabelId} className="flex flex-wrap gap-2">
                 {WAKE_COUNT_OPTIONS.map((opt) => (
                   <Chip
                     key={opt.value}
@@ -148,23 +178,10 @@ export function SleepEntrySheet({
                 ))}
               </div>
             </div>
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setShowMore(true)}
-            className="self-start inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 py-1"
-          >
-            Meer toevoegen
-            <ChevronDown className="h-4 w-4" strokeWidth={2} />
-          </button>
-        )}
+          </div>
+        </Disclosure>
 
         <FieldError>{error}</FieldError>
-
-        <Button onClick={handleSave} disabled={isPending} className="w-full">
-          {isPending ? "Bezig..." : "Opslaan"}
-        </Button>
       </div>
     </BottomSheet>
   )

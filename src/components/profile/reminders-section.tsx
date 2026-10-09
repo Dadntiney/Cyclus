@@ -2,13 +2,17 @@
 
 import { useEffect, useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { Bell, Pencil, Plus, Trash2, X } from "lucide-react"
+import { Bell, Plus, Trash2, X } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Switch } from "@/components/ui/switch"
 import { Input, Label, FieldError } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Button, textActionClass } from "@/components/ui/button"
+import { IconButton } from "@/components/ui/icon-button"
 import { EmptyState } from "@/components/ui/empty-state"
+import { SectionHeader } from "@/components/ui/section-header"
+import { ICON } from "@/lib/ui/icon"
+import { focusElementById } from "@/lib/ui/focus"
 import { REMINDER_TYPE_OPTIONS, REMINDER_DAY_OPTIONS } from "@/lib/constants"
 import { createReminder, updateReminder, deleteReminder, toggleReminder } from "@/lib/actions/reminders"
 import type { ReminderInput } from "@/lib/validations/reminder"
@@ -106,10 +110,12 @@ export function RemindersSection({
   const showForm = adding || editingId !== null
 
   // Form sits above the bottom nav — scroll so Opslaan is reachable on mobile.
+  // The button she used is gone now: focus moves to the form's title.
   useEffect(() => {
     if (!showForm) return
     const id = window.setTimeout(() => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "end" })
+      document.getElementById("reminder-form-title")?.focus({ preventScroll: true })
     }, 50)
     return () => window.clearTimeout(id)
   }, [showForm])
@@ -138,10 +144,13 @@ export function RemindersSection({
     setAdding(false)
   }
 
+  // Closing the form (Opslaan, Annuleren, ✕) removes the control she used:
+  // focus returns to the "Herinneringen" heading, not to the page.
   function cancelForm() {
     setAdding(false)
     setEditingId(null)
     setError(null)
+    requestAnimationFrame(() => focusElementById("herinneringen"))
   }
 
   function toggleDay(day: number) {
@@ -273,6 +282,15 @@ export function RemindersSection({
     })
   }
 
+  // Removing lives inside "wijzigen" (tap a reminder), like an alarm on a phone.
+  function handleDeleteFromForm(id: string) {
+    cancelForm()
+    handleDelete(id)
+    // The form (and the button she pressed) is gone: land on the section
+    // heading instead of the page.
+    requestAnimationFrame(() => focusElementById("herinneringen"))
+  }
+
   function handleToggle(reminder: Reminder) {
     setError(null)
     const nextEnabled = !reminder.enabled
@@ -288,160 +306,142 @@ export function RemindersSection({
   }
 
   return (
-    <Card id="herinneringen" className="scroll-mt-24">
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-sm font-medium text-ink inline-flex items-center gap-1.5">
-          <Bell className="h-4 w-4 text-sage-dark" strokeWidth={1.75} />
-          Herinneringen
+    <section aria-labelledby="herinneringen" className="flex flex-col">
+      <SectionHeader
+        id="herinneringen"
+        title="Herinneringen"
+        description="Je ziet een herinnering als de app op dat moment open is, en met jouw toestemming ook als melding."
+      />
+
+      {!showForm && error && (
+        <p role="alert" className="mb-3 text-sm text-danger">
+          {error}
         </p>
-        {!showForm && (
-          <button
-            type="button"
-            onClick={startAdd}
-            className="inline-flex items-center gap-1 min-h-11 px-2 text-xs font-medium text-sage-dark touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 rounded"
-          >
-            <Plus className="h-3.5 w-3.5" strokeWidth={2} />
-            Toevoegen
-          </button>
-        )}
-      </div>
-      <p className="text-xs text-ink-soft mb-3">
-        Helemaal optioneel. We laten een herinnering zien zodra je de app open hebt op dat moment
-        — en, met jouw toestemming, ook als melding van je browser.
-      </p>
+      )}
 
-      {!showForm && error && <p className="text-xs text-danger mb-2">{error}</p>}
-
-      {reminders.length > 0 && (
-        <div className="flex flex-col gap-2 mb-3">
+      {reminders.length > 0 && !adding && (
+        <Card padding="none" className="mb-3 divide-y divide-line overflow-hidden">
           {reminders.map((reminder) => {
             const typeOption = REMINDER_TYPE_OPTIONS.find((t) => t.value === reminder.type)
             const isEditingThis = editingId === reminder.id
             if (isEditingThis) {
               return (
-                <div key={reminder.id} className="rounded-2xl border border-sage/40 bg-sage-soft/30 p-1">
+                <div key={reminder.id} className="p-4">
                   {renderForm()}
                 </div>
               )
             }
             if (showForm) return null
+            const Icon = typeOption?.icon ?? Bell
+            const title = reminder.label?.trim() || typeOption?.label || "Herinnering"
+            const switchId = `reminder-switch-${reminder.id}`
             return (
-              <div
-                key={reminder.id}
-                className="flex flex-col gap-2 rounded-[1.25rem] bg-surface border border-line px-3.5 py-3"
-              >
-                <div className="flex items-center gap-2">
-                  {(() => {
-                    const Icon = typeOption?.icon ?? Bell
-                    return <Icon className="h-5 w-5 shrink-0 text-sage-dark" strokeWidth={1.75} aria-hidden />
-                  })()}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-ink truncate">
-                      {reminder.label?.trim() || typeOption?.label || "Herinnering"}
-                    </p>
-                    <p className="text-xs text-ink-soft mt-0.5">
+              <div key={reminder.id} className="flex min-h-14 items-center gap-1 pr-4">
+                {/* Tap the reminder to change (or remove) it; the switch turns it on or off. */}
+                <button
+                  type="button"
+                  onClick={() => startEdit(reminder)}
+                  disabled={isPending}
+                  aria-label={`${title} wijzigen`}
+                  // The name is short; time and days are read right after it.
+                  aria-describedby={`${switchId}-meta`}
+                  className="flex min-w-0 flex-1 items-center gap-3.5 py-3 pl-4 text-left touch-manipulation transition-colors duration-fast ease-standard -outline-offset-2 hover:bg-cream-soft/60 active:bg-cream-soft"
+                >
+                  <span
+                    aria-hidden
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-sage-dark"
+                  >
+                    <Icon {...ICON.sm} />
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span id={`${switchId}-title`} className="truncate text-base font-medium text-ink">
+                      {title}
+                    </span>
+                    <span id={`${switchId}-meta`} className="text-sm text-ink-soft">
                       {formatTime(reminder.time)} · {daysLabel(reminder.days)}
-                    </p>
-                  </div>
-                  <Switch
-                    checked={reminder.enabled}
-                    onChange={() => handleToggle(reminder)}
-                    disabled={isPending}
-                    aria-label={reminder.enabled ? "Herinnering uitzetten" : "Herinnering aanzetten"}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => startEdit(reminder)}
-                    disabled={isPending}
-                    className="shrink-0 h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-                    aria-label="Herinnering wijzigen"
-                  >
-                    <Pencil className="h-4 w-4" strokeWidth={1.75} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmDeleteId(reminder.id)}
-                    disabled={isPending}
-                    className="shrink-0 h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-                    aria-label="Herinnering verwijderen"
-                  >
-                    <Trash2 className="h-4 w-4" strokeWidth={1.75} />
-                  </button>
-                </div>
-
-                {confirmDeleteId === reminder.id && (
-                  <div className="flex items-center gap-2 rounded-xl bg-cream-soft p-2.5">
-                    <p className="text-xs text-ink-soft flex-1">Deze herinnering verwijderen?</p>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(reminder.id)}
-                      className="text-xs font-medium text-danger touch-manipulation"
-                    >
-                      Verwijderen
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmDeleteId(null)}
-                      className="text-xs font-medium text-ink-soft touch-manipulation"
-                    >
-                      Annuleren
-                    </button>
-                  </div>
-                )}
+                    </span>
+                  </span>
+                </button>
+                <Switch
+                  id={switchId}
+                  checked={reminder.enabled}
+                  onChange={() => handleToggle(reminder)}
+                  disabled={isPending}
+                  aria-labelledby={`${switchId}-title`}
+                  // Two reminders of the same kind differ only in time and days.
+                  aria-describedby={`${switchId}-meta`}
+                  className="ml-2"
+                />
               </div>
             )
           })}
-        </div>
+        </Card>
       )}
 
       {!reminders.length && !showForm && (
         <EmptyState
-          icon={<Bell className="h-6 w-6" strokeWidth={1.5} />}
-          title="Nog geen herinneringen ingesteld"
-          description="Voeg er gerust een toe wanneer jij dat wilt — helemaal optioneel."
+          icon={Bell}
+          titleAs="h3"
+          title="Nog geen herinneringen"
+          description="Voeg er een toe wanneer jij dat wilt."
+          action={
+            <Button variant="secondary" onClick={startAdd}>
+              <Plus {...ICON.md} aria-hidden />
+              Herinnering toevoegen
+            </Button>
+          }
+          className="py-6"
         />
       )}
 
-      {adding && renderForm()}
-    </Card>
+      {adding && <Card className="mb-3">{renderForm()}</Card>}
+
+      {reminders.length > 0 && !showForm && (
+        <Button variant="secondary" className="w-full" onClick={startAdd}>
+          <Plus {...ICON.md} aria-hidden />
+          Herinnering toevoegen
+        </Button>
+      )}
+    </section>
   )
 
   function renderForm() {
+    const editing = editingId ? reminders.find((r) => r.id === editingId) : undefined
     return (
       <div
         ref={formRef}
-        className="flex flex-col gap-4 rounded-[1.25rem] bg-surface border border-line p-4 scroll-mb-[calc(var(--bottom-nav-h,5.5rem)+1rem)]"
+        className="flex flex-col gap-4 scroll-mb-[calc(var(--bottom-nav-h,5.5rem)+1rem)]"
       >
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-ink">
+        <div className="flex items-center justify-between gap-3">
+          <h3 id="reminder-form-title" tabIndex={-1} data-focus-target="" className="type-card-title text-ink">
             {editingId ? "Herinnering wijzigen" : "Nieuwe herinnering"}
-          </p>
-          <button
-            type="button"
-            onClick={cancelForm}
-            className="h-11 w-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream-soft touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-            aria-label="Sluiten"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          </h3>
+          <IconButton label="Sluiten" icon={X} onClick={cancelForm} className="-mr-2" />
         </div>
 
         <div>
-          <p className="text-sm font-medium text-ink mb-1">Waarvoor?</p>
+          <p id="reminder-types-label" className="mb-1 text-sm font-medium text-ink">
+            Waarvoor?
+          </p>
           {!editingId && (
-            <p className="text-xs text-ink-soft mb-2">
-              Je mag er meerdere tegelijk kiezen — dan maak je in één keer meerdere herinneringen
-              (zelfde dagen en tijdstip).
+            <p id="reminder-types-hint" className="mb-2 text-sm text-ink-soft">
+              Kies er gerust meer. Dan maak je in één keer meerdere herinneringen (zelfde dagen en
+              tijdstip).
             </p>
           )}
-          <div className="flex flex-wrap gap-2">
+          <div
+            role="group"
+            aria-labelledby="reminder-types-label"
+            aria-describedby={editingId ? undefined : "reminder-types-hint"}
+            className="flex flex-wrap gap-2"
+          >
             {availableTypeOptions.map((opt) => (
               <Chip
                 key={opt.value}
                 selected={selectedTypes.includes(opt.value)}
                 onClick={() => toggleType(opt.value)}
               >
-                <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
+                <opt.icon {...ICON.sm} aria-hidden />
                 {opt.label}
               </Chip>
             ))}
@@ -467,9 +467,10 @@ export function RemindersSection({
         </div>
 
         <div>
-          <p className="text-sm font-medium text-ink mb-1">Op welke dagen?</p>
-          <p className="text-xs text-ink-soft mb-2">Meerdere dagen mogelijk.</p>
-          <div className="flex flex-wrap gap-2">
+          <p id="reminder-days-label" className="mb-2 text-sm font-medium text-ink">
+            Op welke dagen?
+          </p>
+          <div role="group" aria-labelledby="reminder-days-label" className="flex flex-wrap gap-2">
             {REMINDER_DAY_OPTIONS.map((opt) => (
               <Chip key={opt.value} selected={draft.days.includes(opt.value)} onClick={() => toggleDay(opt.value)}>
                 {opt.label}
@@ -485,26 +486,56 @@ export function RemindersSection({
             type="time"
             value={draft.time}
             onChange={(e) => setDraft((d) => ({ ...d, time: normalizeReminderTime(e.target.value) }))}
-            className="max-w-[160px]"
+            className="w-40"
           />
         </div>
 
         <FieldError>{error}</FieldError>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row-reverse sm:justify-start">
           <Button onClick={handleSave} disabled={isPending}>
             {isPending
-              ? "Bezig..."
+              ? "Bezig…"
               : editingId
                 ? "Wijzigingen opslaan"
                 : selectedTypes.length > 1
                   ? `${selectedTypes.length} herinneringen opslaan`
                   : "Opslaan"}
           </Button>
-          <Button variant="secondary" onClick={cancelForm} disabled={isPending}>
+          <Button variant="ghost" onClick={cancelForm} disabled={isPending}>
             Annuleren
           </Button>
         </div>
+
+        {editing && (
+          <div className="border-t border-line pt-3">
+            {confirmDeleteId === editing.id ? (
+              <div role="group" aria-labelledby="reminder-delete-question" className="flex flex-col gap-2">
+                <p id="reminder-delete-question" className="text-sm text-ink">
+                  Deze herinnering verwijderen?
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="danger" size="sm" onClick={() => handleDeleteFromForm(editing.id)} disabled={isPending}>
+                    Verwijderen
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteId(null)} disabled={isPending}>
+                    Bewaren
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteId(editing.id)}
+                disabled={isPending}
+                className={textActionClass("text-danger")}
+              >
+                <Trash2 {...ICON.sm} aria-hidden />
+                Herinnering verwijderen
+              </button>
+            )}
+          </div>
+        )}
       </div>
     )
   }

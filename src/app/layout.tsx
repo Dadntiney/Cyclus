@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next"
 import Script from "next/script"
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google"
 import { ClientBootstrap } from "@/components/bootstrap/client-bootstrap"
+import { NavigationTracker } from "@/components/nav/navigation-tracker"
+import { ToastHost } from "@/components/ui/toast"
 import {
   APP_DESCRIPTION,
   APP_DISPLAY_NAME,
@@ -27,7 +29,14 @@ const displayFont = Fraunces({
 })
 
 export const metadata: Metadata = {
-  title: `${APP_DISPLAY_NAME} — ${APP_TAGLINE}`,
+  // Every page exports `metadata.title` ("Ontdek") and reads as
+  // "Ontdek · GoFiev" in the tab, history, app switcher and screen reader
+  // (Next's route announcer only speaks when the title changes). Pages
+  // without a title keep the full brand line.
+  title: {
+    default: `${APP_DISPLAY_NAME} — ${APP_TAGLINE}`,
+    template: `%s · ${APP_DISPLAY_NAME}`,
+  },
   description: APP_DESCRIPTION,
   manifest: "/manifest.webmanifest",
   icons: {
@@ -72,7 +81,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-full flex flex-col bg-cream text-ink font-sans">
+        <NavigationTracker />
         {children}
+        {/* Top-level layer for toasts and other floating feedback, outside
+            #app-root: stays live while an overlay makes the app inert. It is
+            the one fixed region (12px above the tab bar, globals.css); the
+            app toast, autosave pill and reminders stack in it as slots. */}
+        <div
+          id="toast-layer"
+          data-toast-region=""
+          className="pointer-events-none fixed inset-x-0 z-60 flex flex-col px-5"
+        />
+        <ToastHost />
         <ClientBootstrap />
         {/* Vercel Speed Insights: real load times from real phones, visible in
             the Vercel dashboard once Speed Insights is enabled there. Loaded

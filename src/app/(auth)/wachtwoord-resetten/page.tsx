@@ -1,11 +1,20 @@
+import type { Metadata } from "next"
+import { PageHeader } from "@/components/layout/page-header"
+import { AuthLockup } from "../auth-lockup"
 import { ResetPasswordForm } from "./reset-password-form"
+
+export const metadata: Metadata = { title: "Nieuw wachtwoord" }
 
 export default function ResetPasswordPage() {
   return (
-    <div>
-      <h1 className="font-display text-2xl text-ink mb-1.5">Nieuw wachtwoord</h1>
-      <p className="text-sm text-ink-soft mb-6">Kies een nieuw wachtwoord voor je account.</p>
+    <>
+      <PageHeader
+        title="Nieuw wachtwoord"
+        subtitle="Kies een nieuw wachtwoord voor je account."
+        back={false}
+        media={<AuthLockup />}
+      />
       <ResetPasswordForm />
-    </div>
+    </>
   )
 }

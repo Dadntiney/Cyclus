@@ -2,82 +2,90 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { Dumbbell } from "lucide-react"
-import { Chip } from "@/components/ui/chip"
+import { ChevronRight, Settings } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { EmptyState } from "@/components/ui/empty-state"
+import { ChipRadioGroup } from "@/components/ui/chip-radio-group"
+import { IconButton } from "@/components/ui/icon-button"
 import { WorkoutImage } from "@/components/training/workout-image"
+import { difficultyLabel, workoutDisplayTitle, workoutMeta } from "@/components/training/workout-format"
 import { workoutTypeLabel } from "@/lib/constants"
+import { iconProps } from "@/lib/ui/icon"
 import type { Tables } from "@/types/database"
 
 type Workout = Pick<Tables<"workouts">, "id" | "title" | "type" | "duration" | "difficulty" | "image_url">
 
-const DIFFICULTY_LABELS: Record<string, string> = {
-  makkelijk: "Makkelijk",
-  gemiddeld: "Gemiddeld",
-  pittig: "Pittig",
-}
+const ALL = "alles"
 
-export function WorkoutLibrary({ workouts }: { workouts: Workout[] }) {
-  const [activeType, setActiveType] = useState<string | null>(null)
+/**
+ * The Beweging library: one row of type chips (one choice; her preferences
+ * as a gear after the row, always in view) and the trainings as tappable cards — difficulty,
+ * title, "7 min · Yoga".
+ */
+export function WorkoutLibrary({ workouts, preferencesHref }: { workouts: Workout[]; preferencesHref: string }) {
+  const [activeType, setActiveType] = useState<string>(ALL)
 
-  const types = useMemo(() => [...new Set(workouts.map((w) => w.type))].sort(), [workouts])
-  const filtered = activeType ? workouts.filter((w) => w.type === activeType) : workouts
+  const typeOptions = useMemo(() => {
+    const types = [...new Set(workouts.map((w) => w.type))].sort()
+    return [{ value: ALL, label: "Alles" }, ...types.map((type) => ({ value: type, label: workoutTypeLabel(type) }))]
+  }, [workouts])
+
+  const filtered = activeType === ALL ? workouts : workouts.filter((w) => w.type === activeType)
 
   return (
-    <div>
-      <div className="flex w-full gap-2 mb-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <Chip className="shrink-0" selected={activeType === null} onClick={() => setActiveType(null)}>
-          Alles
-        </Chip>
-        {types.map((type) => (
-          <Chip
-            key={type}
-            className="shrink-0"
-            selected={activeType === type}
-            onClick={() => setActiveType(type)}
-          >
-            {workoutTypeLabel(type)}
-          </Chip>
-        ))}
-      </div>
-      {filtered.length === 0 && (
-        <EmptyState
-          icon={<Dumbbell className="h-6 w-6" strokeWidth={1.5} />}
-          title="Geen trainingen gevonden"
-          description="Probeer een andere categorie te kiezen."
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-2">
+        <div className="scroller-bleed-start min-w-0 flex-1">
+          <ChipRadioGroup
+            aria-label="Soort training"
+            options={typeOptions}
+            value={activeType}
+            onChange={setActiveType}
+            className="w-max flex-nowrap"
+            chipClassName="shrink-0 whitespace-nowrap"
+          />
+        </div>
+        {/* A settings gear, not the filter sliders: it leaves the page
+            (Profiel → Wat ik gebruik). Outside the scroller, so it is
+            always in view. */}
+        <IconButton
+          label="Voorkeuren voor beweging"
+          icon={Settings}
+          href={preferencesHref}
+          className="shrink-0"
         />
-      )}
-      <div className="flex flex-col gap-2">
-        {filtered.map((workout) => (
-          <Link
-            key={workout.id}
-            href={`/training/${workout.id}`}
-            className="block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 focus-visible:ring-offset-2 focus-visible:ring-offset-cream"
-          >
-            <Card interactive className="p-3.5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
+      </div>
+
+      <ul className="flex flex-col gap-3">
+        {filtered.map((workout) => {
+          const difficulty = difficultyLabel(workout.difficulty)
+          return (
+            <li key={workout.id}>
+              <Link href={`/training/${workout.id}`} className="block rounded-card touch-manipulation">
+                <Card padding="sm" interactive className="flex items-center gap-3.5">
                   <WorkoutImage
                     type={workout.type}
                     title={workout.title}
                     imageUrl={workout.image_url}
-                    className="h-11 w-11 rounded-lg shrink-0"
-                    sizes="44px"
+                    className="h-12 w-12 shrink-0 rounded-inset"
+                    iconClassName="h-6 w-6"
+                    sizes="48px"
                   />
-                  <div className="min-w-0">
-                    <p className="text-xs text-ink-soft">
-                      {DIFFICULTY_LABELS[workout.difficulty] ?? workout.difficulty}
-                    </p>
-                    <p className="font-medium text-ink text-sm mt-0.5 line-clamp-2 break-words">{workout.title}</p>
-                  </div>
-                </div>
-                <span className="text-xs text-ink-soft shrink-0">{workout.duration} min</span>
-              </div>
-            </Card>
-          </Link>
-        ))}
-      </div>
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    {difficulty && <span className="type-eyebrow text-sage-dark">{difficulty}</span>}
+                    <span className="text-base font-medium text-ink line-clamp-2">
+                      {workoutDisplayTitle(workout.title)}
+                    </span>
+                    <span className="text-sm text-ink-soft">
+                      {[workoutMeta(workout.duration), workoutTypeLabel(workout.type)].filter(Boolean).join(" · ")}
+                    </span>
+                  </span>
+                  <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
+                </Card>
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
     </div>
   )
 }

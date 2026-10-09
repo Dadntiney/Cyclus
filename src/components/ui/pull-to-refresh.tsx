@@ -3,6 +3,8 @@
 import { useEffect, useRef, useTransition, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 import { RefreshCw } from "lucide-react"
+import { prefersReducedMotion } from "@/lib/ui/focus"
+import { iconProps } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
 const PULL_THRESHOLD = 64
@@ -47,8 +49,10 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
     pullRef.current = pull
     if (indicatorRef.current) {
       // Follow the finger 1:1 while dragging; ease back on release so the
-      // indicator settles together with the native bounce instead of snapping.
-      indicatorRef.current.style.transition = settle ? "height 220ms ease-out" : "none"
+      // indicator settles together with the native bounce instead of snapping
+      // (instantly under reduced motion).
+      indicatorRef.current.style.transition =
+        settle && !prefersReducedMotion() ? "height var(--duration-base) var(--ease-standard)" : "none"
       indicatorRef.current.style.height = `${pull}px`
     }
     if (iconWrapRef.current && !isPending) {
@@ -118,10 +122,7 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
         aria-hidden
       >
         <span ref={iconWrapRef} className="inline-flex">
-          <RefreshCw
-            className={cn("h-5 w-5 text-sage-dark", isPending && "motion-safe:animate-spin")}
-            strokeWidth={2}
-          />
+          <RefreshCw {...iconProps("md", cn("text-sage-dark", isPending && "motion-safe:animate-spin"))} aria-hidden />
         </span>
       </div>
       {children}

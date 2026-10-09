@@ -1,4 +1,5 @@
 import { getWorkoutVisual, type WorkoutTone } from "@/lib/training/workout-visual"
+import { ICON } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
 const TONE_CLASSES: Record<WorkoutTone, { bg: string; icon: string }> = {
@@ -46,7 +47,7 @@ export function WorkoutMedia({ type, className, iconClassName }: WorkoutMediaPro
       </div>
       <Icon
         className={cn("relative", tones.icon, iconClassName ?? "h-7 w-7")}
-        strokeWidth={1.5}
+        strokeWidth={ICON.lg.strokeWidth}
       />
     </div>
   )

@@ -1,12 +1,25 @@
+import type { Metadata } from "next"
+import { cache } from "react"
 import { notFound } from "next/navigation"
 import { after } from "next/server"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getWorkoutDetail, getFavoriteExerciseIds } from "@/lib/data/training"
 import { ensureWorkoutImage } from "@/lib/images/ensure-workout-image"
+import { NOT_FOUND_TITLE } from "@/lib/navigation/features"
 import { SHOW_WORKOUT_PHOTOS } from "@/components/training/workout-image"
 import { WorkoutSession } from "@/components/training/workout-session"
-import { BackButton } from "@/components/ui/back-button"
+import { workoutDisplayTitle } from "@/components/training/workout-format"
+import { Page } from "@/components/layout/page"
+
+// One query per request, shared by the title and the page.
+const loadWorkout = cache((workoutId: string) => getWorkoutDetail(workoutId))
+
+export async function generateMetadata({ params }: { params: Promise<{ workoutId: string }> }): Promise<Metadata> {
+  const { workoutId } = await params
+  const { workout } = await loadWorkout(workoutId)
+  return { title: workout ? workoutDisplayTitle(workout.title) : NOT_FOUND_TITLE }
+}
 
 export default async function WorkoutDetailPage({
   params,
@@ -18,7 +31,7 @@ export default async function WorkoutDetailPage({
   if (!user) return null
 
   const [{ workout, exercises }, favoriteExerciseIds, profile] = await Promise.all([
-    getWorkoutDetail(workoutId),
+    loadWorkout(workoutId),
     getFavoriteExerciseIds(user.id),
     getProfile(user.id),
   ])
@@ -34,15 +47,15 @@ export default async function WorkoutDetailPage({
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <BackButton href="/training" label="Beweging" />
-
+    // The intro, the session and its StickyActionBar are direct children
+    // of Page, so the action bar can stick for the whole screen.
+    <Page>
       <WorkoutSession
         workout={workout}
         exercises={exercises}
         favoriteExerciseIds={[...favoriteExerciseIds]}
         name={profile?.name ?? null}
       />
-    </div>
+    </Page>
   )
 }

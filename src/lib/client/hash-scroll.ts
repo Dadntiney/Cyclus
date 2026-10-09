@@ -102,3 +102,26 @@ export function scrollToHash(hash: string): (() => void) | undefined {
     stopSettling()
   }
 }
+
+/**
+ * Jump to an element on the current page without touching history.
+ *
+ * A plain `<a href="#x">` adds a native history entry with `state: null`.
+ * Next's app router ignores popstate events without its own state, so
+ * "back" from a screen opened after such a jump only changed the URL and
+ * left the old screen showing (NAVQA-1). This scrolls the target to the
+ * top (the app bar sits in `scroll-padding-top`) and moves focus there, so
+ * keyboard and screen-reader users continue at the target. Returns whether
+ * the target exists.
+ */
+export function jumpToId(id: string): boolean {
+  const el = typeof document === "undefined" ? null : document.getElementById(id)
+  if (!el) return false
+  el.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" })
+  if (el.tabIndex < 0 && !el.hasAttribute("tabindex")) {
+    el.setAttribute("tabindex", "-1")
+    el.setAttribute("data-focus-target", "")
+  }
+  el.focus({ preventScroll: true })
+  return true
+}

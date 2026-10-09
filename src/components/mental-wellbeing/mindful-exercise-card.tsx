@@ -1,12 +1,18 @@
 import Link from "next/link"
-import { Flower2, Leaf } from "lucide-react"
+import { ChevronRight, Flower2, Leaf } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import type { MindfulExercise } from "@/lib/data/mindful-exercises"
 import { MENTAL_WELLBEING_CATEGORY_OPTIONS } from "@/lib/constants"
+import { iconProps } from "@/lib/ui/icon"
 
 const KIND_ICON: Record<MindfulExercise["kind"], typeof Flower2> = {
   meditatie: Flower2,
   mindfulness: Leaf,
+}
+
+/** "Meditatie · 5 min" */
+export function mindfulExerciseMeta(exercise: Pick<MindfulExercise, "kind" | "durationMinutes">) {
+  return `${exercise.kind === "meditatie" ? "Meditatie" : "Mindfulness"} · ${exercise.durationMinutes} min`
 }
 
 export function MindfulExerciseCard({ exercise }: { exercise: MindfulExercise }) {
@@ -16,19 +22,19 @@ export function MindfulExerciseCard({ exercise }: { exercise: MindfulExercise })
     MENTAL_WELLBEING_CATEGORY_OPTIONS.find((opt) => opt.value === exercise.categories[0])?.icon ??
     KIND_ICON[exercise.kind]
   return (
-    <Link href={`/mentale-rust/${exercise.id}`} className="block">
-      <Card interactive className="p-4">
-        <div className="flex items-start gap-3">
-          <span className="shrink-0 h-9 w-9 rounded-full bg-surface/70 flex items-center justify-center" aria-hidden>
-            <Icon className="h-4.5 w-4.5 text-sage-dark" strokeWidth={1.75} />
-          </span>
-          <div className="min-w-0">
-            <p className="font-medium text-ink text-base">{exercise.title}</p>
-            <p className="text-xs text-ink-soft mt-0.5">
-              {exercise.kind === "meditatie" ? "Meditatie" : "Mindfulness"} · {exercise.durationMinutes} min
-            </p>
-          </div>
-        </div>
+    <Link href={`/mentale-rust/${exercise.id}`} className="block h-full rounded-card touch-manipulation">
+      <Card padding="sm" interactive className="flex h-full items-center gap-3">
+        <span
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sage-soft text-sage-dark"
+          aria-hidden
+        >
+          <Icon {...iconProps("md")} />
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="text-base font-medium text-ink">{exercise.title}</span>
+          <span className="text-sm text-ink-soft">{mindfulExerciseMeta(exercise)}</span>
+        </span>
+        <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
       </Card>
     </Link>
   )

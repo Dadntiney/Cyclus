@@ -1,14 +1,25 @@
+import type { Metadata } from "next"
 import Link from "next/link"
-import { Heart, Salad } from "lucide-react"
+import { Salad } from "lucide-react"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfile } from "@/lib/data/profile"
 import { getRecipeLibrary } from "@/lib/data/nutrition"
+import { FEATURES } from "@/lib/navigation/features"
+import { Page } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
 import { RecipeLibrary } from "@/components/nutrition/recipe-library"
-import { Card } from "@/components/ui/card"
+import { RECIPE_FAVORITES_HREF } from "@/components/nutrition/recipe-format"
 import { EmptyState } from "@/components/ui/empty-state"
-import { buttonVariants } from "@/components/ui/button"
-import { BackButton } from "@/components/ui/back-button"
+import { buttonVariants, textActionClass } from "@/components/ui/button"
 
+export const metadata: Metadata = { title: FEATURES.voeding.label }
+
+/**
+ * Voeding: the recipe library (ontwerpvisie §7.4). One header with the one
+ * action (Favorieten, a text action: the heart only means "bewaren",
+ * besluit 12) and an honest subtitle: the library shows every recipe, her
+ * plan for today lives on Vandaag (NUT-4, NUT-9).
+ */
 export default async function VoedingPage() {
   const user = await getAuthedUser()
   if (!user) return null
@@ -17,51 +28,50 @@ export default async function VoedingPage() {
 
   if (profile && !profile.nutrition_enabled) {
     return (
-      <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-        <BackButton href="/ontdek" label="Ontdek" />
-        <h1 className="font-display text-3xl lg:text-4xl text-ink mb-1">Voeding</h1>
-        <p className="text-sm text-ink-soft mb-6">Recepten die passen bij jouw voorkeuren.</p>
-        <Card>
-          <EmptyState
-            icon={<Salad className="h-8 w-8" strokeWidth={1.5} />}
-            title="Voeding staat nu uit"
-            description="Je ziet hierdoor nergens voedingsadvies. Wil je dit toch weer gebruiken?"
-            action={
-              <Link href="/profiel/gebruik#voeding" className={buttonVariants({ variant: "secondary" })}>
-                Zet aan in mijn profiel
-              </Link>
-            }
-          />
-        </Card>
-      </div>
+      <Page>
+        <PageHeader title={FEATURES.voeding.label} subtitle="Recepten om uit te kiezen." />
+        <EmptyState
+          icon={Salad}
+          title="Voeding staat nu uit"
+          description="Je ziet hierdoor nergens voedingsadvies. Wil je het toch weer gebruiken?"
+          action={
+            <Link
+              href={`${FEATURES.gebruik.href}#voeding`}
+              className={buttonVariants({ variant: "tonal", size: "sm" })}
+            >
+              Aanzetten in {FEATURES.gebruik.label}
+            </Link>
+          }
+        />
+      </Page>
     )
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-6">
-      <div>
-        <BackButton href="/ontdek" label="Ontdek" />
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="font-display text-3xl lg:text-4xl text-ink">Voeding</h1>
-            <p className="text-sm text-ink-soft mt-1">
-              Recepten die passen bij jouw voorkeuren. Het advies voor vandaag staat op Vandaag.
-            </p>
-          </div>
-          <Link
-            href="/voeding/favorieten"
-            className="inline-flex items-center gap-1.5 min-h-11 text-sm font-medium text-sage-dark touch-manipulation"
-          >
-            <Heart className="h-4 w-4" />
-            Favorieten
+    <Page width="wide">
+      <PageHeader
+        title={FEATURES.voeding.label}
+        subtitle={
+          <>
+            Recepten om uit te kiezen. Je plan voor vandaag staat op{" "}
+            {/* Vertical padding on an inline link grows the tap area to
+                ~44px without moving the line. */}
+            <Link
+              href={FEATURES.vandaag.href}
+              className="py-3 font-medium text-sage-dark underline underline-offset-4 touch-manipulation"
+            >
+              {FEATURES.vandaag.label}
+            </Link>
+            .
+          </>
+        }
+        action={
+          <Link href={RECIPE_FAVORITES_HREF} className={textActionClass()}>
+            {FEATURES.favorieten.label}
           </Link>
-        </div>
-      </div>
-
-      <div>
-        <h2 className="font-display text-xl text-ink mb-3">Alle recepten</h2>
-        <RecipeLibrary recipes={recipes} />
-      </div>
-    </div>
+        }
+      />
+      <RecipeLibrary recipes={recipes} />
+    </Page>
   )
 }

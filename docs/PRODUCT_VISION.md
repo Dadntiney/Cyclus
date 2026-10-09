@@ -130,25 +130,32 @@ de app.
 Ter oriëntatie — niet uitputtend, en dit moet meegroeien met de app:
 
 - **Begrijpen**: `src/lib/cycle/phase-knowledge.ts` (hormonale/lichamelijke
-  uitleg per fase) + `src/lib/cycle/cyclusdag.ts` (compositie tot de
-  Cyclusdag-pagina, `/cyclus/vandaag`).
+  uitleg per fase) + `src/lib/cycle/cyclusdag.ts` (compositie tot de pagina
+  Jouw fase, `/cyclus/vandaag`). De fasestatus bovenaan Vandaag en Cyclus is
+  één component: `src/components/today/phase-context-card.tsx`.
 - **Herkennen**: `src/lib/cycle/history.ts` (`computeSymptomFrequency`,
   cyclusgeschiedenis) en `src/lib/cycle/patterns.ts`
   (`computePhaseSymptomInsights` — vergelijkt symptomen per cyclusfase over
   meerdere afgeronde cycli, bijv. "vaker vermoeid tijdens de luteale fase,
-  je laatste 3 cycli") op de Cyclus-pagina en in de personalisatie op
-  `/cyclus/vandaag`.
+  je laatste 3 cycli") op de Cyclus-pagina, in de kaart Jouw patronen
+  (`/cyclus#jouw-verhaal`, met `src/lib/cycle/your-story.ts` en
+  `src/components/cycle/your-story-card.tsx`), en in de personalisatie op
+  Jouw fase (`/cyclus/vandaag`).
 - **Ondersteunen**: `src/lib/cycle/phase-content.ts` (voeding/beweging per
-  fase), `src/lib/recommendations/*` (dag- en weekplanning), optioneel te
-  maken via `profiles.movement_enabled` / `nutrition_enabled`, en de
-  Buddy-chat (`src/lib/buddy/*`).
+  fase), `src/lib/recommendations/*` (dag- en weekplanning, op Vandaag in
+  `src/components/today/today-cards.tsx` en op Deze week in
+  `src/components/week/week-view.tsx`), optioneel te maken via
+  `profiles.movement_enabled` / `nutrition_enabled` (Profiel → Wat ik
+  gebruik, `/profiel/gebruik`), en de Buddy-chat (`src/lib/buddy/*`,
+  scherm in `src/components/buddy/*`).
 - **Balans / toon**: `src/lib/data/buddy-quotes.ts` (dagelijkse
-  buddy-boodschappen), hedgende formuleringen door alle content-modules
+  buddy-boodschappen, op Vandaag in `src/components/today/buddy-quote-card.tsx`),
+  hedgende formuleringen door alle content-modules
   heen, en de expliciete "geen medisch advies"-notes op cyclus-gerelateerde
   pagina's. Optioneel is dit ook persoonlijk te kleuren via
   `profiles.buddy_styles` (Liefdevol/Humor/Spiritueel/Motiverend/
   Informatief/Rustig/Direct/Luchtig, meerdere te kiezen, instelbaar bij
-  onboarding en in Profiel → Mijn Buddy) en `profiles.buddy_message_frequency`
+  onboarding en in Profiel → Buddy-stijl, `/profiel/buddy`) en `profiles.buddy_message_frequency`
   (hoe vaak ze de dagelijkse quote-kaart en "even onthouden"-momenten wil
   zien) — zie `src/lib/buddy/styles.ts` voor de selectie-/frequentielogica
   en de `styles`-map op een deel van de quotes in `buddy-quotes.ts` voor
@@ -160,7 +167,12 @@ Ter oriëntatie — niet uitputtend, en dit moet meegroeien met de app:
   nachtelijk zweten, die als check-in-symptoom al bestonden maar nergens
   werden uitgelegd), en wanneer contact met een zorgverlener zinvol kan
   zijn. `cycle_profiles.perimenopause_information` is nu ook zichtbaar en
-  bewerkbaar in Profiel, niet meer alleen write-only voor de Buddy.
+  bewerkbaar in Profiel → Cyclusinstellingen (`/profiel/cyclus`), niet meer
+  alleen write-only voor de Buddy.
+- **Namen en vormgeving**: elke bestemming heeft één naam, icoon en URL in
+  `src/lib/navigation/features.ts` (linktekst = paginatitel = terug-label);
+  het designsysteem "Ritme" staat in `docs/DESIGN_SYSTEM.md`, met
+  `src/lib/ui/design-guard.test.ts` als bewaking op losse waarden.
 
 De Buddy-chat (`src/lib/buddy/context.ts`) krijgt het sterkste patroon voor
 de huidige fase ook mee in haar context, met de instructie dit alleen

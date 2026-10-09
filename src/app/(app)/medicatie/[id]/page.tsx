@@ -1,14 +1,28 @@
+import type { Metadata } from "next"
+import { cache } from "react"
 import { notFound } from "next/navigation"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getMedication } from "@/lib/data/medications"
 import { MedicationWizard } from "@/components/medication/medication-wizard"
 import { getCyclicalPhaseInfo, type MedicationSchedule } from "@/lib/medication/schedule"
 import { Card } from "@/components/ui/card"
-import { BackButton } from "@/components/ui/back-button"
-import { format, parseISO } from "date-fns"
-import { nl } from "date-fns/locale"
 import type { MedicationInput } from "@/lib/validations/medication"
+import { formatLongDate } from "@/lib/dates/format"
+import { NOT_FOUND_TITLE } from "@/lib/navigation/features"
 
+// One query per request, shared by the document title and the page.
+const loadMedication = cache(async (id: string) => {
+  const user = await getAuthedUser()
+  return user ? getMedication(user.id, id) : null
+})
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const medication = await loadMedication(id)
+  return { title: medication ? "Medicatie bewerken" : NOT_FOUND_TITLE }
+}
+
+/** The wizard renders its own Page + PageHeader: each step is one question. */
 export default async function EditMedicationPage({
   params,
 }: {
@@ -18,7 +32,7 @@ export default async function EditMedicationPage({
   const user = await getAuthedUser()
   if (!user) return null
 
-  const medication = await getMedication(user.id, id)
+  const medication = await loadMedication(id)
   if (!medication) notFound()
 
   const schedule: MedicationSchedule = {
@@ -30,7 +44,7 @@ export default async function EditMedicationPage({
     endDate: medication.end_date,
   }
   const phaseInfo = getCyclicalPhaseInfo(schedule, new Date())
-  const formatPhaseDate = (iso: string) => format(parseISO(iso), "d MMMM", { locale: nl })
+  const formatPhaseDate = (iso: string) => formatLongDate(iso)
 
   const unitDivisibleByWeek =
     medication.schedule_type === "cyclisch" &&
@@ -41,50 +55,47 @@ export default async function EditMedicationPage({
   const cyclUnit: "dagen" | "weken" = unitDivisibleByWeek ? "weken" : "dagen"
   const cyclDivisor = cyclUnit === "weken" ? 7 : 1
 
+  const context = phaseInfo ? (
+    <Card tone="subtle" padding="sm">
+      <p className="text-sm text-ink">
+        Huidige fase: <span className="font-medium">{phaseInfo.phase === "wel" ? "wel" : "niet"}</span> · tot{" "}
+        {formatPhaseDate(phaseInfo.phaseEndDate)}
+      </p>
+      <p className="mt-1 text-sm text-ink-soft">
+        Volgende fase: {phaseInfo.nextPhase === "wel" ? "wel" : "niet"}, vanaf{" "}
+        {formatPhaseDate(phaseInfo.nextPhaseStartDate)}
+        {phaseInfo.phase === "wel" && medication.remind_on_stop
+          ? ` · pauze-herinnering op ${formatPhaseDate(phaseInfo.phaseEndDate)}`
+          : ""}
+      </p>
+    </Card>
+  ) : undefined
+
   return (
-    <div className="w-full">
-      <div className="max-w-md mx-auto px-5 pt-6">
-        <BackButton href="/medicatie" label="Mijn medicatie" className="mb-0" />
-        {phaseInfo && (
-          <Card className="mt-4">
-            <p className="text-sm text-ink">
-              Huidige fase: <span className="font-medium">{phaseInfo.phase === "wel" ? "wel" : "niet"}</span> · tot{" "}
-              {formatPhaseDate(phaseInfo.phaseEndDate)}
-            </p>
-            <p className="text-xs text-ink-soft mt-1">
-              Volgende fase: {phaseInfo.nextPhase === "wel" ? "wel" : "niet"}, vanaf{" "}
-              {formatPhaseDate(phaseInfo.nextPhaseStartDate)}
-              {phaseInfo.phase === "wel" && medication.remind_on_stop
-                ? ` · pauze-herinnering op ${formatPhaseDate(phaseInfo.phaseEndDate)}`
-                : ""}
-            </p>
-          </Card>
-        )}
-      </div>
-      <MedicationWizard
-        mode="edit"
-        medicationId={medication.id}
-        initial={{
-          category: medication.category as MedicationInput["category"],
-          name: medication.name,
-          hormoneType: medication.hormone_type ?? "",
-          form: medication.form ?? "",
-          dosage: medication.dosage ?? "",
-          scheduleType: medication.schedule_type as MedicationInput["scheduleType"],
-          scheduleDays: medication.schedule_days ?? [],
-          scheduleDaysOnValue: medication.schedule_days_on ? String(medication.schedule_days_on / cyclDivisor) : "",
-          scheduleDaysOffValue: medication.schedule_days_off ? String(medication.schedule_days_off / cyclDivisor) : "",
-          cyclUnit,
-          startDate: medication.start_date ?? "",
-          endDate: medication.end_date ?? "",
-          timeOfDay: medication.time_of_day?.slice(0, 5) ?? "",
-          reminderEnabled: medication.reminder_enabled,
-          remindOnStart: medication.remind_on_start,
-          remindDaily: medication.remind_daily,
-          remindOnStop: medication.remind_on_stop,
-          notes: medication.notes ?? "",
-        }}
-      />
-    </div>
+    <MedicationWizard
+      mode="edit"
+      medicationId={medication.id}
+      context={context}
+      initial={{
+        category: medication.category as MedicationInput["category"],
+        name: medication.name,
+        hormoneType: medication.hormone_type ?? "",
+        form: medication.form ?? "",
+        dosage: medication.dosage ?? "",
+        scheduleType: medication.schedule_type as MedicationInput["scheduleType"],
+        scheduleDays: medication.schedule_days ?? [],
+        scheduleDaysOnValue: medication.schedule_days_on ? String(medication.schedule_days_on / cyclDivisor) : "",
+        scheduleDaysOffValue: medication.schedule_days_off ? String(medication.schedule_days_off / cyclDivisor) : "",
+        cyclUnit,
+        startDate: medication.start_date ?? "",
+        endDate: medication.end_date ?? "",
+        timeOfDay: medication.time_of_day?.slice(0, 5) ?? "",
+        reminderEnabled: medication.reminder_enabled,
+        remindOnStart: medication.remind_on_start,
+        remindDaily: medication.remind_daily,
+        remindOnStop: medication.remind_on_stop,
+        notes: medication.notes ?? "",
+      }}
+    />
   )
 }

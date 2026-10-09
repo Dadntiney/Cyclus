@@ -1,8 +1,11 @@
 /**
  * Articulated pose for the Cyclus instruction figure.
- * Angles are degrees. Arms: 0 = hanging down, positive = forward/up.
- * Legs: 0 = straight down, positive = forward.
- * bodyRotation rotates the whole figure (useful for floor work).
+ * Angles are degrees; she faces right (+x). Arms: 0 = hanging down,
+ * positive = forward/up; the elbow adds to the shoulder. Legs: 0 = straight
+ * down, positive = forward; the knee bends the shin back (positive knee =
+ * a bent knee, as in a squat). Torso tilts the hips forward (+) or back (−).
+ * bodyRotation rotates the whole figure clockwise (floor work); see
+ * onScreen() in exercise-instructions.ts for floor poses.
  */
 export type FigurePose = {
   rootX: number

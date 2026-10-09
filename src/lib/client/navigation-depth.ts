@@ -1,23 +1,25 @@
+import { ensureHistoryTracking, goBackOr, hasHistory } from "@/lib/navigation/nav-store"
+
 /**
- * Tracks whether she has navigated client-side at least once since this
- * tab loaded the app. A plain module-level counter (not React state) —
- * BackButton just needs a yes/no read at click time, not a re-render.
- *
- * Why this exists: Next.js gives no reliable "can I go back" signal, and
- * `window.history.length` counts entries from before the app was ever
- * opened too. But PageTransition re-renders on every route change, so it
- * can mark each one here — "at least one in-app navigation happened" is
- * exactly the condition under which router.back() is safe to trust to land
- * somewhere relevant, as opposed to a fresh page load or a deep link.
+ * Compatibility layer over the navigation store (src/lib/navigation).
+ * New code uses `goBackOr` / `replaceTo` / `hasHistory` from
+ * "@/lib/navigation/nav-store" directly; these exports keep older call
+ * sites working unchanged.
  */
-let navigationCount = 0
 
-export function markNavigation() {
-  navigationCount += 1
-}
+/**
+ * @deprecated The store records every navigation itself (it wraps
+ * history.pushState/replaceState); calling this is harmless and does nothing.
+ */
+export function markNavigation() {}
 
+/**
+ * Is there an in-app screen to go back to? True when router.back() lands on
+ * a screen of this app — false on a deep link, a notification or a fresh
+ * load, where a fallback link should be used instead.
+ */
 export function hasNavigatedInApp(): boolean {
-  return navigationCount > 0
+  return hasHistory()
 }
 
 /**
@@ -32,6 +34,7 @@ let isPopNavigation = false
 let popstateListenerAttached = false
 
 export function ensurePopstateTracking() {
+  ensureHistoryTracking()
   if (popstateListenerAttached || typeof window === "undefined") return
   popstateListenerAttached = true
   window.addEventListener("popstate", () => {
@@ -43,4 +46,17 @@ export function consumePopNavigationFlag(): boolean {
   const was = isPopNavigation
   isPopNavigation = false
   return was
+}
+
+/**
+ * Leaving a finished flow (workout done, exercise done, medication saved):
+ * go back to wherever she came from. Pushing the parent page instead put it
+ * on top of the finished screen, so the next "back" reopened that screen.
+ * Without in-app history the finished screen is replaced by the parent.
+ */
+export function leaveFlow(
+  router: { back(): void; replace(href: string): void },
+  fallbackHref: string,
+) {
+  goBackOr(router, fallbackHref)
 }

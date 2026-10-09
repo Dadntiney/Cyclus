@@ -11,6 +11,7 @@ import { BUDDY_QUOTE_CATEGORY_ICON } from "@/lib/data/buddy-quote-icons"
 import { formatPhaseSymptomInsight, type PhaseSymptomInsight } from "@/lib/cycle/patterns"
 import type { BuddyStyle } from "@/lib/buddy/styles"
 import { symptomLabel } from "@/lib/constants"
+import { joinTitleSentence } from "@/lib/utils"
 
 /**
  * Composes the Cyclusdag detail page's content from three sources: the
@@ -142,14 +143,16 @@ export function buildCyclusdagView(input: BuildCyclusdagViewInput): CyclusdagVie
       ? buildPersonalizedMovementTip(trainingPreferences, phaseContent.movement.preferGentler)
       : null
     if (personalTip) {
-      buddyMoment = { kind: "tip", title: "Kleine tip voor vandaag", icon: Lightbulb, text: personalTip }
+      // "Kleine tip voor vandaag" is Vandaag's snack tip; this one comes
+      // from Buddy (rendered with her mark), so it has its own name.
+      buddyMoment = { kind: "tip", title: "Tip van Buddy", icon: Lightbulb, text: personalTip }
     } else {
       const phaseTip = phaseContent.lifestyleTips[seededIndex(`${seed}-phasetip`, phaseContent.lifestyleTips.length)]
       buddyMoment = {
         kind: "tip",
-        title: "Kleine tip voor vandaag",
+        title: "Tip van Buddy",
         icon: Lightbulb,
-        text: `${phaseTip.title}: ${phaseTip.text}`,
+        text: joinTitleSentence(phaseTip.title, phaseTip.text),
       }
     }
   } else {

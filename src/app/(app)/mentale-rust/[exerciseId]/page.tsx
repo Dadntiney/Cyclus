@@ -1,7 +1,16 @@
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getMindfulExercise } from "@/lib/data/mindful-exercises"
+import { NOT_FOUND_TITLE } from "@/lib/navigation/features"
+import { Page } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
 import { GuidedExercise } from "@/components/mental-wellbeing/guided-exercise"
-import { BackButton } from "@/components/ui/back-button"
+import { mindfulExerciseMeta } from "@/components/mental-wellbeing/mindful-exercise-card"
+
+export async function generateMetadata({ params }: { params: Promise<{ exerciseId: string }> }): Promise<Metadata> {
+  const { exerciseId } = await params
+  return { title: getMindfulExercise(exerciseId)?.title ?? NOT_FOUND_TITLE }
+}
 
 export default async function MindfulExercisePage({
   params,
@@ -13,13 +22,11 @@ export default async function MindfulExercisePage({
   if (!exercise) notFound()
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10">
-      <BackButton href="/mentale-rust" label="Mijn mentale rust" />
-      <h1 className="font-display text-2xl text-ink mb-1">{exercise.title}</h1>
-      <p className="text-sm text-ink-soft mb-6">
-        {exercise.kind === "meditatie" ? "Meditatie" : "Mindfulness"} · {exercise.durationMinutes} min
-      </p>
+    // GuidedExercise's StickyActionBar is a direct child of Page, so it
+    // sticks for the whole screen.
+    <Page>
+      <PageHeader eyebrow={mindfulExerciseMeta(exercise)} title={exercise.title} subtitle={exercise.intro} />
       <GuidedExercise exercise={exercise} />
-    </div>
+    </Page>
   )
 }

@@ -21,6 +21,18 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }]
   },
+  // One Favorieten page with a filter (ontwerpvisie §4.5): the two old
+  // per-library pages land on its matching filter. Temporary (307), so the
+  // filter names can still change. Old links, bookmarks and notifications
+  // keep working; revalidatePath calls to these paths stay harmless.
+  // The page-level redirects (/voor-jou, /profiel/account, /profiel/modules)
+  // live in their own page.tsx files and are untouched.
+  async redirects() {
+    return [
+      { source: "/voeding/favorieten", destination: "/favorieten?soort=recepten", permanent: false },
+      { source: "/training/favorieten", destination: "/favorieten?soort=beweging", permanent: false },
+    ]
+  },
   // lucide-react ships as one large barrel file rather than per-icon
   // modules; without this, Turbopack was bundling ~50 icons' worth of code
   // into a single 280KB+ chunk even though only ~34 distinct icons are

@@ -1,12 +1,20 @@
 "use client"
 
-import { useState, useTransition } from "react"
-import { Heart } from "lucide-react"
 import { toggleFavorite } from "@/lib/actions/nutrition"
-import { ActionToast, useActionToast } from "@/components/ui/action-toast"
-import { cn } from "@/lib/utils"
-import { runAction } from "@/lib/client/run-action"
+import { IconButton } from "@/components/ui/icon-button"
+import { FavoriteHeartIcon, useFavoriteToggle } from "@/components/moments/use-favorite-toggle"
+import { RECIPE_FAVORITES_HREF } from "./recipe-format"
 
+/**
+ * Save a recipe: the app-wide "bewaren" gesture (ontwerpvisie §6.2), the
+ * same hook as moments and exercises (`useFavoriteToggle`), so every heart
+ * behaves alike. The heart itself is the feedback (it fills and settles
+ * in, a light haptic), and the confirmation is the toast above the tab
+ * bar, "Bewaard in Favorieten · Bekijk". Nothing is inserted next to the
+ * title, so the h1 never reflows (NUT-6).
+ *
+ * The server action is called exactly as before (it toggles).
+ */
 export function FavoriteButton({
   recipeId,
   initialFavorited,
@@ -14,41 +22,19 @@ export function FavoriteButton({
   recipeId: string
   initialFavorited: boolean
 }) {
-  const [favorited, setFavorited] = useState(initialFavorited)
-  const [isPending, startTransition] = useTransition()
-  const toast = useActionToast()
-
-  function handleClick() {
-    const next = !favorited
-    setFavorited(next)
-    toast.show(next ? "Opgeslagen" : "Verwijderd")
-    startTransition(async () => {
-      const result = await runAction(() => toggleFavorite(recipeId))
-      if (result?.favorited !== undefined) {
-        setFavorited(result.favorited)
-      } else {
-        setFavorited((f) => !f)
-        toast.clear()
-      }
-    })
-  }
+  const { favorited, changes, isPending, toggle } = useFavoriteToggle({
+    initialFavorited,
+    toggle: () => toggleFavorite(recipeId),
+    viewHref: RECIPE_FAVORITES_HREF,
+  })
 
   return (
-    <span className="inline-flex items-center gap-2">
-      <ActionToast message={toast.message} />
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={isPending}
-        aria-pressed={favorited}
-        aria-label={favorited ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"}
-        className={cn(
-          "h-11 w-11 rounded-full flex items-center justify-center border transition-colors touch-manipulation",
-          favorited ? "bg-peach-soft border-peach text-peach" : "bg-surface border-line text-ink-soft",
-        )}
-      >
-        <Heart className="h-4.5 w-4.5" fill={favorited ? "currentColor" : "none"} strokeWidth={1.75} />
-      </button>
-    </span>
+    <IconButton
+      label="Bewaar recept in favorieten"
+      pressed={favorited}
+      aria-busy={isPending || undefined}
+      onClick={toggle}
+      icon={<FavoriteHeartIcon favorited={favorited} changes={changes} />}
+    />
   )
 }

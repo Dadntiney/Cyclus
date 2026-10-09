@@ -3,6 +3,7 @@ import { getAuthedUser } from "@/lib/supabase/server"
 import { Sidebar } from "@/components/nav/sidebar"
 import { BottomNav } from "@/components/nav/bottom-nav"
 import { MobileHeader } from "@/components/nav/mobile-header"
+import { AppBarProvider } from "@/components/nav/app-bar-context"
 import { PageTransition } from "@/components/nav/page-transition"
 import { PullToRefresh } from "@/components/ui/pull-to-refresh"
 import { ReminderHostBoundary } from "@/components/reminders/reminder-host-boundary"
@@ -39,15 +40,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       : null
 
   return (
-    <div className="flex min-h-screen">
+    // #app-root: what an open sheet or dialog makes inert (overlay stack).
+    // Overlays and the toast layer are portalled outside it, into <body>.
+    <div id="app-root" className="flex min-h-screen">
       <Sidebar avatarUrl={profile.avatar_url} />
       <div className="flex-1 flex flex-col min-w-0">
-        <MobileHeader />
-        <main className="flex-1 pt-[var(--mobile-header-h,4.8rem)] md:pt-0 pb-[calc(var(--bottom-nav-h,5.5rem)+1.5rem)] md:pb-10">
-          <PullToRefresh>
-            <PageTransition>{children}</PageTransition>
-          </PullToRefresh>
-        </main>
+        <AppBarProvider>
+          <MobileHeader />
+          {/* --mobile-header-h has a CSS default (globals.css, shell block)
+              so the first paint already clears the app bar. */}
+          <main className="flex-1 pt-[var(--mobile-header-h)] md:pt-0 pb-[calc(var(--bottom-nav-h,5.5rem)+1.5rem)] md:pb-10">
+            <PullToRefresh>
+              <PageTransition>{children}</PageTransition>
+            </PullToRefresh>
+          </main>
+        </AppBarProvider>
         <BottomNav avatarUrl={profile.avatar_url} />
         <ReminderHostBoundary
           userId={user.id}

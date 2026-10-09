@@ -1,82 +1,101 @@
 "use client"
 
+import { useId } from "react"
 import type { FigurePose } from "@/lib/training/figure-pose"
-
-const ARM = 34
-const FORE = 30
-const THIGH = 38
-const SHIN = 36
-
-function rad(deg: number) {
-  return (deg * Math.PI) / 180
-}
-
-function endPoint(x: number, y: number, length: number, deg: number) {
-  return {
-    x: x + Math.sin(rad(deg)) * length,
-    y: y + Math.cos(rad(deg)) * length,
-  }
-}
+import { FLOOR_Y, figureFrame, figureJoints, groundOffset, type FigureFrame } from "@/components/training/figure-geometry"
 
 /**
  * One consistent Cyclus figure — soft female silhouette in brand peach/sage.
  * Same character, outfit and proportions for every exercise instruction.
+ *
+ * Every pose rests on the floor (its lowest point touches the mat line),
+ * and `frame` — fitted once to all poses of an exercise — keeps the camera
+ * still and nothing clipped. Size it with the container (`h-full w-full`):
+ * the viewBox scales to fit.
  */
-export function CyclusFigure({ pose, className }: { pose: FigurePose; className?: string }) {
-  const hipY = pose.rootY + 58
-  const shoulderY = pose.rootY + 8
-
-  const torsoTop = { x: pose.rootX, y: pose.rootY }
-  const torsoBottom = endPoint(torsoTop.x, torsoTop.y + 10, 48, pose.torso)
-
-  const lShoulder = { x: torsoTop.x - 16, y: shoulderY }
-  const rShoulder = { x: torsoTop.x + 16, y: shoulderY }
-
-  const lElbow = endPoint(lShoulder.x, lShoulder.y, ARM, pose.lShoulder)
-  const rElbow = endPoint(rShoulder.x, rShoulder.y, ARM, pose.rShoulder)
-  const lHand = endPoint(lElbow.x, lElbow.y, FORE, pose.lShoulder + pose.lElbow)
-  const rHand = endPoint(rElbow.x, rElbow.y, FORE, pose.rShoulder + pose.rElbow)
-
-  const lHip = { x: torsoBottom.x - 10, y: hipY }
-  const rHip = { x: torsoBottom.x + 10, y: hipY }
-  const lKnee = endPoint(lHip.x, lHip.y, THIGH, pose.lHip)
-  const rKnee = endPoint(rHip.x, rHip.y, THIGH, pose.rHip)
-  const lFoot = endPoint(lKnee.x, lKnee.y, SHIN, pose.lHip + pose.lKnee)
-  const rFoot = endPoint(rKnee.x, rKnee.y, SHIN, pose.rHip + pose.rKnee)
-
-  const headY = pose.rootY - 22
-  const pivotX = pose.rootX
-  const pivotY = pose.rootY + 70
+export function CyclusFigure({
+  pose,
+  frame,
+  className,
+}: {
+  pose: FigurePose
+  frame?: FigureFrame
+  className?: string
+}) {
+  const fitted = frame ?? figureFrame([pose])
+  const skinId = `cyclus-skin-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`
+  const skin = `url(#${skinId})`
+  const { hipY, torsoBottom, lShoulder, rShoulder, lElbow, rElbow, lHand, rHand, lHip, rHip, lKnee, rKnee, lFoot, rFoot, headY, pivot } =
+    figureJoints(pose)
   const rotation = pose.bodyRotation ?? 0
+  const lift = groundOffset(pose)
+  // On the floor (plank, push-up, side plank) the far arm goes behind the
+  // body, so it reads as the arm on the other side instead of a short one.
+  const farArmBehind = Math.abs(rotation) >= 45
+  const farArm = (
+    <>
+      <line
+        x1={lShoulder.x}
+        y1={lShoulder.y}
+        x2={lElbow.x}
+        y2={lElbow.y}
+        stroke={skin}
+        strokeWidth="9"
+        strokeLinecap="round"
+      />
+      <line
+        x1={lElbow.x}
+        y1={lElbow.y}
+        x2={lHand.x}
+        y2={lHand.y}
+        stroke={skin}
+        strokeWidth="8"
+        strokeLinecap="round"
+      />
+    </>
+  )
+  const matCenter = (fitted.matFrom + fitted.matTo) / 2
+  const matHalf = Math.max(24, (fitted.matTo - fitted.matFrom) / 2)
 
   return (
     <svg
-      viewBox="0 0 200 260"
+      viewBox={fitted.viewBox}
+      preserveAspectRatio="xMidYMid meet"
       className={className}
       aria-hidden="true"
       role="presentation"
     >
       <defs>
-        <linearGradient id="cyclus-mat" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="var(--color-peach-soft)" />
-          <stop offset="100%" stopColor="var(--color-cream)" />
-        </linearGradient>
-        <linearGradient id="cyclus-skin" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={skinId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#f0c4a8" />
           <stop offset="100%" stopColor="#e2a888" />
         </linearGradient>
       </defs>
 
-      {/* Soft studio mat */}
-      <ellipse cx="100" cy="232" rx="72" ry="10" fill="var(--color-sage-soft)" opacity="0.55" />
+      {/* Soft studio mat, and a mat line for floor work. */}
+      <ellipse cx={matCenter} cy={FLOOR_Y + 2} rx={matHalf + 10} ry="7" fill="var(--color-sage-soft)" opacity="0.55" />
+      {fitted.onFloor && (
+        <line
+          x1={fitted.matFrom}
+          y1={FLOOR_Y + 0.75}
+          x2={fitted.matTo}
+          y2={FLOOR_Y + 0.75}
+          stroke="var(--color-line-strong)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      )}
 
-      <g transform={`rotate(${rotation} ${pivotX} ${pivotY})`}>
-      {/* Hair bun */}
-      <circle cx={pose.rootX + 10} cy={headY - 10} r="7" fill="var(--color-sage-dark)" />
+      <g transform={`translate(0 ${lift})`}>
+      <g transform={`rotate(${rotation} ${pivot.x} ${pivot.y})`}>
+      {/* Hair bun, at the back of the head: she faces right. */}
+      <circle cx={pose.rootX - 10} cy={headY - 10} r="7" fill="var(--color-sage-dark)" />
       <ellipse cx={pose.rootX} cy={headY - 2} rx="15" ry="12" fill="var(--color-sage-dark)" />
 
       {/* Head */}
-      <circle cx={pose.rootX} cy={headY} r="13" fill="url(#cyclus-skin)" />
+      <circle cx={pose.rootX} cy={headY} r="13" fill={skin} />
+
+      {farArmBehind && farArm}
 
       {/* Torso / top */}
       <path
@@ -89,30 +108,13 @@ export function CyclusFigure({ pose, className }: { pose: FigurePose; className?
       />
 
       {/* Arms */}
-      <line
-        x1={lShoulder.x}
-        y1={lShoulder.y}
-        x2={lElbow.x}
-        y2={lElbow.y}
-        stroke="url(#cyclus-skin)"
-        strokeWidth="9"
-        strokeLinecap="round"
-      />
-      <line
-        x1={lElbow.x}
-        y1={lElbow.y}
-        x2={lHand.x}
-        y2={lHand.y}
-        stroke="url(#cyclus-skin)"
-        strokeWidth="8"
-        strokeLinecap="round"
-      />
+      {!farArmBehind && farArm}
       <line
         x1={rShoulder.x}
         y1={rShoulder.y}
         x2={rElbow.x}
         y2={rElbow.y}
-        stroke="url(#cyclus-skin)"
+        stroke={skin}
         strokeWidth="9"
         strokeLinecap="round"
       />
@@ -121,7 +123,7 @@ export function CyclusFigure({ pose, className }: { pose: FigurePose; className?
         y1={rElbow.y}
         x2={rHand.x}
         y2={rHand.y}
-        stroke="url(#cyclus-skin)"
+        stroke={skin}
         strokeWidth="8"
         strokeLinecap="round"
       />
@@ -173,6 +175,7 @@ export function CyclusFigure({ pose, className }: { pose: FigurePose; className?
         fill="var(--color-sage)"
         opacity="0.85"
       />
+      </g>
       </g>
     </svg>
   )

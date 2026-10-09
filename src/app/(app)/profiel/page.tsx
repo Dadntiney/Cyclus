@@ -1,88 +1,36 @@
-import {
-  UserRound,
-  CalendarHeart,
-  Layers,
-  Bell,
-  MessageCircle,
-  BarChart3,
-  Shield,
-  NotebookPen,
-  Heart,
-} from "lucide-react"
+import type { Metadata } from "next"
+import { format } from "date-fns"
+import { nl } from "date-fns/locale"
 import { getAuthedUser } from "@/lib/supabase/server"
 import { getProfileOverview } from "@/lib/data/profile"
+import { FEATURES } from "@/lib/navigation/features"
+import { Page, PageSections } from "@/components/layout/page"
+import { ListGroup, ListRow } from "@/components/ui/list-group"
 import { ProfileHero } from "@/components/profile/profile-hero"
-import { ThemeSection } from "@/components/profile/theme-section"
-import { ProfileHubGroup } from "@/components/profile/profile-hub-list"
+import { ThemeRow } from "@/components/profile/theme-row"
+import { LogoutRow } from "@/components/profile/logout-row"
 import type { ThemePreference } from "@/lib/actions/profile"
-import { LogoutForm } from "@/components/profile/logout-form"
+
+export const metadata: Metadata = { title: FEATURES.profiel.label }
 
 /**
- * Profiel hub — doors only.
- *
- * Job: “waar moet ik zijn?” in <5s. Content lives on subpages.
+ * Profiel — "ik en mijn instellingen" (ontwerpvisie §4.2, §7.10).
+ * Doors only, in three groups: what is hers (Van mij), how the app works
+ * for her (Instellingen) and the account itself. Content lives on the
+ * sub-pages; names and icons come from features.ts (link = h1 = back label).
  */
-const OVER_MIJ = [
-  {
-    href: "/profiel/gegevens",
-    icon: UserRound,
-    title: "Mijn gegevens",
-    description: "Naam, lichaam, doelen en aandachtspunten.",
-  },
-  {
-    href: "/profiel/cyclus",
-    icon: CalendarHeart,
-    title: "Mijn cyclus",
-    description: "Lengte, regelmaat, levensfase en overgang.",
-  },
-  {
-    href: "/profiel/gebruik",
-    icon: Layers,
-    title: "Wat ik gebruik",
-    description: "Beweging, voeding, mentale rust, slaap en medicatie.",
-  },
+const VAN_MIJ = [
+  { feature: FEATURES.dagboek, description: "Je notities, alleen voor jou" },
+  { feature: FEATURES.medicatie, description: "Je overzicht en herinneringen" },
+  { feature: FEATURES.voortgang, description: "Check-ins en mijlpalen" },
 ] as const
 
-const APP = [
-  {
-    href: "/favorieten",
-    icon: Heart,
-    title: "Favorieten",
-    description: "Recepten, oefeningen, tips, quotes en affirmaties.",
-  },
-  {
-    href: "/profiel/meldingen",
-    icon: Bell,
-    title: "Meldingen",
-    description: "Goedemorgen, herinneringen en pushberichten.",
-  },
-  {
-    href: "/profiel/buddy",
-    icon: MessageCircle,
-    title: "Buddy",
-    description: "Welke toon en hoe vaak je Buddy zich laat horen.",
-  },
-  {
-    href: "/dagboek",
-    icon: NotebookPen,
-    title: "Dagboek",
-    description: "Schrijf van je af — alleen jij ziet dit.",
-  },
-] as const
-
-const ACCOUNT = [
-  {
-    href: "/profiel/voortgang",
-    icon: BarChart3,
-    title: "Mijn voortgang",
-    description: "Check-ins, trainingen en mijlpalen.",
-  },
-  {
-    href: "/profiel/privacy",
-    icon: Shield,
-    title: "Privacy & gegevens",
-    description: "Exporteren of account verwijderen.",
-  },
+const INSTELLINGEN = [
+  { feature: FEATURES.gegevens, description: "Naam, lichaam en doelen" },
+  { feature: FEATURES.cyclusinstellingen, description: "Lengte, regelmaat, levensfase" },
+  { feature: FEATURES.gebruik, description: "Onderdelen aan of uit" },
+  { feature: FEATURES.meldingen, description: "Goedemorgen en herinneringen" },
+  { feature: FEATURES.buddyStijl, description: FEATURES.buddyStijl.description },
 ] as const
 
 export default async function ProfielPage() {
@@ -98,23 +46,52 @@ export default async function ProfielPage() {
       : "auto"
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-7">
+    <Page>
       <ProfileHero
         userId={user.id}
         name={profile.name}
         avatarUrl={profile.avatar_url}
-        memberSince={stats.memberSince}
+        memberSinceLabel={
+          stats.memberSince ? format(new Date(stats.memberSince), "MMMM yyyy", { locale: nl }) : null
+        }
       />
 
-      <ProfileHubGroup title="Over mij" items={OVER_MIJ} />
+      <PageSections>
+        <ListGroup label="Van mij">
+          {VAN_MIJ.map(({ feature, description }) => (
+            <ListRow
+              key={feature.href}
+              href={feature.href}
+              icon={feature.icon}
+              title={feature.label}
+              description={description}
+            />
+          ))}
+        </ListGroup>
 
-      <ProfileHubGroup title="In de app" items={APP} />
+        <ListGroup label="Instellingen">
+          {INSTELLINGEN.map(({ feature, description }) => (
+            <ListRow
+              key={feature.href}
+              href={feature.href}
+              icon={feature.icon}
+              title={feature.label}
+              description={description}
+            />
+          ))}
+          <ThemeRow initial={themePreference} />
+        </ListGroup>
 
-      <ThemeSection initial={themePreference} />
-
-      <ProfileHubGroup title="Account" items={ACCOUNT} />
-
-      <LogoutForm />
-    </div>
+        <ListGroup label="Account">
+          <ListRow
+            href={FEATURES.privacy.href}
+            icon={FEATURES.privacy.icon}
+            title={FEATURES.privacy.label}
+            description={FEATURES.privacy.description}
+          />
+          <LogoutRow />
+        </ListGroup>
+      </PageSections>
+    </Page>
   )
 }

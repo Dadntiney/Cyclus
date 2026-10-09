@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { ChevronRight, X } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { IconButton } from "@/components/ui/icon-button"
+import { iconProps } from "@/lib/ui/icon"
 
 const DISMISS_KEY = "gofiev:profile-complete-dismissed"
 
@@ -27,32 +30,31 @@ export function ProfileCompleteCard() {
   if (dismissed) return null
 
   return (
-    <div className="rounded-[1.25rem] bg-surface border border-line flex items-start gap-1 pr-1">
+    <Card padding="none" className="flex items-start gap-1 overflow-hidden pr-1">
       <Link
         href="/profiel/gegevens#aandachtspunten"
-        className="flex flex-1 items-center gap-3 px-4 py-3.5 min-w-0 touch-manipulation"
+        className="flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-l-card py-3 pl-4 touch-manipulation -outline-offset-2 transition-colors duration-fast ease-standard hover:bg-cream-soft/60 active:bg-cream-soft"
       >
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-ink">Maak je profiel compleet</span>
-          <span className="block text-xs text-ink-soft mt-0.5 leading-relaxed">
+          <span className="block text-base font-medium text-ink">Maak je profiel compleet</span>
+          <span className="block text-sm text-ink-soft">
             Klachten of beperkingen, zoals knie of rug? Dan passen beweging en uitleg beter bij jou.
           </span>
         </span>
-        <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
+        <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
       </Link>
-      <button
-        type="button"
-        aria-label="Niet nu"
+      <IconButton
+        label="Niet nu"
+        icon={X}
+        size="sm"
+        className="mt-1.5"
         onClick={() => {
           setDismissed(true)
           try {
             window.localStorage.setItem(DISMISS_KEY, "1")
           } catch {}
         }}
-        className="h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full text-ink-soft hover:bg-bg-subtle mt-1"
-      >
-        <X className="h-4 w-4" strokeWidth={2} aria-hidden />
-      </button>
-    </div>
+      />
+    </Card>
   )
 }

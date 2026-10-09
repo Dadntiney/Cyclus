@@ -1,18 +1,19 @@
-import { DropletMark } from "@/components/brand/droplet-mark"
-import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
+import { Page } from "@/components/layout/page"
 
+/**
+ * Inloggen, registreren en wachtwoord: one calm column. Each page puts the
+ * lockup in its PageHeader (`media`), so a back link sits above it, the
+ * same order as on the legal pages: back → lockup → h1 (PBA-12).
+ * On a phone it starts at the top (AUTH-4), so with the keyboard open the
+ * submit button and any error stay in view; from sm up it sits centred.
+ * The outer element is the page's <main> landmark (AUTH-5).
+ */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh flex flex-col items-center justify-center px-6 py-14 bg-cream">
-      <div className="w-full max-w-[22.5rem]">
-        <div className="text-center mb-10 flex flex-col items-center gap-3">
-          <DropletMark className="h-10 w-8" />
-          <span className="font-display text-3xl text-ink">
-            {APP_DISPLAY_NAME}
-          </span>
-        </div>
+    <main className="flex flex-1 flex-col safe-top safe-x safe-bottom sm:justify-center">
+      <Page className="max-w-md pt-6 pb-10 sm:py-14 lg:py-14">
         {children}
-      </div>
-    </div>
+      </Page>
+    </main>
   )
 }

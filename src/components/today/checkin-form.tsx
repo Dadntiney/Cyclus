@@ -2,11 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Check, ChevronDown, ChevronUp, Loader2, Plus } from "lucide-react"
+import { Check, ChevronDown, Loader2, Plus } from "lucide-react"
 import { RatingScale } from "@/components/ui/rating-scale"
 import { Chip } from "@/components/ui/chip"
+import { Card } from "@/components/ui/card"
+import { Collapse, Disclosure } from "@/components/ui/disclosure"
 import { Input, Textarea, Label } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Button, textActionClass } from "@/components/ui/button"
+import { StickyActionBar } from "@/components/ui/sticky-action-bar"
 import {
   SYMPTOM_OPTIONS,
   MENTAL_SYMPTOM_OPTIONS,
@@ -17,6 +20,9 @@ import { saveCheckin } from "@/lib/actions/checkin"
 import { parseSymptomDetails } from "@/lib/symptom-details"
 import type { CheckinInput, SymptomDetail } from "@/lib/validations/checkin"
 import type { Tables } from "@/types/database"
+import { triggerHaptic } from "@/lib/platform"
+import { prefersReducedMotion } from "@/lib/ui/focus"
+import { CHECK_ICON, ICON, iconProps } from "@/lib/ui/icon"
 import { cn } from "@/lib/utils"
 
 type Checkin = Tables<"daily_checkins">
@@ -32,40 +38,43 @@ type FormState = {
   needs: NonNullable<CheckinInput["needs"]>
 }
 
+type SaveStatus = "idle" | "saving" | "saved" | "error"
+
 const DEBOUNCE_MS = 700
 const SAVED_FLASH_MS = 2000
+/** Only announce "Bewaard" once she paused (besluit 24: never every "Opslaan…"). */
+const ANNOUNCE_SAVED_MS = 1000
+/** How long the inline "Dank je" stays after Klaar (ontwerpvisie §6.2). */
+const THANKS_MS = 2400
+const THANKS_TEXT = "Dank je, je dag is hierop afgestemd."
 
-function CheckinStatusHint({
-  status,
-  errorMsg,
-  className,
-}: {
-  status: "idle" | "saving" | "saved" | "error"
-  errorMsg: string | null
-  className?: string
-}) {
-  if (status === "idle") return null
+/**
+ * Save state in a fixed-width slot next to the title, so it never inserts
+ * a line (no layout shift). Visual only: the card's own status region
+ * announces "Bewaard" and errors use role=alert.
+ */
+function SaveStatusSlot({ status }: { status: SaveStatus }) {
   return (
     <span
+      aria-hidden
       className={cn(
-        "inline-flex items-center gap-1 text-xs font-medium shrink-0 animate-pop-in",
+        "inline-flex min-w-20 shrink-0 items-center justify-end gap-1 text-xs font-medium",
         status === "error" ? "text-danger" : "text-sage-dark",
-        className,
       )}
     >
       {status === "saving" && (
         <>
-          <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} />
+          <Loader2 {...iconProps("sm", "motion-safe:animate-spin")} />
           Opslaan…
         </>
       )}
       {status === "saved" && (
         <>
-          <Check className="h-3 w-3" strokeWidth={3} />
-          Opgeslagen
+          Bewaard
+          <Check {...CHECK_ICON} />
         </>
       )}
-      {status === "error" && (errorMsg ?? "Niet opgeslagen")}
+      {status === "error" && "Niet opgeslagen"}
     </span>
   )
 }
@@ -152,11 +161,15 @@ const SYMPTOM_GROUPS: { label: string; items: string[] }[] = [
 ]
 
 /**
- * Light daily check-in for Vandaag.
+ * Light daily check-in for Vandaag, on one fixed place (`#checkin`).
  *
- * Cold open: energy only. Details (mood, stress, klachten, behoefte, notes)
- * stay behind “Meer toevoegen”. Behoefte comes after klachten — first how
- * you feel, then what you need. Autosave like Profiel — no Opslaan button.
+ * - Empty: energy, mood and stress; sleep, klachten, behoefte and notes
+ *   stay behind "Meer toevoegen" (besluit 29). Behoefte comes after
+ *   klachten — first how you feel, then what you need.
+ * - Filled: the title row with "Aanpassen" and one summary line.
+ * - Editing: autosave like Profiel (no Opslaan); the save state sits in a
+ *   fixed slot next to the title; one "Klaar" stays in reach at the bottom.
+ *   Klaar folds the card up in place with a short "Dank je".
  */
 export function CheckinForm({
   initial,
@@ -194,10 +207,12 @@ export function CheckinForm({
 
   // 30 chips at once was too much for a daily check-in: show a short set
   // (common ones + whatever she already picked), the rest grouped behind
-  // "Alle klachten".
+  // "Alle klachten". The order stays put: a chip never jumps away from
+  // under her finger when she taps it; picks from the full list join at
+  // the end.
   const quickSymptoms = useMemo(() => {
     const picked = state.symptoms.filter((s) => symptomOptions.includes(s))
-    const quick = [...picked, ...QUICK_SYMPTOMS.filter((s) => symptomOptions.includes(s))]
+    const quick = [...QUICK_SYMPTOMS.filter((s) => symptomOptions.includes(s)), ...picked]
     return [...Array.from(new Set(quick)), "Anders", "Geen klachten"].filter(
       (s, i, all) => all.indexOf(s) === i,
     )
@@ -224,11 +239,18 @@ export function CheckinForm({
   const [showDetails, setShowDetails] = useState(false)
   const [customDraft, setCustomDraft] = useState("")
 
-  const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
+  const [status, setStatus] = useState<SaveStatus>("idle")
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  /** Text for the card's polite status region ("Bewaard", "Dank je…"). */
+  const [announcement, setAnnouncement] = useState("")
+  const [showThanks, setShowThanks] = useState(false)
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const announceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const thanksTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  /** Did the last finished save fail? Klaar then keeps the editor open. */
+  const lastSaveFailedRef = useRef(false)
   const savingRef = useRef(false)
   const dirtyRef = useRef(false)
   const mountedRef = useRef(true)
@@ -236,6 +258,18 @@ export function CheckinForm({
   /** Resolves when the current save chain (including dirty retries) finishes. */
   const saveChainRef = useRef<Promise<void>>(Promise.resolve())
   const performSaveRef = useRef<() => Promise<void>>(async () => {})
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const adjustRef = useRef<HTMLButtonElement>(null)
+  /** The control she used disappears when the card switches mode: move focus along. */
+  const pendingFocusRef = useRef<"heading" | "adjust" | null>(null)
+
+  useEffect(() => {
+    const target = pendingFocusRef.current
+    if (!target) return
+    pendingFocusRef.current = null
+    const el = target === "adjust" ? adjustRef.current : headingRef.current
+    el?.focus({ preventScroll: true })
+  })
 
   useEffect(() => {
     editingRef.current = editing
@@ -285,6 +319,8 @@ export function CheckinForm({
         void save()
       }
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current)
+      if (announceTimerRef.current) clearTimeout(announceTimerRef.current)
+      if (thanksTimerRef.current) clearTimeout(thanksTimerRef.current)
     }
   }, [])
 
@@ -304,22 +340,29 @@ export function CheckinForm({
       state.needs.length,
   )
 
-  const summaryChips = useMemo(() => {
-    const chips: string[] = []
-    if (state.energy != null) chips.push(`Energie ${state.energy}/5`)
-    if (state.mood != null) chips.push(`Stemming ${state.mood}/5`)
-    if (!sleepTrackingEnabled && state.sleep != null) chips.push(`Slaap ${state.sleep}/5`)
-    if (state.stress != null) chips.push(`Stress ${state.stress}/5`)
+  const summaryMode = hasAnyInput && !editing
+
+  // One line over the full width: "Energie 4 · Stemming 3 · Stress 2 ·
+  // Vermoeidheid, Opvliegers · +2".
+  const summaryLine = useMemo(() => {
+    const parts: string[] = []
+    if (state.energy != null) parts.push(`Energie ${state.energy}`)
+    if (state.mood != null) parts.push(`Stemming ${state.mood}`)
+    if (!sleepTrackingEnabled && state.sleep != null) parts.push(`Slaap ${state.sleep}`)
+    if (state.stress != null) parts.push(`Stress ${state.stress}`)
+    const extras: string[] = []
     for (const s of state.symptoms) {
       if (s === "Anders") continue
-      chips.push(symptomLabel(s))
+      extras.push(symptomLabel(s))
     }
     for (const need of state.needs) {
       const label = NEED_OPTIONS.find((o) => o.value === need)?.label
-      if (label) chips.push(label)
+      if (label) extras.push(label)
     }
-    if (state.notes.trim()) chips.push("Notitie")
-    return chips
+    if (state.notes.trim()) extras.push("Notitie")
+    if (extras.length > 0) parts.push(extras.slice(0, 2).join(", "))
+    if (extras.length > 2) parts.push(`+${extras.length - 2}`)
+    return parts.join(" · ")
   }, [state, sleepTrackingEnabled])
 
   async function performSave() {
@@ -331,7 +374,13 @@ export function CheckinForm({
     const run = (async () => {
       savingRef.current = true
       dirtyRef.current = false
-      if (mountedRef.current) setStatus("saving")
+      if (mountedRef.current) {
+        setStatus("saving")
+        // Don't read out every "Opslaan…" (besluit 24); clear the region so
+        // the next "Bewaard" is announced again.
+        if (announceTimerRef.current) clearTimeout(announceTimerRef.current)
+        setAnnouncement("")
+      }
 
       const snapshot = stateRef.current
       const newCustomSymptoms = snapshot.symptoms.filter(
@@ -363,6 +412,7 @@ export function CheckinForm({
       savingRef.current = false
 
       if (result?.error) {
+        lastSaveFailedRef.current = true
         if (mountedRef.current) {
           setErrorMsg(result.error)
           setStatus("error")
@@ -370,6 +420,7 @@ export function CheckinForm({
         return
       }
 
+      lastSaveFailedRef.current = false
       if (mountedRef.current) {
         setErrorMsg(null)
         setStatus("saved")
@@ -377,6 +428,11 @@ export function CheckinForm({
         savedTimerRef.current = setTimeout(() => {
           if (mountedRef.current) setStatus((current) => (current === "saved" ? "idle" : current))
         }, SAVED_FLASH_MS)
+        if (announceTimerRef.current) clearTimeout(announceTimerRef.current)
+        announceTimerRef.current = setTimeout(() => {
+          announceTimerRef.current = null
+          if (mountedRef.current) setAnnouncement("Bewaard")
+        }, ANNOUNCE_SAVED_MS)
       }
 
       if (dirtyRef.current) {
@@ -496,107 +552,130 @@ export function CheckinForm({
     setCustomDraft("")
   }
 
+  function startEditing() {
+    pendingFocusRef.current = "heading"
+    if (thanksTimerRef.current) clearTimeout(thanksTimerRef.current)
+    setShowThanks(false)
+    setShowDetails(true)
+    setEditingAndNotify(true)
+  }
+
+  /** The card folded up above the visible area: bring its top back in view. */
+  function revealCard() {
+    const card = document.getElementById("checkin")
+    if (!card) return
+    const offset = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0
+    if (card.getBoundingClientRect().top >= offset) return
+    card.scrollIntoView({ block: "start", behavior: prefersReducedMotion() ? "auto" : "smooth" })
+  }
+
   function finishEditing() {
     void (async () => {
       await flushSave()
+      if (!mountedRef.current) return
+      // Keep the editor (and the error with "Opnieuw") open when the last
+      // save failed, so nothing she entered looks saved when it isn't.
+      if (lastSaveFailedRef.current) return
+      if (announceTimerRef.current) clearTimeout(announceTimerRef.current)
+      // Klaar is about to disappear: if it (or nothing) has focus, hand
+      // focus to "Aanpassen" — but never pull it away from where she went.
+      const active = document.activeElement
+      if (!active || active === document.body || active.closest("[data-sticky-action-bar]")) {
+        pendingFocusRef.current = "adjust"
+      }
       setEditingAndNotify(false)
       setShowDetails(false)
+      setShowThanks(true)
+      setAnnouncement(THANKS_TEXT)
+      void triggerHaptic("light")
+      if (thanksTimerRef.current) clearTimeout(thanksTimerRef.current)
+      thanksTimerRef.current = setTimeout(() => {
+        thanksTimerRef.current = null
+        if (mountedRef.current) setShowThanks(false)
+      }, THANKS_MS)
+      revealCard()
       // Now safe to reshape roadmap / plan around the saved check-in.
       router.refresh()
     })()
   }
 
-  // ── Compact summary ────────────────────────────────────────────────────
-  if (hasAnyInput && !editing) {
-    const visible = summaryChips.slice(0, 4)
-    const overflow = summaryChips.length - visible.length
+  const symptomChip = (symptom: string) => (
+    <Chip key={symptom} selected={state.symptoms.includes(symptom)} onClick={() => toggleSymptom(symptom)}>
+      {symptomLabel(symptom)}
+    </Chip>
+  )
 
-    return (
-      <section
-        aria-labelledby="checkin-heading"
-        className="rounded-[1.25rem] bg-surface border border-line px-4 py-4"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <h2 id="checkin-heading" className="font-display text-lg text-ink leading-tight">
-                Hoe voel je je?
-              </h2>
-              <CheckinStatusHint status={status} errorMsg={errorMsg} />
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {visible.map((chip) => (
-                <span key={chip} className="text-xs text-ink bg-cream-soft rounded-full px-2.5 py-1">
-                  {chip}
-                </span>
-              ))}
-              {overflow > 0 && (
-                <span className="text-xs text-ink-soft px-1 py-1">+{overflow}</span>
-              )}
-            </div>
-          </div>
+  return (
+    <Card as="section" id="checkin" aria-labelledby="checkin-heading" className="scroll-mt-4">
+      <div className="-my-2 flex min-h-11 items-center justify-between gap-3">
+        <h2
+          ref={headingRef}
+          id="checkin-heading"
+          tabIndex={-1}
+          data-focus-target=""
+          className="type-card-title text-ink"
+        >
+          Hoe voel je je?
+        </h2>
+        {summaryMode ? (
           <button
             type="button"
-            onClick={() => {
-              setShowDetails(true)
-              setEditingAndNotify(true)
-            }}
-            className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-sage-dark min-h-11 px-1 touch-manipulation rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+            ref={adjustRef}
+            onClick={startEditing}
             aria-expanded={false}
+            aria-controls="checkin-editor"
+            className={textActionClass("-mr-1 shrink-0 px-1")}
           >
             Aanpassen
-            <ChevronDown className="h-4 w-4" strokeWidth={2} />
+            <ChevronDown {...ICON.sm} aria-hidden />
           </button>
-        </div>
-      </section>
-    )
-  }
-
-  // ── Light editor — same soft surface as Voor jou vandaag / slaap. ─
-  return (
-    <section
-      aria-labelledby="checkin-heading"
-      className="rounded-[1.25rem] bg-surface border border-line px-4 py-4"
-    >
-      <div className="flex items-start justify-between gap-3 mb-1">
-        <div className="flex items-center gap-2 flex-wrap min-w-0">
-          <h2 id="checkin-heading" className="font-display text-xl text-ink">
-            Hoe voel je je?
-          </h2>
-          <CheckinStatusHint status={status} errorMsg={errorMsg} />
-        </div>
-        {hasAnyInput && (
-          <button
-            type="button"
-            onClick={finishEditing}
-            className="shrink-0 inline-flex items-center gap-1 text-sm font-medium text-ink-soft min-h-11 px-1 touch-manipulation"
-            aria-expanded={true}
-          >
-            Klaar
-            <ChevronUp className="h-4 w-4" strokeWidth={2} />
-          </button>
+        ) : (
+          <SaveStatusSlot status={status} />
         )}
       </div>
-      <p className="text-ink-soft text-sm mb-3">Wordt vanzelf bewaard.</p>
 
-      <div className="flex flex-col gap-4">
-        <RatingScale
-          label="Energie"
-          value={state.energy}
-          onChange={(value) => applyUpdate((prev) => ({ ...prev, energy: value }))}
-          lowLabel="Laag"
-          highLabel="Hoog"
-        />
+      <Collapse open={summaryMode}>
+        <p className="pt-3 text-sm text-ink-soft">{summaryLine}</p>
+      </Collapse>
+      <Collapse open={summaryMode && showThanks}>
+        <p aria-hidden className="flex items-center gap-1.5 pt-2 text-sm font-medium text-sage-dark">
+          <Check {...CHECK_ICON} />
+          {THANKS_TEXT}
+        </p>
+      </Collapse>
 
-        {showDetails ? (
-          <>
-            <RatingScale
-              label="Stemming"
-              value={state.mood}
-              onChange={(value) => applyUpdate((prev) => ({ ...prev, mood: value }))}
-              lowLabel="Somber"
-              highLabel="Blij"
-            />
+      <Collapse open={!summaryMode} id="checkin-editor">
+        <div className="flex flex-col gap-4 pt-4">
+          <RatingScale
+            label="Energie"
+            value={state.energy}
+            onChange={(value) => applyUpdate((prev) => ({ ...prev, energy: value }))}
+            lowLabel="Laag"
+            highLabel="Hoog"
+          />
+          <RatingScale
+            label="Stemming"
+            value={state.mood}
+            onChange={(value) => applyUpdate((prev) => ({ ...prev, mood: value }))}
+            lowLabel="Somber"
+            highLabel="Blij"
+          />
+          <RatingScale
+            label="Stress"
+            value={state.stress}
+            onChange={(value) => applyUpdate((prev) => ({ ...prev, stress: value }))}
+            lowLabel="Rustig"
+            highLabel="Gespannen"
+          />
+
+          <Disclosure
+            label="Meer toevoegen"
+            openLabel="Minder tonen"
+            open={showDetails}
+            onOpenChange={setShowDetails}
+            className="-mt-2"
+            contentClassName="flex flex-col gap-4"
+          >
             {!sleepTrackingEnabled && (
               <RatingScale
                 label="Slaap"
@@ -606,64 +685,57 @@ export function CheckinForm({
                 highLabel="Goed"
               />
             )}
-            <RatingScale
-              label="Stress"
-              value={state.stress}
-              onChange={(value) => applyUpdate((prev) => ({ ...prev, stress: value }))}
-              lowLabel="Rustig"
-              highLabel="Gespannen"
-            />
 
-            <div>
-              <div className="flex items-baseline justify-between gap-3 mb-2">
-                <p className="text-sm font-medium text-ink">Klachten</p>
+            <div role="group" aria-labelledby="checkin-klachten">
+              <div className="-my-2 flex min-h-11 items-center justify-between gap-3">
+                <p id="checkin-klachten" className="text-sm font-medium text-ink">
+                  Klachten
+                </p>
                 <button
                   type="button"
                   onClick={() => setShowAllSymptoms((v) => !v)}
                   aria-expanded={showAllSymptoms}
-                  className="text-xs font-medium text-sage-dark min-h-11 px-1 -my-3 touch-manipulation"
+                  aria-controls="checkin-klachten-alle"
+                  className="inline-flex min-h-11 items-center gap-1.5 rounded-inset text-sm font-medium text-sage-dark touch-manipulation select-none"
                 >
                   {showAllSymptoms ? "Minder tonen" : `Alle klachten (${symptomOptions.length - 2})`}
+                  <ChevronDown
+                    {...iconProps(
+                      "sm",
+                      cn(
+                        "transition-transform duration-base ease-standard motion-reduce:transition-none",
+                        showAllSymptoms && "rotate-180",
+                      ),
+                    )}
+                    aria-hidden
+                  />
                 </button>
               </div>
-              {showAllSymptoms ? (
-                <div className="flex flex-col gap-3">
+              <Collapse open={!showAllSymptoms}>
+                <div className="flex flex-wrap gap-2 pt-4">{quickSymptoms.map(symptomChip)}</div>
+              </Collapse>
+              <Collapse open={showAllSymptoms} id="checkin-klachten-alle">
+                <div className="flex flex-col gap-4 pt-4">
                   {groupedSymptoms.map((group) => (
-                    <div key={group.label}>
-                      <p className="text-xs text-ink-soft mb-1.5">{group.label}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {group.items.map((symptom) => (
-                          <Chip
-                            key={symptom}
-                            selected={state.symptoms.includes(symptom)}
-                            onClick={() => toggleSymptom(symptom)}
-                          >
-                            {symptomLabel(symptom)}
-                          </Chip>
-                        ))}
-                      </div>
+                    <div key={group.label} className="flex flex-col gap-2">
+                      <p className="type-group-label text-ink-soft">{group.label}</p>
+                      <div className="flex flex-wrap gap-2">{group.items.map(symptomChip)}</div>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {quickSymptoms.map((symptom) => (
-                    <Chip
-                      key={symptom}
-                      selected={state.symptoms.includes(symptom)}
-                      onClick={() => toggleSymptom(symptom)}
-                    >
-                      {symptomLabel(symptom)}
-                    </Chip>
-                  ))}
-                </div>
-              )}
+              </Collapse>
 
               {state.symptoms.includes("Anders") && (
                 <div className="mt-3 flex gap-2">
                   <Input
                     value={customDraft}
                     onChange={(e) => setCustomDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault()
+                        addCustomSymptom()
+                      }
+                    }}
                     placeholder="Eigen klacht toevoegen"
                     maxLength={40}
                     aria-label="Eigen klacht"
@@ -673,75 +745,70 @@ export function CheckinForm({
                     variant="secondary"
                     onClick={addCustomSymptom}
                     disabled={!customDraft.trim()}
+                    className="shrink-0"
                   >
-                    <Plus className="h-4 w-4" strokeWidth={2} />
+                    <Plus {...ICON.sm} aria-hidden />
                     Toevoegen
                   </Button>
                 </div>
               )}
             </div>
 
-            <div>
-              <p className="text-sm font-medium text-ink mb-0.5">Waar heb je behoefte aan?</p>
-              <p className="text-xs text-ink-soft mb-2">Je mag er meer dan één kiezen.</p>
+            <div role="group" aria-labelledby="checkin-behoefte" aria-describedby="checkin-behoefte-hint">
+              <p id="checkin-behoefte" className="text-sm font-medium text-ink">
+                Waar heb je behoefte aan?
+              </p>
+              <p id="checkin-behoefte-hint" className="mb-2 text-xs text-ink-soft">
+                Je mag er meer dan één kiezen.
+              </p>
               <div className="flex flex-wrap gap-2">
-                {NEED_OPTIONS.map((opt) => (
-                  <Chip
-                    key={opt.value}
-                    selected={state.needs.includes(opt.value)}
-                    onClick={() => toggleNeed(opt.value)}
-                  >
-                    <opt.icon className="h-4 w-4 mr-1 inline" strokeWidth={1.75} aria-hidden />
-                    {opt.label}
-                  </Chip>
-                ))}
+                {NEED_OPTIONS.map((opt) => {
+                  const selected = state.needs.includes(opt.value)
+                  return (
+                    <Chip key={opt.value} selected={selected} onClick={() => toggleNeed(opt.value)}>
+                      {!selected && <opt.icon {...ICON.sm} aria-hidden />}
+                      {opt.label}
+                    </Chip>
+                  )
+                })}
               </div>
             </div>
 
             <div>
-              <Label htmlFor="notes">Notities (optioneel)</Label>
+              <Label htmlFor="checkin-notes">Notities (optioneel)</Label>
               <Textarea
-                id="notes"
+                id="checkin-notes"
                 rows={2}
                 placeholder="Wil je verder nog iets kwijt over vandaag?"
                 value={state.notes}
-                onChange={(e) =>
-                  applyUpdate((prev) => ({ ...prev, notes: e.target.value }), "debounced")
-                }
+                onChange={(e) => applyUpdate((prev) => ({ ...prev, notes: e.target.value }), "debounced")}
               />
             </div>
+          </Disclosure>
 
-            {hasAnyInput && (
-              <button
-                type="button"
-                onClick={finishEditing}
-                className="w-full inline-flex items-center justify-center gap-1.5 min-h-11 rounded-full bg-sage-soft text-sm font-semibold text-sage-darker touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
-              >
+          {editing && hasAnyInput && (
+            <StickyActionBar bleed={false} className="-mx-5 bg-surface px-5">
+              <Button variant="secondary" className="w-full" onClick={finishEditing}>
                 Klaar
-                <ChevronUp className="h-4 w-4" strokeWidth={2} />
-              </button>
-            )}
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setShowDetails(true)}
-            className="self-start inline-flex items-center gap-1.5 text-sm font-medium text-sage-dark rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage/50 min-h-11 py-1 touch-manipulation"
-          >
-            Meer toevoegen
-            <ChevronDown className="h-4 w-4" strokeWidth={2} />
-          </button>
-        )}
+              </Button>
+            </StickyActionBar>
+          )}
+        </div>
+      </Collapse>
 
-        {status === "error" && (
-          <p className="text-sm text-danger">
-            {errorMsg}{" "}
-            <button type="button" onClick={() => void performSave()} className="underline font-medium">
-              Opnieuw
-            </button>
-          </p>
-        )}
-      </div>
-    </section>
+      {status === "error" && (
+        <div role="alert" className="mt-3 flex flex-wrap items-center gap-x-3 text-sm text-danger">
+          <span>{errorMsg}</span>
+          <button type="button" onClick={() => void performSave()} className={textActionClass("text-danger")}>
+            Opnieuw
+          </button>
+        </div>
+      )}
+
+      {/* "Bewaard" (after a pause) and the thank-you after Klaar. */}
+      <p role="status" className="sr-only">
+        {announcement}
+      </p>
+    </Card>
   )
 }

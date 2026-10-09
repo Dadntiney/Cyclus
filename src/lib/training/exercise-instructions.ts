@@ -60,273 +60,192 @@ function normalizeName(name: string) {
   return name.trim().toLowerCase().replace(/\s+/g, " ")
 }
 
-const squatDown: FigurePose = {
-  ...STANDING,
-  rootY: 88,
-  torso: 12,
-  lHip: 55,
-  rHip: 55,
-  lKnee: 95,
-  rKnee: 95,
-  lShoulder: 40,
-  rShoulder: -40,
-  lElbow: 20,
-  rElbow: -20,
+type Limb = readonly [number, number]
+
+/**
+ * A pose in screen angles, whatever the body rotation: 0 = straight down,
+ * 90 = forward (to the right, where she faces), 180 = up, −90 = back.
+ * Arms are [upper arm, forearm], legs [thigh, shin]. Floor work is easier
+ * to read and check this way: "arms straight down to the mat" is [0, 0],
+ * also when the body is rotated. The body rotations below are solved so
+ * that both contact points (hands or elbows, and knees or toes) rest on
+ * the mat; figure-geometry.test.ts guards that.
+ */
+function onScreen(
+  body: { rootX?: number; bodyRotation: number; torso?: number },
+  limbs: { lArm: Limb; rArm: Limb; lLeg: Limb; rLeg: Limb },
+): FigurePose {
+  const r = body.bodyRotation
+  return {
+    rootX: body.rootX ?? 100,
+    rootY: 100,
+    bodyRotation: r,
+    torso: body.torso ?? 0,
+    lShoulder: limbs.lArm[0] + r,
+    lElbow: limbs.lArm[1] - limbs.lArm[0],
+    rShoulder: limbs.rArm[0] + r,
+    rElbow: limbs.rArm[1] - limbs.rArm[0],
+    lHip: limbs.lLeg[0] + r,
+    lKnee: limbs.lLeg[0] - limbs.lLeg[1],
+    rHip: limbs.rLeg[0] + r,
+    rKnee: limbs.rLeg[0] - limbs.rLeg[1],
+  }
 }
 
-const pushUpHigh: FigurePose = {
-  rootX: 100,
-  rootY: 55,
-  bodyRotation: 90,
-  torso: 0,
-  lShoulder: 170,
-  rShoulder: 170,
-  lElbow: 15,
-  rElbow: 15,
-  lHip: 0,
-  rHip: 0,
-  lKnee: 0,
-  rKnee: 0,
-}
+/** A straight limb at one screen angle. */
+const straight = (deg: number): Limb => [deg, deg]
 
-const pushUpLow: FigurePose = {
-  ...pushUpHigh,
-  rootY: 70,
-  lElbow: 80,
-  rElbow: 80,
-}
+// Squat: hips back (the upper body leans forward), thighs forward, shins
+// back to the feet, arms forward for balance. The feet stay where they were.
+const squatDown = onScreen(
+  { rootX: 88, bodyRotation: 0, torso: -18 },
+  { lArm: [80, 85], rArm: [75, 80], lLeg: [72, -22], rLeg: [68, -22] },
+)
 
-const rowPull: FigurePose = {
-  ...STANDING,
-  torso: 25,
-  rootY: 78,
-  lHip: 15,
-  rHip: 5,
-  lShoulder: -70,
-  rShoulder: -70,
-  lElbow: -100,
-  rElbow: -100,
-}
+// Row: hinge at the hips, knees soft; the arms hang, then the elbows pull back.
+const rowExtend = onScreen(
+  { bodyRotation: 0, torso: -22 },
+  { lArm: straight(8), rArm: straight(4), lLeg: [22, -6], rLeg: [18, -6] },
+)
+const rowPull = onScreen(
+  { bodyRotation: 0, torso: -22 },
+  { lArm: [-60, 10], rArm: [-64, 6], lLeg: [22, -6], rLeg: [18, -6] },
+)
 
-const rowExtend: FigurePose = {
-  ...STANDING,
-  torso: 25,
-  rootY: 78,
-  lHip: 15,
-  rHip: 5,
-  lShoulder: -20,
-  rShoulder: -20,
-  lElbow: -30,
-  rElbow: -30,
-}
+// Push-up, head to the right: hands under the shoulders, one line to the toes.
+const pushUpHigh = onScreen(
+  { bodyRotation: 56.7 },
+  { lArm: straight(0), rArm: straight(0), lLeg: straight(-56.7), rLeg: straight(-56.7) },
+)
+// Bottom: chest just above the mat, elbows back, hands and toes stay put.
+const pushUpLow = onScreen(
+  { rootX: 115, bodyRotation: 85.8 },
+  { lArm: [-74.6, 26.3], rArm: [-140, 0], lLeg: straight(-85.8), rLeg: straight(-85.8) },
+)
 
-const bridgeUp: FigurePose = {
-  rootX: 100,
-  rootY: 100,
-  bodyRotation: -90,
-  torso: -20,
-  lShoulder: 160,
-  rShoulder: 160,
-  lElbow: 0,
-  rElbow: 0,
-  lHip: -35,
-  rHip: -35,
-  lKnee: 70,
-  rKnee: 70,
-}
+// Forearm plank: elbows under the shoulders, forearms forward on the mat.
+const plankFor = (rootX: number, rotation: number) =>
+  onScreen(
+    { rootX, bodyRotation: rotation },
+    { lArm: [0, 90], rArm: [0, 90], lLeg: straight(-rotation), rLeg: straight(-rotation) },
+  )
+const plankPose = plankFor(100, 71.6)
+const plankBrace = plankFor(99, 70.1)
 
-const bridgeDown: FigurePose = {
-  ...bridgeUp,
-  torso: 5,
-  lHip: -5,
-  rHip: -5,
-}
+// Side plank, seen from the front: the lower forearm on the mat, the top
+// arm to the ceiling, then the hips lift into one line.
+const sidePlankLow = onScreen(
+  { bodyRotation: 79.4, torso: 8 },
+  { lArm: straight(150), rArm: [0, 90], lLeg: straight(-71.4), rLeg: straight(-71.4) },
+)
+const sidePlankUp = onScreen(
+  { bodyRotation: 71.6 },
+  { lArm: straight(180), rArm: [0, 90], lLeg: straight(-71.6), rLeg: straight(-71.6) },
+)
 
-const plankPose: FigurePose = {
-  rootX: 100,
-  rootY: 60,
-  bodyRotation: 90,
-  torso: 0,
-  lShoulder: 175,
-  rShoulder: 175,
-  lElbow: 90,
-  rElbow: 90,
-  lHip: 0,
-  rHip: 0,
-  lKnee: 0,
-  rKnee: 0,
-}
+// Glute bridge, lying on the back (head left): knees up, feet flat; then
+// the hips lift while shoulders and feet stay on the mat.
+const bridgeDown = onScreen(
+  { bodyRotation: -90 },
+  { lArm: straight(90), rArm: straight(90), lLeg: [141.9, 10], rLeg: [146.9, 12] },
+)
+const bridgeUp = onScreen(
+  { rootX: 87, bodyRotation: -90, torso: 34 },
+  { lArm: straight(90), rArm: straight(90), lLeg: [95.3, 4], rLeg: [100.3, 6] },
+)
 
-const sidePlank: FigurePose = {
-  rootX: 100,
-  rootY: 95,
-  bodyRotation: 90,
-  torso: 0,
-  lShoulder: 0,
-  rShoulder: 160,
-  lElbow: 0,
-  rElbow: 90,
-  lHip: 5,
-  rHip: 5,
-  lKnee: 0,
-  rKnee: 0,
-}
+// The Hundred: head and shoulders curled up, legs long at 45°, arms long
+// above the mat, pumping.
+const hundredFor = (arm: number) =>
+  onScreen(
+    { bodyRotation: -80 },
+    { lArm: straight(arm), rArm: straight(arm + 4), lLeg: straight(130), rLeg: straight(134) },
+  )
+const hundredPose = hundredFor(96)
+const hundredPump = hundredFor(108)
 
-const hundredPose: FigurePose = {
-  rootX: 100,
-  rootY: 110,
-  bodyRotation: -90,
-  torso: 20,
-  lShoulder: 40,
-  rShoulder: -40,
-  lElbow: 10,
-  rElbow: -10,
-  lHip: -35,
-  rHip: -35,
-  lKnee: 5,
-  rKnee: 5,
-}
+// Roll-up: lying long with the arms to the ceiling, curling up, then
+// sitting tall and reaching forward.
+const lyingArmsUp = onScreen(
+  { bodyRotation: -90 },
+  { lArm: straight(180), rArm: straight(180), lLeg: straight(90), rLeg: straight(90) },
+)
+const rollUpMid = onScreen(
+  { rootX: 103, bodyRotation: -40 },
+  { lArm: straight(80), rArm: straight(84), lLeg: straight(90), rLeg: straight(90) },
+)
+const rollUpSit = onScreen(
+  { rootX: 93, bodyRotation: 20 },
+  { lArm: straight(95), rArm: straight(98), lLeg: straight(90), rLeg: straight(90) },
+)
 
-const hundredPump: FigurePose = {
-  ...hundredPose,
-  lShoulder: 55,
-  rShoulder: -55,
-}
+// Leg circles: lying, one leg to the ceiling, drawing small circles.
+const legCircleFor = (leg: number) =>
+  onScreen(
+    { bodyRotation: -90 },
+    { lArm: straight(90), rArm: straight(90), lLeg: straight(90), rLeg: straight(leg) },
+  )
+const legCircle = legCircleFor(175)
+const legCircle2 = legCircleFor(150)
 
-const rollUpMid: FigurePose = {
-  rootX: 100,
-  rootY: 130,
-  bodyRotation: 0,
-  torso: 45,
-  lShoulder: 70,
-  rShoulder: -70,
-  lElbow: 20,
-  rElbow: -20,
-  lHip: 20,
-  rHip: 20,
-  lKnee: 10,
-  rKnee: 10,
-}
+// On hands and knees (tabletop). Cat: back rounded, head down. Cow: chest
+// low, head up. Hands and knees stay on the mat.
+const tabletop = onScreen(
+  { bodyRotation: 72.2 },
+  { lArm: [35, 45], rArm: [35, 45], lLeg: [0, -90], rLeg: [0, -90] },
+)
+const catPose = onScreen(
+  { bodyRotation: 78.2, torso: 12 },
+  { lArm: [29, 39], rArm: [29, 39], lLeg: [0, -90], rLeg: [0, -90] },
+)
+const cowPose = onScreen(
+  { rootX: 104, bodyRotation: 66.2, torso: -10 },
+  { lArm: [35, 40], rArm: [35, 40], lLeg: [0, -90], rLeg: [0, -90] },
+)
 
-const rollUpSit: FigurePose = {
-  rootX: 100,
-  rootY: 120,
-  bodyRotation: 0,
-  torso: 10,
-  lShoulder: 90,
-  rShoulder: -90,
-  lElbow: 10,
-  rElbow: -10,
-  lHip: 70,
-  rHip: 70,
-  lKnee: 20,
-  rKnee: 20,
-}
+// Downward dog: hips high, arms in line with the back, legs long.
+const downDog = onScreen(
+  { rootX: 105, bodyRotation: 121.3 },
+  { lArm: straight(58.7), rArm: straight(58.7), lLeg: straight(-35), rLeg: straight(-31) },
+)
+// Pedalling: one knee soft, the other heel towards the mat.
+const downDogPedal = onScreen(
+  { rootX: 105, bodyRotation: 121.3 },
+  { lArm: straight(58.7), rArm: straight(58.7), lLeg: [-28, -40], rLeg: [-24, -36] },
+)
 
-const lyingFlat: FigurePose = {
-  rootX: 100,
-  rootY: 110,
-  bodyRotation: -90,
-  torso: 0,
-  lShoulder: 0,
-  rShoulder: 0,
-  lElbow: 0,
-  rElbow: 0,
-  lHip: 0,
-  rHip: 0,
-  lKnee: 0,
-  rKnee: 0,
-}
+// Child's pose: from tabletop the hips sink to the heels, chest on the
+// thighs, arms long forward on the mat. The knees stay where they were.
+const childPose = onScreen(
+  { rootX: 69, bodyRotation: 99.8 },
+  { lArm: straight(90), rArm: straight(90), lLeg: [67, -90], rLeg: [70, -90] },
+)
 
-const legCircle: FigurePose = {
-  ...lyingFlat,
-  rootY: 110,
-  rHip: -70,
-  rKnee: 10,
-  lHip: 10,
-}
+// Twist lying: knees drawn in, then lowered while the shoulders stay down.
+const kneesIn = onScreen(
+  { bodyRotation: -90 },
+  { lArm: straight(-90), rArm: straight(-90), lLeg: [150, 70], rLeg: [154, 74] },
+)
+const twistPose = onScreen(
+  { bodyRotation: -90 },
+  { lArm: straight(-90), rArm: straight(-90), lLeg: [118, 56], rLeg: [122, 60] },
+)
 
-const legCircle2: FigurePose = {
-  ...lyingFlat,
-  rootY: 110,
-  rHip: -40,
-  rKnee: 10,
-  lHip: 10,
-  rShoulder: 20,
-}
-
-const catPose: FigurePose = {
-  rootX: 100,
-  rootY: 120,
-  bodyRotation: 0,
-  torso: 25,
-  lShoulder: 150,
-  rShoulder: 150,
-  lElbow: 20,
-  rElbow: 20,
-  lHip: -30,
-  rHip: -30,
-  lKnee: 80,
-  rKnee: 80,
-}
-
-const cowPose: FigurePose = {
-  ...catPose,
-  torso: -20,
-  rootY: 115,
-}
-
-const downDog: FigurePose = {
-  rootX: 100,
-  rootY: 100,
-  bodyRotation: 0,
-  torso: 45,
-  lShoulder: 160,
-  rShoulder: 160,
-  lElbow: 10,
-  rElbow: 10,
-  lHip: 50,
-  rHip: 50,
-  lKnee: 10,
-  rKnee: 10,
-}
-
-const childPose: FigurePose = {
-  rootX: 100,
-  rootY: 140,
-  bodyRotation: 0,
-  torso: 50,
-  lShoulder: 160,
-  rShoulder: 160,
-  lElbow: 10,
-  rElbow: 10,
-  lHip: 70,
-  rHip: 70,
-  lKnee: 110,
-  rKnee: 110,
-}
-
-const twistPose: FigurePose = {
-  rootX: 100,
-  rootY: 110,
-  bodyRotation: -90,
-  torso: 15,
-  lShoulder: 40,
-  rShoulder: -20,
-  lElbow: 10,
-  rElbow: 10,
-  lHip: 40,
-  rHip: -10,
-  lKnee: 70,
-  rKnee: 70,
-}
-
+// Seen from the front: one leg swings out to the side, then the other.
 const hipOpen: FigurePose = {
   ...STANDING,
-  lHip: 45,
-  rHip: -10,
-  lKnee: 20,
-  rKnee: 5,
+  lHip: -40,
+  lKnee: -15,
+  rHip: -4,
+  rKnee: -2,
+}
+
+const hipOpenOther: FigurePose = {
+  ...STANDING,
+  lHip: 4,
+  lKnee: 2,
+  rHip: 40,
+  rKnee: 15,
 }
 
 const shoulderCircles: FigurePose = {
@@ -345,11 +264,11 @@ const shoulderCircles2: FigurePose = {
   rElbow: -30,
 }
 
+// One foot lifted just off the floor, knee soft.
 const anklePose: FigurePose = {
   ...STANDING,
-  rootY: 78,
-  lHip: 20,
-  lKnee: 40,
+  lHip: -12,
+  lKnee: 30,
   rHip: -5,
 }
 
@@ -441,7 +360,7 @@ export const EXERCISE_INSTRUCTIONS: Record<string, ExerciseInstruction> = {
     narration:
       "Steun op je onderarmen en tenen of knieën. Elleboog onder schouder. Span je buik, houd een rechte lijn van hoofd tot hielen, en adem rustig door.",
     loopMs: 3200,
-    poses: [plankPose, { ...plankPose, rootY: 58 }, plankPose],
+    poses: [plankPose, plankBrace, plankPose],
     cues: [
       { at: 0, text: "Elleboog onder schouder" },
       { at: 1.1, text: "Buik aan, rechte lijn" },
@@ -455,11 +374,7 @@ export const EXERCISE_INSTRUCTIONS: Record<string, ExerciseInstruction> = {
     narration:
       "Lig op je zij en steun op je onderarm. Til je heupen op tot een rechte lijn van hoofd tot voeten. Houd je schouders gestapeld en wissel daarna van kant.",
     loopMs: 3000,
-    poses: [
-      { ...sidePlank, rootY: 110 },
-      sidePlank,
-      { ...sidePlank, rootY: 110 },
-    ],
+    poses: [sidePlankLow, sidePlankUp, sidePlankLow],
     cues: [
       { at: 0, text: "Steun op je onderarm" },
       { at: 1, text: "Heupen omhoog, rechte lijn" },
@@ -487,7 +402,7 @@ export const EXERCISE_INSTRUCTIONS: Record<string, ExerciseInstruction> = {
     narration:
       "Lig languit, armen naar voren. Rol wervel voor wervel omhoog naar zit. Rol daarna net zo gecontroleerd weer terug. Geen rukken — langzaam en soepel.",
     loopMs: 3600,
-    poses: [lyingFlat, rollUpMid, rollUpSit, rollUpMid, lyingFlat],
+    poses: [lyingArmsUp, rollUpMid, rollUpSit, rollUpMid, lyingArmsUp],
     cues: [
       { at: 0, text: "Start liggend, armen vooruit" },
       { at: 1.1, text: "Rol wervel voor wervel omhoog" },
@@ -529,12 +444,7 @@ export const EXERCISE_INSTRUCTIONS: Record<string, ExerciseInstruction> = {
     narration:
       "Vanuit handen en voeten duw je heupen omhoog en achteren. Armen lang, schouders weg van je oren. Laat je hielen richting de mat zakken — ze hoeven de grond niet te raken.",
     loopMs: 3200,
-    poses: [
-      catPose,
-      downDog,
-      { ...downDog, rootY: 98, lKnee: 18, rKnee: 18 },
-      downDog,
-    ],
+    poses: [tabletop, downDog, downDogPedal, downDog],
     cues: [
       { at: 0, text: "Heupen omhoog en achter" },
       { at: 1.1, text: "Armen lang, schouders laag" },
@@ -548,7 +458,7 @@ export const EXERCISE_INSTRUCTIONS: Record<string, ExerciseInstruction> = {
     narration:
       "Kniel en zak met je billen richting je hielen. Laat je bovenlichaam voorover komen en strek je armen naar voren of langs je lichaam. Adem rustig en gun jezelf deze pauze.",
     loopMs: 3400,
-    poses: [catPose, childPose, childPose, catPose],
+    poses: [tabletop, childPose, childPose, tabletop],
     cues: [
       { at: 0, text: "Billen naar je hielen" },
       { at: 1.2, text: "Voorover, armen lang" },
@@ -562,7 +472,7 @@ export const EXERCISE_INSTRUCTIONS: Record<string, ExerciseInstruction> = {
     narration:
       "Lig op je rug, trek je knieën in en laat ze zacht naar één kant zakken. Schouders blijven op de mat. Adem een paar keer en wissel daarna van kant.",
     loopMs: 3200,
-    poses: [lyingFlat, twistPose, lyingFlat],
+    poses: [kneesIn, twistPose, kneesIn],
     cues: [
       { at: 0, text: "Knieën trekken in" },
       { at: 1, text: "Zacht naar één kant" },
@@ -576,7 +486,7 @@ export const EXERCISE_INSTRUCTIONS: Record<string, ExerciseInstruction> = {
     narration:
       "Sta stevig en maak rustige cirkels met je heupen. Groot en langzaam, beide richtingen. Blijf ademen en forceer niets.",
     loopMs: 2600,
-    poses: [STANDING, hipOpen, STANDING, { ...hipOpen, lHip: -10, rHip: 45 }],
+    poses: [STANDING, hipOpen, STANDING, hipOpenOther],
     cues: [
       { at: 0, text: "Rustige heupcirkels" },
       { at: 1.2, text: "Beide richtingen" },

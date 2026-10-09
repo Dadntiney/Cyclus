@@ -1,20 +1,43 @@
 import Link from "next/link"
-import { ChevronRight, ShoppingCart } from "lucide-react"
+import type { ReactNode } from "react"
+import { Brain, ChevronRight, Leaf, ShoppingCart } from "lucide-react"
 import { TodayMovementCard, type TodayWorkoutOption } from "@/components/today/today-movement-card"
 import {
   TodayMealsRows,
   type TodayMealAlternative,
 } from "@/components/today/today-meals-rows"
-import { PhaseSnackTipCard } from "@/components/cycle/phase-snack-tip-card"
-import { PhaseHydrationTipCard } from "@/components/cycle/phase-hydration-tip-card"
+import { Card } from "@/components/ui/card"
+import { SectionAction, SectionHeader } from "@/components/ui/section-header"
+import { FEATURES } from "@/lib/navigation/features"
 import type { Recommendation } from "@/lib/recommendations/engine"
 import type { MentalWellbeingSuggestion } from "@/lib/mental-wellbeing/suggestions"
 import type { MealSlotKey } from "@/lib/client/week-plan-storage"
+import { ICON, iconProps } from "@/lib/ui/icon"
+import { cn } from "@/lib/utils"
+
+/** The generic Mentale rust entry — not a concrete next step for today. */
+const GENERIC_RECOVERY_HREF = "/mentale-rust"
+const GENTLE_TYPES = new Set(["wandelen", "mobiliteit"])
+
+const rowLinkClass =
+  "flex min-h-14 items-center gap-3 px-4 py-3 touch-manipulation -outline-offset-2 " +
+  "transition-colors duration-fast ease-standard hover:bg-cream-soft/60 active:bg-cream-soft"
+
+function RowTile({ children }: { children: ReactNode }) {
+  return (
+    <span
+      aria-hidden
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-inset bg-sage-soft text-sage-dark"
+    >
+      {children}
+    </span>
+  )
+}
 
 /**
- * Vandaag plan: movement → meals → groceries (right under the last dish) →
- * mind/recovery. Snack tip follows outside as a light food tip — then the
- * page continues with check-in / sleep / day close.
+ * "Voor jou vandaag": one day-voice line, then one plan card —
+ * beweging → ontbijt, lunch, diner → "Boodschappen voor vandaag" → voor je
+ * hoofd / even voor jezelf. Parts she switched off disappear quietly.
  */
 export function TodayCards({
   recommendation,
@@ -26,7 +49,10 @@ export function TodayCards({
   completedWorkout,
   mentalSuggestion = null,
   focusLine = null,
+  focusAction = null,
+  hideWorkoutReason = false,
   showRecovery = true,
+  restDay = false,
   recipeImageById = {},
 }: {
   recommendation: Recommendation
@@ -37,147 +63,158 @@ export function TodayCards({
   mealAlternativesBySlot?: Partial<Record<MealSlotKey, TodayMealAlternative[]>>
   completedWorkout: { workoutId: string; title: string; duration: number } | null
   mentalSuggestion?: MentalWellbeingSuggestion | null
+  /** The day voice: check-in focus, else roadmap "why", else body recognition. */
   focusLine?: string | null
+  /** E.g. a favourite heart when the day voice comes from the roadmap. */
+  focusAction?: ReactNode
+  /** The day voice already explains today (from the check-in): skip the workout's reason. */
+  hideWorkoutReason?: boolean
   showRecovery?: boolean
+  /** A planned rest day: the movement row shows "Rustdag", as on Deze week. */
+  restDay?: boolean
   recipeImageById?: Record<string, string | null>
 }) {
   const { training, nutrition, recovery, movementEnabled, nutritionEnabled } = recommendation
 
   const meals = nutrition.meals ?? []
   const showMeals = nutritionEnabled && meals.length > 0
-  const showSnack = nutritionEnabled && Boolean(nutrition.snackTip)
-  const showHydration = Boolean(nutrition.hydrationTip)
   const showMental = Boolean(mentalSuggestion)
-  const showRecoveryRow = showRecovery && !showMental && Boolean(recovery.title)
+  const workout = training.workout
+  const gentleWorkout =
+    movementEnabled &&
+    !completedWorkout &&
+    Boolean(workout && (workout.difficulty === "makkelijk" || GENTLE_TYPES.has(workout.type)))
+  // "Even voor jezelf" only when it adds something: not next to a mind
+  // exercise, and not next to a walk or mobility session that already is
+  // the calm moment.
+  const showRecoveryRow = showRecovery && !showMental && Boolean(recovery.title) && !gentleWorkout
+  const recoveryHref = recovery.href && recovery.href !== GENERIC_RECOVERY_HREF ? recovery.href : null
   const showGrocery = nutritionEnabled
-  const hasSecondary = showMeals || showGrocery || showMental || showRecoveryRow
+  const showWeekLink = movementEnabled || nutritionEnabled
+  const hasPlan = movementEnabled || showMeals || showGrocery || showMental || showRecoveryRow
+
+  // The day voice is said only here (Vandaag hides the roadmap's own why),
+  // so keep the section for it even when nothing in the plan is switched on.
+  if (!hasPlan && !focusLine) return null
 
   return (
     <section aria-labelledby="voor-vandaag-heading">
-      <h2 id="voor-vandaag-heading" className="font-display text-xl text-ink">
-        Voor jou vandaag
-      </h2>
-      {focusLine ? (
-        <p className="text-sm text-ink-soft mt-1 mb-3 leading-relaxed">{focusLine}</p>
-      ) : (
-        <div className="mb-3" aria-hidden />
+      <SectionHeader
+        id="voor-vandaag-heading"
+        title="Voor jou vandaag"
+        action={
+          showWeekLink ? (
+            <SectionAction href={FEATURES.week.href}>{FEATURES.week.linkLabel}</SectionAction>
+          ) : undefined
+        }
+      />
+      {focusLine && (
+        <div className={cn("-mt-1 flex items-start gap-1", hasPlan && "mb-3")}>
+          <p className="min-w-0 flex-1 text-sm text-ink-soft">{focusLine}</p>
+          {focusAction && <span className="-my-2.5 shrink-0">{focusAction}</span>}
+        </div>
       )}
 
-      <div className="rounded-[1.25rem] bg-surface border border-line overflow-hidden">
-        {movementEnabled ? (
-          <TodayMovementCard
-            userId={userId}
-            date={date}
-            weekStartISO={weekStartISO}
-            suggested={training.workout}
-            reason={training.reason}
-            alternatives={workoutAlternatives}
-            completed={completedWorkout}
-            emphasis="primary"
-            embedded
-          />
-        ) : (
-          <div className="px-4 py-4">
-            <p className="text-sm text-ink-soft">
-              Beweging staat uit. Je kunt dit weer aanzetten in je profiel.
-            </p>
-          </div>
-        )}
-
-        {hasSecondary && (
-          <div className="border-t border-line divide-y divide-line">
-            {showMeals && (
-              <TodayMealsRows
+      {hasPlan && (
+        <Card padding="none" className="divide-y divide-line overflow-hidden">
+          {movementEnabled && (
+            <div id="beweging" className="scroll-mt-4">
+              <TodayMovementCard
                 userId={userId}
                 date={date}
                 weekStartISO={weekStartISO}
-                recipeImageById={recipeImageById}
-                alternativesBySlot={mealAlternativesBySlot}
-                meals={meals.map((m) => ({
-                  slot: m.slot,
-                  label: m.label,
-                  recipe: m.recipe
-                    ? {
-                        id: m.recipe.id,
-                        title: m.recipe.title,
-                        image_url: m.recipe.image_url,
-                        preparation_time: m.recipe.preparation_time,
-                      }
-                    : null,
-                }))}
+                suggested={training.workout}
+                reason={training.reason}
+                alternatives={workoutAlternatives}
+                completed={completedWorkout}
+                hideReason={hideWorkoutReason}
+                emphasis="primary"
+                embedded
+                restDay={restDay}
               />
-            )}
+            </div>
+          )}
 
-            {showGrocery && (
-              <div className="flex items-center justify-between gap-3 px-4 py-2.5 min-h-11">
-                <Link
-                  href="/deze-week/boodschappen"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-ink touch-manipulation min-h-11"
-                >
-                  <ShoppingCart className="h-4 w-4 text-sage-dark shrink-0" strokeWidth={1.75} />
-                  Boodschappen
-                </Link>
-                <Link
-                  href="/deze-week/boodschappen?modus=dag"
-                  className="text-xs font-medium text-sage-dark touch-manipulation min-h-11 inline-flex items-center shrink-0"
-                >
-                  Voor vandaag
-                </Link>
-              </div>
-            )}
+          {showMeals && (
+            <TodayMealsRows
+              userId={userId}
+              date={date}
+              weekStartISO={weekStartISO}
+              recipeImageById={recipeImageById}
+              alternativesBySlot={mealAlternativesBySlot}
+              meals={meals.map((m) => ({
+                slot: m.slot,
+                label: m.label,
+                recipe: m.recipe
+                  ? {
+                      id: m.recipe.id,
+                      title: m.recipe.title,
+                      image_url: m.recipe.image_url,
+                      preparation_time: m.recipe.preparation_time,
+                    }
+                  : null,
+              }))}
+            />
+          )}
 
-            {showMental && mentalSuggestion && (
-              <Link
-                href={`/mentale-rust/${mentalSuggestion.exercise.id}`}
-                className="block px-4 py-3 touch-manipulation motion-safe:active:bg-cream-soft transition-colors"
-              >
-                <p className="text-xs font-medium text-info mb-0.5">Voor je hoofd</p>
-                <p className="text-sm text-ink leading-snug">{mentalSuggestion.text}</p>
-                <p className="text-xs font-medium text-info mt-1 inline-flex items-center gap-0.5">
-                  {mentalSuggestion.exercise.title} · {mentalSuggestion.exercise.durationMinutes} min
-                  <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
-                </p>
-              </Link>
-            )}
+          {showGrocery && (
+            <Link href={`${FEATURES.boodschappen.href}?modus=dag`} className={rowLinkClass}>
+              <RowTile>
+                <ShoppingCart {...ICON.sm} />
+              </RowTile>
+              <span className="min-w-0 flex-1 text-base font-medium text-ink">Boodschappen voor vandaag</span>
+              <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
+            </Link>
+          )}
 
-            {showRecoveryRow &&
-              (recovery.href ? (
-                <Link
-                  href={recovery.href}
-                  className="flex items-center justify-between gap-3 px-4 py-3 touch-manipulation motion-safe:active:bg-cream-soft transition-colors"
-                >
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium text-sage-dark">Even voor jezelf</p>
-                    <p className="text-sm font-medium text-ink truncate">
-                      {recovery.title}
-                      <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
-                    </p>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={2} aria-hidden />
-                </Link>
-              ) : (
-                <div className="px-4 py-3">
-                  <p className="text-xs font-medium text-sage-dark">Even voor jezelf</p>
-                  <p className="text-sm font-medium text-ink">
+          {showMental && mentalSuggestion && (
+            <Link href={`/mentale-rust/${mentalSuggestion.exercise.id}`} className={rowLinkClass}>
+              <RowTile>
+                <Brain {...ICON.sm} />
+              </RowTile>
+              <span className="min-w-0 flex-1">
+                <span className="block type-eyebrow text-sage-dark">Voor je hoofd</span>
+                <span className="block text-base font-medium text-ink">
+                  {mentalSuggestion.exercise.title}
+                  <span className="font-normal text-ink-soft"> · {mentalSuggestion.exercise.durationMinutes} min</span>
+                </span>
+                <span className="block text-sm text-ink-soft">{mentalSuggestion.text}</span>
+              </span>
+              <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
+            </Link>
+          )}
+
+          {showRecoveryRow &&
+            (recoveryHref ? (
+              <Link href={recoveryHref} className={rowLinkClass}>
+                <RowTile>
+                  <Leaf {...ICON.sm} />
+                </RowTile>
+                <span className="min-w-0 flex-1">
+                  <span className="block type-eyebrow text-sage-dark">Even voor jezelf</span>
+                  <span className="block text-base font-medium text-ink">
                     {recovery.title}
                     <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
-                  </p>
-                </div>
-              ))}
-          </div>
-        )}
-      </div>
-
-      {showSnack && nutrition.snackTip && (
-        <div className="mt-3">
-          <PhaseSnackTipCard tip={nutrition.snackTip} compact />
-        </div>
-      )}
-
-      {showHydration && nutrition.hydrationTip && (
-        <div className={showSnack ? "mt-2.5" : "mt-3"}>
-          <PhaseHydrationTipCard tip={nutrition.hydrationTip} compact />
-        </div>
+                  </span>
+                </span>
+                <ChevronRight {...iconProps("sm", "text-ink-soft")} aria-hidden />
+              </Link>
+            ) : (
+              <div className="flex min-h-14 items-center gap-3 px-4 py-3">
+                <RowTile>
+                  <Leaf {...ICON.sm} />
+                </RowTile>
+                <span className="min-w-0 flex-1">
+                  <span className="block type-eyebrow text-sage-dark">Even voor jezelf</span>
+                  <span className="block text-base font-medium text-ink">
+                    {recovery.title}
+                    <span className="font-normal text-ink-soft"> · {recovery.duration} min</span>
+                  </span>
+                  <span className="block text-sm text-ink-soft">{recovery.description}</span>
+                </span>
+              </div>
+            ))}
+        </Card>
       )}
     </section>
   )

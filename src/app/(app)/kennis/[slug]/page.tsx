@@ -1,7 +1,25 @@
-import Link from "next/link"
+import type { Metadata } from "next"
+import { cache } from "react"
 import { notFound } from "next/navigation"
 import { getKnowledgeArticle, listKnowledgeArticles } from "@/lib/data/knowledge"
-import { BackButton } from "@/components/ui/back-button"
+import { FEATURES, NOT_FOUND_TITLE } from "@/lib/navigation/features"
+import { Page, PageSections } from "@/components/layout/page"
+import { PageHeader } from "@/components/layout/page-header"
+import { ListGroup, ListRow } from "@/components/ui/list-group"
+import { ArticleContent } from "../article-content"
+import { categoryLabel, relatedArticles } from "../categories"
+
+/** The canonical, personal overgang explainer lives in Cyclus (WB-7, NAV-14). */
+const OVERGANG_ARTICLE = "wat-verandert-er-rondom-de-overgang"
+
+// One query per request, shared by the title and the page.
+const loadArticle = cache((slug: string) => getKnowledgeArticle(slug))
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const article = await loadArticle(slug)
+  return { title: article?.title ?? NOT_FOUND_TITLE }
+}
 
 export default async function KennisArticlePage({
   params,
@@ -9,43 +27,53 @@ export default async function KennisArticlePage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const article = await getKnowledgeArticle(slug)
+  const article = await loadArticle(slug)
   if (!article) notFound()
 
-  const others = (await listKnowledgeArticles()).filter((a) => a.slug !== slug).slice(0, 3)
+  const others = relatedArticles(await listKnowledgeArticles(), article)
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-5 lg:px-8 py-6 lg:py-10 flex flex-col gap-8">
-      <div>
-        <BackButton href="/kennis" label="Alle kennis" />
-        <h1 className="font-display text-3xl lg:text-4xl text-ink mt-3">{article.title}</h1>
-        <p className="text-lg text-ink-soft mt-3 leading-relaxed max-w-[60ch]">{article.summary}</p>
-      </div>
+    <Page as="article">
+      <PageHeader
+        eyebrow={categoryLabel(article.category)}
+        title={article.title}
+        subtitle={article.summary}
+        back={{ href: FEATURES.kennis.href, label: FEATURES.kennis.label }}
+      />
 
-      <article className="max-w-[65ch]">
-        <div className="text-base text-ink whitespace-pre-wrap leading-[1.7]">{article.body}</div>
-        <p className="text-sm text-ink-soft mt-8 border-t border-line pt-4">
-          Dit is geen medisch advies. Raadpleeg bij klachten altijd een arts of specialist.
-        </p>
-      </article>
-
-      {others.length > 0 && (
-        <div>
-          <h2 className="font-display text-xl text-ink mb-3">Ook interessant</h2>
-          <ul className="flex flex-col gap-2">
-            {others.map((a) => (
-              <li key={a.id}>
-                <Link
-                  href={`/kennis/${a.slug}`}
-                  className="inline-flex items-center min-h-11 text-base text-sage-dark font-medium underline-offset-4 hover:underline"
-                >
-                  {a.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
+      <PageSections>
+        <div className="flex flex-col gap-6">
+          <ArticleContent body={article.body} />
+          <p className="border-t border-line pt-4 text-sm text-ink-soft">
+            Dit is algemene informatie, geen medisch advies. Heb je klachten of twijfel je? Overleg dan gerust met
+            je huisarts of een andere zorgverlener.
+          </p>
         </div>
-      )}
-    </div>
+
+        {slug === OVERGANG_ARTICLE && (
+          <ListGroup>
+            <ListRow
+              title={FEATURES.overgang.label}
+              description="Lees de uitgebreide uitleg"
+              icon={FEATURES.overgang.icon}
+              href={FEATURES.overgang.href}
+            />
+          </ListGroup>
+        )}
+
+        {others.length > 0 && (
+          <ListGroup label="Ook interessant" labelAs="h2">
+            {others.map((other) => (
+              <ListRow
+                key={other.id}
+                title={other.title}
+                description={categoryLabel(other.category)}
+                href={`/kennis/${other.slug}`}
+              />
+            ))}
+          </ListGroup>
+        )}
+      </PageSections>
+    </Page>
   )
 }

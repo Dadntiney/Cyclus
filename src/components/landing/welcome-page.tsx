@@ -1,8 +1,9 @@
 import Link from "next/link"
 import { BookOpen, HeartHandshake, Sparkles } from "lucide-react"
-import { DropletMark } from "@/components/brand/droplet-mark"
+import { Lockup } from "@/components/brand/lockup"
 import { buttonVariants } from "@/components/ui/button"
-import { APP_DISPLAY_NAME } from "@/lib/theme/brand"
+import { Card } from "@/components/ui/card"
+import { iconProps } from "@/lib/ui/icon"
 
 const PILLARS = [
   {
@@ -22,6 +23,9 @@ const PILLARS = [
   },
 ] as const
 
+/** Quiet footer link with a 44px target. */
+const FOOTER_LINK = "inline-flex min-h-11 items-center hover:underline underline-offset-4"
+
 /**
  * What a first-time visitor sees at "/" — before, the root went straight to
  * the login form, so someone who got the link had no idea what GoFiev is.
@@ -29,13 +33,11 @@ const PILLARS = [
 export function WelcomePage() {
   return (
     <div className="min-h-dvh bg-cream flex flex-col">
-      <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-12 lg:py-20 grid gap-12 lg:grid-cols-2 lg:items-center">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-5 lg:px-8 py-12 lg:py-20 grid gap-12 lg:grid-cols-2 lg:items-center">
         <div>
-          <div className="flex items-center gap-2.5 mb-10">
-            <DropletMark className="h-8 w-6" />
-            <span className="font-display text-2xl text-ink">{APP_DISPLAY_NAME}</span>
-          </div>
-          <h1 className="font-display text-4xl lg:text-5xl leading-tight text-ink">
+          {/* The same lockup as the auth screens (AUTH-2). */}
+          <Lockup className="mb-10" />
+          <h1 className="type-page-title text-ink">
             Je lichaam verandert. Je hoeft het niet alleen uit te zoeken.
           </h1>
           <p className="text-ink-soft text-base lg:text-lg leading-relaxed mt-5 max-w-md">
@@ -60,24 +62,25 @@ export function WelcomePage() {
 
         <ul className="flex flex-col gap-3">
           {PILLARS.map((p) => (
-            <li
-              key={p.title}
-              className="flex gap-4 rounded-[1.25rem] bg-surface border border-line p-5"
-            >
+            <Card as="li" key={p.title} className="flex gap-4">
               <span className="h-11 w-11 shrink-0 rounded-full bg-sage-soft flex items-center justify-center">
-                <p.icon className="h-5 w-5 text-sage-dark" strokeWidth={1.75} aria-hidden />
+                <p.icon {...iconProps("md", "text-sage-dark")} aria-hidden />
               </span>
               <span>
                 <span className="block font-medium text-ink">{p.title}</span>
                 <span className="block text-sm text-ink-soft mt-1 leading-relaxed">{p.text}</span>
               </span>
-            </li>
+            </Card>
           ))}
         </ul>
       </main>
-      <footer className="w-full max-w-5xl mx-auto px-6 pb-8 flex gap-5 text-xs text-ink-soft">
-        <Link href="/privacy" className="hover:underline underline-offset-4">Privacy</Link>
-        <Link href="/voorwaarden" className="hover:underline underline-offset-4">Voorwaarden</Link>
+      <footer className="w-full max-w-6xl mx-auto px-5 lg:px-8 pb-6 flex gap-5 text-xs text-ink-soft">
+        <Link href="/privacy" className={FOOTER_LINK}>
+          Privacy
+        </Link>
+        <Link href="/voorwaarden" className={FOOTER_LINK}>
+          Voorwaarden
+        </Link>
       </footer>
     </div>
   )

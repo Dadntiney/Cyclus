@@ -4,29 +4,36 @@ import { useEffect } from "react"
 import { Leaf } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { reportError } from "@/lib/monitoring/report-error"
+import { ICON } from "@/lib/ui/icon"
 
 export default function ErrorBoundary({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string }
-  reset: () => void
+  retry: () => void
 }) {
   useEffect(() => {
     reportError(error)
   }, [error])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cream text-ink px-6">
+    <main className="min-h-dvh flex items-center justify-center bg-cream text-ink px-5">
       <div className="text-center max-w-sm">
-        <Leaf className="h-9 w-9 mx-auto mb-4 text-sage-dark" strokeWidth={1.5} />
-        <h1 className="font-display text-3xl text-ink mb-3">Er ging iets mis</h1>
+        <span
+          aria-hidden
+          className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-sage-soft text-sage-dark"
+        >
+          <Leaf {...ICON.lg} />
+        </span>
+        <h1 className="type-page-title text-ink mb-3">Er ging iets mis</h1>
         <p className="text-sm text-ink-soft mb-6">
           Sorry, dat hadden we niet verwacht. Probeer het opnieuw — als het blijft gebeuren, sluit
           de app dan even af en open hem opnieuw.
         </p>
-        <Button onClick={reset}>Probeer opnieuw</Button>
+        {/* retry() fetches the page again before re-rendering (Next 16). */}
+        <Button onClick={() => retry()}>Probeer opnieuw</Button>
       </div>
-    </div>
+    </main>
   )
 }
