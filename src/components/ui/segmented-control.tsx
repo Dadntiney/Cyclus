@@ -47,7 +47,7 @@ export function SegmentedControl<T extends string>({
       aria-labelledby={ariaLabelledBy}
       className={cn(
         "items-center gap-0.5 rounded-full bg-cream-soft border border-line p-1",
-        fullWidth ? "grid w-full grid-flow-col auto-cols-fr" : "inline-flex",
+        fullWidth ? "flex w-full" : "inline-flex",
         className,
       )}
     >
@@ -64,9 +64,11 @@ export function SegmentedControl<T extends string>({
             {...getItemProps(i)}
             className={cn(
               "min-h-11 rounded-full text-sm font-medium touch-manipulation select-none whitespace-nowrap",
-              // Full width: equal segments, so less padding; four labels
-              // like "Momenten" still fit side by side at 320px (13px floor).
-              fullWidth ? "min-w-0 px-2 max-[359px]:px-1 max-[359px]:text-xs" : "min-w-16 px-4",
+              // Full width: equal segments while the labels fit; a longer
+              // label ("Momenten") never shrinks below its own width and
+              // takes the room from shorter ones. Less padding, so four
+              // labels fit side by side at 320px (13px floor).
+              fullWidth ? "flex-1 px-2 max-[359px]:px-1 max-[359px]:text-xs" : "min-w-16 px-4",
               "transition-[background-color,color,box-shadow] duration-fast ease-standard",
               "disabled:opacity-50 disabled:pointer-events-none",
               checked

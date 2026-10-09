@@ -210,6 +210,12 @@ export function PeriScoreForm({
             rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
+            // Tab focus here can stop with the field half under the sticky
+            // "Score opslaan" bar; one nudge that honours scroll-padding.
+            onFocus={(e) => {
+              const field = e.currentTarget
+              requestAnimationFrame(() => field.scrollIntoView({ block: "nearest" }))
+            }}
             placeholder="Bijvoorbeeld: vooral ’s nachts, of na stressvolle weken."
           />
         </div>

@@ -143,20 +143,21 @@ export function PhaseContextCard({
 
       {line && <p className="mt-3 text-sm text-ink-soft">{line}</p>}
 
-      {/* One row from 360px (the status gives way first, the action never
-          wraps); only on a smaller screen may the action drop below. */}
+      {/* One row when both fit. The status is never cut off (it carries the
+          date of her next period); when space runs out, the action drops to
+          its own line, right-aligned. */}
       {hasCycle && (
-        <div className="mt-4 flex flex-wrap items-center gap-x-2 border-t border-ink/10 pt-2 min-[360px]:flex-nowrap">
+        <div className="mt-4 flex flex-wrap items-center gap-x-1 border-t border-ink/10 pt-2">
           <span
             className={cn(
-              "inline-flex min-h-11 min-w-0 items-center gap-2 text-sm",
+              "inline-flex min-h-11 items-center gap-2 whitespace-nowrap text-sm",
               isMenstruationActive ? "font-medium text-phase-menstruatie-strong" : "text-ink-soft",
             )}
           >
             <span className={cn("inline-flex shrink-0", isMenstruationActive && "animate-menstruatie-adem")}>
               <Droplet {...ICON.sm} fill={isMenstruationActive ? "currentColor" : "none"} aria-hidden />
             </span>
-            <span className="truncate">{statusLabel}</span>
+            <span>{statusLabel}</span>
           </span>
           <button
             type="button"

@@ -258,7 +258,7 @@ interactief; een verwijderbaar filter is `<Chip removable>`.
 
 | Keuze | Component | Voorbeelden |
 |---|---|---|
-| exclusief, 2–4 "modi" | `SegmentedControl` (`fullWidth`) | Week/Dag, 4/8/12 wk/6 mnd, Favorieten-filter (Alles/Recepten/Oefeningen/Momenten), Luisteren/Lezen |
+| exclusief, 2–4 "modi" | `SegmentedControl` (`fullWidth`) | Week/Dag, 4/8/12 wk/6 mnd, Favorieten-filter (Alles/Recepten/Beweging/Momenten), Luisteren/Lezen |
 | exclusief, korte labels in een raster | `ChipRadioGroup` (`columns`) | flow, klachtenlast (4 niveaus) |
 | exclusief, met uitleg per optie | `OptionList` | levensfase, medicatiestatus, regelmaat, voedingsstijl, buddyfrequentie, Weergave |
 | filters en meerkeuze | `Chip` | maaltijdmoment, wensen, dagen |
@@ -271,8 +271,10 @@ interactief; een verwijderbaar filter is `<Chip removable>`.
 ```tsx
 <SegmentedControl aria-label="Periode" fullWidth value={weeks} onChange={setWeeks}
   options={[{ value: "4", label: "4 wk" }, { value: "8", label: "8 wk" }, { value: "12", label: "12 wk" }]} />
-// fullWidth: gelijke segmenten zonder minimumbreedte (px-2; onder 360px px-1 en
-// 13px), zodat vier labels ook op 320px in één rij passen.
+// fullWidth: gelijke segmenten zolang de labels passen; een langer label
+// ("Momenten") krimpt nooit onder zijn eigen breedte en neemt ruimte van de
+// kortere (px-2; onder 360px px-1 en 13px), zodat vier labels ook op 320px
+// in één rij passen zonder afgeknipt te worden.
 
 <ChipRadioGroup aria-labelledby={qId} aria-describedby={helpId} columns={4} value={score} onChange={setScore}
   options={[{ value: 0, label: "Niet" }, { value: 1, label: "Mild" }, { value: 2, label: "Matig" }, { value: 3, label: "Ernstig" }]} />
@@ -547,7 +549,9 @@ export default async function SlaapPage() {
   `max-w-6xl` (`width="wide"`), `px-5 pt-4 pb-8`, op `lg` `px-8 pt-10`.
   `fill` maakt de pagina minstens schermhoog (een flexkolom zonder
   `pb`), voor een flow met een `StickyActionBar`: de balk staat dan ook bij
-  een korte stap onderaan (medicatie-wizard).
+  een korte stap onderaan (medicatie-wizard). Heeft alleen één toestand
+  van een client-scherm dat nodig, dan `<PageFill>` binnen een gewone Page
+  (het afrondscherm van een training).
   `<PageSections>` = kolom met 32px tussen secties.
 - **`<PageHeader>`** — de enige paginakop, ritme exact volgens §5.4:
   16px vanaf de app-balk (`pt-4` van Page) → eyebrow (`mb-1`) → h1

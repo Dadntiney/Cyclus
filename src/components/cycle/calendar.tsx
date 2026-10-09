@@ -285,20 +285,22 @@ export function Calendar({
             : "Tik op een dag om je menstruatie bij te werken."
         }
         action={
-          isCurrentMonth ? undefined : (
-            <Button
-              variant="tonal"
-              size="sm"
-              onClick={() => {
-                setMonth(startOfMonth(todayDate()))
-                // The button disappears in the current month: keep focus
-                // on the calendar instead of dropping it to the page.
-                monthLabelRef.current?.focus()
-              }}
-            >
-              Vandaag
-            </Button>
-          )
+          // Always laid out, only hidden (visibility: also out of the tab
+          // order and the accessibility tree) in the current month, so the
+          // header and the grid under it never jump between months.
+          <Button
+            variant="tonal"
+            size="sm"
+            className={cn(isCurrentMonth && "invisible")}
+            onClick={() => {
+              setMonth(startOfMonth(todayDate()))
+              // The button disappears in the current month: keep focus
+              // on the calendar instead of dropping it to the page.
+              monthLabelRef.current?.focus()
+            }}
+          >
+            Vandaag
+          </Button>
         }
       />
       <Card>

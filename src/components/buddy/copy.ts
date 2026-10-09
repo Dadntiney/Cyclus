@@ -17,5 +17,5 @@ export const BUDDY_GREETING =
 export const STARTER_QUESTIONS = [
   "Slaap ik slechter door mijn cyclus?",
   "Wat helpt als ik me moe voel?",
-  "Horen mijn klachten bij de overgang?",
+  "Merk ik al iets van de overgang?",
 ] as const

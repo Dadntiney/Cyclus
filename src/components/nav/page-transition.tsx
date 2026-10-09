@@ -112,6 +112,7 @@ function restoreFocus(pathname: string): () => void {
   let observer: MutationObserver | undefined
   let timer: number | undefined
   let frame = 0
+  let cancelHeading: (() => void) | undefined
   const mark = lastFocusByPath.get(pathname)
 
   const stop = () => {
@@ -125,13 +126,10 @@ function restoreFocus(pathname: string): () => void {
     return !active || active === document.body || !main.contains(active)
   }
 
+  // The h1 may still be streaming in (a refreshed page shows its skeleton
+  // first, e.g. /medicatie after a save), so wait for it like a push does.
   const focusHeading = () => {
-    const main = document.querySelector("main")
-    const h1 = main?.querySelector<HTMLElement>("h1")
-    if (!main || !h1 || !focusLost(main)) return
-    if (!h1.hasAttribute("tabindex")) h1.setAttribute("tabindex", "-1")
-    if (!h1.hasAttribute("data-focus-target")) h1.setAttribute("data-focus-target", "")
-    h1.focus({ preventScroll: true })
+    cancelHeading = focusPageHeading()
   }
 
   /** true = done (restored, or she is already busy in the page). */
@@ -169,6 +167,7 @@ function restoreFocus(pathname: string): () => void {
     cancelled = true
     cancelAnimationFrame(frame)
     stop()
+    cancelHeading?.()
   }
 }
 
@@ -180,7 +179,8 @@ function restoreFocus(pathname: string): () => void {
  *   off under reduced motion. Opens at the top; focus moves to the h1.
  * - Back/forward (popstate): no animation, the browser's scroll position;
  *   focus returns to the control that opened the next screen (else the h1).
- * - Replace: opens at the top, no animation.
+ * - Replace: opens at the top, no animation; focus moves to the h1 when it
+ *   was lost (leaving a flow or a deep link with no history to go back to).
  */
 export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname()
@@ -224,6 +224,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
     if (!travelled && !hasHash) window.scrollTo(0, 0)
     if (travelled) return restoreFocus(pathname)
+    if (action === "replace") return hasHash ? undefined : focusPageHeading()
     if (action !== "push" || isTabRoot(pathname)) return
 
     const el = ref.current

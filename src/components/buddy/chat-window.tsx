@@ -348,7 +348,7 @@ export function ChatWindow({
               {/* Starting points — they only fill the input; she decides to send. */}
               {/* Calm suggestion rows, not tall pills: one line each on a
                   phone, left-aligned, so the first run fits on a small screen. */}
-              <div role="group" aria-label="Voorbeeldvragen" className="mt-3 flex flex-col items-stretch gap-2">
+              <div role="group" aria-label="Voorbeeldvragen" className="mt-2 flex flex-col items-stretch gap-1.5">
                 {STARTER_QUESTIONS.map((q) => (
                   <Chip
                     key={q}

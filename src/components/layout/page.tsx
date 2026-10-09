@@ -55,6 +55,21 @@ export function Page({
   )
 }
 
+/**
+ * The rest of a <Page> as a flex column that reaches the bottom of the
+ * screen, for a client view that needs `fill` on one state only (the
+ * finished screen of a training). Its StickyActionBar (`mt-auto`) then rests
+ * at the bottom. Cancels Page's bottom padding; the height leaves out Page's
+ * top padding (pt-4, lg:pt-10).
+ */
+export function PageFill({ children }: { children: ReactNode }) {
+  return (
+    <div className="-mb-8 flex min-h-[calc(100dvh-var(--mobile-header-h)-1rem)] flex-col lg:min-h-[calc(100dvh-2.5rem)]">
+      {children}
+    </div>
+  )
+}
+
 /** The section stack under a PageHeader: 32px between sections (`gap-8`). */
 export function PageSections({ className, children }: { className?: string; children: ReactNode }) {
   return <div className={cn("flex flex-col gap-8", className)}>{children}</div>

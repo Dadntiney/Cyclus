@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState, useTransition } from "reac
 import { usePathname, useRouter } from "next/navigation"
 import { Sparkles, X } from "lucide-react"
 import { AppBarConfig } from "@/components/nav/app-bar-context"
+import { PageFill } from "@/components/layout/page"
 import { PageHeader } from "@/components/layout/page-header"
 import { BottomSheet } from "@/components/ui/bottom-sheet"
 import { Button, textActionClass } from "@/components/ui/button"
@@ -249,16 +250,17 @@ export function WorkoutSession({
 
   if (finished) {
     const doneCount = doneIds.size
-    // Everything skipped: no praise for what did not happen, and an easy
-    // way back without saving anything.
+    // Everything skipped: no praise and no "klaar" for what did not happen.
+    // Leaving without saving is the main action; saving it as done stays
+    // possible (she may have done the exercises without tapping Klaar).
     const skippedAll = doneCount === 0
     return (
-      <>
+      <PageFill>
         <PageHeader
           titleId={doneTitleId}
-          eyebrow="Training klaar"
+          eyebrow={skippedAll ? undefined : "Training klaar"}
           title={skippedAll ? "Vandaag was het even niet het moment" : `Mooi gedaan${name ? `, ${name}` : ""}.`}
-          compactTitle="Training klaar"
+          compactTitle={skippedAll ? title : "Training klaar"}
           subtitle={
             skippedAll
               ? "Dat mag ook. Je lichaam vraagt niet elke dag hetzelfde; deze training staat er een andere keer gewoon weer."
@@ -271,18 +273,24 @@ export function WorkoutSession({
               {finishError}
             </p>
           )}
-          <Button className="w-full" onClick={handleFinishWorkout} disabled={isPending}>
-            {isPending ? "Bezig…" : "Training afronden"}
-          </Button>
-          {skippedAll && (
-            <div className="flex justify-center">
-              <button type="button" className={textActionClass()} onClick={stop} disabled={isPending}>
+          {skippedAll ? (
+            <>
+              <Button className="w-full" onClick={stop} disabled={isPending}>
                 {leaveLabel}
-              </button>
-            </div>
+              </Button>
+              <div className="flex justify-center">
+                <button type="button" className={textActionClass()} onClick={handleFinishWorkout} disabled={isPending}>
+                  {isPending ? "Bezig…" : "Toch als gedaan opslaan"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <Button className="w-full" onClick={handleFinishWorkout} disabled={isPending}>
+              {isPending ? "Bezig…" : "Training afronden"}
+            </Button>
           )}
         </StickyActionBar>
-      </>
+      </PageFill>
     )
   }
 
